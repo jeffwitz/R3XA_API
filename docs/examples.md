@@ -163,5 +163,5 @@ r3xa.add_image_set_list(
 ```
 
 ## Outputs
-- From scratch: `dic_pipeline.json`
-- Registry‑based: `dic_pipeline_registry.json`
+- From scratch: `examples/artifacts/dic_pipeline.json`
+- Registry‑based: `examples/artifacts/dic_pipeline_registry.json`

@@ -26,9 +26,8 @@ def main() -> None:
     for path in [
         base / "valid_camera_list.json",
         base / "valid_tabular_file.json",
-        Path(__file__).parents[1] / "r3xa.json",
-        Path("dic_pipeline.json"),
-        Path("dic_pipeline_registry.json"),
+        Path("examples/artifacts/dic_pipeline.json"),
+        Path("examples/artifacts/dic_pipeline_registry.json"),
     ]:
         validate_json(path)
 

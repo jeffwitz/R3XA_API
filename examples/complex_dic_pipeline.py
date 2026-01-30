@@ -84,4 +84,4 @@ r3xa.add_image_set_list(
 
 # Validate and save
 r3xa.validate()
-r3xa.save("dic_pipeline.json")
+r3xa.save("examples/artifacts/dic_pipeline.json")
