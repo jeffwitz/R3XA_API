@@ -1,0 +1,6 @@
+{
+  "id": "set_machine_instron_5800",
+  "kind": "settings/generic",
+  "title": "Testing machine",
+  "description": "Instron 5800 — electromechanical tensile machine"
+}

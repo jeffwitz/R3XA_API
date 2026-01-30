@@ -1,0 +1,57 @@
+{
+  "version": "2024.7.1",
+  "title": "Tabular File Example",
+  "description": "Example with tabular time series",
+  "authors": "R3XA API",
+  "date": "2024-10-30",
+  "settings": [
+    {
+      "id": "set_generic_01",
+      "kind": "settings/generic",
+      "title": "Testing machine",
+      "description": "Electromechanical tensile machine"
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "ds_generic_01",
+      "kind": "data_sources/generic",
+      "title": "Load cell",
+      "description": "Force measurement",
+      "output_components": 1,
+      "output_dimension": "point",
+      "output_units": [
+        {
+          "kind": "unit",
+          "title": "force",
+          "value": 1.0,
+          "unit": "N",
+          "scale": 1.0
+        }
+      ],
+      "manufacturer": "Instron",
+      "model": "5800"
+    }
+  ],
+  "data_sets": [
+    {
+      "id": "dset_force_01",
+      "kind": "data_sets/file",
+      "title": "Force time series",
+      "description": "Force vs time",
+      "folder": "data/",
+      "data_sources": ["ds_generic_01"],
+      "time_reference": 0.0,
+      "timestamps": {
+        "kind": "data_set_file",
+        "filename": "timestamps.csv",
+        "file_type": "text/csv"
+      },
+      "data": {
+        "kind": "data_set_file",
+        "filename": "force.csv",
+        "file_type": "text/csv"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "dset_images_template",
+  "kind": "data_sets/list",
+  "title": "graylevel images",
+  "description": "images taken by the CCD camera",
+  "path": "images/",
+  "file_type": "image/tiff",
+  "data_sources": ["ds_cam_avt_dolphin_f145b"],
+  "time_reference": 0.0,
+  "timestamps": [0.0],
+  "data": ["img_0000.tif"]
+}

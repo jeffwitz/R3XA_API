@@ -1,0 +1,14 @@
+{
+  "id": "ds_dic_pyxel_2d",
+  "kind": "data_sources/generic",
+  "title": "DIC processing (pyxel)",
+  "description": "2D DIC using pyxel",
+  "output_components": 2,
+  "output_dimension": "surface",
+  "output_units": [
+    {"kind": "unit", "title": "ux", "value": 1.0, "unit": "mm", "scale": 1.0},
+    {"kind": "unit", "title": "uy", "value": 1.0, "unit": "mm", "scale": 1.0}
+  ],
+  "manufacturer": "Pyxel",
+  "model": "pyxel-2d"
+}

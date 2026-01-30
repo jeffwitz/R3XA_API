@@ -1,0 +1,11 @@
+{
+  "id": "set_spec_openhole",
+  "kind": "settings/specimen",
+  "title": "Openhole sample",
+  "description": "Glass-epoxy specimen",
+  "sizes": [
+    {"kind": "unit", "title": "width", "value": 30.0, "unit": "mm", "scale": 1.0},
+    {"kind": "unit", "title": "thickness", "value": 2.0, "unit": "mm", "scale": 1.0}
+  ],
+  "patterning_technique": "white background with black spray paint"
+}

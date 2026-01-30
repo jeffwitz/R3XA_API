@@ -1,0 +1,11 @@
+{
+  "id": "dset_timeseries_template",
+  "kind": "data_sets/file",
+  "title": "force time series",
+  "description": "force vs time",
+  "folder": "data/",
+  "data_sources": ["ds_dic_pyxel_2d"],
+  "time_reference": 0.0,
+  "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv"},
+  "data": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv"}
+}

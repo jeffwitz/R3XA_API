@@ -1,0 +1,166 @@
+{
+    "title": "Open-hole tensile test with DIC",
+    "description": "Camera acquisition + DIC processing pipeline",
+    "authors": "R3XA API",
+    "date": "2024-10-30",
+    "version": "2024.7.1",
+    "settings": [
+        {
+            "title": "Openhole sample",
+            "description": "Glass-epoxy specimen",
+            "sizes": [
+                {
+                    "kind": "unit",
+                    "title": "width",
+                    "value": 30.0,
+                    "unit": "mm",
+                    "scale": 1.0
+                },
+                {
+                    "kind": "unit",
+                    "title": "thickness",
+                    "value": 2.0,
+                    "unit": "mm",
+                    "scale": 1.0
+                }
+            ],
+            "patterning_technique": "white background with black spray paint",
+            "id": "dnkxgxnodcaxeodqativunca",
+            "kind": "settings/specimen"
+        }
+    ],
+    "data_sources": [
+        {
+            "title": "CCD Camera",
+            "description": "Encoding: 8-bit",
+            "output_components": 1,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "kind": "unit",
+                    "title": "graylevel",
+                    "value": 1.0,
+                    "unit": "gl",
+                    "scale": 1.0
+                }
+            ],
+            "manufacturer": "Allied Vision Technologies (AVT)",
+            "model": "Dolphin F-145B",
+            "image_size": [
+                {
+                    "kind": "unit",
+                    "title": "width",
+                    "value": 1392,
+                    "unit": "px",
+                    "scale": 1.0
+                },
+                {
+                    "kind": "unit",
+                    "title": "height",
+                    "value": 1040,
+                    "unit": "px",
+                    "scale": 1.0
+                }
+            ],
+            "focal_length": {
+                "kind": "unit",
+                "title": "focal_length",
+                "value": 25.0,
+                "unit": "mm",
+                "scale": 1.0
+            },
+            "standoff_distance": {
+                "kind": "unit",
+                "title": "standoff",
+                "value": 0.5,
+                "unit": "m",
+                "scale": 1.0
+            },
+            "id": "nzmhmssjshjwrekfwptifcnr",
+            "kind": "data_sources/camera"
+        },
+        {
+            "title": "DIC processing (pyxel)",
+            "description": "2D DIC using pyxel",
+            "output_components": 2,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "kind": "unit",
+                    "title": "ux",
+                    "value": 1.0,
+                    "unit": "mm",
+                    "scale": 1.0
+                },
+                {
+                    "kind": "unit",
+                    "title": "uy",
+                    "value": 1.0,
+                    "unit": "mm",
+                    "scale": 1.0
+                }
+            ],
+            "manufacturer": "Pyxel",
+            "model": "pyxel-2d",
+            "input_data_sets": [
+                "igcgknngpwvnfhgpttzgvgmf"
+            ],
+            "id": "bfnwhdylsuhhlgevpcvllvzs",
+            "kind": "data_sources/generic"
+        }
+    ],
+    "data_sets": [
+        {
+            "title": "graylevel images",
+            "description": "raw images from CCD camera",
+            "path": "images/",
+            "file_type": "image/tiff",
+            "data_sources": [
+                "nzmhmssjshjwrekfwptifcnr"
+            ],
+            "time_reference": 0.0,
+            "timestamps": [
+                0.0,
+                0.5,
+                1.0,
+                1.5,
+                2.0
+            ],
+            "data": [
+                "img_0000.tif",
+                "img_0001.tif",
+                "img_0002.tif",
+                "img_0003.tif",
+                "img_0004.tif"
+            ],
+            "id": "igcgknngpwvnfhgpttzgvgmf",
+            "kind": "data_sets/list"
+        },
+        {
+            "title": "DIC displacement fields",
+            "description": "ux, uy per frame",
+            "path": "dic/",
+            "file_type": "text/csv",
+            "data_sources": [
+                "bfnwhdylsuhhlgevpcvllvzs"
+            ],
+            "time_reference": 0.0,
+            "timestamps": [
+                0.0,
+                0.5,
+                1.0,
+                1.5,
+                2.0
+            ],
+            "data": [
+                "dic_0000.csv",
+                "dic_0001.csv",
+                "dic_0002.csv",
+                "dic_0003.csv",
+                "dic_0004.csv"
+            ],
+            "id": "tasiosywnfpfwdlscoichgwe",
+            "kind": "data_sets/list"
+        }
+    ]
+}
