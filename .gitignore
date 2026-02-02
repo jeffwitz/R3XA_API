@@ -20,6 +20,11 @@ htmlcov/
 # Sphinx
 docs/_build/
 
+# Graph outputs (keep SVGs only)
+examples/artifacts/*.html
+examples/artifacts/graph_*
+lib/
+
 # OS/editor
 .DS_Store
 Thumbs.db
