@@ -37,13 +37,13 @@ so the dataset is defined compactly and remains easy to edit.
 To generate the R3XA JSON:
 ```bash
 . .venv/bin/activate
-PYTHONPATH=. python examples/qi_hu_from_scratch.py
+PYTHONPATH=. python examples/python/qi_hu_from_scratch.py
 ```
 
 Then generate the graph:
 ```bash
 . .venv/bin/activate
-python examples/graph_r3xa.py \
+python examples/python/graph_r3xa.py \
   --input examples/artifacts/qi_hu_from_scratch.json \
   --output docs/figures/graph_qi_from_scratch
 ```
@@ -83,9 +83,9 @@ The graph encodes **object types** and **data‑flow roles**:
 - **Input flow** (`input_data_sets` → data_source): black
 - **Output flow** (data_source → data_set): black  
 
-These styles are defined in `examples/graph_r3xa.py` and shared across Graphviz and PyVis.
+These styles are defined in `examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
 
 ## Files used
-- Build script: `examples/qi_hu_from_scratch.py`
-- Graph tool: `examples/graph_r3xa.py`
+- Build script: `examples/python/qi_hu_from_scratch.py`
+- Graph tool: `examples/python/graph_r3xa.py`
 - Output SVG: `docs/figures/graph_qi_from_scratch.svg`

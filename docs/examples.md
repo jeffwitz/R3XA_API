@@ -5,7 +5,7 @@ This page shows the **same pipeline** built in two ways:
 2) **Registry‑based** (reuse shared items and override only what changes)
 
 ## 1) From scratch
-File: `examples/complex_dic_pipeline.py`
+File: `examples/python/complex_dic_pipeline.py`
 
 Key ideas:
 - Define specimen, camera, and DIC source explicitly.
@@ -93,7 +93,7 @@ r3xa.add_image_set_list(
 ```
 
 ## 2) Registry‑based
-File: `examples/complex_dic_pipeline_registry.py`
+File: `examples/python/complex_dic_pipeline_registry.py`
 
 Key ideas:
 - Load reusable items from `registry/`
