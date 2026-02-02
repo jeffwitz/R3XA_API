@@ -4,6 +4,7 @@ This page documents the **Qi experimental case** and how it maps to R3XA concept
 
 ## Context
 The Qi dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
+For more scientific context, see the Qi Hu thesis (LaMCube): `https://theses.hal.science/tel-04993338`.
 
 ## Data flow (conceptual)
 **IR camera → raw images → Lagrangian thermography processing → derived fields**  
