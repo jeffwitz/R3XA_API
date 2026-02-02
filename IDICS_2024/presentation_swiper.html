@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swiper.js Presentation</title>
+
+  <link rel="stylesheet" href="libs/swiper/swiper-bundle.min.css" />
+
+  <style>
+    /* Responsive thumbnails: hide grid and show list on small screens */
+    @media (max-width: 700px) {
+      .thumbnail-grid { display: none !important; }
+      .thumbnail-number-list { display: flex !important; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 16px 0 0 0; }
+    }
+    @media (max-height: 500px) {
+      .thumbnail-grid { display: none !important; }
+      .thumbnail-number-list { display: flex !important; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 16px 0 0 0; }
+    }
+    @media (min-width: 701px) and (min-height: 501px) {
+      .thumbnail-number-list { display: none !important; }
+    }
+    .thumbnail-number-list {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-start;
+      align-items: flex-start;
+      font-size: 1.2em;
+      user-select: none;
+      max-height: 80vh; /* Limite la hauteur */
+      overflow-y: auto; /* Ajoute une barre de défilement verticale si nécessaire */
+      padding: 10px; /* Espace pour éviter que le contenu touche les bords */
+      box-sizing: border-box;
+    }
+    .thumbnail-number-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px; height: 48px;
+      border-radius: 8px;
+      background: #f0f0f0;
+      color: #222;
+      font-weight: bold;
+      border: 1px solid #bbb;
+      cursor: pointer;
+      transition: background 0.2s, border 0.2s;
+      position: relative;
+      overflow: visible; /* Allow popover */
+    }
+    .mini-thumb-popover {
+      position: absolute;
+      left: 50%;
+      bottom: 120%;
+      transform: translateX(-50%);
+      min-width: 120px;
+      max-width: 260px;
+      max-height: 180px;
+      background: #fff;
+      border: 1.5px solid #888;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+      padding: 8px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none !important; /* Prevent flicker: doubly enforced */
+      opacity: 0;
+      transition: opacity 0.22s cubic-bezier(.4,0,.2,1);
+    }
+    .mini-thumb-popover.visible {
+      opacity: 1;
+      /* pointer-events: auto; */ /* Removed to prevent flicker */
+    }
+    .mini-thumb-popover img {
+      display: block;
+      max-width: 100%;
+      max-height: 164px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+
+    .thumbnail-number-item:hover, .thumbnail-number-item:focus {
+      background: #e0eaff;
+      border-color: #007aff;
+      outline: none;
+    }
+    .thumbnail-number-item img {
+      width: 100%; height: 100%; object-fit: contain;
+      display: block;
+      border-radius: 8px;
+      background: #fff;
+    }
+    /* Prevent shifting when replacing number <-> image */
+    .thumbnail-number-item span { display: block; width: 100%; text-align: center; }
+    .thumbnail-number-item .slide-number-mini { font-size: 1em; color: #222; }
+    .thumbnail-number-item .slide-number-mini:hover { color: #007aff; }
+    /* Optional: visual effect on thumbnail */
+    .thumbnail-number-item .mini-thumb-img { box-shadow: 0 0 8px rgba(0,122,255,0.15); }
+  
+    /* --- Base page styles --- */
+    html, body {
+      position: relative;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    /* --- Swiper container wrapper --- */
+    .swiper-container-wrapper {
+      width: 100%;
+      max-width: 95vw;
+      aspect-ratio: 1.333335;
+      max-height: 95vh;
+      position: relative;
+      overflow: hidden;
+      background-color: #000;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Contextual navigation buttons (hidden by default) */
+    .context-nav-btn {
+      position: absolute;
+      z-index: 2500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      background: rgba(255,255,255,0.9);
+      color: #222;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+      font-size: 1.5rem;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .swiper-container-wrapper.context-nav-visible .context-nav-btn {
+      opacity: 1 !important;
+      pointer-events: auto;
+    }
+    #nav-prev { left: 16px; top: 50%; transform: translateY(-50%); }
+    #nav-next { right: 16px; top: 50%; transform: translateY(-50%); }
+    #nav-menu { position: absolute; top: 16px; right: 72px; }
+    #fullscreen-button { position: absolute; top: 16px; right: 16px; }
+
+    /* Swap enter/exit fullscreen icons via class */
+    #fullscreen-button .enter-icon { display: inline-flex; }
+    #fullscreen-button .exit-icon { display: none; }
+    /* On fullscreen, toggle via .fs class */
+    #fullscreen-button.fs .enter-icon { display: none; }
+    #fullscreen-button.fs .exit-icon { display: inline-flex; }
+
+    /* --- Swiper instance --- */
+    .swiper {
+      width: 100%;
+      height: 100%;
+      /* Default cursor outside fullscreen */
+      cursor: auto;
+    }
+
+    /* Hide system cursor in fullscreen */
+    :fullscreen .swiper {
+      cursor: none !important;
+    }
+    :-webkit-full-screen .swiper {
+      cursor: none !important;
+    }
+    :-moz-full-screen .swiper {
+      cursor: none !important;
+    }
+    :-ms-fullscreen .swiper {
+      cursor: none !important;
+    }
+
+    /* Styles for videos */
+    .slide-video-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background-color: black;
+    }
+
+    /* --- Swiper slide (base) --- */
+    .swiper-slide {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      box-sizing: border-box; /* Important for border calculation */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #ccc;
+      color: #333;
+      text-align: center;
+    }
+
+    /* --- HACK: Force slide visibility + transparent border --- */
+    /* This combination is necessary for rendering in this environment */
+    .swiper-slide {
+        opacity: 1 !important;
+        visibility: visible !important;
+        border: 1px solid transparent !important; /* <<< HACK CONSERVÉ */
+        z-index: 100 !important; /* Keep high for visibility */
+    }
+    /* --- END HACK --- */
+
+    /* --- Slide background (SVG) --- */
+    .slide-background-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 1; /* Behind slide content */
+    }
+
+    /* --- Video overlay --- */
+    .slide-video-overlay {
+      position: absolute;
+      z-index: 10; /* Above background */
+      object-fit: cover;
+    }
+
+    /* --- Fullscreen mode styles (container only) --- */
+    .swiper-container-wrapper:-webkit-full-screen,
+    .swiper-container-wrapper:-moz-full-screen,
+    .swiper-container-wrapper:-ms-fullscreen,
+    .swiper-container-wrapper:fullscreen {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+      /* aspect-ratio: unset; */ /* Optional */
+    }
+
+    /* --- Hide system cursor in fullscreen --- */
+    /* Apply to container and all its children */
+    .swiper-container-wrapper:-webkit-full-screen,
+    .swiper-container-wrapper:-moz-full-screen,
+    .swiper-container-wrapper:-ms-fullscreen,
+    .swiper-container-wrapper:fullscreen,
+    .swiper-container-wrapper:-webkit-full-screen *,
+    .swiper-container-wrapper:-moz-full-screen *,
+    .swiper-container-wrapper:-ms-fullscreen *,
+    .swiper-container-wrapper:fullscreen * {
+        cursor: none !important; /* Force hide system cursor */
+    }
+    /* --- END Hide System Cursor --- */
+
+    /* --- Thumbnail menu: force display in fullscreen --- */
+    /* Force thumbnail menu to remain visible and above in fullscreen, even if its parent is not fullscreen */
+:fullscreen #thumbnail-menu-overlay,
+:-webkit-full-screen #thumbnail-menu-overlay,
+:-moz-full-screen #thumbnail-menu-overlay,
+:-ms-fullscreen #thumbnail-menu-overlay {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 2147483647 !important;
+    pointer-events: auto !important;
+    background-color: #181818 !important; /* Opaque, très foncé */
+    border: 4px solid #fff !important;
+}
+:fullscreen #thumbnail-menu-overlay .thumbnail-grid-container {
+    z-index: 2147483647 !important;
+}
+:fullscreen #thumbnail-menu-overlay.visible,
+:-webkit-full-screen #thumbnail-menu-overlay.visible,
+:-moz-full-screen #thumbnail-menu-overlay.visible,
+:-ms-fullscreen #thumbnail-menu-overlay.visible {
+    opacity: 1 !important;
+    background-color: #181818 !important;
+}
+
+
+
+    /* --- Laser pointer style --- */
+    /* Laser pointer animation */
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    }
+
+    /* Pulsing animation for the laser pointer */
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    /* --- END laser pointer style --- */
+
+    /* --- Error message style --- */
+    .error-message {
+      color: red;
+      z-index: 2; /* Relative to slide */
+      position: relative;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 0.9em;
+      max-width: 80%;
+      display: inline-block;
+    }
+
+    /* --- Thumbnail menu styles --- */
+    .thumbnail-menu {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.85); z-index: 10000; /* Ensure menu is above pointer if needed, but below browser UI */
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+      padding: 20px; box-sizing: border-box;
+    }
+    .thumbnail-menu.visible { opacity: 1; visibility: visible; }
+    .thumbnail-grid-container {
+      position: relative; 
+      background-color: #ffffff; 
+      padding: 40px 25px 25px 25px;
+      border-radius: 8px; 
+      width: 100%; 
+      height: 100%; 
+      max-width: 1200px; 
+      max-height: 90vh;
+      display: flex; 
+      flex-direction: column; 
+      box-sizing: border-box;
+      /* Overflow est maintenant géré par .thumbnail-grid */
+      /* Plus d'espace pour meilleur rendu avec ascenseur */
+      overflow: hidden;
+    }
+    #close-thumbnail-menu {
+      position: absolute; top: 8px; right: 12px; background: none; border: none;
+      font-size: 2.5rem; line-height: 1; padding: 0; color: #888;
+      cursor: pointer; font-weight: 300; z-index: 10;
+    }
+    #close-thumbnail-menu:hover { color: #333; }
+    .thumbnail-grid {
+      display: grid; 
+      /* Optimiser pour un meilleur rendu vertical avec un nombre fixe de colonnes */
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      /* Assurer un nombre minimum de colonnes même sur grands écrans */
+      grid-auto-flow: row; /* Force l'arrangement prioritaire en lignes */
+      grid-auto-rows: min-content; /* Hauteur minimale nécessaire */
+      /* Augmenter légèrement la distance entre les éléments */
+      gap: 18px;
+      width: 100%; 
+      height: calc(100% - 40px); /* Soustraire la hauteur du bouton de fermeture */
+      overflow-y: auto; /* Garantit le défilement vertical */
+      overflow-x: hidden; /* Évite le défilement horizontal */
+      scrollbar-width: auto; /* Pour Firefox - 'auto' au lieu de 'thin' pour une barre plus large */
+      scrollbar-color: rgba(0,0,0,0.4) rgba(0,0,0,0.05); /* Pour Firefox - couleurs plus contrastées */
+      padding: 5px 15px 20px 5px; /* Plus d'espace en bas pour le défilement */
+      flex-grow: 1;
+      align-content: start; /* Empêche les éléments de s'étirer verticalement */
+      justify-content: space-between; /* Répartit l'espace horizontalement */
+      max-width: 100%;
+    }
+    
+    /* Styliser les scrollbars pour Chrome/Safari/Edge */
+    .thumbnail-grid::-webkit-scrollbar {
+      width: 14px; /* Scrollbar plus large pour faciliter la saisie */
+    }
+    .thumbnail-grid::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05); /* Fond légèrement visible pour mieux voir la zone de défilement */
+      border-radius: 7px;
+    }
+    .thumbnail-grid::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.4); /* Couleur plus foncée pour meilleure visibilité */
+      border-radius: 7px;
+      border: 2px solid white; /* Ajoute une bordure pour un look plus moderne */
+      min-height: 40px; /* Hauteur minimale pour faciliter la saisie */
+    }
+    .thumbnail-grid::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0,0,0,0.6); /* Plus foncé au survol */
+    }
+    
+    /* Styliser également les scrollbars pour la liste de numéros */
+    .thumbnail-number-list::-webkit-scrollbar {
+      width: 14px; /* Scrollbar plus large pour faciliter la saisie */
+    }
+    .thumbnail-number-list::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05); /* Fond légèrement visible */
+      border-radius: 7px;
+    }
+    .thumbnail-number-list::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.4); /* Couleur plus foncée */
+      border-radius: 7px;
+      border: 2px solid white; /* Ajoute une bordure pour un look plus moderne */
+      min-height: 40px; /* Hauteur minimale pour faciliter la saisie */
+    }
+    .thumbnail-number-list::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0,0,0,0.6); /* Plus foncé au survol */
+    }
+    .thumbnail-item {
+      border: 1px solid #ddd; padding: 5px; cursor: pointer;
+      aspect-ratio: 1.333335; background-color: #f0f0f0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+      /* Assurer une taille minimale et maximale pour éviter la superposition */
+      min-width: 100px;
+      max-width: 100%;
+      width: 100%;
+    }
+    .thumbnail-item:hover { transform: scale(1.05); border-color: #007aff; box-shadow: 0 0 8px rgba(0, 122, 255, 0.5); z-index: 5; }
+    .thumbnail-item img { display: block; max-width: 100%; max-height: calc(100% - 20px); object-fit: contain; }
+    .thumbnail-item .slide-number {
+      position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+      font-size: 0.8em; background: rgba(0, 0, 0, 0.6); color: white;
+      padding: 1px 5px; border-radius: 3px; line-height: 1.2; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="swiper-container-wrapper" tabindex="0" id="presentation-container">
+
+    <div class="swiper">
+      <div class="swiper-wrapper">
+
+        <div class="swiper-slide"
+             data-slide-index="0"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_1.svg"
+                 alt="Slide background 1"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="1"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_2.svg"
+                 alt="Slide background 2"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="2"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_3.svg"
+                 alt="Slide background 3"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="3"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_4.svg"
+                 alt="Slide background 4"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="4"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_5.svg"
+                 alt="Slide background 5"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="5"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_6.svg"
+                 alt="Slide background 6"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="6"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_7.svg"
+                 alt="Slide background 7"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="7"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_8.svg"
+                 alt="Slide background 8"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="8"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_9.svg"
+                 alt="Slide background 9"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="9"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_10.svg"
+                 alt="Slide background 10"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="10"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_11.svg"
+                 alt="Slide background 11"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="11"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_12.svg"
+                 alt="Slide background 12"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="12"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_13.svg"
+                 alt="Slide background 13"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="13"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_14.svg"
+                 alt="Slide background 14"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="14"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_15.svg"
+                 alt="Slide background 15"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="15"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_16.svg"
+                 alt="Slide background 16"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="16"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_17.svg"
+                 alt="Slide background 17"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="17"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_18.svg"
+                 alt="Slide background 18"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="18"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_19.svg"
+                 alt="Slide background 19"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="19"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_20.svg"
+                 alt="Slide background 20"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="20"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_21.svg"
+                 alt="Slide background 21"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="21"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_22.svg"
+                 alt="Slide background 22"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="22"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_23.svg"
+                 alt="Slide background 23"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="23"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_24.svg"
+                 alt="Slide background 24"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="24"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_25.svg"
+                 alt="Slide background 25"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="25"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_26.svg"
+                 alt="Slide background 26"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="26"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_27.svg"
+                 alt="Slide background 27"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="27"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_28.svg"
+                 alt="Slide background 28"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="28"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_29.svg"
+                 alt="Slide background 29"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div>         <div class="swiper-slide"
+             data-slide-index="29"
+             data-pdf-page-width="362.835"
+             data-pdf-page-height="272.126">
+
+            <img class="slide-background-svg"
+                 src="slides_svg/page_30.svg"
+                 alt="Slide background 30"
+                 loading="lazy"
+                 onclick="document.querySelector('.swiper-container-wrapper').focus()">
+
+
+        </div> 
+      </div>     </div> 
+    <button id="nav-prev" class="context-nav-btn" title="Previous slide (←)">&#8592;</button>
+    <button id="nav-next" class="context-nav-btn" title="Next slide (→)">&#8594;</button>
+    <button id="nav-menu" class="context-nav-btn" title="Show menu (M)">&#9776;</button>
+    <button id="fullscreen-button" class="context-nav-btn" title="Toggle Fullscreen (F)">
+      <!-- Enter fullscreen icon -->
+      <svg class="enter-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/>
+      </svg>
+      <!-- Exit fullscreen icon -->
+      <svg class="exit-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M2 2h4v1.5H3.5v3.5H2V2zm12 0v4h-1.5V3.5h-3.5V2H14zM2 14v-4h1.5v3.5h3.5V14H2zm12 0h-4v-1.5h3.5v-3.5H14V14z"/>
+      </svg>
+    </button>
+
+  </div> 
+  <div id="thumbnail-menu-overlay" class="thumbnail-menu">
+    <div class="thumbnail-grid-container">
+        <button id="close-thumbnail-menu" title="Close (Esc)" aria-label="Close thumbnail menu">×</button>
+        <div class="thumbnail-grid">
+            <p>Loading thumbnails...</p>
+        </div>
+        <!-- Responsive list of slide numbers (displayed on small screens) -->
+        <div class="thumbnail-number-list"></div> <!-- JS populates -->
+    </div>
+  </div>
+
+  <script src="libs/swiper/swiper-bundle.min.js"></script>
+  <script src="presentation.js"></script>
+  <script>
+  // --- Special fullscreen thumbnail menu handling (laser pointer trick) ---
+  (function() {
+    const overlay = document.getElementById('thumbnail-menu-overlay');
+    let originalParent = null;
+    let originalNext = null;
+    function moveOverlayToFullscreen() {
+      const fsElem = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+      if (!overlay) return;
+      if (fsElem && overlay.parentNode !== fsElem) {
+        originalParent = overlay.parentNode;
+        originalNext = overlay.nextSibling;
+        fsElem.appendChild(overlay);
+        overlay.style.zIndex = '2147483647';
+      } else if (!fsElem && originalParent) {
+        if (originalNext) {
+          originalParent.insertBefore(overlay, originalNext);
+        } else {
+          originalParent.appendChild(overlay);
+        }
+        overlay.style.zIndex = '';
+        originalParent = null;
+        originalNext = null;
+      }
+    }
+    document.addEventListener('fullscreenchange', moveOverlayToFullscreen);
+    document.addEventListener('webkitfullscreenchange', moveOverlayToFullscreen);
+    document.addEventListener('mozfullscreenchange', moveOverlayToFullscreen);
+    document.addEventListener('MSFullscreenChange', moveOverlayToFullscreen);
+    // Appel initial au cas où déjà en fs
+    moveOverlayToFullscreen();
+  })();
+  </script>
+
+</body>
+</html>

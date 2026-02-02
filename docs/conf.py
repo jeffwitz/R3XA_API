@@ -11,4 +11,4 @@ html_theme_options = {
     "navigation_depth": 2,
     "titles_only": True,
 }
-html_extra_path = ["figures"]
+html_extra_path = ["figures", "../IDICS_2024"]
