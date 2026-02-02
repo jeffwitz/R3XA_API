@@ -1,0 +1,62 @@
+// R3XA graph
+digraph {
+	node [margin="0.2,0.1"]
+	camera_IR [label="FILR InfraRed Camera
+(FILR InfraRed Camera used for the test)" color=lightgreen fillcolor=white penwidth=4 shape=ellipse style=filled]
+	camera_visible [label="Ximea PCIe visible camera
+(Visible camera used ofr the test)" color=lightgreen fillcolor=white penwidth=4 shape=ellipse style=filled]
+	load_cell [label="Load cell
+(Load cell of INSTRON 8800 300KN machine)" color=lightgreen fillcolor=white penwidth=4 shape=ellipse style=filled]
+	load_cell_visible_timeline [label="Load cell on visible timeline
+(Load cell interpolator on visible timeline)" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
+	calibration_IR [label="Infra Red calibration process
+(Conversion from DL to T(°C))" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
+	dic [label="DIC Analysis
+(Displacement measurement)" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
+	lagrangian_thermography [label="Lagrangian thermography
+(Lagrangian thermography computation from :
+    - rescaling IR images and following on visibe reference frame
+     - DIC field registration to be lagrangian)" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
+	energy_balance [label="Energy balance
+(Von Mises strains, Thermal flux, Taylor Quiney map computation)" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
+	IR_raws [label="IR raws images
+(Raw images from the FLIR InfraRed Camera)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	calibration_tables [label="calibration tables
+(tables of Black body calibrations)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	dic_fields [label="DIC fields
+(Visible DIC fields)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	load_cell_data [label="Load cell data
+(Load cell data)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	visible_images [label="Visible images
+(visible images from Ximea camera)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	load_cell_data_interp_visible_timeline_data [label="Load cell data interpolated on visible timeline data
+(load cell data interpolated on visible timeline data)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	temperature_fields_eulerian [label="Eulerian Temperature fields
+(Eulerian Temperature fields)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	temperature_fields_lagrangian [label="Lagrangian Temperature Field
+(Eulerian thermography registered
+after rescaling IR images and following on visibe reference frame
+and with the DIC field to be lagrangian)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	energy_balance_fields [label="Final results :
+Lagrangian energy balance fields
+(Energy balance fields)" color=red fillcolor="#FFA07A" penwidth=6 shape=box style=filled]
+	load_cell_data -> load_cell_visible_timeline [color=black]
+	visible_images -> load_cell_visible_timeline [color=black]
+	IR_raws -> calibration_IR [color=black]
+	calibration_tables -> calibration_IR [color=black]
+	visible_images -> dic [color=black]
+	dic_fields -> lagrangian_thermography [color=black]
+	temperature_fields_eulerian -> lagrangian_thermography [color=black]
+	dic_fields -> energy_balance [color=black]
+	temperature_fields_lagrangian -> energy_balance [color=black]
+	load_cell_data_interp_visible_timeline_data -> energy_balance [color=black]
+	camera_IR -> IR_raws [color=black]
+	camera_IR -> calibration_tables [color=black]
+	dic -> dic_fields [color=black]
+	load_cell -> load_cell_data [color=black]
+	camera_visible -> visible_images [color=black]
+	load_cell_visible_timeline -> load_cell_data_interp_visible_timeline_data [color=black]
+	calibration_IR -> temperature_fields_eulerian [color=black]
+	lagrangian_thermography -> temperature_fields_lagrangian [color=black]
+	energy_balance -> energy_balance_fields [color=black]
+}

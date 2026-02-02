@@ -72,7 +72,7 @@ def _convert_styles_to_pyvis(graphviz_styles: Dict[str, Any]) -> Dict[str, Any]:
     return pyvis_styles
 
 
-def _graphviz_backend(data: Dict[str, Any], output_path: Path) -> Path:
+def _graphviz_backend(data: Dict[str, Any], output_path: Path, export_dot: bool = False) -> Path:
     from graphviz import Digraph
 
     dot = Digraph(comment="R3XA graph", format="svg")
@@ -102,6 +102,10 @@ def _graphviz_backend(data: Dict[str, Any], output_path: Path) -> Path:
         for src in _get_data_sources(dataset):
             edge_style = styles["edges"]["data_initial"] if src not in intermediate_sources else styles["edges"]["data"]
             dot.edge(src, dataset["id"], **edge_style)
+
+    if export_dot:
+        dot_path = output_path.with_suffix(".dot")
+        dot.save(str(dot_path))
 
     return Path(dot.render(str(output_path), view=False))
 
@@ -172,6 +176,11 @@ def main() -> None:
         default=str(base / "examples" / "artifacts" / "graph_r3xa"),
         help="Output base path without extension",
     )
+    parser.add_argument(
+        "--dot",
+        action="store_true",
+        help="Export Graphviz DOT source alongside SVG",
+    )
     args = parser.parse_args()
 
     json_path = Path(args.input)
@@ -180,7 +189,7 @@ def main() -> None:
 
     data = json.loads(json_path.read_text(encoding="utf-8"))
 
-    svg_path = _graphviz_backend(data, out_base)
+    svg_path = _graphviz_backend(data, out_base, export_dot=args.dot)
     html_path = _pyvis_backend(data, out_base)
 
     print(f"Graphviz SVG: {svg_path}")

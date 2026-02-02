@@ -135,3 +135,15 @@ Extract the schema version.
 
 ### `validate(instance: dict, schema: dict | None = None) -> None`
 Validate a JSON instance against the schema.
+
+## Graph export (Graphviz / PyVis)
+The `examples/graph_r3xa.py` tool can export SVG/HTML, and optionally the **Graphviz DOT** source.
+
+Example:
+```bash
+python examples/graph_r3xa.py --input examples/artifacts/dic_pipeline.json --output examples/artifacts/graph_dic_pipeline --dot
+```
+This creates:
+- `graph_dic_pipeline.svg` (Graphviz)
+- `graph_dic_pipeline.html` (PyVis)
+- `graph_dic_pipeline.dot` (Graphviz DOT source)
