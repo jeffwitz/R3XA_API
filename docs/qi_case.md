@@ -16,7 +16,7 @@ This is represented as a **directed graph** using:
 ## Graph (Qi example)
 Below is the generated SVG graph for the Qi case:
 
-![Qi data flow graph](../examples/artifacts/graph_qi.svg)
+<img src="graph_qi.svg" alt="Qi data flow graph" />
 
 Below is the **interactive HTML** version (PyVis backend):
 
