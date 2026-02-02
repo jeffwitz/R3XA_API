@@ -1,6 +1,6 @@
-# Qi case study (IR Lagrangian thermography)
+# Qi Hu (LaMcube Ph. D.) case study (IR Lagrangian thermography)
 
-This page documents the **Qi experimental case** and how it maps to R3XA concepts.
+This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
 
 ## Context
 The Qi dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
