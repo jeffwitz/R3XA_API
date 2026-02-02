@@ -3,7 +3,7 @@
 This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
 
 ## Context
-The Qi dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
+The Qi Hu dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
 For more scientific context, see the Qi Hu thesis (LaMCube): `https://theses.hal.science/tel-04993338`.
 
 ## Data flow (conceptual)
@@ -14,10 +14,10 @@ This is represented as a **directed graph** using:
 - `input_data_sets` (what a source consumes)
 - `data_sources` (what a dataset depends on)
 
-## Graph (Qi example)
-Below is the generated SVG graph for the Qi case:
+## Graph (Qi Hu example)
+Below is the generated SVG graph for the Qi Hu case:
 
-![Qi data flow graph](figures/graph_qi.svg)
+![Qi Hu data flow graph](figures/graph_qi.svg)
 
 Below is the **interactive HTML** version (PyVis backend):
 
@@ -26,12 +26,12 @@ Below is the **interactive HTML** version (PyVis backend):
   width="100%"
   height="700"
   style="border:1px solid #ddd;"
-  title="Qi data flow graph (interactive)"
+  title="Qi Hu data flow graph (interactive)"
 ></iframe>
 
 ## How to generate the graph
 The graph is generated with the `graph_r3xa.py` tool (Graphviz + PyVis backends).
-To reproduce the Qi SVG:
+To reproduce the Qi Hu SVG:
 
 ```bash
 . .venv/bin/activate
