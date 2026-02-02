@@ -11,3 +11,5 @@ html_theme_options = {
     "navigation_depth": 3,
     "titles_only": False,
 }
+html_extra_path = ["figures"]
+html_extra_path = ["figures"]

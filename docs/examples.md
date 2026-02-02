@@ -169,12 +169,12 @@ r3xa.add_image_set_list(
 ## DIC pipeline graph (from scratch example)
 SVG (Graphviz backend):
 
-<img src="figures/graph_dic_pipeline.svg" alt="DIC pipeline graph" />
+![DIC pipeline graph](figures/graph_dic_pipeline.svg)
 
 Interactive HTML (PyVis backend):
 
 <iframe
-  src="figures/graph_dic_pipeline.html"
+  src="graph_dic_pipeline.html"
   width="100%"
   height="700"
   style="border:1px solid #ddd;"

@@ -16,12 +16,12 @@ This is represented as a **directed graph** using:
 ## Graph (Qi example)
 Below is the generated SVG graph for the Qi case:
 
-<img src="figures/graph_qi.svg" alt="Qi data flow graph" />
+![Qi data flow graph](figures/graph_qi.svg)
 
 Below is the **interactive HTML** version (PyVis backend):
 
 <iframe
-  src="figures/graph_qi.html"
+  src="graph_qi.html"
   width="100%"
   height="700"
   style="border:1px solid #ddd;"
