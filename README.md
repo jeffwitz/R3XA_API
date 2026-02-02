@@ -69,6 +69,7 @@ r3xa.save("hello-world.json")
 - `docs/api.md`
 - `docs/examples.md`
 - `docs/validation.md`
+- `docs/qi_case.md`
 ## Registry
 - Reusable items live in `registry/` (cameras, machines, software, datasets templates).
 

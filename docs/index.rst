@@ -18,3 +18,4 @@ Credits and origin
    api.md
    examples.md
    validation.md
+   qi_case.md
