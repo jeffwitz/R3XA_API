@@ -40,6 +40,12 @@ To generate the R3XA JSON:
 PYTHONPATH=. python examples/python/qi_hu_from_scratch.py
 ```
 
+MATLAB users can also generate the same JSON with:
+```matlab
+addpath(genpath('path/to/R3XA_API/matlab'));
+run('path/to/R3XA_API/examples/matlab/qi_hu_from_scratch.m');
+```
+
 Then generate the graph:
 ```bash
 . .venv/bin/activate

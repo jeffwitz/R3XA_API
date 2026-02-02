@@ -16,7 +16,7 @@ Credits and origin
 
    overview.md
    api.md
-   examples.md
-   validation.md
-   qi_case.md
    matlab.md
+   examples.md
+   qi_case.md
+   validation.md

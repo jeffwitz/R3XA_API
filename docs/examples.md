@@ -4,6 +4,27 @@ This page shows the **same pipeline** built in two ways:
 1) **From scratch** (explicit creation of every item)
 2) **Registry‑based** (reuse shared items and override only what changes)
 
+
+
+## Example index
+### Python scripts (`examples/python/`)
+- `basic_create.py`: minimal end‑to‑end JSON generation.
+- `complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
+- `complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
+- `qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
+- `graph_r3xa.py`: graph generator (Graphviz + PyVis).
+- `registry_usage.py`: registry loading/overrides.
+- `validate_all.py`: validate all example JSON.
+- `validate_examples.py`: quick validation of example files.
+
+### MATLAB scripts (`examples/matlab/`)
+- `qi_hu_from_scratch.m`: Qi Hu case built from scratch using the MATLAB binding.
+
+### Data files
+- `examples/valid_camera_list.json`: minimal valid camera dataset.
+- `examples/valid_tabular_file.json`: minimal valid tabular dataset.
+- `examples/artifacts/`: generated outputs (JSON + graphs) from scripts.
+
 ## 1) From scratch
 File: `examples/python/complex_dic_pipeline.py`
 

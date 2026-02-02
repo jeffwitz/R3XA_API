@@ -8,8 +8,7 @@ html_theme = "sphinx_rtd_theme"
 html_title = "R3XA_API"
 html_theme_options = {
     "collapse_navigation": False,
-    "navigation_depth": 3,
-    "titles_only": False,
+    "navigation_depth": 2,
+    "titles_only": True,
 }
-html_extra_path = ["figures"]
 html_extra_path = ["figures"]

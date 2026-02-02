@@ -1,5 +1,5 @@
 here = fileparts(mfilename("fullpath"));
-repo_root = fileparts(here);
+repo_root = fileparts(fileparts(here));
 addpath(genpath(fullfile(repo_root, "matlab")));
 
 ir_start = 10.0861051;
