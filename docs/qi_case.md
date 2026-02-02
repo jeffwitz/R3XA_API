@@ -18,6 +18,16 @@ Below is the generated SVG graph for the Qi case:
 
 ![Qi data flow graph](../examples/artifacts/graph_qi.svg)
 
+Below is the **interactive HTML** version (PyVis backend):
+
+<iframe
+  src="graph_qi.html"
+  width="100%"
+  height="700"
+  style="border:1px solid #ddd;"
+  title="Qi data flow graph (interactive)"
+></iframe>
+
 ## How to generate the graph
 The graph is generated with the `graph_r3xa.py` tool (Graphviz + PyVis backends).
 To reproduce the Qi SVG:
@@ -30,8 +40,8 @@ python examples/graph_r3xa.py \
 ```
 
 This command creates:
-- `examples/artifacts/graph_qi.svg` (Graphviz SVG)
-- `examples/artifacts/graph_qi.html` (PyVis HTML, ignored by git)
+- `examples/artifacts/graph_qi.svg` (**Graphviz** backend)
+- `examples/artifacts/graph_qi.html` (**PyVis** backend, ignored by git)
 
 ## Graph semantics (colors & shapes)
 The graph encodes **object types** and **data‑flow roles**:

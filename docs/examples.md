@@ -165,3 +165,18 @@ r3xa.add_image_set_list(
 ## Outputs
 - From scratch: `examples/artifacts/dic_pipeline.json`
 - Registry‑based: `examples/artifacts/dic_pipeline_registry.json`
+
+## DIC pipeline graph (from scratch example)
+SVG (Graphviz backend):
+
+![DIC pipeline graph](../examples/artifacts/graph_dic_pipeline.svg)
+
+Interactive HTML (PyVis backend):
+
+<iframe
+  src="graph_dic_pipeline.html"
+  width="100%"
+  height="700"
+  style="border:1px solid #ddd;"
+  title="DIC pipeline graph (interactive)"
+></iframe>

@@ -20,8 +20,10 @@ htmlcov/
 # Sphinx
 docs/_build/
 
-# Graph outputs (keep SVGs only)
+# Graph outputs (keep SVGs only, except HTML used in docs)
 examples/artifacts/*.html
+!examples/artifacts/graph_qi.html
+!examples/artifacts/graph_dic_pipeline.html
 examples/artifacts/graph_*
 lib/
 
