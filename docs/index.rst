@@ -19,3 +19,4 @@ Credits and origin
    examples.md
    validation.md
    qi_case.md
+   matlab.md

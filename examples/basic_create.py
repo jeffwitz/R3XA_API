@@ -3,7 +3,7 @@ from r3xa_api import R3XAFile, unit
 r3xa = R3XAFile(
     title="Hello World",
     description="Minimal R3XA file",
-    authors=["JC Passieux"],
+    authors="JC Passieux",
     date="2024-10-30",
 )
 

@@ -17,12 +17,12 @@ This is represented as a **directed graph** using:
 ## Graph (Qi Hu example)
 Below is the generated SVG graph for the Qi Hu case:
 
-![Qi Hu data flow graph](figures/graph_qi.svg)
+![Qi Hu data flow graph](figures/graph_qi_from_scratch.svg)
 
 Below is the **interactive HTML** version (PyVis backend):
 
 <iframe
-  src="graph_qi.html"
+  src="graph_qi_from_scratch.html"
   width="100%"
   height="700"
   style="border:1px solid #ddd;"
@@ -30,19 +30,27 @@ Below is the **interactive HTML** version (PyVis backend):
 ></iframe>
 
 ## How to generate the graph
-The graph is generated with the `graph_r3xa.py` tool (Graphviz + PyVis backends).
-To reproduce the Qi Hu SVG:
+The Qi Hu file is built **from scratch in Python** (no input JSON at runtime).
+The script uses **loops** for repetitive file lists (IR frames, calibration series, time grids)
+so the dataset is defined compactly and remains easy to edit.
 
+To generate the R3XA JSON:
+```bash
+. .venv/bin/activate
+PYTHONPATH=. python examples/qi_hu_from_scratch.py
+```
+
+Then generate the graph:
 ```bash
 . .venv/bin/activate
 python examples/graph_r3xa.py \
-  --input /home/jeff/Documents/R3XA_Data/Qi/IR_Lagrangian_Qi_hu_valid.json \
-  --output examples/artifacts/graph_qi
+  --input examples/artifacts/qi_hu_from_scratch.json \
+  --output docs/figures/graph_qi_from_scratch
 ```
 
-This command creates:
-- `examples/artifacts/graph_qi.svg` (**Graphviz** backend)
-- `examples/artifacts/graph_qi.html` (**PyVis** backend, ignored by git)
+This creates:
+- `docs/figures/graph_qi_from_scratch.svg` (**Graphviz** backend)
+- `docs/figures/graph_qi_from_scratch.html` (**PyVis** backend)
 
 ## Graph semantics (colors & shapes)
 The graph encodes **object types** and **data‑flow roles**:
@@ -78,6 +86,6 @@ The graph encodes **object types** and **data‑flow roles**:
 These styles are defined in `examples/graph_r3xa.py` and shared across Graphviz and PyVis.
 
 ## Files used
-- Input JSON: `IR_Lagrangian_Qi_hu_valid.json` (outside repo)
+- Build script: `examples/qi_hu_from_scratch.py`
 - Graph tool: `examples/graph_r3xa.py`
-- Output SVG: `examples/artifacts/graph_qi.svg`
+- Output SVG: `docs/figures/graph_qi_from_scratch.svg`
