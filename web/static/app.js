@@ -17,9 +17,30 @@ const settingsEl = document.getElementById("settings-form");
 const dataSourcesEl = document.getElementById("data-sources-form");
 const dataSetsEl = document.getElementById("data-sets-form");
 
+const loadDraft = () => {
+  const stored = localStorage.getItem("r3xaDraft");
+  if (stored) return stored;
+  return JSON.stringify(defaultPayload, null, 2);
+};
+
+const saveDraft = () => {
+  localStorage.setItem("r3xaDraft", inputEl.value);
+};
+
+const ensureServerStart = () => {
+  const appStart = document.body?.dataset?.appStart;
+  if (!appStart) return;
+  const stored = localStorage.getItem("r3xaAppStart");
+  if (stored !== appStart) {
+    localStorage.setItem("r3xaAppStart", appStart);
+    localStorage.removeItem("r3xaDraft");
+  }
+};
+
 const reset = () => {
   inputEl.value = JSON.stringify(defaultPayload, null, 2);
   outputEl.textContent = "";
+  saveDraft();
   syncFormFromJson();
 };
 
@@ -268,6 +289,7 @@ const buildArrayEditor = (container, key, label, templateSet) => {
       updater(current);
       payload[key][index] = current;
       inputEl.value = JSON.stringify(payload, null, 2);
+      saveDraft();
     };
 
     const addField = (labelText, value, onChange, type = "text") => {
@@ -441,6 +463,7 @@ const syncJsonFromForm = () => {
     }
   });
   inputEl.value = JSON.stringify(payload, null, 2);
+  saveDraft();
   syncing = false;
 };
 
@@ -462,6 +485,7 @@ const syncFormFromJson = () => {
   buildArrayEditor(settingsEl, "settings", "Setting", templates.settings);
   buildArrayEditor(dataSourcesEl, "data_sources", "Data source", templates.data_sources);
   buildArrayEditor(dataSetsEl, "data_sets", "Data set", templates.data_sets);
+  saveDraft();
   syncing = false;
 };
 
@@ -496,7 +520,12 @@ const validate = async () => {
 
 document.getElementById("validate-btn").addEventListener("click", validate);
 document.getElementById("reset-btn").addEventListener("click", reset);
-inputEl.addEventListener("input", () => syncFormFromJson());
+inputEl.addEventListener("input", () => {
+  saveDraft();
+  syncFormFromJson();
+});
 
-reset();
+ensureServerStart();
+inputEl.value = loadDraft();
+syncFormFromJson();
 renderSummary();

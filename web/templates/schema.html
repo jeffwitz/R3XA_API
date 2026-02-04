@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/static/style.css" />
     <link rel="stylesheet" href="/static/vendor/json-viewer-js/json-viewer.css" />
   </head>
-  <body>
+  <body data-app-start="{{ app_start }}">
     <header class="topbar">
       <div class="brand">
         <img
@@ -40,8 +40,11 @@
           />
           <button id="schema-clear" class="ghost" type="button">Clear</button>
           <label class="schema-toggle">
-            <input id="schema-summary-toggle" type="checkbox" checked />
-            Show summary
+            View:
+            <select id="schema-view">
+              <option value="draft">Current draft</option>
+              <option value="summary" selected>Schema summary</option>
+            </select>
           </label>
         </div>
         <div id="schema-tree">Loading schema summary…</div>
