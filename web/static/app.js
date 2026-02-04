@@ -20,7 +20,7 @@ const reset = () => {
 
 const renderSummary = async () => {
   try {
-    const response = await fetch("/api/schema-summary");
+    const response = await fetch("/api/schema/summary");
     const summary = await response.json();
     const sections = Object.keys(summary.sections || {});
     summaryEl.textContent = `Schema version: ${summary.schema_version || "unknown"}\nSections: ${sections.join(", ")}`;

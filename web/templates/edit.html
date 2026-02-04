@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>R3XA Editor</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>R3XA Editor</h1>
+      <p class="muted">Validate an R3XA JSON payload.</p>
+
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/schema">Schema viewer</a>
+      </nav>
+
+      <section class="panel">
+        <h2>Schema</h2>
+        <div id="schema-summary">Loading schema summary…</div>
+      </section>
+
+      <section class="panel">
+        <h2>Validate JSON</h2>
+        <p class="muted">Paste an R3XA JSON or edit the default example, then validate.</p>
+        <textarea id="json-input" spellcheck="false"></textarea>
+        <div class="actions">
+          <button id="validate-btn">Validate</button>
+          <button id="reset-btn" class="ghost">Reset</button>
+        </div>
+        <pre id="validation-output"></pre>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

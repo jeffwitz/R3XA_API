@@ -8,24 +8,21 @@
   <body>
     <main>
       <h1>R3XA Web</h1>
-      <p class="muted">Minimal web shell. API routes are available under <code>/api</code>.</p>
+      <p class="muted">Minimal web shell for R3XA validation.</p>
+
+      <nav class="nav">
+        <a href="/edit">Editor</a>
+        <a href="/schema">Schema viewer</a>
+      </nav>
 
       <section class="panel">
-        <h2>Schema</h2>
-        <div id="schema-summary">Loading schema summary…</div>
-      </section>
-
-      <section class="panel">
-        <h2>Validate JSON</h2>
-        <p class="muted">Paste an R3XA JSON or edit the default example, then validate.</p>
-        <textarea id="json-input" spellcheck="false"></textarea>
-        <div class="actions">
-          <button id="validate-btn">Validate</button>
-          <button id="reset-btn" class="ghost">Reset</button>
-        </div>
-        <pre id="validation-output"></pre>
+        <h2>API</h2>
+        <ul>
+          <li><code>POST /api/validate</code></li>
+          <li><code>GET /api/schema</code></li>
+          <li><code>GET /api/schema/summary</code></li>
+        </ul>
       </section>
     </main>
-    <script src="/static/app.js"></script>
   </body>
 </html>

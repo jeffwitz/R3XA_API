@@ -16,6 +16,9 @@ uvicorn web.app.main:app --reload
 
 ## Endpoints
 
-- `GET /` basic page
+- `GET /` home
+- `GET /edit` editor
+- `GET /schema` schema viewer
 - `POST /api/validate`
-- `GET /api/schema-summary`
+- `GET /api/schema`
+- `GET /api/schema/summary`

@@ -21,11 +21,22 @@ async def test_api_schema_summary() -> None:
     app = create_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.get("/api/schema-summary")
+        response = await client.get("/api/schema/summary")
     assert response.status_code == 200
     payload = response.json()
     assert "schema_version" in payload
     assert "sections" in payload
+
+
+@pytest.mark.anyio
+async def test_api_schema_raw() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/schema")
+    assert response.status_code == 200
+    payload = response.json()
+    assert "properties" in payload
 
 
 @pytest.mark.anyio
