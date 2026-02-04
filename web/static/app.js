@@ -518,8 +518,80 @@ const validate = async () => {
   outputEl.textContent = lines.join("\n");
 };
 
+const downloadJson = () => {
+  try {
+    JSON.parse(inputEl.value);
+  } catch (err) {
+    outputEl.textContent = `Parse error: ${err.message}`;
+    return;
+  }
+  const blob = new Blob([inputEl.value], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "r3xa.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
+const saveWithDialog = async () => {
+  try {
+    JSON.parse(inputEl.value);
+  } catch (err) {
+    outputEl.textContent = `Parse error: ${err.message}`;
+    return;
+  }
+
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: "r3xa.json",
+        types: [
+          {
+            description: "JSON",
+            accept: { "application/json": [".json"] },
+          },
+        ],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(inputEl.value);
+      await writable.close();
+      return;
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+    }
+  }
+
+  downloadJson();
+};
+
+const loadJsonFile = (file) => {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = reader.result;
+    try {
+      JSON.parse(text);
+    } catch (err) {
+      outputEl.textContent = `Parse error: ${err.message}`;
+      return;
+    }
+    inputEl.value = text;
+    saveDraft();
+    syncFormFromJson();
+  };
+  reader.readAsText(file);
+};
+
 document.getElementById("validate-btn").addEventListener("click", validate);
 document.getElementById("reset-btn").addEventListener("click", reset);
+document.getElementById("save-json-btn").addEventListener("click", saveWithDialog);
+document.getElementById("load-json-input").addEventListener("change", (event) => {
+  loadJsonFile(event.target.files?.[0]);
+  event.target.value = "";
+});
 inputEl.addEventListener("input", () => {
   saveDraft();
   syncFormFromJson();

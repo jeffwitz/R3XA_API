@@ -127,6 +127,7 @@ h1 {
   margin-top: 0.75rem;
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 button,
@@ -147,6 +148,21 @@ button.ghost,
 .btn.ghost {
   background: #eef2f6;
   color: var(--text);
+}
+
+.file-btn {
+  background: #eef2f6;
+  color: var(--text);
+  border: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.file-btn input {
+  display: none;
 }
 
 #validation-output {
@@ -263,4 +279,11 @@ button.ghost,
   gap: 0.4rem;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.schema-toggle select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  background: #fff;
 }

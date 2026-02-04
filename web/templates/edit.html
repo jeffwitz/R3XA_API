@@ -62,6 +62,13 @@
       <section class="panel">
         <h2>Validate JSON</h2>
         <p class="muted">Paste an R3XA JSON or edit the default example, then validate.</p>
+        <div class="actions">
+          <button id="save-json-btn" class="ghost" type="button">Save JSON</button>
+          <label class="file-btn ghost">
+            Load JSON
+            <input id="load-json-input" type="file" accept=".json,application/json" />
+          </label>
+        </div>
         <textarea id="json-input" spellcheck="false"></textarea>
         <div class="actions">
           <button id="validate-btn">Validate</button>
