@@ -16,8 +16,8 @@ python -m uvicorn web.app.asgi:app --host 0.0.0.0 --port $PORT
 
 If the build system does not install web extras, the included `railway.toml`
 and `requirements.txt` force a minimal install of the web dependencies.
-Graph generation requires the `graphviz` system package; `railway.toml`
-asks Railway/Nixpacks to install it (`graphviz` listed under `nixpacks.packages`).
+Graph generation requires the `graphviz` system package; the start command
+installs it at runtime if missing (`apt-get install -y graphviz`).
 
 ## 2) Environment variables
 
@@ -51,5 +51,5 @@ pip install -e ".[web]"
 ## Notes
 
 - SVG graph generation requires the Graphviz **`dot`** executable on the server
-  (installed automatically on Railway via Nixpacks; locally, install `graphviz` via your OS).
+  (installed automatically at startup on Railway; locally, install `graphviz` via your OS).
 - WebSocket endpoints are planned but not enabled yet.
