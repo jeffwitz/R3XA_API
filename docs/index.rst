@@ -26,6 +26,10 @@ Credits and origin
 - Initial implementation by **E. Roubin**, based on a shared specification led by **J‑C. Passieux**.
 - Original repository: ``https://gitlab.com/photomecanics/r3xa``
 
+Web UI
+------
+The optional web interface is documented here: :doc:`web`.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents
