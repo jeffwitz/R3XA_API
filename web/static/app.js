@@ -219,6 +219,8 @@ const buildArrayEditor = (container, key, label, templateSet) => {
       } catch {
         return;
       }
+      const itemTitle =
+        payload[key][index]?.title || `${label} #${index + 1}`;
       const copy = {
         title: payload.title || "temp",
         description: payload.description || "temp",
@@ -237,10 +239,10 @@ const buildArrayEditor = (container, key, label, templateSet) => {
       });
       const report = await response.json();
       if (report.valid) {
-        window.alert("Valid ✅");
+        window.alert(`${itemTitle}: Valid ✅`);
         return;
       }
-      const lines = ["Invalid ❌", ""];
+      const lines = [`${itemTitle}: Invalid ❌`, ""];
       for (const error of report.errors || []) {
         lines.push(`- ${error.path || "<root>"}: ${error.message}`);
       }

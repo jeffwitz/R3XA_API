@@ -6,14 +6,29 @@
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
-    <main>
-      <h1>Schema Viewer</h1>
-      <p class="muted">Summary of the R3XA JSON schema.</p>
-
+    <header class="topbar">
+      <div class="brand">
+        <img
+          src="/static/photomeca-logo.png"
+          alt="Photomeca"
+          onerror="this.style.display='none'"
+        />
+        <div>
+          <div class="brand-title">Photomeca · R3XA</div>
+          <div class="brand-sub">Web Editor & Validator</div>
+        </div>
+      </div>
       <nav class="nav">
         <a href="/">Home</a>
         <a href="/edit">Editor</a>
       </nav>
+    </header>
+
+    <main>
+      <section class="hero compact">
+        <h1>Schema Viewer</h1>
+        <p>Browse the summarized R3XA JSON schema.</p>
+      </section>
 
       <section class="panel">
         <div id="schema-tree">Loading schema summary…</div>

@@ -14,6 +14,16 @@ pip install -e .[web,dev]
 uvicorn web.app.main:app --reload
 ```
 
+## Branding
+
+Place the Photomeca logo at:
+
+```
+web/static/photomeca-logo.png
+```
+
+It will be displayed in the top bar if present.
+
 ## Endpoints
 
 - `GET /` home
