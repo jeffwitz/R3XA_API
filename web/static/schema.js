@@ -164,6 +164,14 @@ const showFullscreenGraph = () => {
 
   overlay.appendChild(inner);
   document.body.appendChild(overlay);
+
+  const onKey = (e) => {
+    if (e.key === "Escape") {
+      overlay.remove();
+      document.removeEventListener("keydown", onKey);
+    }
+  };
+  document.addEventListener("keydown", onKey);
 };
 
 window.showFullscreenGraph = showFullscreenGraph;
