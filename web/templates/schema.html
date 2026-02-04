@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <title>R3XA Schema</title>
     <link rel="stylesheet" href="/static/style.css" />
-    <link rel="stylesheet" href="/static/vendor/json-viewer-js/json-viewer.css" />
+    <link rel="stylesheet" href="/static/vendor/json-viewer-js/json-viewer.css?v={{ app_start }}" />
   </head>
   <body data-app-start="{{ app_start }}">
     <header class="topbar">
@@ -54,12 +54,12 @@
         <h2>Graph (SVG)</h2>
         <p class="muted">Generate a Graphviz SVG from the current draft.</p>
         <div class="actions">
-          <button id="generate-graph-btn" type="button">Generate SVG</button>
+          <button id="generate-graph-btn" type="button" onclick="window.renderGraph && window.renderGraph()">Generate SVG</button>
         </div>
         <div id="graph-container" class="graph-container"></div>
       </section>
     </main>
-    <script src="/static/vendor/json-viewer-js/json-viewer.global.js"></script>
-    <script src="/static/schema.js"></script>
+    <script src="/static/vendor/json-viewer-js/json-viewer.global.js?v={{ app_start }}"></script>
+    <script src="/static/schema.js?v={{ app_start }}"></script>
   </body>
 </html>

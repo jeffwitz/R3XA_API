@@ -19,6 +19,12 @@ const renderJsonViewer = (data, expand = false) => {
   treeEl.innerHTML = "";
   const container = document.createElement("div");
   treeEl.appendChild(container);
+  if (typeof JSONViewer === "undefined") {
+    const pre = document.createElement("pre");
+    pre.textContent = JSON.stringify(data, null, 2);
+    container.appendChild(pre);
+    return;
+  }
   new JSONViewer({
     container,
     data: JSON.stringify(data, null, 2),
@@ -58,7 +64,9 @@ const buildDisplayDraft = (payload) => {
 
 const renderDraft = () => {
   try {
-    const stored = localStorage.getItem("r3xaDraft");
+    const stored =
+      localStorage.getItem("r3xaDraft") ||
+      localStorage.getItem("r3xaDraftLast");
     if (!stored) {
       treeEl.textContent = "No draft found. Create one in the editor first.";
       return;
@@ -71,14 +79,16 @@ const renderDraft = () => {
 };
 
 const renderGraph = async () => {
-  const stored = localStorage.getItem("r3xaDraft");
+  const stored =
+    localStorage.getItem("r3xaDraft") ||
+    localStorage.getItem("r3xaDraftLast");
   const container = document.getElementById("graph-container");
   if (!container) return;
+  container.textContent = "Generating graph…";
   if (!stored) {
     container.textContent = "No draft found. Create one in the editor first.";
     return;
   }
-  container.textContent = "Generating graph…";
   try {
     const payload = JSON.parse(stored);
     const response = await fetch("/api/graph", {
@@ -87,16 +97,25 @@ const renderGraph = async () => {
       body: JSON.stringify(payload),
     });
     if (!response.ok) {
-      const detail = await response.text();
+      let detail = await response.text();
+      try {
+        const parsed = JSON.parse(detail);
+        detail = parsed.detail || detail;
+      } catch {
+        // keep text
+      }
       container.textContent = `Graph error: ${detail}`;
       return;
     }
     const svgText = await response.text();
     container.innerHTML = svgText;
+    localStorage.setItem("r3xaDraftLast", stored);
   } catch (err) {
-    container.textContent = "Failed to generate graph.";
+    container.textContent = `Failed to generate graph: ${err.message || err}`;
   }
 };
+
+window.renderGraph = renderGraph;
 
 const applyFilter = () => {
   const term = (filterEl?.value || "").trim().toLowerCase();
@@ -131,7 +150,20 @@ viewSelect?.addEventListener("change", () => {
   } else {
 renderSummary();
 
-document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
+const bindGraphButton = () => {
+  const btn = document.getElementById("generate-graph-btn");
+  if (!btn) return false;
+  btn.addEventListener("click", () => {
+    const container = document.getElementById("graph-container");
+    if (container) container.textContent = "Click received…";
+    renderGraph();
+  });
+  return true;
+};
+
+if (!bindGraphButton()) {
+  document.addEventListener("DOMContentLoaded", bindGraphButton);
+}
   }
 });
 
