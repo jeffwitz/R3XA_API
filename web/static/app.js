@@ -211,24 +211,172 @@ const buildArrayEditor = (container, key, label, templateSet) => {
     header.appendChild(remove);
     card.appendChild(header);
 
-    const textarea = document.createElement("textarea");
-    textarea.spellcheck = false;
-    textarea.value = JSON.stringify(item, null, 2);
-    textarea.addEventListener("input", () => {
+    const form = document.createElement("div");
+    form.className = "array-item-form";
+
+    const updateItem = (updater) => {
       let payload;
       try {
         payload = JSON.parse(inputEl.value);
       } catch {
         return;
       }
-      try {
-        payload[key][index] = JSON.parse(textarea.value);
-      } catch {
-        return;
-      }
+      payload[key] = payload[key] || [];
+      const current = payload[key][index] || {};
+      updater(current);
+      payload[key][index] = current;
       inputEl.value = JSON.stringify(payload, null, 2);
-    });
-    card.appendChild(textarea);
+    };
+
+    const addField = (labelText, value, onChange, type = "text") => {
+      const row = document.createElement("div");
+      row.className = "form-row";
+
+      const label = document.createElement("label");
+      label.textContent = labelText;
+      const input = document.createElement(type === "textarea" ? "textarea" : "input");
+      if (type !== "textarea") input.type = type;
+      input.value = value ?? "";
+      input.addEventListener("input", () => onChange(input.value));
+      row.appendChild(label);
+      row.appendChild(input);
+      form.appendChild(row);
+      return input;
+    };
+
+    const addJsonField = (labelText, value, onValid) => {
+      const row = document.createElement("div");
+      row.className = "form-row";
+      const label = document.createElement("label");
+      label.textContent = labelText;
+      const textarea = document.createElement("textarea");
+      textarea.value = JSON.stringify(value ?? {}, null, 2);
+      textarea.addEventListener("input", () => {
+        try {
+          const parsed = JSON.parse(textarea.value);
+          onValid(parsed);
+        } catch {
+          return;
+        }
+      });
+      row.appendChild(label);
+      row.appendChild(textarea);
+      form.appendChild(row);
+    };
+
+    const kind = item.kind || "";
+    addField("id", item.id || "", (val) => updateItem((obj) => (obj.id = val)));
+    addField("kind", kind, (val) => updateItem((obj) => (obj.kind = val)));
+    addField("title", item.title || "", (val) => updateItem((obj) => (obj.title = val)));
+    addField(
+      "description",
+      item.description || "",
+      (val) => updateItem((obj) => (obj.description = val))
+    );
+
+    if (key === "settings" && kind === "settings/specimen") {
+      addJsonField("sizes (JSON array)", item.sizes || [], (val) =>
+        updateItem((obj) => (obj.sizes = val))
+      );
+    }
+
+    if (key === "data_sources") {
+      addField(
+        "output_components",
+        item.output_components ?? 1,
+        (val) => updateItem((obj) => (obj.output_components = Number(val))),
+        "number"
+      );
+      addField(
+        "output_dimension",
+        item.output_dimension || "surface",
+        (val) => updateItem((obj) => (obj.output_dimension = val))
+      );
+      addJsonField("output_units (JSON array)", item.output_units || [], (val) =>
+        updateItem((obj) => (obj.output_units = val))
+      );
+      addField(
+        "manufacturer",
+        item.manufacturer || "",
+        (val) => updateItem((obj) => (obj.manufacturer = val))
+      );
+      addField("model", item.model || "", (val) => updateItem((obj) => (obj.model = val)));
+
+      if (kind === "data_sources/camera") {
+        addJsonField("image_size (JSON array)", item.image_size || [], (val) =>
+          updateItem((obj) => (obj.image_size = val))
+        );
+      }
+    }
+
+    if (key === "data_sets") {
+      const dsList = (item.data_sources || []).join(", ");
+      addField("data_sources (comma)", dsList, (val) =>
+        updateItem((obj) => (obj.data_sources = val.split(",").map((s) => s.trim()).filter(Boolean)))
+      );
+
+      if (kind === "data_sets/generic") {
+        addField(
+          "file_type",
+          item.file_type || "application/octet-stream",
+          (val) => updateItem((obj) => (obj.file_type = val))
+        );
+        addField("path", item.path || "data/", (val) => updateItem((obj) => (obj.path = val)));
+      }
+
+      if (kind === "data_sets/file") {
+        addField(
+          "time_reference",
+          item.time_reference ?? 0,
+          (val) => updateItem((obj) => (obj.time_reference = Number(val))),
+          "number"
+        );
+        addField("data filename", item.data?.filename || "data.csv", (val) =>
+          updateItem((obj) => (obj.data = { kind: "data_set_file", filename: val }))
+        );
+        addField(
+          "timestamps filename",
+          item.timestamps?.filename || "timestamps.csv",
+          (val) => updateItem((obj) => (obj.timestamps = { kind: "data_set_file", filename: val }))
+        );
+      }
+
+      if (kind === "data_sets/list") {
+        addField(
+          "file_type",
+          item.file_type || "application/octet-stream",
+          (val) => updateItem((obj) => (obj.file_type = val))
+        );
+        addField(
+          "time_reference",
+          item.time_reference ?? 0,
+          (val) => updateItem((obj) => (obj.time_reference = Number(val))),
+          "number"
+        );
+        addField(
+          "timestamps (comma numbers)",
+          (item.timestamps || []).join(", "),
+          (val) =>
+            updateItem((obj) => {
+              obj.timestamps = val
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((n) => Number(n));
+            })
+        );
+        addField(
+          "data files (comma)",
+          (item.data || []).join(", "),
+          (val) =>
+            updateItem((obj) => {
+              obj.data = val.split(",").map((s) => s.trim()).filter(Boolean);
+            })
+        );
+      }
+    }
+
+    card.appendChild(form);
 
     list.appendChild(card);
   });
