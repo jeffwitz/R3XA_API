@@ -36,6 +36,11 @@ Open: `http://127.0.0.1:8002/`
   - Inspect the schema summary or the current draft.
   - Generate an SVG graph from the current draft.
 
+## Links
+
+- Source repo: <https://github.com/jeffwitz/R3XA_API>
+- Documentation: <https://r3xa-api.readthedocs.io/en/latest/>
+
 ## API endpoints
 
 - `POST /api/validate` → validation report
