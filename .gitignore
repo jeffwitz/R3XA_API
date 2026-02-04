@@ -31,3 +31,6 @@ lib/
 Thumbs.db
 .idea/
 .vscode/
+
+# Web tooling
+web/node_modules/

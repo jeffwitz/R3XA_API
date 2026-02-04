@@ -1,62 +1,69 @@
 const treeEl = document.getElementById("schema-tree");
+const filterEl = document.getElementById("schema-filter");
+const clearBtn = document.getElementById("schema-clear");
+const summaryToggle = document.getElementById("schema-summary-toggle");
 
-const renderNode = (label, node) => {
-  const li = document.createElement("li");
-  const title = document.createElement("strong");
-  title.textContent = label;
-  li.appendChild(title);
+let cachedSummary = null;
+let cachedSchema = null;
 
-  const meta = [];
-  if (node.type) meta.push(node.type);
-  if (node.required) meta.push(`required: ${node.required.length}`);
-  if (node.enum) meta.push(`enum: ${node.enum.length}`);
-  if (node.const) meta.push(`const: ${node.const}`);
-  if (node.ref) meta.push(`ref: ${node.ref}`);
-  if (meta.length) {
-    const span = document.createElement("span");
-    span.textContent = ` (${meta.join(", ")})`;
-    span.className = "muted";
-    li.appendChild(span);
-  }
-
-  if (node.description) {
-    const desc = document.createElement("div");
-    desc.textContent = node.description;
-    desc.className = "muted";
-    li.appendChild(desc);
-  }
-
-  if (node.properties) {
-    const ul = document.createElement("ul");
-    Object.entries(node.properties).forEach(([key, child]) => {
-      ul.appendChild(renderNode(key, child));
-    });
-    li.appendChild(ul);
-  }
-
-  if (node.items) {
-    const ul = document.createElement("ul");
-    ul.appendChild(renderNode("items", node.items));
-    li.appendChild(ul);
-  }
-
-  return li;
+const renderJsonViewer = (data) => {
+  treeEl.innerHTML = "";
+  const viewer = new JSONViewer();
+  treeEl.appendChild(viewer.getContainer());
+  viewer.showJSON(data, null, 2);
 };
 
 const renderSummary = async () => {
   try {
-    const response = await fetch("/api/schema/summary");
-    const summary = await response.json();
-    const root = document.createElement("ul");
-    const sections = summary.sections || {};
-    Object.entries(sections).forEach(([section, node]) => {
-      root.appendChild(renderNode(section, node));
-    });
-    treeEl.innerHTML = "";
-    treeEl.appendChild(root);
-  } catch (err) {
+    if (!cachedSummary) {
+      const response = await fetch("/api/schema/summary");
+      cachedSummary = await response.json();
+    }
+    renderJsonViewer(cachedSummary);
+  } catch {
     treeEl.textContent = "Failed to load schema summary.";
   }
 };
+
+const renderSchema = async () => {
+  try {
+    if (!cachedSchema) {
+      const response = await fetch("/api/schema");
+      cachedSchema = await response.json();
+    }
+    renderJsonViewer(cachedSchema);
+  } catch {
+    treeEl.textContent = "Failed to load schema.";
+  }
+};
+
+const applyFilter = () => {
+  const term = (filterEl?.value || "").trim().toLowerCase();
+  if (!term) {
+    treeEl.querySelectorAll("li").forEach((li) => {
+      li.style.display = "";
+    });
+    return;
+  }
+
+  treeEl.querySelectorAll("li").forEach((li) => {
+    const text = li.textContent.toLowerCase();
+    li.style.display = text.includes(term) ? "" : "none";
+  });
+};
+
+filterEl?.addEventListener("input", applyFilter);
+clearBtn?.addEventListener("click", () => {
+  if (filterEl) filterEl.value = "";
+  applyFilter();
+});
+
+summaryToggle?.addEventListener("change", () => {
+  if (summaryToggle.checked) {
+    renderSummary();
+  } else {
+    renderSchema();
+  }
+});
 
 renderSummary();

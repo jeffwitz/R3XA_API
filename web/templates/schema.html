@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>R3XA Schema</title>
     <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/vendor/json-viewer-js/json-viewer.css" />
   </head>
   <body>
     <header class="topbar">
@@ -31,9 +32,22 @@
       </section>
 
       <section class="panel">
+        <div class="schema-toolbar">
+          <input
+            id="schema-filter"
+            type="search"
+            placeholder="Filter by field name or description…"
+          />
+          <button id="schema-clear" class="ghost" type="button">Clear</button>
+          <label class="schema-toggle">
+            <input id="schema-summary-toggle" type="checkbox" checked />
+            Show summary
+          </label>
+        </div>
         <div id="schema-tree">Loading schema summary…</div>
       </section>
     </main>
+    <script src="/static/vendor/json-viewer-js/json-viewer.min.js"></script>
     <script src="/static/schema.js"></script>
   </body>
 </html>
