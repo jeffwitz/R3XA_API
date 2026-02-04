@@ -25,6 +25,7 @@ const loadDraft = () => {
 
 const saveDraft = () => {
   localStorage.setItem("r3xaDraft", inputEl.value);
+  localStorage.setItem("r3xaDraftLast", inputEl.value);
 };
 
 const ensureServerStart = () => {

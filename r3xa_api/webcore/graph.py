@@ -75,6 +75,7 @@ def _compute_used_datasets(data: Dict[str, Any]) -> set[str]:
 def generate_svg(data: Dict[str, Any]) -> bytes:
     try:
         from graphviz import Digraph
+        from graphviz.backend import ExecutableNotFound
     except Exception as exc:  # pragma: no cover - depends on optional dependency
         raise RuntimeError("Graphviz is not installed.") from exc
 
@@ -107,4 +108,7 @@ def generate_svg(data: Dict[str, Any]) -> bytes:
             )
             dot.edge(src, dataset["id"], **edge_style)
 
-    return dot.pipe(format="svg")
+    try:
+        return dot.pipe(format="svg")
+    except ExecutableNotFound as exc:  # pragma: no cover - runtime dependency
+        raise RuntimeError("Graphviz executable not found (dot).") from exc

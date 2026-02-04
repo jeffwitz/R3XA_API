@@ -32,6 +32,7 @@ Credits and origin
 
    overview.md
    api.md
+   web.md
    matlab.md
    examples.md
    qi_case.md

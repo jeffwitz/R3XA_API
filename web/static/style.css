@@ -281,6 +281,7 @@ button.ghost,
   background: #fff;
   overflow: auto;
   max-height: 600px;
+  min-height: 120px;
 }
 
 .schema-toggle {
