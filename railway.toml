@@ -1,5 +1,8 @@
+[nixpacks]
+packages = ["graphviz"]
+
 [build]
-cmd = "apt-get update && apt-get install -y graphviz && python -m pip install -r requirements.txt && python -m pip install '.[web]'"
+cmd = "python -m pip install -r requirements.txt && python -m pip install '.[web]'"
 
 [deploy]
 startCommand = "PYTHONPATH=/app python -m uvicorn web.app.asgi:app --host 0.0.0.0 --port ${PORT:-8080}"
