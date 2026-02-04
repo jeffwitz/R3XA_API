@@ -237,14 +237,14 @@ const buildArrayEditor = (container, key, label, templateSet) => {
       });
       const report = await response.json();
       if (report.valid) {
-        outputEl.textContent = "Valid ✅ (item)";
+        window.alert("Valid ✅");
         return;
       }
-      const lines = ["Invalid ❌ (item)", ""];
+      const lines = ["Invalid ❌", ""];
       for (const error of report.errors || []) {
         lines.push(`- ${error.path || "<root>"}: ${error.message}`);
       }
-      outputEl.textContent = lines.join("\n");
+      window.alert(lines.join("\n"));
     });
 
     header.appendChild(remove);
