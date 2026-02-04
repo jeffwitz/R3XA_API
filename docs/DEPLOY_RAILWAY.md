@@ -15,7 +15,7 @@ python -m uvicorn web.app.asgi:app --host 0.0.0.0 --port $PORT
 ```
 
 If the build system does not install web extras, the included `railway.toml`
-and `requirements.txt` force `pip install -e ".[web]"` during build.
+and `requirements.txt` force a minimal install of the web dependencies.
 
 ## 2) Environment variables
 
