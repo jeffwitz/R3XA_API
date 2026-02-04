@@ -162,6 +162,37 @@ const showFullscreenGraph = () => {
   closeBtn.addEventListener("click", () => overlay.remove());
   inner.appendChild(closeBtn);
 
+  const zoomState = { scale: 1 };
+  const applyZoom = () => {
+    clone.style.transformOrigin = "0 0";
+    clone.style.transform = `scale(${zoomState.scale})`;
+    inner.style.overflow = "auto";
+  };
+  applyZoom();
+
+  clone.addEventListener("click", (event) => {
+    event.preventDefault();
+    zoomState.scale = Math.min(4, zoomState.scale + 0.2);
+    applyZoom();
+  });
+
+  clone.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    zoomState.scale = Math.max(1, zoomState.scale - 0.2);
+    applyZoom();
+  });
+
+  inner.addEventListener("mousemove", (event) => {
+    if (zoomState.scale <= 1) return;
+    const rect = inner.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    const y = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+    const maxX = inner.scrollWidth - inner.clientWidth;
+    const maxY = inner.scrollHeight - inner.clientHeight;
+    inner.scrollLeft = maxX * x;
+    inner.scrollTop = maxY * y;
+  });
+
   overlay.appendChild(inner);
   document.body.appendChild(overlay);
 
