@@ -1,5 +1,8 @@
 import logging
 import os
+from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version as pkg_version
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,6 +33,19 @@ def create_app() -> FastAPI:
     app.include_router(api_router, prefix="/api")
     app.include_router(pages_router)
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+    @app.get("/health")
+    async def health() -> dict:
+        try:
+            ver = pkg_version("r3xa-api")
+        except PackageNotFoundError:
+            ver = "unknown"
+        return {
+            "status": "ok",
+            "version": ver,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
     return app
 
 
