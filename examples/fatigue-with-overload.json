@@ -1,0 +1,259 @@
+{
+    "version": "2024.7.1",
+    "authors": "G Bahaj Filali",
+    "title": "Fatigue test with overload",
+    "description": "Fatigue test with overload on SENT specimen made of Al-7%Si cast alloy",
+    "date": "2023-06-01",
+    "repository": "doi:10.5281/zenodo.10795209",
+    "documentation": "readme.pdf",
+    "license": "CC-BY",
+    "settings": [
+        {
+            "id": "mlmjqjjwrfbqzesyyprvrekg",
+            "kind": "settings/specimen",
+            "title": "SENT",
+            "description": "The specimen is made of Al-7%Si cast alloy with an average grain size of 150 \u00b5m.",
+            "sizes": [
+                {
+                    "title": "Heigh",
+                    "value": 120.0,
+                    "unit": "mm",
+                    "kind": "unit"
+                },
+                {
+                    "title": "Width",
+                    "value": 30.0,
+                    "unit": "mm",
+                    "kind": "unit"
+                },
+                {
+                    "title": "Thickness",
+                    "value": 3.8,
+                    "unit": "mm",
+                    "kind": "unit"
+                }
+            ],
+            "patterning_technique": "Spray paint"
+        }
+    ],
+    "data_sources": [
+        {
+            "id": "ssivryngblydnhlpkbwdtkrh",
+            "kind": "data_sources/camera",
+            "title": "Vieworks",
+            "description": "High resolution mounted with a macro lens",
+            "output_components": 1,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "title": "greylevel",
+                    "value": 1.0,
+                    "unit": "gl",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "Vieworks",
+            "model": "VP-50MX-M/C 30",
+            "image_size": [
+                {
+                    "title": "Height",
+                    "value": 6004.0,
+                    "unit": "pixel",
+                    "kind": "unit"
+                },
+                {
+                    "title": "Width",
+                    "value": 7920.0,
+                    "unit": "pixel",
+                    "kind": "unit"
+                }
+            ],
+            "field_of_view": [
+                {
+                    "title": "Height",
+                    "value": 23.3,
+                    "unit": "mm",
+                    "kind": "unit"
+                },
+                {
+                    "title": "Width",
+                    "value": 38.7,
+                    "unit": "mm",
+                    "kind": "unit"
+                }
+            ],
+            "image_scale": {
+                "title": "ppm",
+                "value": 208333.0,
+                "unit": "pixel per meter",
+                "kind": "unit"
+            },
+            "focal_length": {
+                "title": "Tokina",
+                "value": 100.0,
+                "unit": "mm",
+                "kind": "unit"
+            },
+            "lens": "Tokina",
+            "aperture": "2.8"
+        },
+        {
+            "id": "sxziirkvsuwhjapmjublvyrr",
+            "kind": "data_sources/generic",
+            "title": "Load sensor",
+            "description": "Load sensor mounted on Instron ElectroPuls E10000",
+            "output_components": 1,
+            "output_dimension": "point",
+            "output_units": [
+                {
+                    "title": "Force",
+                    "unit": "N",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "fdlkj",
+            "model": "sdfkj"
+        },
+        {
+            "id": "xmyhkstghmhrsjjbheczwiue",
+            "kind": "data_sources/generic",
+            "title": "SIF Extractor",
+            "description": "Provide for estimate of SIF and subsingular Willimas' coeeficients from displacement fields",
+            "output_components": 7,
+            "output_dimension": "point",
+            "output_units": [
+                {
+                    "title": "K1",
+                    "unit": "Pa.m^(1/2)",
+                    "kind": "unit"
+                },
+                {
+                    "title": "T",
+                    "unit": "Pa",
+                    "kind": "unit"
+                },
+                {
+                    "title": "B",
+                    "unit": "Pa.m^(-1/2)",
+                    "kind": "unit"
+                },
+                {
+                    "title": "n4",
+                    "unit": "Pa.m^(-1)",
+                    "kind": "unit"
+                },
+                {
+                    "title": "n5",
+                    "unit": "Pa.m^(-3/2)",
+                    "kind": "unit"
+                },
+                {
+                    "title": "n6",
+                    "unit": "Pa.m^(-2)",
+                    "kind": "unit"
+                },
+                {
+                    "title": "n7",
+                    "unit": "Pa.m^(-5/2)",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "UFreckles",
+            "model": "2.1"
+        },
+        {
+            "id": "bzcseozaegnsephtrsdystrm",
+            "kind": "data_sources/generic",
+            "title": "FE-DIC",
+            "description": "Finite element DIC",
+            "input_data_sets": [
+                "uqfxsnhfrblqprvuolrbzorw"
+            ],
+            "output_components": 2,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "title": "Ux",
+                    "unit": "pixel",
+                    "kind": "unit"
+                },
+                {
+                    "title": "Uy",
+                    "unit": "pixel",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "UFreckles",
+            "model": "2.1"
+        }
+    ],
+    "data_sets": [
+        {
+            "id": "aydxhmmutqbkmucyvqilumit",
+            "kind": "data_sets/file",
+            "title": "Load and SIF for OVL1",
+            "description": "Data for the first overload",
+            "folder": "OVL1",
+            "data_sources": [
+                "sxziirkvsuwhjapmjublvyrr",
+                "xmyhkstghmhrsjjbheczwiue"
+            ],
+            "time_reference": 24.0,
+            "timestamps": {
+                "filename": "time_stamps.csv",
+                "delimiter": ";",
+                "kind": "data_set_file"
+            },
+            "data": {
+                "filename": "data_OVL1.csv",
+                "delimiter": ",",
+                "kind": "data_set_file"
+            }
+        },
+        {
+            "id": "dzewumwivsxprayegvggyrvo",
+            "kind": "data_sets/generic",
+            "title": "Displacement amplitude",
+            "description": "Displacement amplitude from FE-DIC using 20-pixel quadrangular elements and a first neighboor median filter",
+            "file_type": "xdmf",
+            "path": "OVL1/deltaU_ovl_1.xdmf",
+            "data_sources": [
+                "bzcseozaegnsephtrsdystrm"
+            ]
+        },
+        {
+            "id": "uqfxsnhfrblqprvuolrbzorw",
+            "kind": "data_sets/list",
+            "title": "OVL1 images",
+            "description": "Reference image and images acquired during OVL1.",
+            "path": "OVL1/Images",
+            "file_type": "tiff",
+            "data_sources": [
+                "ssivryngblydnhlpkbwdtkrh"
+            ],
+            "time_reference": 24.0,
+            "timestamps": [
+                24.0,
+                25.0,
+                26.0,
+                27.0,
+                28.0,
+                29.0,
+                30.0,
+                31.0,
+                32.0
+            ],
+            "data": [
+                "AA_CTIF_2023_07_ep_24b_000024",
+                "AA_CTIF_2023_07_ep_24b_000025",
+                "AA_CTIF_2023_07_ep_24b_000026",
+                "AA_CTIF_2023_07_ep_24b_000027",
+                "AA_CTIF_2023_07_ep_24b_000028",
+                "AA_CTIF_2023_07_ep_24b_000029",
+                "AA_CTIF_2023_07_ep_24b_000030",
+                "AA_CTIF_2023_07_ep_24b_000031",
+                "AA_CTIF_2023_07_ep_24b_000032"
+            ]
+        }
+    ]
+}

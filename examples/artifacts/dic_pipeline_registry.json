@@ -105,7 +105,7 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "wxzvvfhkmbajrzmknrdrzopb"
+                "nctkppluprvvcgdmszhtozqs"
             ]
         }
     ],
@@ -133,7 +133,7 @@
                 "img_0003.tif",
                 "img_0004.tif"
             ],
-            "id": "wxzvvfhkmbajrzmknrdrzopb",
+            "id": "nctkppluprvvcgdmszhtozqs",
             "kind": "data_sets/list"
         },
         {
@@ -159,7 +159,7 @@
                 "dic_0003.csv",
                 "dic_0004.csv"
             ],
-            "id": "vyizzsxiimtrnkaedgvlifjd",
+            "id": "dbopnbynmzfoepqsguonjnoi",
             "kind": "data_sets/list"
         }
     ]

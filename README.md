@@ -7,6 +7,9 @@ Minimal Python SDK (no GUI) to create and validate R3XA metadata files.
 pip install -e .
 ```
 
+## Assumed environment
+Documentation commands assume a virtual environment exists at `.venv` (project root).
+
 ## Quick start
 ```python
 from r3xa_api import R3XAFile, unit

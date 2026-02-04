@@ -1,6 +1,10 @@
 R3XA_API Documentation
 ======================
 
+Environment assumption
+----------------------
+Documentation commands assume a virtual environment exists at ``.venv`` (project root).
+
 .. raw:: html
 
    <iframe
@@ -11,7 +15,7 @@ R3XA_API Documentation
      title="JC Passieux presentation (IDICS_2024)"
    ></iframe>
 
-R3XA: Toward a metadata standard for experimental (photo)mechanics datasets - Jean-Charles Passieux *et al.* PM-IDCS 2024
+R3XA: Toward a metadata standard for experimental (photo)mechanics datasets - Jean-Charles Passieux *et al.* PM-IDICS 2024
 
 .. image:: figures/R3XA.png
    :width: 140

@@ -25,7 +25,7 @@
                 }
             ],
             "patterning_technique": "white background with black spray paint",
-            "id": "dnkxgxnodcaxeodqativunca",
+            "id": "jfsqpufoitjufmqfcaidwdkt",
             "kind": "settings/specimen"
         }
     ],
@@ -76,7 +76,7 @@
                 "unit": "m",
                 "scale": 1.0
             },
-            "id": "nzmhmssjshjwrekfwptifcnr",
+            "id": "ytfhdgxeksoaxmizefrqnbsw",
             "kind": "data_sources/camera"
         },
         {
@@ -103,9 +103,9 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "igcgknngpwvnfhgpttzgvgmf"
+                "jnguqahgevuzijrbstivpuaj"
             ],
-            "id": "bfnwhdylsuhhlgevpcvllvzs",
+            "id": "pmqiufjwispqvtfiefeyzqez",
             "kind": "data_sources/generic"
         }
     ],
@@ -116,7 +116,7 @@
             "path": "images/",
             "file_type": "image/tiff",
             "data_sources": [
-                "nzmhmssjshjwrekfwptifcnr"
+                "ytfhdgxeksoaxmizefrqnbsw"
             ],
             "time_reference": 0.0,
             "timestamps": [
@@ -133,7 +133,7 @@
                 "img_0003.tif",
                 "img_0004.tif"
             ],
-            "id": "igcgknngpwvnfhgpttzgvgmf",
+            "id": "jnguqahgevuzijrbstivpuaj",
             "kind": "data_sets/list"
         },
         {
@@ -142,7 +142,7 @@
             "path": "dic/",
             "file_type": "text/csv",
             "data_sources": [
-                "bfnwhdylsuhhlgevpcvllvzs"
+                "pmqiufjwispqvtfiefeyzqez"
             ],
             "time_reference": 0.0,
             "timestamps": [
@@ -159,7 +159,7 @@
                 "dic_0003.csv",
                 "dic_0004.csv"
             ],
-            "id": "tasiosywnfpfwdlscoichgwe",
+            "id": "gvtwjhzrmbqzhgcgxbrylytp",
             "kind": "data_sets/list"
         }
     ]

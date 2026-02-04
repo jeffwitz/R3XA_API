@@ -18,7 +18,10 @@ def validate(instance: Dict[str, Any], schema: Optional[Dict[str, Any]] = None) 
 
     error_messages = []
     for error in errors:
-        p = f"{list(error.path)[0]} validation error" if error.path.count(0) else "root validation error"
+        if error.path:
+            p = f"{'/'.join(map(str, error.path))} validation error"
+        else:
+            p = "root validation error"
         error_message = [f"{p}: {error.message}"] + [_make_context_message(error, e) for e in error.context]
         error_messages.append("\n\t- ".join(error_message))
 

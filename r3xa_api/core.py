@@ -63,7 +63,7 @@ class R3XAFile:
     @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "R3XAFile":
         version = payload.get("version")
-        header = {k: v for k, v in payload.items() if k not in {"settings", "data_sources", "data_sets"}}
+        header = {k: v for k, v in payload.items() if k not in {"version", "settings", "data_sources", "data_sets"}}
         obj = cls(version=version, **header)
         obj.settings = list(payload.get("settings", []))
         obj.data_sources = list(payload.get("data_sources", []))
