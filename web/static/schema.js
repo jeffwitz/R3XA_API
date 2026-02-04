@@ -70,6 +70,34 @@ const renderDraft = () => {
   }
 };
 
+const renderGraph = async () => {
+  const stored = localStorage.getItem("r3xaDraft");
+  const container = document.getElementById("graph-container");
+  if (!container) return;
+  if (!stored) {
+    container.textContent = "No draft found. Create one in the editor first.";
+    return;
+  }
+  container.textContent = "Generating graph…";
+  try {
+    const payload = JSON.parse(stored);
+    const response = await fetch("/api/graph", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const detail = await response.text();
+      container.textContent = `Graph error: ${detail}`;
+      return;
+    }
+    const svgText = await response.text();
+    container.innerHTML = svgText;
+  } catch (err) {
+    container.textContent = "Failed to generate graph.";
+  }
+};
+
 const applyFilter = () => {
   const term = (filterEl?.value || "").trim().toLowerCase();
   const nodes = Array.from(
@@ -101,7 +129,9 @@ viewSelect?.addEventListener("change", () => {
   if (view === "draft") {
     renderDraft();
   } else {
-    renderSummary();
+renderSummary();
+
+document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
   }
 });
 
