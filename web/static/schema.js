@@ -198,6 +198,7 @@ const openFullscreenGraph = async () => {
 const bindGraphUi = () => {
   const saveBtn = document.getElementById("save-graph-btn");
   const fullBtn = document.getElementById("fullscreen-graph-btn");
+  const container = document.getElementById("graph-container");
   let bound = false;
   if (saveBtn) {
     saveBtn.addEventListener("click", saveGraph);
@@ -206,6 +207,13 @@ const bindGraphUi = () => {
   if (fullBtn) {
     fullBtn.addEventListener("click", openFullscreenGraph);
     bound = true;
+  }
+  if (container) {
+    container.addEventListener("click", () => {
+      if (container.querySelector("svg")) {
+        showFullscreenGraph();
+      }
+    });
   }
   return bound;
 };
