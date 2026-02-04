@@ -32,20 +32,30 @@
     <main>
       <section class="hero">
         <h1>R3XA Web</h1>
-        <p>Validate, inspect, and edit R3XA JSON metadata in a clean, lightweight UI.</p>
+        <p>A lightweight tool to create, validate, and visualize R3XA JSON files.</p>
         <div class="hero-actions">
-          <a class="btn" href="/edit">Open Editor</a>
-          <a class="btn ghost" href="/schema">View Schema</a>
+          <a class="btn" href="/edit">Editor</a>
+          <a class="btn ghost" href="/schema">Viewer & Graph</a>
         </div>
       </section>
 
       <section class="panel">
-        <h2>API</h2>
+        <h2>What you can do</h2>
         <ul>
-          <li><code>POST /api/validate</code></li>
-          <li><code>GET /api/schema</code></li>
-          <li><code>GET /api/schema/summary</code></li>
+          <li><strong>Edit</strong> an R3XA JSON (header, settings, data_sources, data_sets).</li>
+          <li><strong>Validate</strong> a file and get a clear error report.</li>
+          <li><strong>Load / save</strong> a local JSON file.</li>
+          <li><strong>Inspect</strong> the schema and generate an SVG graph.</li>
         </ul>
+      </section>
+
+      <section class="panel">
+        <h2>Where to go</h2>
+        <ul>
+          <li><a href="/edit"><strong>/edit</strong></a> to create and validate a file.</li>
+          <li><a href="/schema"><strong>/schema</strong></a> to explore the schema and generate a graph.</li>
+        </ul>
+        <p class="muted">Use the links in the top‑right navigation to switch pages.</p>
       </section>
     </main>
   </body>
