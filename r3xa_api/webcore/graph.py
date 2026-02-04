@@ -77,7 +77,7 @@ def generate_svg(data: Dict[str, Any]) -> bytes:
         from graphviz import Digraph
         from graphviz.backend import ExecutableNotFound
     except Exception as exc:  # pragma: no cover - depends on optional dependency
-        raise RuntimeError("Graphviz is not installed.") from exc
+        raise RuntimeError("Graph feature not available (graphviz not installed).") from exc
 
     dot = Digraph(comment="R3XA graph", format="svg")
     dot.attr("node", margin="0.2,0.1")
@@ -111,4 +111,4 @@ def generate_svg(data: Dict[str, Any]) -> bytes:
     try:
         return dot.pipe(format="svg")
     except ExecutableNotFound as exc:  # pragma: no cover - runtime dependency
-        raise RuntimeError("Graphviz executable not found (dot).") from exc
+        raise RuntimeError("Graph feature not available (dot executable missing).") from exc

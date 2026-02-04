@@ -37,6 +37,7 @@ The optional web interface is documented here: :doc:`web`.
    overview.md
    api.md
    web.md
+   DEPLOY_RAILWAY.md
    matlab.md
    examples.md
    qi_case.md
