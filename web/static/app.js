@@ -109,32 +109,32 @@ const templates = {
     }),
   },
   data_sets: {
-    generic: () => ({
+    generic: (payload) => ({
       id: makeId(),
       kind: "data_sets/generic",
       title: "Generic data",
       description: "Data set description",
-      data_sources: [],
+      data_sources: payload?.data_sources?.length ? [payload.data_sources[0].id] : [],
       file_type: "application/octet-stream",
       path: "data/",
     }),
-    file: () => ({
+    file: (payload) => ({
       id: makeId(),
       kind: "data_sets/file",
       title: "Data file",
       description: "Single file data set",
-      data_sources: [],
+      data_sources: payload?.data_sources?.length ? [payload.data_sources[0].id] : [],
       time_reference: 0.0,
       timestamps: { kind: "data_set_file", filename: "timestamps.csv" },
       data: { kind: "data_set_file", filename: "data.csv" },
     }),
-    list: () => ({
+    list: (payload) => ({
       id: makeId(),
       kind: "data_sets/list",
       title: "Data list",
       description: "List of data files",
       file_type: "application/octet-stream",
-      data_sources: [],
+      data_sources: payload?.data_sources?.length ? [payload.data_sources[0].id] : [],
       time_reference: 0.0,
       timestamps: [0.0],
       data: ["data_0001.tif"],
@@ -162,7 +162,7 @@ const buildArrayEditor = (container, key, label, templateSet) => {
         return;
       }
       payload[key] = payload[key] || [];
-      payload[key].push(factory());
+      payload[key].push(factory(payload));
       inputEl.value = JSON.stringify(payload, null, 2);
       syncFormFromJson();
     });
@@ -208,7 +208,47 @@ const buildArrayEditor = (container, key, label, templateSet) => {
       syncFormFromJson();
     });
 
+    const validateBtn = document.createElement("button");
+    validateBtn.textContent = "Validate item";
+    validateBtn.className = "ghost";
+    validateBtn.type = "button";
+    validateBtn.addEventListener("click", async () => {
+      let payload;
+      try {
+        payload = JSON.parse(inputEl.value);
+      } catch {
+        return;
+      }
+      const copy = {
+        title: payload.title || "temp",
+        description: payload.description || "temp",
+        version: payload.version || "2024.7.1",
+        authors: payload.authors || "temp",
+        date: payload.date || "2024-01-01",
+        settings: [],
+        data_sources: [],
+        data_sets: [],
+      };
+      copy[key] = [payload[key][index]];
+      const response = await fetch("/api/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(copy),
+      });
+      const report = await response.json();
+      if (report.valid) {
+        outputEl.textContent = "Valid ✅ (item)";
+        return;
+      }
+      const lines = ["Invalid ❌ (item)", ""];
+      for (const error of report.errors || []) {
+        lines.push(`- ${error.path || "<root>"}: ${error.message}`);
+      }
+      outputEl.textContent = lines.join("\n");
+    });
+
     header.appendChild(remove);
+    header.appendChild(validateBtn);
     card.appendChild(header);
 
     const form = document.createElement("div");
