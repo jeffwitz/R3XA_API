@@ -119,14 +119,14 @@ const renderGraph = async () => {
       svg.removeAttribute("height");
       svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     }
-    if (saveBtn) saveBtn.style.display = svg ? "" : "none";
-    if (fullscreenBtn) fullscreenBtn.style.display = svg ? "" : "none";
+    if (saveBtn) saveBtn.disabled = !svg;
+    if (fullscreenBtn) fullscreenBtn.disabled = !svg;
     localStorage.setItem("r3xaDraftLast", stored);
     return !!svg;
   } catch (err) {
     container.textContent = `Failed to generate graph: ${err.message || err}`;
-    if (saveBtn) saveBtn.style.display = "none";
-    if (fullscreenBtn) fullscreenBtn.style.display = "none";
+    if (saveBtn) saveBtn.disabled = true;
+    if (fullscreenBtn) fullscreenBtn.disabled = true;
     return false;
   }
 };

@@ -57,8 +57,12 @@ h1 {
 }
 
 .brand img {
-  height: 36px;
+  height: 64px;
   width: auto;
+}
+
+.brand img:last-of-type {
+  height: 56px;
 }
 
 .brand-title {
