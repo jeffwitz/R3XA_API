@@ -91,7 +91,7 @@ const renderGraph = async () => {
     container.textContent = "No draft found. Create one in the editor first.";
     if (saveBtn) saveBtn.style.display = "none";
     if (fullscreenBtn) fullscreenBtn.style.display = "none";
-    return;
+    return false;
   }
   try {
     const payload = JSON.parse(stored);
@@ -122,17 +122,22 @@ const renderGraph = async () => {
     if (saveBtn) saveBtn.style.display = svg ? "" : "none";
     if (fullscreenBtn) fullscreenBtn.style.display = svg ? "" : "none";
     localStorage.setItem("r3xaDraftLast", stored);
+    return !!svg;
   } catch (err) {
     container.textContent = `Failed to generate graph: ${err.message || err}`;
     if (saveBtn) saveBtn.style.display = "none";
     if (fullscreenBtn) fullscreenBtn.style.display = "none";
+    return false;
   }
 };
 
 const showFullscreenGraph = () => {
   const container = document.getElementById("graph-container");
   const svg = container?.querySelector("svg");
-  if (!svg) return;
+  if (!svg) {
+    if (container) container.textContent = "No graph available. Generate it first.";
+    return;
+  }
 
   const overlay = document.createElement("div");
   overlay.className = "graph-overlay";
@@ -180,9 +185,37 @@ const saveGraph = () => {
   URL.revokeObjectURL(url);
 };
 
-document.getElementById("save-graph-btn")?.addEventListener("click", saveGraph);
+const openFullscreenGraph = async () => {
+  const container = document.getElementById("graph-container");
+  const hasSvg = container?.querySelector("svg");
+  if (!hasSvg) {
+    const ok = await renderGraph();
+    if (!ok) return;
+  }
+  showFullscreenGraph();
+};
+
+const bindGraphUi = () => {
+  const saveBtn = document.getElementById("save-graph-btn");
+  const fullBtn = document.getElementById("fullscreen-graph-btn");
+  let bound = false;
+  if (saveBtn) {
+    saveBtn.addEventListener("click", saveGraph);
+    bound = true;
+  }
+  if (fullBtn) {
+    fullBtn.addEventListener("click", openFullscreenGraph);
+    bound = true;
+  }
+  return bound;
+};
+
+if (!bindGraphUi()) {
+  document.addEventListener("DOMContentLoaded", bindGraphUi);
+}
 
 window.renderGraph = renderGraph;
+window.showFullscreenGraph = showFullscreenGraph;
 
 const applyFilter = () => {
   const term = (filterEl?.value || "").trim().toLowerCase();
