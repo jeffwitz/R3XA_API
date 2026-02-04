@@ -84,7 +84,10 @@ pip install -e .[web,dev]
 Then open `http://127.0.0.1:8002/`.
 
 Notes:
-- SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system.
+- SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system:
+  - Linux: `sudo apt-get install graphviz` (or your distro equivalent), then `dot -V`
+  - macOS: `brew install graphviz`, then `dot -V`
+  - Windows: install from <https://graphviz.org/download/>, add `Graphviz\\bin` to `PATH`, then `dot -V`
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
 
 ## MATLAB (minimal binding)
