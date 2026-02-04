@@ -84,6 +84,26 @@ button.ghost {
   white-space: pre-wrap;
 }
 
+#header-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.form-row label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  color: #333;
+}
+
+.form-row input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
 #schema-tree ul {
   list-style: none;
   padding-left: 1rem;
