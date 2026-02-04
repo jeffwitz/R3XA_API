@@ -55,6 +55,8 @@
         <p class="muted">Generate a Graphviz SVG from the current draft.</p>
         <div class="actions">
           <button id="generate-graph-btn" type="button" onclick="window.renderGraph && window.renderGraph()">Generate SVG</button>
+          <button id="fullscreen-graph-btn" class="ghost" type="button" style="display:none;" onclick="window.showFullscreenGraph && window.showFullscreenGraph()">Fullscreen</button>
+          <button id="save-graph-btn" class="ghost" type="button" style="display:none;">Save SVG</button>
         </div>
         <div id="graph-container" class="graph-container"></div>
       </section>

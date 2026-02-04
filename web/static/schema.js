@@ -83,10 +83,14 @@ const renderGraph = async () => {
     localStorage.getItem("r3xaDraft") ||
     localStorage.getItem("r3xaDraftLast");
   const container = document.getElementById("graph-container");
+  const saveBtn = document.getElementById("save-graph-btn");
+  const fullscreenBtn = document.getElementById("fullscreen-graph-btn");
   if (!container) return;
   container.textContent = "Generating graph…";
   if (!stored) {
     container.textContent = "No draft found. Create one in the editor first.";
+    if (saveBtn) saveBtn.style.display = "none";
+    if (fullscreenBtn) fullscreenBtn.style.display = "none";
     return;
   }
   try {
@@ -109,11 +113,74 @@ const renderGraph = async () => {
     }
     const svgText = await response.text();
     container.innerHTML = svgText;
+    const svg = container.querySelector("svg");
+    if (svg) {
+      svg.removeAttribute("width");
+      svg.removeAttribute("height");
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    }
+    if (saveBtn) saveBtn.style.display = svg ? "" : "none";
+    if (fullscreenBtn) fullscreenBtn.style.display = svg ? "" : "none";
     localStorage.setItem("r3xaDraftLast", stored);
   } catch (err) {
     container.textContent = `Failed to generate graph: ${err.message || err}`;
+    if (saveBtn) saveBtn.style.display = "none";
+    if (fullscreenBtn) fullscreenBtn.style.display = "none";
   }
 };
+
+const showFullscreenGraph = () => {
+  const container = document.getElementById("graph-container");
+  const svg = container?.querySelector("svg");
+  if (!svg) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "graph-overlay";
+  overlay.addEventListener("click", () => overlay.remove());
+
+  const inner = document.createElement("div");
+  inner.className = "graph-overlay-inner";
+  inner.addEventListener("click", (event) => event.stopPropagation());
+  const clone = svg.cloneNode(true);
+  if (!clone.getAttribute("viewBox")) {
+    const w = svg.viewBox?.baseVal?.width || svg.getAttribute("width") || 0;
+    const h = svg.viewBox?.baseVal?.height || svg.getAttribute("height") || 0;
+    if (w && h) {
+      clone.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    }
+  }
+  inner.appendChild(clone);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "graph-overlay-close";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", () => overlay.remove());
+  inner.appendChild(closeBtn);
+
+  overlay.appendChild(inner);
+  document.body.appendChild(overlay);
+};
+
+window.showFullscreenGraph = showFullscreenGraph;
+
+const saveGraph = () => {
+  const container = document.getElementById("graph-container");
+  const svg = container?.querySelector("svg");
+  if (!svg) return;
+  const serializer = new XMLSerializer();
+  const svgText = serializer.serializeToString(svg);
+  const blob = new Blob([svgText], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "r3xa-graph.svg";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById("save-graph-btn")?.addEventListener("click", saveGraph);
 
 window.renderGraph = renderGraph;
 
@@ -163,6 +230,19 @@ const bindGraphButton = () => {
 
 if (!bindGraphButton()) {
   document.addEventListener("DOMContentLoaded", bindGraphButton);
+}
+
+const bindGraphContainer = () => {
+  const container = document.getElementById("graph-container");
+  if (!container) return false;
+  container.addEventListener("click", () => {
+    showFullscreenGraph();
+  });
+  return true;
+};
+
+if (!bindGraphContainer()) {
+  document.addEventListener("DOMContentLoaded", bindGraphContainer);
 }
   }
 });
