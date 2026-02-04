@@ -85,7 +85,7 @@ const renderGraph = async () => {
   const container = document.getElementById("graph-container");
   const saveBtn = document.getElementById("save-graph-btn");
   const fullscreenBtn = document.getElementById("fullscreen-graph-btn");
-  if (!container) return;
+  if (!container) return false;
   container.textContent = "Generating graph…";
   if (!stored) {
     container.textContent = "No draft found. Create one in the editor first.";
@@ -109,7 +109,7 @@ const renderGraph = async () => {
         // keep text
       }
       container.textContent = `Graph error: ${detail}`;
-      return;
+      return false;
     }
     const svgText = await response.text();
     container.innerHTML = svgText;
@@ -119,14 +119,14 @@ const renderGraph = async () => {
       svg.removeAttribute("height");
       svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     }
-    if (saveBtn) saveBtn.disabled = !svg;
-    if (fullscreenBtn) fullscreenBtn.disabled = !svg;
+    if (saveBtn) saveBtn.style.display = svg ? "" : "none";
+    if (fullscreenBtn) fullscreenBtn.style.display = svg ? "" : "none";
     localStorage.setItem("r3xaDraftLast", stored);
     return !!svg;
   } catch (err) {
     container.textContent = `Failed to generate graph: ${err.message || err}`;
-    if (saveBtn) saveBtn.disabled = true;
-    if (fullscreenBtn) fullscreenBtn.disabled = true;
+    if (saveBtn) saveBtn.style.display = "none";
+    if (fullscreenBtn) fullscreenBtn.style.display = "none";
     return false;
   }
 };
