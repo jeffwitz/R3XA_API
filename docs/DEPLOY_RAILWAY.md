@@ -31,7 +31,7 @@ If `R3XA_CORS_ORIGINS` is empty, CORS is disabled (secure by default).
 
 Once deployed, verify:
 
-- `GET /health` → 200
+- `GET /health` → 200 (root endpoint, not under `/api`)
 - `GET /api/schema` → 200
 
 You can find the public URL in the Railway project dashboard.
