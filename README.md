@@ -75,6 +75,14 @@ r3xa.save("hello-world.json")
 - `docs/qi_case.md`
 - `docs/matlab.md`
 
+## Web UI (v0)
+Install extras and run a minimal FastAPI shell:
+```bash
+pip install -e .[web,dev]
+./.venv/bin/uvicorn web.app.main:app --reload --port 8002
+```
+Then open `http://127.0.0.1:8002/`.
+
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
 Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
