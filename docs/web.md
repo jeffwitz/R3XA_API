@@ -23,6 +23,7 @@ pip install -e .[web,dev]
 Open: `http://127.0.0.1:8002/`
 
 > Note: SVG graph generation requires the **Graphviz executable** (`dot`) to be installed on your system.
+> The schema viewer JS is vendored; **no `npm install` is required** for normal usage.
 
 ## What you can do
 

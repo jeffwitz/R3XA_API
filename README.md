@@ -83,6 +83,10 @@ pip install -e .[web,dev]
 ```
 Then open `http://127.0.0.1:8002/`.
 
+Notes:
+- SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system.
+- The web viewer JS is vendored; **no `npm install` is required** for normal use.
+
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
 Add the folder to the MATLAB path and use `r3xa.R3XAFile`.

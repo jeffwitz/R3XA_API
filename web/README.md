@@ -14,6 +14,10 @@ pip install -e .[web,dev]
 uvicorn web.app.main:app --reload
 ```
 
+Notes:
+- SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system.
+- The schema viewer JS is vendored; **no `npm install` is required** for normal use.
+
 ## Branding
 
 Place the Photomeca logo at:
