@@ -8,9 +8,14 @@ let cachedSchema = null;
 
 const renderJsonViewer = (data) => {
   treeEl.innerHTML = "";
-  const viewer = new JSONViewer();
-  treeEl.appendChild(viewer.getContainer());
-  viewer.showJSON(data, null, 2);
+  const container = document.createElement("div");
+  treeEl.appendChild(container);
+  new JSONViewer({
+    container,
+    data: JSON.stringify(data, null, 2),
+    theme: "light",
+    expand: false,
+  });
 };
 
 const renderSummary = async () => {
@@ -39,16 +44,21 @@ const renderSchema = async () => {
 
 const applyFilter = () => {
   const term = (filterEl?.value || "").trim().toLowerCase();
+  const nodes = Array.from(
+    treeEl.querySelectorAll(".jv-light-current, .jv-dark-current")
+  );
+  if (!nodes.length) return;
+
   if (!term) {
-    treeEl.querySelectorAll("li").forEach((li) => {
-      li.style.display = "";
+    nodes.forEach((node) => {
+      node.style.display = "";
     });
     return;
   }
 
-  treeEl.querySelectorAll("li").forEach((li) => {
-    const text = li.textContent.toLowerCase();
-    li.style.display = text.includes(term) ? "" : "none";
+  nodes.forEach((node) => {
+    const text = node.textContent.toLowerCase();
+    node.style.display = text.includes(term) ? "" : "none";
   });
 };
 
