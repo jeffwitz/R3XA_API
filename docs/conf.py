@@ -12,7 +12,7 @@ html_theme_options = {
     "titles_only": False,
     "includehidden": True,
 }
-html_extra_path = ["figures", "../IDICS_2024"]
+html_extra_path = ["figures", "../PM_IDICS_2024"]
 
 # Force a global, uniform sidebar on every page (no local overrides)
 html_sidebars = {

@@ -12,7 +12,7 @@ Documentation commands assume a virtual environment exists at ``.venv`` (project
      width="100%"
      height="520"
      style="border:1px solid #ddd; margin-bottom: 16px;"
-     title="JC Passieux presentation (IDICS_2024)"
+     title="JC Passieux presentation (PM_IDICS_2024)"
    ></iframe>
 
 R3XA: Toward a metadata standard for experimental (photo)mechanics datasets - Jean-Charles Passieux *et al.* PM-IDICS 2024
