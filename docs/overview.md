@@ -125,7 +125,7 @@ Example (list of files):
   "path": "images/",
   "file_type": "image/tiff",
   "data_sources": ["id3"],
-  "time_reference": 0.0,
+  "time_reference": {"kind": "unit", "title": "time_reference", "value": 0.0, "unit": "s", "scale": 1.0},
   "timestamps": [0.0, 1.0],
   "data": ["img_0001.tif", "img_0002.tif"]
 }
@@ -185,7 +185,7 @@ r3xa.add_image_set_list(
     path="images/",
     file_type="image/tiff",
     data_sources=[camera["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
     data=["img_0001.tif", "img_0002.tif"],
 )

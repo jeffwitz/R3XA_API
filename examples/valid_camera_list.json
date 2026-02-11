@@ -94,13 +94,6 @@
         "unit": "m",
         "scale": 1.0
       },
-      "noise": {
-        "kind": "unit",
-        "title": "noise",
-        "value": 1.0,
-        "unit": "gl",
-        "scale": 1.0
-      },
       "lens": "50mm prime",
       "filter": "none",
       "aperture": "f/8",
@@ -121,10 +114,24 @@
       "description": "images taken by the CCD camera",
       "path": "images/",
       "file_type": "image/tiff",
-      "data_sources": ["ds_cam_01"],
-      "time_reference": 0.0,
-      "timestamps": [0.0, 1.0],
-      "data": ["img_0001.tif", "img_0002.tif"]
+      "data_sources": [
+        "ds_cam_01"
+      ],
+      "time_reference": {
+        "kind": "unit",
+        "title": "time_reference",
+        "value": 0.0,
+        "unit": "s",
+        "scale": 1.0
+      },
+      "timestamps": [
+        0.0,
+        1.0
+      ],
+      "data": [
+        "img_0001.tif",
+        "img_0002.tif"
+      ]
     }
   ]
 }

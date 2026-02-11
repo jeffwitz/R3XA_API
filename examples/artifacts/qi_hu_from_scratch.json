@@ -253,7 +253,13 @@
             "data_sources": [
                 "camera_IR"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 10.0861051,
                 10.0944523,
@@ -795,7 +801,13 @@
             "data_sources": [
                 "camera_IR"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [],
             "data": [
                 "./calibration IR camera/5/Rec-5-000001-001_03_51_56_079_1.tif",
@@ -2602,7 +2614,13 @@
             "data_sources": [
                 "dic"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 10.087318,
                 10.122041,
@@ -2707,7 +2725,13 @@
             "data_sources": [
                 "camera_visible"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 10.087318,
                 10.122041,
@@ -2852,7 +2876,13 @@
             "data_sources": [
                 "load_cell_visible_timeline"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 10.087318,
                 10.122041,
@@ -2933,7 +2963,13 @@
             "data_sources": [
                 "calibration_IR"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [],
             "data": [
                 "traction_temperature_field_ir_configuration/0.npy",
@@ -3211,7 +3247,13 @@
             "data_sources": [
                 "lagrangian_thermography"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 10.087318,
                 10.122041,
@@ -3355,7 +3397,13 @@
             "data_sources": [
                 "energy_balance"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 10.087318,
                 10.122041,

@@ -21,3 +21,8 @@ async def edit(request: Request) -> HTMLResponse:
 @router.get("/schema", response_class=HTMLResponse)
 async def schema(request: Request) -> HTMLResponse:
     return templates.TemplateResponse("schema.html", {"request": request, "app_start": APP_START})
+
+
+@router.get("/registry", response_class=HTMLResponse)
+async def registry(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("registry.html", {"request": request, "app_start": APP_START})

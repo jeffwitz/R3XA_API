@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>R3XA Registry Editor</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body data-app-start="{{ app_start }}">
+    <header class="topbar">
+      <div class="brand">
+        <img
+          src="/static/photomeca-logo.png"
+          alt="Photomeca"
+          onerror="this.style.display='none'"
+        />
+        <img
+          src="/static/r3xa-logo.png"
+          alt="R3XA"
+          onerror="this.style.display='none'"
+        />
+        <div>
+          <div class="brand-title">Photomeca · R3XA</div>
+          <div class="brand-sub">Registry Item Editor</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/edit">Editor</a>
+        <a href="/schema">Schema viewer</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero compact">
+        <h1>Registry Item Editor</h1>
+        <p>Load, edit, validate, and save a single registry JSON item locally.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Validation target</h2>
+        <p class="muted">Set the kind explicitly to validate against a specific schema definition.</p>
+        <div class="form-row">
+          <label for="registry-kind">Kind override (optional)</label>
+          <input id="registry-kind" type="text" placeholder="e.g. data_sources/camera" />
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Registry JSON item</h2>
+        <p class="muted">The JSON should contain one item object (setting, data source, or data set).</p>
+        <div class="actions">
+          <button id="registry-save-btn" class="ghost" type="button">Save JSON</button>
+          <label class="file-btn ghost">
+            Load JSON
+            <input id="registry-load-input" type="file" accept=".json,application/json" />
+          </label>
+        </div>
+        <textarea id="registry-json-input" spellcheck="false"></textarea>
+        <div class="actions">
+          <button id="registry-validate-btn" type="button">Validate item</button>
+          <button id="registry-reset-btn" class="ghost" type="button">Reset</button>
+        </div>
+        <pre id="registry-validation-output"></pre>
+      </section>
+    </main>
+
+    <script src="/static/registry.js?v={{ app_start }}"></script>
+  </body>
+</html>

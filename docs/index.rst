@@ -41,4 +41,5 @@ The optional web interface is documented here: :doc:`web`.
    qi_case.md
    validation.md
    web.md
+   registry_web.md
    DEPLOY_RAILWAY.md

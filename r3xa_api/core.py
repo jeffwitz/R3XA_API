@@ -149,11 +149,13 @@ class R3XAFile:
         path: str,
         file_type: str,
         data_sources: Sequence[str],
-        time_reference: float,
+        time_reference: Dict[str, Any],
         timestamps: Sequence[float],
         data: Sequence[str],
         **extra: Any,
     ) -> Dict[str, Any]:
+        if not isinstance(time_reference, dict) or time_reference.get("kind") != "unit":
+            raise ValueError("time_reference for data_sets/list must be a unit payload")
         return self.add_data_set(
             "data_sets/list",
             title=title,

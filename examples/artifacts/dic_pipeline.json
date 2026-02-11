@@ -25,7 +25,7 @@
                 }
             ],
             "patterning_technique": "white background with black spray paint",
-            "id": "jfsqpufoitjufmqfcaidwdkt",
+            "id": "wkllxzxbsdtkczqcjyedwcrf",
             "kind": "settings/specimen"
         }
     ],
@@ -76,7 +76,7 @@
                 "unit": "m",
                 "scale": 1.0
             },
-            "id": "ytfhdgxeksoaxmizefrqnbsw",
+            "id": "gpwojlubbxomeyrlimsmtaoq",
             "kind": "data_sources/camera"
         },
         {
@@ -103,9 +103,9 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "jnguqahgevuzijrbstivpuaj"
+                "yzqbcxrpkpmgokzvybbaoaie"
             ],
-            "id": "pmqiufjwispqvtfiefeyzqez",
+            "id": "epjeqxqznutkbdhstnvlzstv",
             "kind": "data_sources/generic"
         }
     ],
@@ -116,9 +116,15 @@
             "path": "images/",
             "file_type": "image/tiff",
             "data_sources": [
-                "ytfhdgxeksoaxmizefrqnbsw"
+                "gpwojlubbxomeyrlimsmtaoq"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -133,7 +139,7 @@
                 "img_0003.tif",
                 "img_0004.tif"
             ],
-            "id": "jnguqahgevuzijrbstivpuaj",
+            "id": "yzqbcxrpkpmgokzvybbaoaie",
             "kind": "data_sets/list"
         },
         {
@@ -142,9 +148,15 @@
             "path": "dic/",
             "file_type": "text/csv",
             "data_sources": [
-                "pmqiufjwispqvtfiefeyzqez"
+                "epjeqxqznutkbdhstnvlzstv"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -159,7 +171,7 @@
                 "dic_0003.csv",
                 "dic_0004.csv"
             ],
-            "id": "gvtwjhzrmbqzhgcgxbrylytp",
+            "id": "dseyyjnjhhassfgktihvuzga",
             "kind": "data_sets/list"
         }
     ]

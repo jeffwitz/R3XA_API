@@ -55,7 +55,7 @@ add_image_set_list(
     path: str,
     file_type: str,
     data_sources: Sequence[str],
-    time_reference: float,
+    time_reference: dict,
     timestamps: Sequence[float],
     data: Sequence[str],
     **extra,

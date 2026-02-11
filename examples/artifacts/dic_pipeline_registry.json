@@ -105,7 +105,7 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "nctkppluprvvcgdmszhtozqs"
+                "mpglquxlxiknufdoelegxqmm"
             ]
         }
     ],
@@ -118,7 +118,13 @@
             "data_sources": [
                 "ds_cam_exp01"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -133,7 +139,7 @@
                 "img_0003.tif",
                 "img_0004.tif"
             ],
-            "id": "nctkppluprvvcgdmszhtozqs",
+            "id": "mpglquxlxiknufdoelegxqmm",
             "kind": "data_sets/list"
         },
         {
@@ -144,7 +150,13 @@
             "data_sources": [
                 "ds_dic_exp01"
             ],
-            "time_reference": 0.0,
+            "time_reference": {
+                "kind": "unit",
+                "title": "time_reference",
+                "value": 0.0,
+                "unit": "s",
+                "scale": 1.0
+            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -159,7 +171,7 @@
                 "dic_0003.csv",
                 "dic_0004.csv"
             ],
-            "id": "dbopnbynmzfoepqsguonjnoi",
+            "id": "dexzizytiecnsqgaclicnegr",
             "kind": "data_sets/list"
         }
     ]

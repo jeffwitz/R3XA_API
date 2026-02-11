@@ -45,7 +45,6 @@ camera = r3xa.add_camera_source(
     ],
     focal_length=unit(title="focal_length", value=25.0, unit="mm", scale=1.0),
     standoff_distance=unit(title="standoff", value=0.5, unit="m", scale=1.0),
-    noise=unit(title="noise", value=1.0, unit="gl", scale=1.0),
     lens="50mm prime",
     aperture="f/8",
     exposure=unit(title="exposure", value=2.0, unit="ms", scale=1.0),
@@ -57,7 +56,7 @@ images = r3xa.add_image_set_list(
     path="images/",
     file_type="image/tiff",
     data_sources=[camera["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
     data=["zoom-0050_1.tif", "zoom-0070_1.tif"],
 )

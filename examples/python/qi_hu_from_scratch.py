@@ -256,7 +256,7 @@ r3xa.add_data_set(
     path="original images IR/",
     file_type="image/tiff",
     data_sources=["camera_IR"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=ir_timeline,
     data=ir_files,
 )
@@ -276,7 +276,7 @@ r3xa.add_data_set(
     path="./",
     file_type="image/tiff",
     data_sources=["camera_IR"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[],
     data=calibration_files,
 )
@@ -289,7 +289,7 @@ r3xa.add_data_set(
     path="./",
     file_type="application/x-netcdf",
     data_sources=["dic"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
     data=["node.nc", "modes.nc"],
 )
@@ -321,7 +321,7 @@ r3xa.add_data_set(
     path="original visible images/",
     file_type="image/tiff",
     data_sources=["camera_visible"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
     data=visible_files,
 )
@@ -334,7 +334,7 @@ r3xa.add_data_set(
     path="./thermomechanical results/",
     file_type="application/octet-stream",
     data_sources=["load_cell_visible_timeline"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
     data=["F_macro.npy"],
 )
@@ -351,7 +351,7 @@ r3xa.add_data_set(
     path="./",
     file_type="application/octet-stream",
     data_sources=["calibration_IR"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[],
     data=eulerian_files,
 )
@@ -373,7 +373,7 @@ r3xa.add_data_set(
     path="./",
     file_type="application/octet-stream",
     data_sources=["lagrangian_thermography"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
     data=lagrangian_files,
 )
@@ -390,7 +390,7 @@ r3xa.add_data_set(
     path="./",
     file_type="application/octet-stream",
     data_sources=["energy_balance"],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
     data=energy_balance_files,
 )
