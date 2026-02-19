@@ -60,7 +60,7 @@ r3xa_file.save("hello-world.json");
 ## What is implemented
 - `r3xa.R3XAFile` (constructor + add_* helpers)
 - `r3xa.new_item`, `r3xa.unit`, `r3xa.data_set_file`
-- `r3xa.schema_version` (reads `resources/schema.json`)
+- `r3xa.schema_version` (reads `r3xa_api/resources/schema.json`)
 
 ## What is intentionally omitted
 - Graph generation backends

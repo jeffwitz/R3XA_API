@@ -6,16 +6,22 @@ from ..schema import load_schema
 
 
 def _path_to_string(path: Any) -> str:
+    """Serialize a jsonschema error path to slash-separated notation."""
+
     return "/".join(map(str, path))
 
 
 def _schema_path_to_string(schema_path: Any) -> str:
+    """Serialize a schema path to `#/...` notation."""
+
     return "#/" + "/".join(map(str, schema_path))
 
 
 def build_validation_report(
     instance: Dict[str, Any], schema: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
+    """Return a stable validation report for UI/API consumption."""
+
     schema = schema or load_schema()
     validator = jsonschema.validators.Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(instance), key=jsonschema.exceptions.relevance)
