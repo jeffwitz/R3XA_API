@@ -8,7 +8,7 @@ from r3xa_api.webcore.graph import render_graphviz_file, render_pyvis_html
 def main() -> None:
     """Generate Graphviz and PyVis outputs from an R3XA JSON payload."""
 
-    base = Path(__file__).parents[1]
+    base = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(description="Generate R3XA graph (Graphviz + PyVis).")
     parser.add_argument(
         "--input",
