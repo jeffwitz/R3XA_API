@@ -6,6 +6,7 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
+    import base64
     import json
     from pathlib import Path
 
@@ -14,7 +15,7 @@ def _():
     from r3xa_api import R3XAFile, unit, validate
     from r3xa_api.webcore.graph import render_pyvis_html
 
-    return Path, R3XAFile, json, mo, render_pyvis_html, unit, validate
+    return Path, R3XAFile, base64, json, mo, render_pyvis_html, unit, validate
 
 
 @app.cell
@@ -279,7 +280,7 @@ def _(Path, active_payload, json, mo):
 
 
 @app.cell
-def _(Path, active_payload, generate_graph_button, mo, render_pyvis_html):
+def _(Path, active_payload, base64, generate_graph_button, mo, render_pyvis_html):
     view = None
 
     if not generate_graph_button.value:
@@ -291,6 +292,10 @@ def _(Path, active_payload, generate_graph_button, mo, render_pyvis_html):
                 Path("examples/artifacts/dic_pipeline_notebook_pyvis"),
             )
             html_text = html_path.read_text(encoding="utf-8")
+            html_text_view = html_text.replace("height: 950px;", "height: 2200px;")
+            html_data_url = "data:text/html;base64," + base64.b64encode(
+                html_text_view.encode("utf-8")
+            ).decode("ascii")
         except Exception as exc:
             view = mo.callout(
                 f"Graph generation error: {exc}\n\n"
@@ -301,9 +306,14 @@ def _(Path, active_payload, generate_graph_button, mo, render_pyvis_html):
             view = mo.vstack(
                 [
                     mo.callout(f"Graph generated: `{html_path}`", kind="success"),
-                    mo.iframe(html_text, height="950px"),
+                    mo.Html(
+                        f'<a href="{html_data_url}" target="_blank" rel="noopener noreferrer">'
+                        "Open graph in new tab"
+                        "</a>"
+                    ),
+                    mo.iframe(html_text_view, height="2200px"),
                     mo.download(
-                        data=html_text,
+                        data=html_text_view,
                         filename="dic_pipeline_notebook_pyvis.html",
                         mimetype="text/html",
                         label="Export graph HTML to PC",
