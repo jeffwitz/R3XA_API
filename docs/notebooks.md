@@ -35,15 +35,16 @@ Then open the URL printed by Marimo (usually `http://127.0.0.1:2718`).
 In the notebook:
 1. Run all cells.
 2. Check the validation callout confirms payload is valid.
-3. Click **Load JSON from PC** and load an existing `.json` file (optional).
-4. Click **Export JSON to PC**.
-5. Click **Generate Graphviz SVG**.
-6. Click **Export SVG to PC**.
-7. Optional repository save:
+3. Click **Load JSON from PC** and select an existing `.json` file (optional).
+4. Confirm the status callout says the uploaded file was loaded and validated.
+5. Click **Export JSON to PC**.
+6. Click **Generate Graphviz SVG**.
+7. Click **Export SVG to PC**.
+8. Optional repository save:
    ```python
    save_document()
    ```
-8. Confirm that `examples/artifacts/dic_pipeline_notebook.json` exists.
+9. Confirm that `examples/artifacts/dic_pipeline_notebook.json` exists.
 
 ---
 

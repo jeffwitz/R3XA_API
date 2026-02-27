@@ -19,12 +19,13 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md("""
+    intro = mo.md("""
     # Base DIC example (R3XA_API)
 
     This notebook reproduces the base DIC pipeline used in JC's presentation:
     camera acquisition -> image list -> DIC processing (`pyxel`) -> displacement fields.
     """)
+    intro
     return
 
 
@@ -144,39 +145,82 @@ def _(
 
 @app.cell
 def _(mo):
+    get_uploaded_payload, set_uploaded_payload = mo.state(None)
+    get_upload_status, set_upload_status = mo.state(
+        (
+            "No JSON uploaded. The notebook currently uses the from-scratch payload.",
+            "info",
+        )
+    )
+    return get_upload_status, get_uploaded_payload, set_upload_status, set_uploaded_payload
+
+
+@app.cell
+def _(json, mo, set_upload_status, set_uploaded_payload, validate):
+    def on_file_change(files):
+        if not files:
+            set_uploaded_payload(None)
+            set_upload_status(
+                (
+                    "No JSON uploaded. The notebook currently uses the from-scratch payload.",
+                    "info",
+                )
+            )
+            return
+        try:
+            loaded_payload = json.loads(files[0].contents.decode("utf-8"))
+            validate(loaded_payload)
+            set_uploaded_payload(loaded_payload)
+            set_upload_status((f"Loaded and validated `{files[0].name}`.", "success"))
+        except Exception as exc:
+            set_uploaded_payload(None)
+            set_upload_status((f"Load/validation error: {exc}", "danger"))
+
     upload_json = mo.ui.file(
         filetypes=[".json"],
         multiple=False,
         kind="button",
         label="Load JSON from PC",
+        on_change=on_file_change,
     )
-    mo.vstack([mo.md("## Import / Export"), upload_json])
-    return (upload_json,)
+    clear_loaded_json = mo.ui.run_button(
+        label="Reset to from-scratch",
+        kind="warn",
+    )
+    upload_panel = mo.vstack(
+        [
+            mo.md("## Import / Export"),
+            mo.hstack([upload_json, clear_loaded_json], justify="start"),
+        ]
+    )
+    upload_panel
+    return clear_loaded_json, upload_json
 
 
 @app.cell
-def _(json, mo, upload_json, validate):
-    uploaded_payload = None
-    if upload_json.value:
-        try:
-            uploaded_payload = json.loads(upload_json.contents(0).decode("utf-8"))
-            validate(uploaded_payload)
-            mo.callout(
-                f"Loaded and validated `{upload_json.name(0)}`.",
-                kind="success",
+def _(clear_loaded_json, set_upload_status, set_uploaded_payload):
+    if clear_loaded_json.value:
+        set_uploaded_payload(None)
+        set_upload_status(
+            (
+                "Reset done. The notebook now uses the from-scratch payload.",
+                "info",
             )
-        except Exception as exc:
-            mo.callout(f"Load/validation error: {exc}", kind="danger")
-    else:
-        mo.callout(
-            "No JSON uploaded. The notebook currently uses the from-scratch payload.",
-            kind="info",
         )
-    return (uploaded_payload,)
+    return
 
 
 @app.cell
-def _(from_scratch_payload, uploaded_payload):
+def _(get_upload_status, mo):
+    status_message, status_kind = get_upload_status()
+    status_view = mo.callout(status_message, kind=status_kind)
+    status_view
+    return
+
+
+@app.cell
+def _(from_scratch_payload, get_uploaded_payload):
+    uploaded_payload = get_uploaded_payload()
     active_payload = uploaded_payload if uploaded_payload is not None else from_scratch_payload
     payload_source = "uploaded JSON" if uploaded_payload is not None else "from-scratch builder"
     return active_payload, payload_source
@@ -186,7 +230,7 @@ def _(from_scratch_payload, uploaded_payload):
 def _(active_payload, json, mo, payload_source, validate):
     validate(active_payload)
     preview = json.dumps(active_payload, indent=2)
-    mo.vstack(
+    payload_view = mo.vstack(
         [
             mo.callout(
                 f"Active payload source: **{payload_source}** (validated against schema).",
@@ -195,6 +239,7 @@ def _(active_payload, json, mo, payload_source, validate):
             mo.md(f"```json\n{preview[:8000]}\n```"),
         ]
     )
+    payload_view
     return
 
 
@@ -208,7 +253,7 @@ def _(Path, active_payload, json, mo):
         output_path.write_text(json_text, encoding="utf-8")
         return str(output_path)
 
-    mo.vstack(
+    export_view = mo.vstack(
         [
             mo.download(
                 data=json_text,
@@ -229,6 +274,7 @@ def _(Path, active_payload, json, mo):
             ),
         ]
     )
+    export_view
     return (save_document,)
 
 
