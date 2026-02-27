@@ -70,9 +70,66 @@ r3xa.save("hello-world.json")
 - `docs/overview.md`
 - `docs/api.md`
 - `docs/examples.md`
+- `docs/notebooks.md`
 - `docs/validation.md`
 - `docs/qi_case.md`
 - `docs/matlab.md`
+
+## IDE autocompletion (optional)
+Typed models are available as an optional extra:
+
+```bash
+pip install -e ".[typed]"
+```
+
+Models are generated from the JSON schema and keep the dict-based API unchanged:
+
+```python
+from r3xa_api import R3XAFile, from_model, models
+
+camera = models.CameraSource(
+    id="cam_01",
+    kind="data_sources/camera",
+    title="CCD Camera",
+    output_components=1,
+    output_dimension="surface",
+    output_units=[models.Unit(kind="unit", unit="gl")],
+    image_size=[models.Unit(kind="unit", unit="px")],
+)
+
+r3xa = R3XAFile(title="...", description="...", authors="...", date="2026-02-19")
+r3xa.data_sources.append(from_model(camera))
+r3xa.validate()
+```
+
+Regenerate typed models after schema updates:
+
+```bash
+make generate-models
+```
+
+## Marimo notebook (base DIC example)
+Install notebook support:
+```bash
+pip install -e ".[notebook]"
+# or
+pip install -r requirements-notebook.txt
+```
+
+Run the notebook:
+```bash
+./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
+```
+
+For Graphviz SVG generation inside the notebook, install the `dot` executable:
+- Linux: `sudo apt-get install graphviz`
+- macOS: `brew install graphviz`
+- Windows: `https://graphviz.org/download/` (+ add `Graphviz\\bin` to `PATH`)
+
+Optional static export (no backend):
+```bash
+./.venv/bin/marimo export html-wasm examples/notebooks/dic_base_marimo.py -o docs/figures/dic_base_marimo --mode run
+```
 
 ## Web UI (v0)
 Install extras and run a minimal FastAPI shell:

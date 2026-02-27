@@ -36,8 +36,11 @@ The optional web interface is documented here: :doc:`web`.
 
    overview.md
    api.md
+   specification.md
+   typed_models.md
    matlab.md
    examples.md
+   notebooks.md
    qi_case.md
    validation.md
    web.md
