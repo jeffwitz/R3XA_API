@@ -12,9 +12,9 @@ def _():
     import marimo as mo
 
     from r3xa_api import R3XAFile, unit, validate
-    from r3xa_api.webcore import generate_svg
+    from r3xa_api.webcore.graph import render_pyvis_html
 
-    return Path, R3XAFile, generate_svg, json, mo, unit, validate
+    return Path, R3XAFile, json, mo, render_pyvis_html, unit, validate
 
 
 @app.cell
@@ -279,29 +279,34 @@ def _(Path, active_payload, json, mo):
 
 
 @app.cell
-def _(active_payload, generate_graph_button, generate_svg, mo):
+def _(Path, active_payload, generate_graph_button, mo, render_pyvis_html):
     view = None
 
     if not generate_graph_button.value:
-        view = mo.callout("Click **Generate Graphviz SVG** to build the graph.", kind="info")
+        view = mo.callout("Click **Generate PyVis HTML graph** to build the graph.", kind="info")
     else:
         try:
-            svg_bytes = generate_svg(active_payload)
+            html_path = render_pyvis_html(
+                active_payload,
+                Path("examples/artifacts/dic_pipeline_notebook_pyvis"),
+            )
+            html_text = html_path.read_text(encoding="utf-8")
         except Exception as exc:
             view = mo.callout(
                 f"Graph generation error: {exc}\n\n"
-                "Install Python package `graphviz` and system executable `dot`.",
+                "Install Python package `pyvis`.",
                 kind="danger",
             )
         else:
             view = mo.vstack(
                 [
-                    mo.Html(svg_bytes.decode("utf-8")),
+                    mo.callout(f"Graph generated: `{html_path}`", kind="success"),
+                    mo.iframe(html_text, height="950px"),
                     mo.download(
-                        data=svg_bytes,
-                        filename="dic_pipeline_notebook.svg",
-                        mimetype="image/svg+xml",
-                        label="Export SVG to PC",
+                        data=html_text,
+                        filename="dic_pipeline_notebook_pyvis.html",
+                        mimetype="text/html",
+                        label="Export graph HTML to PC",
                     ),
                 ]
             )
@@ -313,7 +318,7 @@ def _(active_payload, generate_graph_button, generate_svg, mo):
 @app.cell
 def _(mo):
     generate_graph_button = mo.ui.run_button(
-        label="Generate Graphviz SVG",
+        label="Generate PyVis HTML graph",
         kind="success",
     )
     generate_graph_button

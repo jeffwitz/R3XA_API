@@ -121,10 +121,7 @@ Run the notebook:
 ./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
 ```
 
-For Graphviz SVG generation inside the notebook, install the `dot` executable:
-- Linux: `sudo apt-get install graphviz`
-- macOS: `brew install graphviz`
-- Windows: `https://graphviz.org/download/` (+ add `Graphviz\\bin` to `PATH`)
+Notebook graph output uses PyVis HTML (no `dot` executable required).
 
 Optional static export (no backend):
 ```bash

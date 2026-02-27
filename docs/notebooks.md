@@ -8,7 +8,7 @@ Notebook source:
 Notebook features:
 - **Load JSON from PC** (upload button)
 - **Export JSON to PC** (download button)
-- **Generate Graphviz SVG** + **Export SVG to PC**
+- **Generate PyVis HTML graph** + **Export graph HTML to PC**
 
 ---
 
@@ -18,11 +18,6 @@ Notebook features:
 ```bash
 ./.venv/bin/pip install -r requirements-notebook.txt
 ```
-
-Install Graphviz executable (`dot`) on your system:
-- Linux: `sudo apt-get install graphviz`
-- macOS: `brew install graphviz`
-- Windows: install from `https://graphviz.org/download/` and add `Graphviz\\bin` to `PATH`
 
 ### Start Marimo
 ```bash
@@ -38,8 +33,8 @@ In the notebook:
 3. Click **Load JSON from PC** and select an existing `.json` file (optional).
 4. Confirm the status callout says the uploaded file was loaded and validated.
 5. Click **Export JSON to PC**.
-6. Click **Generate Graphviz SVG**.
-7. Click **Export SVG to PC**.
+6. Click **Generate PyVis HTML graph**.
+7. Click **Export graph HTML to PC**.
 8. Optional repository save:
    ```python
    save_document()
@@ -92,15 +87,9 @@ GitHub Pages can host the exported Marimo notebook because it is static HTML + a
 
 Use the URL corresponding to your Pages configuration.
 
-### Important note for Graphviz on GitHub Pages
-GitHub Pages is static hosting, so there is no native `dot` executable in-browser.
-- JSON load/export buttons work in static mode.
-- The Graphviz generation button may fail in static mode depending on runtime capabilities.
-
-Recommended approach:
-1. Generate SVG locally (where `dot` is installed).
-2. Export and commit the produced SVG file.
-3. Share that SVG along with the notebook page.
+### Note for static hosting
+GitHub Pages is static hosting. JSON load/export works well in static mode.
+For graph generation, prefer using the notebook locally (`marimo edit`) and exporting the generated HTML graph.
 
 ---
 
