@@ -30,6 +30,16 @@ Web UI
 ------
 The optional web interface is documented here: :doc:`web`.
 
+Quick links
+-----------
+- :doc:`overview`
+- :doc:`examples`
+- :doc:`notebooks`
+- :doc:`matlab`
+- :doc:`validation`
+- :doc:`web`
+- :doc:`DEPLOY_RAILWAY`
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents

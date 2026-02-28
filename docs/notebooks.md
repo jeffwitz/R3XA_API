@@ -1,6 +1,6 @@
 # Notebooks (Marimo)
 
-This page explains how to test the **base DIC notebook** locally and how to share a static HTML export.
+This page explains how to run the **base DIC notebook** with a real Python runtime.
 
 Notebook source:
 - `examples/notebooks/dic_base_marimo.py`
@@ -43,43 +43,10 @@ In the notebook:
 
 ---
 
-## 2) Local static export
+## 2) MyBinder (public interactive run)
 
-Export as static HTML notebook:
-```bash
-./.venv/bin/marimo export html \
-  examples/notebooks/dic_base_marimo.py \
-  -o docs/figures/dic_base_marimo/index.html \
-  --force
-```
-
-Open directly:
-```bash
-xdg-open docs/figures/dic_base_marimo/index.html
-```
-
-Or serve locally:
-```bash
-python -m http.server --directory docs 8010
-```
-Then open `http://127.0.0.1:8010/figures/dic_base_marimo/`.
-
----
-
-## Notes
-
-- No Jupyter server is required for static mode.
-- Static mode is ideal for low-CPU demos and sharing.
-- For editable notebooks, keep using `marimo edit` locally.
-- `html-wasm` is not used here because it does not reliably import this local package (`r3xa_api`).
-
----
-
-## 3) MyBinder (public interactive run)
-
-Open this URL:
-
-`https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/`
+Open:
+- [Launch notebook on MyBinder](https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/)
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

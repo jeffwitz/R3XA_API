@@ -4,6 +4,7 @@ This page shows the **same pipeline** built in two ways:
 1) **From scratch** (explicit creation of every item)
 2) **Registry‑based** (reuse shared items and override only what changes)
 
+For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 
 
 ## Example index
