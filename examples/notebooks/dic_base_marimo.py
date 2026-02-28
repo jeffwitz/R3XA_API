@@ -6,6 +6,7 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
+    # Cell 1 — Shared imports and symbols used by downstream cells.
     import base64
     import html as html_std
     import json
@@ -22,6 +23,7 @@ def _():
 
 @app.cell
 def _(mo):
+    # Cell 2 — Notebook title and high-level objective.
     intro = mo.md("""
     # Base DIC example (R3XA_API)
 
@@ -34,6 +36,7 @@ def _(mo):
 
 @app.cell
 def _():
+    # Cell 3 — Editable experiment parameters (single place to customize the demo).
     # Edit these values directly, then re-run dependent cells.
     test_title = "Open-hole tensile test with DIC"
     test_description = "Camera acquisition + DIC processing pipeline"
@@ -56,6 +59,31 @@ def _():
 
 
 @app.cell
+def _(mo):
+    # Cell 4 — Human-readable guide: what each notebook cell does.
+    cell_map = mo.md("""
+    ## Notebook cell map
+
+    1. **Imports**: load Python modules and R3XA API helpers.
+    2. **Intro**: describe the base DIC workflow.
+    3. **Parameters**: editable metadata, paths, and frame settings.
+    4. **Cell map**: this guide.
+    5. **Build payload**: create a full R3XA document from scratch.
+    6. **UI state**: initialize uploaded payload and status message.
+    7. **Import UI**: upload/reset controls and JSON validation callback.
+    8. **Reset action**: apply reset when requested.
+    9. **Status view**: display current import/validation state.
+    10. **Active payload**: choose uploaded vs generated payload.
+    11. **Preview**: validate and show JSON excerpt.
+    12. **Export JSON**: download JSON + repository save helper.
+    13. **Graph rendering**: generate and embed the PyVis graph.
+    14. **Graph trigger**: button used to trigger graph generation.
+    """)
+    cell_map
+    return
+
+
+@app.cell
 def _(
     R3XAFile,
     authors,
@@ -68,6 +96,7 @@ def _(
     test_title,
     unit,
 ):
+    # Cell 5 — Build a complete R3XA payload from scratch using the API.
     r3xa = R3XAFile(
         title=test_title,
         description=test_description,
@@ -148,6 +177,7 @@ def _(
 
 @app.cell
 def _(mo):
+    # Cell 6 — Initialize reactive states (uploaded payload + status callout state).
     get_uploaded_payload, set_uploaded_payload = mo.state(None)
     get_upload_status, set_upload_status = mo.state(
         (
@@ -160,6 +190,7 @@ def _(mo):
 
 @app.cell
 def _(json, mo, set_upload_status, set_uploaded_payload, validate):
+    # Cell 7 — Import/reset UI and file-upload callback with schema validation.
     def on_file_change(files):
         if not files:
             set_uploaded_payload(None)
@@ -202,6 +233,7 @@ def _(json, mo, set_upload_status, set_uploaded_payload, validate):
 
 @app.cell
 def _(clear_loaded_json, set_upload_status, set_uploaded_payload):
+    # Cell 8 — Handle "reset to from-scratch" action.
     if clear_loaded_json.value:
         set_uploaded_payload(None)
         set_upload_status(
@@ -215,6 +247,7 @@ def _(clear_loaded_json, set_upload_status, set_uploaded_payload):
 
 @app.cell
 def _(get_upload_status, mo):
+    # Cell 9 — Render status feedback for upload/validation operations.
     status_message, status_kind = get_upload_status()
     status_view = mo.callout(status_message, kind=status_kind)
     status_view
@@ -223,6 +256,7 @@ def _(get_upload_status, mo):
 
 @app.cell
 def _(from_scratch_payload, get_uploaded_payload):
+    # Cell 10 — Select the payload currently used by preview/export/graph cells.
     uploaded_payload = get_uploaded_payload()
     active_payload = uploaded_payload if uploaded_payload is not None else from_scratch_payload
     payload_source = "uploaded JSON" if uploaded_payload is not None else "from-scratch builder"
@@ -231,6 +265,7 @@ def _(from_scratch_payload, get_uploaded_payload):
 
 @app.cell
 def _(active_payload, json, mo, payload_source, validate):
+    # Cell 11 — Validate active payload and show a JSON preview snippet.
     validate(active_payload)
     preview = json.dumps(active_payload, indent=2)
     payload_view = mo.vstack(
@@ -248,6 +283,7 @@ def _(active_payload, json, mo, payload_source, validate):
 
 @app.cell
 def _(Path, active_payload, json, mo):
+    # Cell 12 — Provide JSON download and optional repository save helper.
     json_text = json.dumps(active_payload, indent=2)
 
     def save_document(path: str = "examples/artifacts/dic_pipeline_notebook.json") -> str:
@@ -283,6 +319,7 @@ def _(Path, active_payload, json, mo):
 
 @app.cell
 def _(Path, active_payload, base64, generate_graph_button, html_std, mo, re, render_pyvis_html):
+    # Cell 13 — Build, display, and export the interactive PyVis HTML graph.
     view = None
 
     if not generate_graph_button.value:
@@ -342,6 +379,7 @@ def _(Path, active_payload, base64, generate_graph_button, html_std, mo, re, ren
 
 @app.cell
 def _(mo):
+    # Cell 14 — Trigger button for graph generation (read by Cell 13).
     generate_graph_button = mo.ui.run_button(
         label="Generate PyVis HTML graph",
         kind="success",
