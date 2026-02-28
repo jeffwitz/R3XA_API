@@ -1,6 +1,6 @@
 # Notebooks (Marimo)
 
-This page explains how to test the **base DIC notebook** locally and how to publish a static version on **GitHub Pages**.
+This page explains how to test the **base DIC notebook** locally and how to share a static HTML export.
 
 Notebook source:
 - `examples/notebooks/dic_base_marimo.py`
@@ -66,43 +66,16 @@ Then open `http://127.0.0.1:8010/figures/dic_base_marimo/`.
 
 ---
 
-## 3) Publish on GitHub Pages
-
-GitHub Pages can host this notebook as a regular static HTML page.
-
-### Recommended workflow
-1. Export:
-   ```bash
-   ./.venv/bin/marimo export html \
-     examples/notebooks/dic_base_marimo.py \
-     -o docs/figures/dic_base_marimo/index.html \
-     --force
-   ```
-2. Commit the exported file `docs/figures/dic_base_marimo/index.html`.
-3. Push to the branch used by Pages (`main` or `gh-pages`, depending on your repository settings).
-4. In GitHub: `Settings -> Pages`, confirm the configured source branch/folder.
-
-### Resulting URL
-- **Project Pages**: `https://<user>.github.io/<repo>/figures/dic_base_marimo/`
-- **User Pages**: `https://<user>.github.io/dic_base_marimo/` (if published at site root)
-
-Use the URL corresponding to your Pages configuration.
-
-### Why not `html-wasm` here
-`html-wasm` runs Python in-browser and cannot import this local package (`r3xa_api`) reliably from GitHub Pages.
-For this project, `marimo export html` is the stable option.
-
----
-
 ## Notes
 
 - No Jupyter server is required for static mode.
 - Static mode is ideal for low-CPU demos and sharing.
 - For editable notebooks, keep using `marimo edit` locally.
+- `html-wasm` is not used here because it does not reliably import this local package (`r3xa_api`).
 
 ---
 
-## 4) MyBinder (public interactive run)
+## 3) MyBinder (public interactive run)
 
 Open this URL:
 
