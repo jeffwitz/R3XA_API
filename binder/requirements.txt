@@ -1,0 +1,2 @@
+-e .[notebook]
+jupyter-server-proxy>=4.1

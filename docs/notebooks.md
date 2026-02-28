@@ -43,41 +43,42 @@ In the notebook:
 
 ---
 
-## 2) Local test (static export, no Python backend)
+## 2) Local static export
 
-Export as static WASM notebook:
+Export as static HTML notebook:
 ```bash
-./.venv/bin/marimo export html-wasm \
+./.venv/bin/marimo export html \
   examples/notebooks/dic_base_marimo.py \
-  -o docs/figures/dic_base_marimo \
-  --mode run
+  -o docs/figures/dic_base_marimo/index.html \
+  --force
 ```
 
-Serve locally:
+Open directly:
 ```bash
-python -m http.server --directory docs/figures/dic_base_marimo 8010
+xdg-open docs/figures/dic_base_marimo/index.html
 ```
 
-Open:
-- `http://127.0.0.1:8010`
-
-This is the same deployment model used for static hosting platforms.
+Or serve locally:
+```bash
+python -m http.server --directory docs 8010
+```
+Then open `http://127.0.0.1:8010/figures/dic_base_marimo/`.
 
 ---
 
 ## 3) Publish on GitHub Pages
 
-GitHub Pages can host the exported Marimo notebook because it is static HTML + assets.
+GitHub Pages can host this notebook as a regular static HTML page.
 
 ### Recommended workflow
 1. Export:
    ```bash
-   ./.venv/bin/marimo export html-wasm \
+   ./.venv/bin/marimo export html \
      examples/notebooks/dic_base_marimo.py \
-     -o docs/figures/dic_base_marimo \
-     --mode run
+     -o docs/figures/dic_base_marimo/index.html \
+     --force
    ```
-2. Commit the exported folder `docs/figures/dic_base_marimo/`.
+2. Commit the exported file `docs/figures/dic_base_marimo/index.html`.
 3. Push to the branch used by Pages (`main` or `gh-pages`, depending on your repository settings).
 4. In GitHub: `Settings -> Pages`, confirm the configured source branch/folder.
 
@@ -87,9 +88,9 @@ GitHub Pages can host the exported Marimo notebook because it is static HTML + a
 
 Use the URL corresponding to your Pages configuration.
 
-### Note for static hosting
-GitHub Pages is static hosting. JSON load/export works well in static mode.
-For graph generation, prefer using the notebook locally (`marimo edit`) and exporting the generated HTML graph.
+### Why not `html-wasm` here
+`html-wasm` runs Python in-browser and cannot import this local package (`r3xa_api`) reliably from GitHub Pages.
+For this project, `marimo export html` is the stable option.
 
 ---
 
@@ -98,3 +99,21 @@ For graph generation, prefer using the notebook locally (`marimo edit`) and expo
 - No Jupyter server is required for static mode.
 - Static mode is ideal for low-CPU demos and sharing.
 - For editable notebooks, keep using `marimo edit` locally.
+
+---
+
+## 4) MyBinder (public interactive run)
+
+Open this URL:
+
+`https://mybinder.org/v2/gh/jeffwitz/R3XA_API/HEAD?urlpath=proxy/2718/`
+
+How it works in this repository:
+- Dependencies come from `binder/requirements.txt`.
+- Binder startup runs `binder/start`, which launches:
+  `marimo edit examples/notebooks/dic_base_marimo.py --base-url /proxy/2718`.
+- Binder then proxies to Marimo at `/proxy/2718/`.
+
+Notes:
+- First launch can take 2-5 minutes (image build).
+- If the page is blank during startup, wait and refresh once.

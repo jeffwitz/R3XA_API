@@ -125,8 +125,14 @@ Notebook graph output uses PyVis HTML (no `dot` executable required).
 
 Optional static export (no backend):
 ```bash
-./.venv/bin/marimo export html-wasm examples/notebooks/dic_base_marimo.py -o docs/figures/dic_base_marimo --mode run
+./.venv/bin/marimo export html examples/notebooks/dic_base_marimo.py -o docs/figures/dic_base_marimo/index.html --force
 ```
+
+Run on MyBinder (no local install):
+- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/HEAD?urlpath=proxy/2718/`
+- Binder builds the environment from `binder/requirements.txt`.
+- Marimo starts automatically through `binder/start`.
+- First launch can take a few minutes (cold start).
 
 ## Web UI (v0)
 Install extras and run a minimal FastAPI shell:
