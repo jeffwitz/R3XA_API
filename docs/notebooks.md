@@ -106,7 +106,7 @@ For this project, `marimo export html` is the stable option.
 
 Open this URL:
 
-`https://mybinder.org/v2/gh/jeffwitz/R3XA_API/HEAD?urlpath=proxy/2718/`
+`https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/`
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

@@ -129,7 +129,7 @@ Optional static export (no backend):
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/HEAD?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/`
 - Binder builds the environment from `binder/requirements.txt`.
 - Marimo starts automatically through `binder/start`.
 - First launch can take a few minutes (cold start).
