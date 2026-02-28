@@ -169,6 +169,27 @@ def _estimate_label_height(label: str) -> float:
     return max(56.0, min(260.0, 26.0 + line_count * 17.0))
 
 
+def _estimate_canvas_height(
+    positions: Dict[str, tuple[float, float]],
+    label_heights: Dict[str, float],
+) -> int:
+    """Estimate the PyVis canvas height from positioned node bounding boxes."""
+
+    if not positions:
+        return 950
+
+    y_min = float("inf")
+    y_max = float("-inf")
+    for node_id, (_, y_coord) in positions.items():
+        node_height = label_heights.get(node_id, 64.0)
+        y_min = min(y_min, y_coord - node_height * 0.5)
+        y_max = max(y_max, y_coord + node_height * 0.5)
+
+    content_height = max(0.0, y_max - y_min)
+    padded_height = content_height + 220.0
+    return int(max(900.0, min(3600.0, padded_height)))
+
+
 def _compute_manual_positions(
     node_ids: Iterable[str],
     edges: Iterable[tuple[str, str]],
@@ -500,43 +521,6 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
     except Exception as exc:  # pragma: no cover - depends on optional dependency
         raise RuntimeError("Graph feature not available (pyvis not installed).") from exc
 
-    net = Network(height="950px", width="100%", directed=True)
-    net.set_options(
-        """
-        {
-          "nodes": {
-            "font": {
-              "size": 16,
-              "face": "Arial"
-            },
-            "margin": 14,
-            "widthConstraint": {
-              "maximum": 420
-            }
-          },
-          "physics": {
-            "enabled": false
-          },
-          "edges": {
-            "arrows": {
-              "to": {
-                "enabled": true,
-                "scaleFactor": 0.7
-              }
-            },
-            "smooth": {
-              "enabled": false
-            }
-          },
-          "interaction": {
-            "dragNodes": true,
-            "dragView": true,
-            "zoomView": true
-          }
-        }
-        """
-    )
-
     styles = graphviz_styles_to_pyvis(STYLES)
     used_datasets = _compute_used_datasets(data)
     intermediate_sources = {s.get("id") for s in data.get("data_sources", []) if _get_input_data_sets(s)}
@@ -595,6 +579,44 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
             levels=levels,
             label_widths=label_widths,
         )
+
+    canvas_height = _estimate_canvas_height(positions, label_heights)
+    net = Network(height=f"{canvas_height}px", width="100%", directed=True)
+    net.set_options(
+        """
+        {
+          "nodes": {
+            "font": {
+              "size": 16,
+              "face": "Arial"
+            },
+            "margin": 14,
+            "widthConstraint": {
+              "maximum": 420
+            }
+          },
+          "physics": {
+            "enabled": false
+          },
+          "edges": {
+            "arrows": {
+              "to": {
+                "enabled": true,
+                "scaleFactor": 0.7
+              }
+            },
+            "smooth": {
+              "enabled": false
+            }
+          },
+          "interaction": {
+            "dragNodes": true,
+            "dragView": true,
+            "zoomView": true
+          }
+        }
+        """
+    )
 
     for source in data.get("data_sources", []):
         source_id = source.get("id")

@@ -7,7 +7,9 @@ app = marimo.App(width="medium")
 @app.cell
 def _():
     import base64
+    import html as html_std
     import json
+    import re
     from pathlib import Path
 
     import marimo as mo
@@ -15,7 +17,7 @@ def _():
     from r3xa_api import R3XAFile, unit, validate
     from r3xa_api.webcore.graph import render_pyvis_html
 
-    return Path, R3XAFile, base64, json, mo, render_pyvis_html, unit, validate
+    return Path, R3XAFile, base64, html_std, json, mo, re, render_pyvis_html, unit, validate
 
 
 @app.cell
@@ -280,7 +282,7 @@ def _(Path, active_payload, json, mo):
 
 
 @app.cell
-def _(Path, active_payload, base64, generate_graph_button, mo, render_pyvis_html):
+def _(Path, active_payload, base64, generate_graph_button, html_std, mo, re, render_pyvis_html):
     view = None
 
     if not generate_graph_button.value:
@@ -292,9 +294,16 @@ def _(Path, active_payload, base64, generate_graph_button, mo, render_pyvis_html
                 Path("examples/artifacts/dic_pipeline_notebook_pyvis"),
             )
             html_text = html_path.read_text(encoding="utf-8")
-            html_text_view = html_text.replace("height: 950px;", "height: 2200px;")
+            height_match = re.search(
+                r"#mynetwork\s*\{[^}]*?height:\s*([0-9]+)px",
+                html_text,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            iframe_height_value = max(1400, int(height_match.group(1)) + 220) if height_match else 1800
+            iframe_height = f"{iframe_height_value}px"
+            html_srcdoc = html_std.escape(html_text, quote=True)
             html_data_url = "data:text/html;base64," + base64.b64encode(
-                html_text_view.encode("utf-8")
+                html_text.encode("utf-8")
             ).decode("ascii")
         except Exception as exc:
             view = mo.callout(
@@ -311,9 +320,15 @@ def _(Path, active_payload, base64, generate_graph_button, mo, render_pyvis_html
                         "Open graph in new tab"
                         "</a>"
                     ),
-                    mo.iframe(html_text_view, height="2200px"),
+                    mo.Html(
+                        f'<div style="width:100%; min-height:{iframe_height}; height:{iframe_height};">'
+                        f'<iframe srcdoc="{html_srcdoc}" width="100%" height="{iframe_height}" '
+                        'frameborder="0" '
+                        f'style="display:block; width:100%; height:{iframe_height}; border:0;"></iframe>'
+                        "</div>"
+                    ),
                     mo.download(
-                        data=html_text_view,
+                        data=html_text,
                         filename="dic_pipeline_notebook_pyvis.html",
                         mimetype="text/html",
                         label="Export graph HTML to PC",
