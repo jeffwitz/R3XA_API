@@ -111,7 +111,7 @@ Open this URL:
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.
 - Binder startup runs `binder/start`, which launches:
-  `marimo edit examples/notebooks/dic_base_marimo.py --base-url /proxy/2718`.
+  `marimo edit examples/notebooks/dic_base_marimo.py --port 2718`.
 - Binder then proxies to Marimo at `/proxy/2718/`.
 
 Notes:

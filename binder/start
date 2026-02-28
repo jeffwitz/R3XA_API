@@ -3,7 +3,6 @@ set -euo pipefail
 
 MARIMO_PORT="${MARIMO_PORT:-2718}"
 MARIMO_NOTEBOOK="${MARIMO_NOTEBOOK:-examples/notebooks/dic_base_marimo.py}"
-MARIMO_BASE_URL="/proxy/${MARIMO_PORT}"
 PYTHON_BIN="${PYTHON_BIN:-}"
 
 if [[ -z "${PYTHON_BIN}" ]]; then
@@ -21,7 +20,6 @@ echo "[binder] starting marimo on port ${MARIMO_PORT} (${MARIMO_NOTEBOOK})"
   --headless \
   --host 0.0.0.0 \
   --port "${MARIMO_PORT}" \
-  --base-url "${MARIMO_BASE_URL}" \
   --no-token > /tmp/marimo.log 2>&1 &
 
 exec "$@"
