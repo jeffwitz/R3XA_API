@@ -39,7 +39,7 @@ def unit(title: str, value: float, unit: str, scale: float = 1.0, **extra: Any) 
     return payload
 
 
-def data_set_file(filename: str, delimiter: Optional[str] = None, data_range: Optional[List[str]] = None, **extra: Any) -> Dict[str, Any]:
+def data_set_file(filename: str, delimiter: Optional[str] = None, data_range: Optional[str] = None, **extra: Any) -> Dict[str, Any]:
     """Build a `data_set_file` payload for `timestamps` or `data` fields."""
 
     payload = {
