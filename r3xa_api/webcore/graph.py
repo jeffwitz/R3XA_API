@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
+from dataclasses import dataclass
 from pathlib import Path
 from textwrap import wrap
 from typing import Any, Dict, Iterable
@@ -47,6 +48,28 @@ STYLES = {
 }
 
 
+@dataclass(frozen=True)
+class _EdgeRecord:
+    """Directed edge between two graph nodes with style category."""
+
+    src: str
+    dst: str
+    style_key: str
+
+
+@dataclass(frozen=True)
+class _GraphModel:
+    """Normalized graph model shared by all render backends."""
+
+    source_ids: list[str]
+    data_set_ids: list[str]
+    node_ids: list[str]
+    used_datasets: set[str]
+    intermediate_sources: set[str]
+    edge_records: list[_EdgeRecord]
+    levels: Dict[str, int]
+
+
 def _get_input_data_sets(source: Dict[str, Any]) -> Iterable[str]:
     """Return upstream dataset ids declared by a data source."""
 
@@ -81,6 +104,47 @@ def _compute_used_datasets(data: Dict[str, Any]) -> set[str]:
         for ds_id in _get_input_data_sets(source):
             used.add(ds_id)
     return used
+
+
+def _build_graph_model(data: Dict[str, Any]) -> _GraphModel:
+    """Build a normalized graph model reused across all rendering backends."""
+
+    used_datasets = _compute_used_datasets(data)
+    intermediate_sources = {source.get("id") for source in data.get("data_sources", []) if _get_input_data_sets(source)}
+
+    source_ids = [source.get("id") for source in data.get("data_sources", []) if source.get("id")]
+    data_set_ids = [dataset.get("id") for dataset in data.get("data_sets", []) if dataset.get("id")]
+    node_ids = source_ids + data_set_ids
+
+    edge_records: list[_EdgeRecord] = []
+
+    for source in data.get("data_sources", []):
+        source_id = source.get("id")
+        if not source_id:
+            continue
+        for input_set in _get_input_data_sets(source):
+            edge_records.append(_EdgeRecord(src=input_set, dst=source_id, style_key="input"))
+
+    for dataset in data.get("data_sets", []):
+        dataset_id = dataset.get("id")
+        if not dataset_id:
+            continue
+        for src in _get_data_sources(dataset):
+            style_key = "data_initial" if src not in intermediate_sources else "data"
+            edge_records.append(_EdgeRecord(src=src, dst=dataset_id, style_key=style_key))
+
+    edge_pairs = [(edge.src, edge.dst) for edge in edge_records]
+    levels = _compute_hierarchical_levels(node_ids, edge_pairs)
+
+    return _GraphModel(
+        source_ids=source_ids,
+        data_set_ids=data_set_ids,
+        node_ids=node_ids,
+        used_datasets=used_datasets,
+        intermediate_sources=intermediate_sources,
+        edge_records=edge_records,
+        levels=levels,
+    )
 
 
 def _compute_hierarchical_levels(nodes: Iterable[str], edges: Iterable[tuple[str, str]]) -> Dict[str, int]:
@@ -447,32 +511,22 @@ def _build_graphviz_dot(data: Dict[str, Any], format: str = "svg") -> Any:
 
     dot = Digraph(comment="R3XA graph", format=format)
     dot.attr("node", margin="0.2,0.1")
-
-    used_datasets = _compute_used_datasets(data)
-    intermediate_sources = {s.get("id") for s in data.get("data_sources", []) if _get_input_data_sets(s)}
+    model = _build_graph_model(data)
 
     for source in data.get("data_sources", []):
-        is_intermediate = source.get("id") in intermediate_sources
+        is_intermediate = source.get("id") in model.intermediate_sources
         style = STYLES["data_sources"]["intermediate" if is_intermediate else "initial"]
         label = f"{source.get('title','')}\n({source.get('description','')})"
         dot.node(source["id"], label, **style)
 
     for dataset in data.get("data_sets", []):
-        is_intermediate = dataset["id"] in used_datasets
+        is_intermediate = dataset["id"] in model.used_datasets
         style = STYLES["data_sets"]["intermediate" if is_intermediate else "final"]
         label = f"{dataset.get('title','')}\n({dataset.get('description','')})"
         dot.node(dataset["id"], label, **style)
 
-    for source in data.get("data_sources", []):
-        for input_set in _get_input_data_sets(source):
-            dot.edge(input_set, source["id"], **STYLES["edges"]["input"])
-
-    for dataset in data.get("data_sets", []):
-        for src in _get_data_sources(dataset):
-            edge_style = (
-                STYLES["edges"]["data_initial"] if src not in intermediate_sources else STYLES["edges"]["data"]
-            )
-            dot.edge(src, dataset["id"], **edge_style)
+    for edge in model.edge_records:
+        dot.edge(edge.src, edge.dst, **STYLES["edges"][edge.style_key])
 
     return dot
 
@@ -522,28 +576,7 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
         raise RuntimeError("Graph feature not available (pyvis not installed).") from exc
 
     styles = graphviz_styles_to_pyvis(STYLES)
-    used_datasets = _compute_used_datasets(data)
-    intermediate_sources = {s.get("id") for s in data.get("data_sources", []) if _get_input_data_sets(s)}
-    source_ids = [source.get("id") for source in data.get("data_sources", []) if source.get("id")]
-    data_set_ids = [dataset.get("id") for dataset in data.get("data_sets", []) if dataset.get("id")]
-
-    edge_records: list[tuple[str, str, Dict[str, Any]]] = []
-    for source in data.get("data_sources", []):
-        source_id = source.get("id")
-        if not source_id:
-            continue
-        for input_set in _get_input_data_sets(source):
-            edge_records.append((input_set, source_id, styles["edges"]["input"]))
-
-    for dataset in data.get("data_sets", []):
-        dataset_id = dataset.get("id")
-        if not dataset_id:
-            continue
-        for src in _get_data_sources(dataset):
-            edge_style = styles["edges"]["data_initial"] if src not in intermediate_sources else styles["edges"]["data"]
-            edge_records.append((src, dataset_id, edge_style))
-
-    levels = _compute_hierarchical_levels(source_ids + data_set_ids, [(src, dst) for src, dst, _ in edge_records])
+    model = _build_graph_model(data)
 
     node_labels: Dict[str, str] = {}
     for source in data.get("data_sources", []):
@@ -555,11 +588,11 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
         if dataset_id:
             node_labels[dataset_id] = _format_node_label(dataset.get("title", ""), dataset.get("description", ""))
 
-    edge_pairs = [(src, dst) for src, dst, _ in edge_records]
+    edge_pairs = [(edge.src, edge.dst) for edge in model.edge_records]
     label_widths = {node_id: _estimate_label_width(label) for node_id, label in node_labels.items()}
     label_heights = {node_id: _estimate_label_height(label) for node_id, label in node_labels.items()}
     graphviz_layout = _compute_graphviz_positions(
-        node_ids=source_ids + data_set_ids,
+        node_ids=model.node_ids,
         edges=edge_pairs,
         label_widths=label_widths,
         label_heights=label_heights,
@@ -574,9 +607,9 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
         )
     else:
         positions = _compute_manual_positions(
-            node_ids=source_ids + data_set_ids,
+            node_ids=model.node_ids,
             edges=edge_pairs,
-            levels=levels,
+            levels=model.levels,
             label_widths=label_widths,
         )
 
@@ -622,7 +655,7 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
         source_id = source.get("id")
         if not source_id:
             continue
-        is_intermediate = source.get("id") in intermediate_sources
+        is_intermediate = source.get("id") in model.intermediate_sources
         style = styles["data_sources"]["intermediate" if is_intermediate else "initial"]
         label = node_labels.get(source_id, "")
         x_coord, y_coord = positions.get(source_id, (0.0, 0.0))
@@ -632,14 +665,14 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
         dataset_id = dataset.get("id")
         if not dataset_id:
             continue
-        is_intermediate = dataset["id"] in used_datasets
+        is_intermediate = dataset["id"] in model.used_datasets
         style = styles["data_sets"]["intermediate" if is_intermediate else "final"]
         label = node_labels.get(dataset_id, "")
         x_coord, y_coord = positions.get(dataset_id, (0.0, 0.0))
         net.add_node(dataset_id, label=label, x=x_coord, y=y_coord, physics=False, **style)
 
-    for src, dst, style in edge_records:
-        net.add_edge(src, dst, **style)
+    for edge in model.edge_records:
+        net.add_edge(edge.src, edge.dst, **styles["edges"][edge.style_key])
 
     out_html = Path(output_path).with_suffix(".html")
     out_html.parent.mkdir(parents=True, exist_ok=True)
@@ -671,33 +704,13 @@ def render_networkx_matplotlib_file(
         raise ValueError("Unsupported format. Use one of: png, svg, pdf.")
 
     styles = STYLES
-    used_datasets = _compute_used_datasets(data)
-    intermediate_sources = {s.get("id") for s in data.get("data_sources", []) if _get_input_data_sets(s)}
-    source_ids = [source.get("id") for source in data.get("data_sources", []) if source.get("id")]
-    data_set_ids = [dataset.get("id") for dataset in data.get("data_sets", []) if dataset.get("id")]
-
-    edge_records: list[tuple[str, str, Dict[str, Any]]] = []
-    for source in data.get("data_sources", []):
-        source_id = source.get("id")
-        if not source_id:
-            continue
-        for input_set in _get_input_data_sets(source):
-            edge_records.append((input_set, source_id, styles["edges"]["input"]))
-
-    for dataset in data.get("data_sets", []):
-        dataset_id = dataset.get("id")
-        if not dataset_id:
-            continue
-        for src in _get_data_sources(dataset):
-            edge_style = styles["edges"]["data_initial"] if src not in intermediate_sources else styles["edges"]["data"]
-            edge_records.append((src, dataset_id, edge_style))
-
-    node_ids = source_ids + data_set_ids
+    model = _build_graph_model(data)
+    node_ids = model.node_ids
     graph = nx.DiGraph()
     graph.add_nodes_from(node_ids)
-    graph.add_edges_from((src, dst) for src, dst, _ in edge_records)
+    graph.add_edges_from((edge.src, edge.dst) for edge in model.edge_records)
 
-    levels = _compute_hierarchical_levels(node_ids, list(graph.edges()))
+    levels = model.levels
     node_labels: Dict[str, str] = {}
     node_shapes: Dict[str, str] = {}
     node_style_map: Dict[str, Dict[str, Any]] = {}
@@ -719,7 +732,7 @@ def render_networkx_matplotlib_file(
         source_id = source.get("id")
         if not source_id:
             continue
-        is_intermediate = source_id in intermediate_sources
+        is_intermediate = source_id in model.intermediate_sources
         style = styles["data_sources"]["intermediate" if is_intermediate else "initial"]
         node_shapes[source_id] = "ellipse"
         node_style_map[source_id] = style
@@ -733,7 +746,7 @@ def render_networkx_matplotlib_file(
         dataset_id = dataset.get("id")
         if not dataset_id:
             continue
-        is_intermediate = dataset_id in used_datasets
+        is_intermediate = dataset_id in model.used_datasets
         style = styles["data_sets"]["intermediate" if is_intermediate else "final"]
         node_shapes[dataset_id] = "box"
         node_style_map[dataset_id] = style
@@ -758,7 +771,7 @@ def render_networkx_matplotlib_file(
             label_widths[node_id] = max(210.0, min(1500.0, text_width * 1.30))
             label_heights[node_id] = max(76.0, min(1000.0, text_height * 1.50))
 
-    edge_pairs = list(graph.edges())
+    edge_pairs = [(edge.src, edge.dst) for edge in model.edge_records]
     graphviz_layout = _compute_graphviz_positions(
         node_ids=node_ids,
         edges=edge_pairs,
@@ -1218,9 +1231,12 @@ def render_networkx_matplotlib_file(
     graph_center_x = 0.5 * (x_min + x_max)
     graph_span_x = max(1.0, x_max - x_min)
 
-    for src, dst, style in edge_records:
+    for edge in model.edge_records:
+        src = edge.src
+        dst = edge.dst
         if src not in positions or dst not in positions:
             continue
+        style = styles["edges"][edge.style_key]
         level_delta = levels.get(dst, 0) - levels.get(src, 0)
         direct_hits = _count_direct_hits(src, dst)
         edge_kwargs: Dict[str, Any] = {
