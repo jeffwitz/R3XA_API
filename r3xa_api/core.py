@@ -122,26 +122,45 @@ class R3XAFile:
         self.header.update(fields)
         return self
 
+    def _target_collection(self, kind: str) -> List[Dict[str, Any]]:
+        """Return the target top-level collection matching item kind."""
+
+        section = kind.split("/", 1)[0]
+        if section == "settings":
+            return self.settings
+        if section == "data_sources":
+            return self.data_sources
+        if section == "data_sets":
+            return self.data_sets
+        raise ValueError("kind must start with settings/, data_sources/, or data_sets/")
+
+    def add_item(self, kind: str, **fields: Any) -> Dict[str, Any]:
+        """Append an item to the correct collection from its kind prefix."""
+
+        item = new_item(kind, **fields)
+        self._target_collection(kind).append(item)
+        return item
+
     def add_setting(self, kind: str, **fields: Any) -> Dict[str, Any]:
         """Append a setting item and return it."""
 
-        item = new_item(kind, **fields)
-        self.settings.append(item)
-        return item
+        if not kind.startswith("settings/"):
+            raise ValueError("add_setting expects a kind starting with settings/")
+        return self.add_item(kind, **fields)
 
     def add_data_source(self, kind: str, **fields: Any) -> Dict[str, Any]:
         """Append a data source item and return it."""
 
-        item = new_item(kind, **fields)
-        self.data_sources.append(item)
-        return item
+        if not kind.startswith("data_sources/"):
+            raise ValueError("add_data_source expects a kind starting with data_sources/")
+        return self.add_item(kind, **fields)
 
     def add_data_set(self, kind: str, **fields: Any) -> Dict[str, Any]:
         """Append a dataset item and return it."""
 
-        item = new_item(kind, **fields)
-        self.data_sets.append(item)
-        return item
+        if not kind.startswith("data_sets/"):
+            raise ValueError("add_data_set expects a kind starting with data_sets/")
+        return self.add_item(kind, **fields)
 
     # Guided helpers
     def add_generic_setting(self, title: str, description: str, **extra: Any) -> Dict[str, Any]:

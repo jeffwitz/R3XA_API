@@ -109,3 +109,45 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
     assert isinstance(payload["data_sources"][0], dict)
     assert isinstance(payload["data_sets"][0], dict)
     validate(payload)
+
+
+def test_add_item_routes_to_expected_collection() -> None:
+    r3xa = R3XAFile(title="Routing", description="Kind routing", authors="R3XA API", date="2026-03-01")
+
+    setting = r3xa.add_item("settings/generic", title="S", description="Setting")
+    source = r3xa.add_item(
+        "data_sources/generic",
+        title="Source",
+        description="Generic source",
+        output_components=1,
+        output_dimension="point",
+        output_units=[unit(title="u", value=1.0, unit="N")],
+        manufacturer="ACME",
+        model="m1",
+    )
+    dataset = r3xa.add_item(
+        "data_sets/file",
+        title="D",
+        description="Dataset",
+        data_sources=[source["id"]],
+        time_reference=0.0,
+        timestamps=data_set_file(filename="t.csv"),
+        data=data_set_file(filename="d.csv"),
+    )
+
+    assert setting in r3xa.settings
+    assert source in r3xa.data_sources
+    assert dataset in r3xa.data_sets
+    validate(r3xa.to_dict())
+
+
+def test_add_setting_rejects_wrong_kind_prefix() -> None:
+    r3xa = R3XAFile(title="Kinds", description="Kinds", authors="R3XA API", date="2026-03-01")
+    with pytest.raises(ValueError):
+        r3xa.add_setting("data_sources/generic", title="bad", description="bad")
+
+
+def test_add_item_rejects_unknown_kind_prefix() -> None:
+    r3xa = R3XAFile(title="Kinds", description="Kinds", authors="R3XA API", date="2026-03-01")
+    with pytest.raises(ValueError):
+        r3xa.add_item("unknown/item", title="bad", description="bad")
