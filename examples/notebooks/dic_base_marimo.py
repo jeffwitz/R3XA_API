@@ -87,7 +87,7 @@ def _(Path, base64, mo):
     - edit parameters,
     - generate/validate the JSON payload,
     - import/export JSON files,
-    - generate and export the interactive PyVis graph.
+    - generate and export the Graphviz SVG graph.
     """)
     header_view = mo.vstack([logos, intro])
     header_view
@@ -113,7 +113,7 @@ def _(mo):
     11. **Active payload selector**.
     12. **Validation + JSON preview**.
     13. **JSON export helpers**.
-    14. **PyVis graph generation and embedding**.
+    14. **Graphviz SVG generation and embedding**.
     15. **Graph generation trigger button**.
     """)
     cell_map
@@ -123,14 +123,12 @@ def _(mo):
 @app.cell
 def _():
     # Cell 4 — Full imports for payload construction, validation, and graph rendering.
-    import html as html_std
     import json
-    import re
 
     from r3xa_api import R3XAFile, unit, validate
-    from r3xa_api.webcore.graph import render_pyvis_html
+    from r3xa_api.webcore.graph import generate_svg
 
-    return R3XAFile, html_std, json, re, render_pyvis_html, unit, validate
+    return R3XAFile, generate_svg, json, unit, validate
 
 
 @app.cell
@@ -400,66 +398,55 @@ def _(Path, active_payload, json, mo):
 def _(
     Path,
     active_payload,
-    base64,
     generate_graph_button,
-    html_std,
+    generate_svg,
     mo,
-    re,
-    render_pyvis_html,
 ):
-    # Cell 14 — Build, display, and export the interactive PyVis HTML graph.
+    # Cell 14 — Build, display, and export the Graphviz SVG graph.
     view = None
+    svg_path = Path("examples/artifacts/dic_pipeline_notebook.svg")
+    graph_status_view = None
 
-    if not generate_graph_button.value:
-        view = mo.callout("Click **Generate PyVis HTML graph** to build the graph.", kind="info")
-    else:
+    if generate_graph_button.value:
         try:
-            html_path = render_pyvis_html(
-                active_payload,
-                Path("examples/artifacts/dic_pipeline_notebook_pyvis"),
-            )
-            html_text = html_path.read_text(encoding="utf-8")
-            height_match = re.search(
-                r"#mynetwork\s*\{[^}]*?height:\s*([0-9]+)px",
-                html_text,
-                flags=re.IGNORECASE | re.DOTALL,
-            )
-            iframe_height_value = max(1400, int(height_match.group(1)) + 220) if height_match else 1800
-            iframe_height = f"{iframe_height_value}px"
-            html_srcdoc = html_std.escape(html_text, quote=True)
-            html_data_url = "data:text/html;base64," + base64.b64encode(
-                html_text.encode("utf-8")
-            ).decode("ascii")
+            svg_bytes = generate_svg(active_payload)
+            svg_text = svg_bytes.decode("utf-8")
+            svg_path.parent.mkdir(parents=True, exist_ok=True)
+            svg_path.write_bytes(svg_bytes)
+            graph_status_view = mo.callout(f"Graph generated: `{svg_path}`", kind="success")
         except Exception as exc:
-            view = mo.callout(
+            graph_status_view = mo.callout(
                 f"Graph generation error: {exc}\n\n"
-                "Install Python package `pyvis`.",
+                "Install Python package `graphviz` and ensure `dot` is available.",
                 kind="danger",
             )
+    if view is None and svg_path.exists():
+        svg_bytes = svg_path.read_bytes()
+        svg_text = svg_bytes.decode("utf-8")
+        if graph_status_view is None:
+            graph_status_view = mo.callout(f"Loaded existing graph: `{svg_path}`", kind="info")
+        view = mo.vstack(
+            [
+                graph_status_view,
+                mo.Html(
+                    '<div style="width:100%; min-height:1200px; overflow:auto; '
+                    'border:1px solid #d0d7de; border-radius:8px; padding:8px; background:white;">'
+                    f"{svg_text}"
+                    "</div>"
+                ),
+                mo.download(
+                    data=svg_bytes,
+                    filename="dic_pipeline_notebook.svg",
+                    mimetype="image/svg+xml",
+                    label="Save SVG to PC",
+                ),
+            ]
+        )
+    elif view is None:
+        if graph_status_view is not None:
+            view = graph_status_view
         else:
-            view = mo.vstack(
-                [
-                    mo.callout(f"Graph generated: `{html_path}`", kind="success"),
-                    mo.Html(
-                        f'<a href="{html_data_url}" target="_blank" rel="noopener noreferrer">'
-                        "Open graph in new tab"
-                        "</a>"
-                    ),
-                    mo.Html(
-                        f'<div style="width:100%; min-height:{iframe_height}; height:{iframe_height};">'
-                        f'<iframe srcdoc="{html_srcdoc}" width="100%" height="{iframe_height}" '
-                        'frameborder="0" '
-                        f'style="display:block; width:100%; height:{iframe_height}; border:0;"></iframe>'
-                        "</div>"
-                    ),
-                    mo.download(
-                        data=html_text,
-                        filename="dic_pipeline_notebook_pyvis.html",
-                        mimetype="text/html",
-                        label="Export graph HTML to PC",
-                    ),
-                ]
-            )
+            view = mo.callout("Click **Generate Graphviz SVG** to build the graph.", kind="info")
 
     view
     return
@@ -469,7 +456,7 @@ def _(
 def _(mo):
     # Cell 15 — Trigger button for graph generation (read by Cell 14).
     generate_graph_button = mo.ui.run_button(
-        label="Generate PyVis HTML graph",
+        label="Generate Graphviz SVG",
         kind="success",
     )
     generate_graph_button
