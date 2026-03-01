@@ -50,6 +50,7 @@ Open:
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.
+- System packages come from `binder/apt.txt` (`graphviz` is installed).
 - Binder startup runs `binder/start`, which launches:
   `marimo edit examples/notebooks/dic_base_marimo.py --port 2718`.
 - Binder then proxies to Marimo at `/proxy/2718/`.
