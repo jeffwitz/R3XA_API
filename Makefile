@@ -1,4 +1,4 @@
-.PHONY: docs generate-spec generate-models notebook-dic notebook-dic-export
+.PHONY: docs generate-spec generate-models notebook-dic notebook-dic-export clean-artifacts source-archive
 
 generate-spec:
 	python tools/generate_spec.py \
@@ -27,3 +27,13 @@ notebook-dic:
 
 notebook-dic-export:
 	./.venv/bin/marimo export html examples/notebooks/dic_base_marimo.py -o docs/figures/dic_base_marimo/index.html --force
+
+clean-artifacts:
+	rm -rf docs/_build web/node_modules build dist .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+	find . -type f -name "*.py[co]" -delete
+	find . -maxdepth 2 -type d -name "*.egg-info" -prune -exec rm -rf {} +
+
+source-archive:
+	mkdir -p archives
+	git archive --format=zip --output archives/R3XA_API-source.zip HEAD
