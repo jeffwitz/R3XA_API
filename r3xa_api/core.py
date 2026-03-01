@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 import random
 import string
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from .schema import schema_version
+from .typed import from_model
 from .validate import validate
 
 
@@ -64,6 +65,33 @@ def _ensure_data_set_file(value: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
     return data_set_file(filename=value)
 
 
+class _ModelAwareList(list):
+    """List that accepts dicts and typed models exposing `model_dump`."""
+
+    def __init__(self, values: Iterable[Any] = ()) -> None:
+        super().__init__()
+        self.extend(values)
+
+    @staticmethod
+    def _normalize(value: Any) -> Dict[str, Any]:
+        return from_model(value)
+
+    def append(self, value: Any) -> None:
+        super().append(self._normalize(value))
+
+    def extend(self, values: Iterable[Any]) -> None:
+        super().extend(self._normalize(value) for value in values)
+
+    def insert(self, index: int, value: Any) -> None:
+        super().insert(index, self._normalize(value))
+
+    def __setitem__(self, index: Any, value: Any) -> None:
+        if isinstance(index, slice):
+            super().__setitem__(index, [self._normalize(item) for item in value])
+            return
+        super().__setitem__(index, self._normalize(value))
+
+
 class R3XAFile:
     """Mutable builder for an R3XA JSON document."""
 
@@ -72,9 +100,9 @@ class R3XAFile:
 
         self.header: Dict[str, Any] = dict(header)
         self.header.setdefault("version", version or schema_version())
-        self.settings: List[Dict[str, Any]] = []
-        self.data_sources: List[Dict[str, Any]] = []
-        self.data_sets: List[Dict[str, Any]] = []
+        self.settings: List[Dict[str, Any]] = _ModelAwareList()
+        self.data_sources: List[Dict[str, Any]] = _ModelAwareList()
+        self.data_sets: List[Dict[str, Any]] = _ModelAwareList()
 
     @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "R3XAFile":
@@ -83,9 +111,9 @@ class R3XAFile:
         version = payload.get("version")
         header = {k: v for k, v in payload.items() if k not in {"version", "settings", "data_sources", "data_sets"}}
         obj = cls(version=version, **header)
-        obj.settings = list(payload.get("settings", []))
-        obj.data_sources = list(payload.get("data_sources", []))
-        obj.data_sets = list(payload.get("data_sets", []))
+        obj.settings = _ModelAwareList(payload.get("settings", []))
+        obj.data_sources = _ModelAwareList(payload.get("data_sources", []))
+        obj.data_sets = _ModelAwareList(payload.get("data_sets", []))
         return obj
 
     def set_header(self, **fields: Any) -> "R3XAFile":

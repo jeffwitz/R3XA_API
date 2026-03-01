@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 import r3xa_api
-from r3xa_api import from_model, schema_version, validate
+from r3xa_api import R3XAFile, from_model, schema_version, validate
 
 pydantic = pytest.importorskip("pydantic")
 ValidationError = pydantic.ValidationError
@@ -89,6 +89,18 @@ def test_from_model_roundtrip():
         "data_sets": [],
     }
     validate(payload)
+
+
+def test_r3xafile_accepts_typed_model_direct_append():
+    camera = _valid_camera()
+    r3xa = R3XAFile(
+        title="Typed append",
+        description="R3XAFile accepts typed models in lists",
+        authors="R3XA Team",
+        date="2026-03-01",
+    )
+    r3xa.data_sources.append(camera)
+    validate(r3xa.to_dict())
 
 
 def test_r3xa_document_valid():
