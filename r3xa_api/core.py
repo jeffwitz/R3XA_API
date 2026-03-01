@@ -49,6 +49,8 @@ def data_set_file(filename: str, delimiter: Optional[str] = None, data_range: Op
     if delimiter is not None:
         payload["delimiter"] = delimiter
     if data_range is not None:
+        if not isinstance(data_range, str):
+            raise TypeError("data_range must be a string or None")
         payload["data_range"] = data_range
     payload.update(extra)
     return payload

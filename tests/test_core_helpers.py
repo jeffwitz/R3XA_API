@@ -1,3 +1,5 @@
+import pytest
+
 from r3xa_api import R3XAFile, data_set_file, unit, validate
 
 
@@ -37,3 +39,8 @@ def test_data_set_file_accepts_string_range_and_validates() -> None:
     )
 
     validate(r3xa.to_dict())
+
+
+def test_data_set_file_rejects_non_string_range() -> None:
+    with pytest.raises(TypeError):
+        data_set_file(filename="timestamps.csv", data_range=["A2:A100"])  # type: ignore[arg-type]

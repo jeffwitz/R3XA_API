@@ -93,7 +93,7 @@ Build a schema‑compliant unit object.
 
 ### `data_set_file(...)`
 ```python
-data_set_file(filename: str, delimiter: str | None = None, data_range: list[str] | None = None, **extra) -> dict
+data_set_file(filename: str, delimiter: str | None = None, data_range: str | None = None, **extra) -> dict
 ```
 Build a schema‑compliant data_set_file object.
 
