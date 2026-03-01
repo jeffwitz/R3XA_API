@@ -9,15 +9,22 @@ pytest.importorskip("matplotlib")
 from r3xa_api.webcore.graph import render_networkx_matplotlib_file
 
 
-def _load_example_payload() -> dict:
+GRAPH_CASES = [
+    ("dic_pipeline", "dic_pipeline.json"),
+    ("qi_hu", "qi_hu_from_scratch.json"),
+]
+
+
+def _load_example_payload(filename: str) -> dict:
     root = Path(__file__).resolve().parents[2]
-    payload_path = root / "examples" / "artifacts" / "dic_pipeline.json"
+    payload_path = root / "examples" / "artifacts" / filename
     return json.loads(payload_path.read_text(encoding="utf-8"))
 
 
-def test_render_networkx_matplotlib_png(tmp_path: Path) -> None:
-    payload = _load_example_payload()
-    output_base = tmp_path / "graph_dic_pipeline_nx"
+@pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
+def test_render_networkx_matplotlib_png(case_name: str, filename: str, tmp_path: Path) -> None:
+    payload = _load_example_payload(filename)
+    output_base = tmp_path / f"graph_{case_name}_nx"
 
     output_path = render_networkx_matplotlib_file(payload, output_base, format="png", dpi=120)
 
@@ -27,7 +34,7 @@ def test_render_networkx_matplotlib_png(tmp_path: Path) -> None:
 
 
 def test_render_networkx_matplotlib_invalid_format(tmp_path: Path) -> None:
-    payload = _load_example_payload()
+    payload = _load_example_payload("dic_pipeline.json")
     output_base = tmp_path / "graph_dic_pipeline_nx"
 
     with pytest.raises(ValueError):

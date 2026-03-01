@@ -14,14 +14,21 @@ if shutil.which("dot") is None:
 from r3xa_api.webcore.graph import generate_svg, render_graphviz_file, render_pyvis_html
 
 
-def _load_example_payload() -> dict:
+GRAPH_CASES = [
+    ("dic_pipeline", "dic_pipeline.json"),
+    ("qi_hu", "qi_hu_from_scratch.json"),
+]
+
+
+def _load_example_payload(filename: str) -> dict:
     root = Path(__file__).resolve().parents[2]
-    payload_path = root / "examples" / "artifacts" / "dic_pipeline.json"
+    payload_path = root / "examples" / "artifacts" / filename
     return json.loads(payload_path.read_text(encoding="utf-8"))
 
 
-def test_generate_svg_returns_svg_document() -> None:
-    payload = _load_example_payload()
+@pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
+def test_generate_svg_returns_svg_document(case_name: str, filename: str) -> None:
+    payload = _load_example_payload(filename)
     svg = generate_svg(payload)
     svg_text = svg.decode("utf-8", errors="ignore")
 
@@ -29,9 +36,10 @@ def test_generate_svg_returns_svg_document() -> None:
     assert "</svg>" in svg_text
 
 
-def test_render_graphviz_file_exports_svg_and_dot(tmp_path: Path) -> None:
-    payload = _load_example_payload()
-    output_base = tmp_path / "graph_dic_pipeline"
+@pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
+def test_render_graphviz_file_exports_svg_and_dot(case_name: str, filename: str, tmp_path: Path) -> None:
+    payload = _load_example_payload(filename)
+    output_base = tmp_path / f"graph_{case_name}"
 
     svg_path = render_graphviz_file(payload, output_base, export_dot=True)
     dot_path = output_base.with_suffix(".dot")
@@ -42,9 +50,10 @@ def test_render_graphviz_file_exports_svg_and_dot(tmp_path: Path) -> None:
     assert "digraph" in dot_path.read_text(encoding="utf-8")
 
 
-def test_render_pyvis_html_generates_network_page(tmp_path: Path) -> None:
-    payload = _load_example_payload()
-    output_base = tmp_path / "graph_dic_pipeline"
+@pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
+def test_render_pyvis_html_generates_network_page(case_name: str, filename: str, tmp_path: Path) -> None:
+    payload = _load_example_payload(filename)
+    output_base = tmp_path / f"graph_{case_name}"
 
     html_path = render_pyvis_html(payload, output_base)
     html = html_path.read_text(encoding="utf-8")
@@ -55,9 +64,10 @@ def test_render_pyvis_html_generates_network_page(tmp_path: Path) -> None:
     assert "mynetwork" in html
 
 
-def test_pyvis_and_graphviz_export_same_node_and_edge_counts(tmp_path: Path) -> None:
-    payload = _load_example_payload()
-    output_base = tmp_path / "graph_dic_pipeline"
+@pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
+def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, filename: str, tmp_path: Path) -> None:
+    payload = _load_example_payload(filename)
+    output_base = tmp_path / f"graph_{case_name}"
 
     render_graphviz_file(payload, output_base, export_dot=True)
     html_path = render_pyvis_html(payload, output_base)
@@ -115,3 +125,22 @@ def test_pyvis_and_graphviz_export_same_node_and_edge_counts(tmp_path: Path) -> 
     assert pyvis_node_ids == expected_node_ids
     assert dot_edge_count == expected_edge_count
     assert len(pyvis_edges) == expected_edge_count
+
+
+@pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
+def test_render_pyvis_html_fallback_layout_without_graphviz(
+    case_name: str,
+    filename: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = _load_example_payload(filename)
+    output_base = tmp_path / f"graph_{case_name}_fallback"
+
+    monkeypatch.setattr("r3xa_api.webcore._graph_pyvis.compute_graphviz_positions", lambda *args, **kwargs: None)
+    html_path = render_pyvis_html(payload, output_base)
+    html = html_path.read_text(encoding="utf-8")
+
+    assert html_path.exists()
+    assert "new vis.Network" in html
+    assert "_route_helper_" not in html
