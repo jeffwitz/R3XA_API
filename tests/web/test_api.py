@@ -7,6 +7,7 @@ import pytest
 pytest.importorskip("fastapi")
 
 from httpx import ASGITransport
+from web.app import api as api_module
 from web.app.main import create_app
 
 
@@ -106,3 +107,53 @@ async def test_registry_page_available() -> None:
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/registry")
     assert response.status_code == 200
+
+
+@pytest.mark.anyio
+async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
+
+    def _fake_generate_svg(payload: dict) -> bytes:
+        assert isinstance(payload, dict)
+        return svg_payload
+
+    monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph", json=_load_example())
+
+    assert response.status_code == 200
+    assert response.headers.get("content-type", "").startswith("image/svg+xml")
+    assert response.content == svg_payload
+
+
+@pytest.mark.anyio
+async def test_api_graph_svg_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _fake_generate_svg(payload: dict) -> bytes:
+        raise RuntimeError("Graph feature not available (graphviz not installed).")
+
+    monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph", json=_load_example())
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Graph feature not available (graphviz not installed)."
+
+
+@pytest.mark.anyio
+async def test_health_endpoint() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ok"
+    assert "version" in payload
+    assert "timestamp" in payload
