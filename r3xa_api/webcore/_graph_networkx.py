@@ -1,15 +1,112 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict
 
-from .graph import (
+from ._graph_core import (
     STYLES,
-    _build_graph_model,
-    _compute_graphviz_positions,
-    _compute_manual_positions,
-    _wrap_label_text,
+    build_graph_model,
+    compute_graphviz_positions,
+    compute_manual_positions,
+    wrap_label_text,
 )
+
+
+@dataclass(frozen=True)
+class NetworkXLayoutConfig:
+    """Heuristic constants used by the NetworkX + Matplotlib backend."""
+
+    manual_x_scale_without_graphviz: float = 1.14
+    row_height_fallback: float = 80.0
+    row_vertical_gap_min: float = 84.0
+    row_vertical_gap_ratio: float = 0.55
+    row_spread_gap: float = 42.0
+    node_width_fallback: float = 220.0
+    node_height_fallback: float = 64.0
+    ellipse_draw_width_scale: float = 1.08
+    box_draw_width_scale: float = 1.18
+    ellipse_draw_height_scale: float = 1.10
+    box_draw_height_scale: float = 1.16
+    figure_padding_x: float = 120.0
+    figure_padding_y: float = 120.0
+    min_dpi: int = 90
+    layout_min_dpi: float = 120.0
+    layout_dpi_ratio: float = 0.62
+    figure_width_min: float = 18.0
+    figure_width_max: float = 46.0
+    figure_height_min: float = 12.0
+    figure_height_max: float = 46.0
+    edge_arrow_scale: float = 11.0
+    edge_linewidth: float = 1.2
+    edge_direct_hit_margin: float = 6.0
+    edge_direct_hit_samples: int = 48
+    curve_hard_margin: float = 7.0
+    curve_soft_margin: float = 22.0
+    curve_segment_margin: float = 7.0
+    curve_segment_samples: int = 44
+    quadratic_samples: int = 58
+    arc_samples: int = 66
+    curve_vertical_margin_y: float = 6.0
+    curve_vertical_margin_x: float = 8.0
+    curve_vertical_score_weight: float = 240.0
+    curve_collision_score_weight: float = 1800.0
+    curve_outside_corridor_weight: float = 4.5
+    curve_entry_dx_weight: float = 0.40
+    long_route_level_delta_min: int = 3
+    long_route_start_offset: float = 10.0
+    long_route_end_offset: float = 10.0
+    long_route_min_vertical_room: float = 30.0
+    long_route_default_extra_span: float = 120.0
+    long_route_mid_span_ratio: float = 0.55
+    long_route_corridor_padding: float = 180.0
+    long_route_bound_near: float = 110.0
+    long_route_bound_far: float = 190.0
+    long_route_box_near: float = 48.0
+    long_route_box_far: float = 90.0
+    long_route_candidate_padding: float = 70.0
+    long_route_entry_offset: float = 34.0
+    long_route_row_clearance: float = 22.0
+    long_route_entry_exit_min_gap: float = 24.0
+    long_route_fallback_offset: float = 30.0
+    long_route_fallback_min_gap: float = 16.0
+    long_route_dst_margin_min: float = 28.0
+    long_route_dst_margin_ratio: float = 0.16
+    long_route_dst_entry_delta: float = 42.0
+    long_route_control_offset_min: float = 56.0
+    long_route_control_offset_ratio: float = 0.21
+    long_route_cubic_samples: int = 40
+    arc_level_delta_threshold: int = 2
+    arc_base_per_level: float = 0.08
+    arc_base_level_cap: int = 5
+    arc_small_dx_threshold: float = 280.0
+    arc_small_dx_bonus: float = 0.08
+    arc_base_max: float = 0.34
+    arc_mag_small_cap: float = 0.16
+    arc_mag_medium_cap: float = 0.28
+    arc_mag_medium_plus: float = 0.08
+    arc_soft_score_weight: float = 22.0
+    arc_hard_score_weight: float = 1000.0
+    arc_abs_score_weight: float = 18.0
+    arc_reverse_penalty_border: float = 2.0
+    arc_reverse_penalty_default: float = 8.0
+    arc_short_dx_threshold: float = 170.0
+    arc_short_dx_small_rad: float = 0.14
+    arc_short_dx_penalty: float = 12.0
+    border_src_ratio: float = 0.34
+    border_dst_ratio: float = 0.30
+    border_move_ratio_eps: float = 0.03
+    border_small_rad: float = 0.08
+    border_small_rad_penalty: float = 34.0
+    border_outward_bonus: float = 11.0
+    border_wrong_rad_penalty: float = 17.0
+    border_mid_rad_min: float = 0.10
+    border_mid_rad_max: float = 0.30
+    border_mid_rad_bonus: float = 7.0
+    save_pad_inches: float = 0.15
+
+
+DEFAULT_LAYOUT_CONFIG = NetworkXLayoutConfig()
 
 
 def render_networkx_matplotlib_file(
@@ -17,6 +114,7 @@ def render_networkx_matplotlib_file(
     output_path: Path,
     format: str = "png",
     dpi: int = 220,
+    layout_config: NetworkXLayoutConfig | None = None,
 ) -> Path:
     """Render a static graph image with NetworkX + Matplotlib."""
 
@@ -34,9 +132,10 @@ def render_networkx_matplotlib_file(
     output_format = format.lower().strip()
     if output_format not in {"png", "svg", "pdf"}:
         raise ValueError("Unsupported format. Use one of: png, svg, pdf.")
+    config = layout_config or DEFAULT_LAYOUT_CONFIG
 
     styles = STYLES
-    model = _build_graph_model(data)
+    model = build_graph_model(data)
     node_ids = model.node_ids
     graph = nx.DiGraph()
     graph.add_nodes_from(node_ids)
@@ -54,8 +153,8 @@ def render_networkx_matplotlib_file(
         else:
             title_chars = 24
             desc_chars = 30
-        title_text = _wrap_label_text(title, max_chars=title_chars)
-        description_text = _wrap_label_text(description, max_chars=desc_chars)
+        title_text = wrap_label_text(title, max_chars=title_chars)
+        description_text = wrap_label_text(description, max_chars=desc_chars)
         if description_text:
             return f"{title_text}\n({description_text})"
         return title_text
@@ -104,7 +203,7 @@ def render_networkx_matplotlib_file(
             label_heights[node_id] = max(76.0, min(1000.0, text_height * 1.50))
 
     edge_pairs = [(edge.src, edge.dst) for edge in model.edge_records]
-    graphviz_layout = _compute_graphviz_positions(
+    graphviz_layout = compute_graphviz_positions(
         node_ids=node_ids,
         edges=edge_pairs,
         label_widths=label_widths,
@@ -113,15 +212,15 @@ def render_networkx_matplotlib_file(
     if graphviz_layout is not None:
         positions_raw, graphviz_widths = graphviz_layout
         for node_id, width in graphviz_widths.items():
-            label_widths[node_id] = max(label_widths.get(node_id, 220.0), width)
+            label_widths[node_id] = max(label_widths.get(node_id, config.node_width_fallback), width)
     else:
-        positions_raw = _compute_manual_positions(
+        positions_raw = compute_manual_positions(
             node_ids=node_ids,
             edges=edge_pairs,
             levels=levels,
             label_widths=label_widths,
         )
-    x_scale = 1.0 if graphviz_layout is not None else 1.14
+    x_scale = 1.0 if graphviz_layout is not None else config.manual_x_scale_without_graphviz
     positions: Dict[str, tuple[float, float]] = {
         node_id: (x_coord * x_scale, y_coord)
         for node_id, (x_coord, y_coord) in positions_raw.items()
@@ -132,7 +231,7 @@ def render_networkx_matplotlib_file(
         level_nodes.setdefault(levels.get(node_id, 0), []).append(node_id)
     ordered_levels = sorted(level_nodes.keys())
     row_heights = {
-        level: max(label_heights.get(node_id, 80.0) for node_id in level_nodes[level])
+        level: max(label_heights.get(node_id, config.row_height_fallback) for node_id in level_nodes[level])
         for level in ordered_levels
     }
     row_y: Dict[int, float] = {}
@@ -143,7 +242,7 @@ def render_networkx_matplotlib_file(
         previous_level = ordered_levels[index - 1]
         previous_height = row_heights[previous_level]
         current_height = row_heights[level]
-        vertical_gap = max(84.0, 0.55 * max(previous_height, current_height))
+        vertical_gap = max(config.row_vertical_gap_min, config.row_vertical_gap_ratio * max(previous_height, current_height))
         row_y[level] = row_y[previous_level] + previous_height * 0.5 + vertical_gap + current_height * 0.5
     for node_id, (x_coord, _) in positions.items():
         positions[node_id] = (x_coord, row_y.get(levels.get(node_id, 0), 0.0))
@@ -151,10 +250,10 @@ def render_networkx_matplotlib_file(
     draw_widths: Dict[str, float] = {}
     for node_id in node_ids:
         is_ellipse = node_shapes.get(node_id, "box") == "ellipse"
-        width_scale = 1.08 if is_ellipse else 1.18
-        draw_widths[node_id] = label_widths.get(node_id, 220.0) * width_scale
+        width_scale = config.ellipse_draw_width_scale if is_ellipse else config.box_draw_width_scale
+        draw_widths[node_id] = label_widths.get(node_id, config.node_width_fallback) * width_scale
 
-    def _spread_row_nodes(level: int, gap: float = 42.0) -> None:
+    def _spread_row_nodes(level: int, gap: float = config.row_spread_gap) -> None:
         row_nodes = [node_id for node_id in level_nodes.get(level, []) if node_id in positions]
         if len(row_nodes) < 2:
             return
@@ -165,7 +264,11 @@ def render_networkx_matplotlib_file(
         for index in range(1, len(row_nodes)):
             previous = row_nodes[index - 1]
             current = row_nodes[index]
-            min_center_gap = 0.5 * draw_widths.get(previous, 220.0) + 0.5 * draw_widths.get(current, 220.0) + gap
+            min_center_gap = (
+                0.5 * draw_widths.get(previous, config.node_width_fallback)
+                + 0.5 * draw_widths.get(current, config.node_width_fallback)
+                + gap
+            )
             required_x = new_x[previous] + min_center_gap
             if new_x[current] < required_x:
                 new_x[current] = required_x
@@ -185,28 +288,31 @@ def render_networkx_matplotlib_file(
         positions = {node_id: (0.0, 0.0) for node_id in node_ids}
 
     x_min = min(
-        positions[node_id][0] - label_widths.get(node_id, 220.0) * 0.5
+        positions[node_id][0] - label_widths.get(node_id, config.node_width_fallback) * 0.5
         for node_id in positions
     )
     x_max = max(
-        positions[node_id][0] + label_widths.get(node_id, 220.0) * 0.5
+        positions[node_id][0] + label_widths.get(node_id, config.node_width_fallback) * 0.5
         for node_id in positions
     )
     y_min = min(
-        positions[node_id][1] - label_heights.get(node_id, 64.0) * 0.5
+        positions[node_id][1] - label_heights.get(node_id, config.node_height_fallback) * 0.5
         for node_id in positions
     )
     y_max = max(
-        positions[node_id][1] + label_heights.get(node_id, 64.0) * 0.5
+        positions[node_id][1] + label_heights.get(node_id, config.node_height_fallback) * 0.5
         for node_id in positions
     )
 
-    padding_x = 120.0
-    padding_y = 120.0
-    dpi_value = max(90, int(dpi))
-    layout_dpi = max(120.0, dpi_value * 0.62)
-    fig_width = max(18.0, min(46.0, (x_max - x_min + 2.0 * padding_x) / layout_dpi))
-    fig_height = max(12.0, min(46.0, (y_max - y_min + 2.0 * padding_y) / layout_dpi))
+    padding_x = config.figure_padding_x
+    padding_y = config.figure_padding_y
+    dpi_value = max(config.min_dpi, int(dpi))
+    layout_dpi = max(config.layout_min_dpi, dpi_value * config.layout_dpi_ratio)
+    fig_width = max(config.figure_width_min, min(config.figure_width_max, (x_max - x_min + 2.0 * padding_x) / layout_dpi))
+    fig_height = max(
+        config.figure_height_min,
+        min(config.figure_height_max, (y_max - y_min + 2.0 * padding_y) / layout_dpi),
+    )
 
     figure, axis = plt.subplots(figsize=(fig_width, fig_height), dpi=dpi_value)
     axis.set_xlim(x_min - padding_x, x_max + padding_x)
@@ -224,10 +330,10 @@ def render_networkx_matplotlib_file(
     for node_id in node_ids:
         x_coord, y_coord = positions.get(node_id, (0.0, 0.0))
         is_ellipse = node_shapes.get(node_id, "box") == "ellipse"
-        width_scale = 1.08 if is_ellipse else 1.18
-        height_scale = 1.10 if is_ellipse else 1.16
-        node_width = label_widths.get(node_id, 220.0) * width_scale
-        node_height = label_heights.get(node_id, 64.0) * height_scale
+        width_scale = config.ellipse_draw_width_scale if is_ellipse else config.box_draw_width_scale
+        height_scale = config.ellipse_draw_height_scale if is_ellipse else config.box_draw_height_scale
+        node_width = label_widths.get(node_id, config.node_width_fallback) * width_scale
+        node_height = label_heights.get(node_id, config.node_height_fallback) * height_scale
 
         style = node_style_map.get(node_id, styles["data_sets"]["intermediate"])
 
@@ -291,9 +397,9 @@ def render_networkx_matplotlib_file(
         for node_id, box in node_boxes.items():
             if node_id in {src, dst}:
                 continue
-            if high < box["top"] - 6.0 or low > box["bottom"] + 6.0:
+            if high < box["top"] - config.curve_vertical_margin_y or low > box["bottom"] + config.curve_vertical_margin_y:
                 continue
-            if box["left"] - 8.0 <= x_value <= box["right"] + 8.0:
+            if box["left"] - config.curve_vertical_margin_x <= x_value <= box["right"] + config.curve_vertical_margin_x:
                 hits += 1
         return hits
 
@@ -302,8 +408,8 @@ def render_networkx_matplotlib_file(
         p1: tuple[float, float],
         src: str,
         dst: str,
-        margin: float = 8.0,
-        samples: int = 44,
+        margin: float = config.curve_segment_margin,
+        samples: int = config.curve_segment_samples,
     ) -> int:
         hit_nodes: set[str] = set()
         x0, y0 = p0
@@ -334,7 +440,7 @@ def render_networkx_matplotlib_file(
     def _count_direct_hits(src: str, dst: str) -> int:
         x0, y0 = positions[src]
         x1, y1 = positions[dst]
-        samples = 48
+        samples = config.edge_direct_hit_samples
         hits = 0
         for node_id, box in node_boxes.items():
             if node_id in {src, dst}:
@@ -345,8 +451,8 @@ def render_networkx_matplotlib_file(
                 x = x0 + (x1 - x0) * t
                 y = y0 + (y1 - y0) * t
                 if (
-                    box["left"] - 6.0 <= x <= box["right"] + 6.0
-                    and box["top"] - 6.0 <= y <= box["bottom"] + 6.0
+                    box["left"] - config.edge_direct_hit_margin <= x <= box["right"] + config.edge_direct_hit_margin
+                    and box["top"] - config.edge_direct_hit_margin <= y <= box["bottom"] + config.edge_direct_hit_margin
                 ):
                     touched = True
                     break
@@ -359,7 +465,7 @@ def render_networkx_matplotlib_file(
         p1: tuple[float, float],
         p2: tuple[float, float],
         p3: tuple[float, float],
-        samples: int = 44,
+        samples: int = config.curve_segment_samples,
     ) -> list[tuple[float, float]]:
         points: list[tuple[float, float]] = []
         for index in range(samples + 1):
@@ -384,7 +490,7 @@ def render_networkx_matplotlib_file(
         p0: tuple[float, float],
         p1: tuple[float, float],
         p2: tuple[float, float],
-        samples: int = 58,
+        samples: int = config.quadratic_samples,
     ) -> list[tuple[float, float]]:
         points: list[tuple[float, float]] = []
         for index in range(samples + 1):
@@ -399,7 +505,7 @@ def render_networkx_matplotlib_file(
         curve_points: list[tuple[float, float]],
         src: str,
         dst: str,
-        margin: float = 8.0,
+        margin: float = config.curve_segment_margin,
     ) -> int:
         hit_nodes: set[str] = set()
         for node_id, box in node_boxes.items():
@@ -424,9 +530,9 @@ def render_networkx_matplotlib_file(
         ny = dx / distance
         bend = rad * distance * 0.85
         control = ((x0 + x1) * 0.5 + nx * bend, (y0 + y1) * 0.5 + ny * bend)
-        points = _sample_quadratic((x0, y0), control, (x1, y1), samples=66)
-        hard_hits = _score_curve_points(points, src, dst, margin=7.0)
-        soft_hits = _score_curve_points(points, src, dst, margin=22.0)
+        points = _sample_quadratic((x0, y0), control, (x1, y1), samples=config.arc_samples)
+        hard_hits = _score_curve_points(points, src, dst, margin=config.curve_hard_margin)
+        soft_hits = _score_curve_points(points, src, dst, margin=config.curve_soft_margin)
         return hard_hits, soft_hits
 
     def _build_long_edge_path(src: str, dst: str) -> MplPath | None:
@@ -440,9 +546,9 @@ def render_networkx_matplotlib_file(
         src_box = node_boxes[src]
         dst_box = node_boxes[dst]
 
-        start_y = src_box["bottom"] + 10.0
-        end_y = dst_box["top"] - 10.0
-        if end_y <= start_y + 30.0:
+        start_y = src_box["bottom"] + config.long_route_start_offset
+        end_y = dst_box["top"] - config.long_route_end_offset
+        if end_y <= start_y + config.long_route_min_vertical_room:
             return None
 
         involved = [
@@ -454,47 +560,53 @@ def render_networkx_matplotlib_file(
             left_bound = min(box["left"] for box in involved)
             right_bound = max(box["right"] for box in involved)
         else:
-            left_bound = min(x_src, x_dst) - 120.0
-            right_bound = max(x_src, x_dst) + 120.0
+            left_bound = min(x_src, x_dst) - config.long_route_default_extra_span
+            right_bound = max(x_src, x_dst) + config.long_route_default_extra_span
 
         x_mid = (x_src + x_dst) * 0.5
-        span = max(120.0, abs(x_dst - x_src) * 0.55)
-        corridor_left = min(x_src, x_dst) - 180.0
-        corridor_right = max(x_src, x_dst) + 180.0
+        span = max(config.long_route_default_extra_span, abs(x_dst - x_src) * config.long_route_mid_span_ratio)
+        corridor_left = min(x_src, x_dst) - config.long_route_corridor_padding
+        corridor_right = max(x_src, x_dst) + config.long_route_corridor_padding
         candidate_set: set[float] = {
             x_mid,
             x_src,
             x_dst,
             x_mid - span,
             x_mid + span,
-            left_bound - 110.0,
-            right_bound + 110.0,
-            left_bound - 190.0,
-            right_bound + 190.0,
+            left_bound - config.long_route_bound_near,
+            right_bound + config.long_route_bound_near,
+            left_bound - config.long_route_bound_far,
+            right_bound + config.long_route_bound_far,
         }
         for box in involved:
-            candidate_set.add(box["left"] - 48.0)
-            candidate_set.add(box["right"] + 48.0)
-            candidate_set.add(box["left"] - 90.0)
-            candidate_set.add(box["right"] + 90.0)
-        candidate_min = corridor_left - 70.0
-        candidate_max = corridor_right + 70.0
+            candidate_set.add(box["left"] - config.long_route_box_near)
+            candidate_set.add(box["right"] + config.long_route_box_near)
+            candidate_set.add(box["left"] - config.long_route_box_far)
+            candidate_set.add(box["right"] + config.long_route_box_far)
+        candidate_min = corridor_left - config.long_route_candidate_padding
+        candidate_max = corridor_right + config.long_route_candidate_padding
         candidates = sorted(v for v in candidate_set if candidate_min <= v <= candidate_max)
         if not candidates:
             candidates = [x_mid]
 
-        y_entry = max(start_y + 34.0, row_bottom.get(src_level, start_y + 34.0) + 22.0)
-        y_exit = min(end_y - 34.0, row_top.get(dst_level, end_y - 34.0) - 22.0)
-        if y_exit <= y_entry + 24.0:
-            y_entry = start_y + 30.0
-            y_exit = end_y - 30.0
-            if y_exit <= y_entry + 16.0:
+        y_entry = max(
+            start_y + config.long_route_entry_offset,
+            row_bottom.get(src_level, start_y + config.long_route_entry_offset) + config.long_route_row_clearance,
+        )
+        y_exit = min(
+            end_y - config.long_route_entry_offset,
+            row_top.get(dst_level, end_y - config.long_route_entry_offset) - config.long_route_row_clearance,
+        )
+        if y_exit <= y_entry + config.long_route_entry_exit_min_gap:
+            y_entry = start_y + config.long_route_fallback_offset
+            y_exit = end_y - config.long_route_fallback_offset
+            if y_exit <= y_entry + config.long_route_fallback_min_gap:
                 return None
 
         best_path_points: list[tuple[float, float]] | None = None
         best_path_score = float("inf")
         best_path_hits = float("inf")
-        dst_margin = max(28.0, 0.16 * (dst_box["right"] - dst_box["left"]))
+        dst_margin = max(config.long_route_dst_margin_min, config.long_route_dst_margin_ratio * (dst_box["right"] - dst_box["left"]))
 
         def _clamp_dst_entry(value: float) -> float:
             return max(dst_box["left"] + dst_margin, min(dst_box["right"] - dst_margin, value))
@@ -504,11 +616,11 @@ def render_networkx_matplotlib_file(
             entry_values = {
                 _clamp_dst_entry(x_dst),
                 _clamp_dst_entry(candidate),
-                _clamp_dst_entry(candidate - 42.0),
-                _clamp_dst_entry(candidate + 42.0),
+                _clamp_dst_entry(candidate - config.long_route_dst_entry_delta),
+                _clamp_dst_entry(candidate + config.long_route_dst_entry_delta),
             }
             for entry_x in sorted(entry_values):
-                offset = max(56.0, 0.21 * (end_y - start_y))
+                offset = max(config.long_route_control_offset_min, config.long_route_control_offset_ratio * (end_y - start_y))
                 start = (x_src, start_y)
                 end = (entry_x, end_y)
                 mid = (candidate, (y_entry + y_exit) * 0.5)
@@ -517,23 +629,27 @@ def render_networkx_matplotlib_file(
                 c3 = (candidate, y_exit)
                 c4 = (entry_x, max(y_exit, end_y - offset))
 
-                first = _sample_cubic(start, c1, c2, mid, samples=40)
-                second = _sample_cubic(mid, c3, c4, end, samples=40)
+                first = _sample_cubic(start, c1, c2, mid, samples=config.long_route_cubic_samples)
+                second = _sample_cubic(mid, c3, c4, end, samples=config.long_route_cubic_samples)
                 curve_points = first + second[1:]
                 box_hits = _score_curve_points(curve_points, src, dst)
 
-                segment_hits = _count_segment_hits(start, mid, src, dst, margin=7.0) + _count_segment_hits(
-                    mid, end, src, dst, margin=7.0
+                segment_hits = _count_segment_hits(start, mid, src, dst, margin=config.curve_hard_margin) + _count_segment_hits(
+                    mid, end, src, dst, margin=config.curve_hard_margin
                 )
                 total_hits = box_hits + segment_hits
 
-                distance_penalty = abs(candidate - x_mid) + 0.40 * abs(entry_x - x_dst)
+                distance_penalty = abs(candidate - x_mid) + config.curve_entry_dx_weight * abs(entry_x - x_dst)
                 if candidate < corridor_left:
-                    distance_penalty += (corridor_left - candidate) * 4.5
+                    distance_penalty += (corridor_left - candidate) * config.curve_outside_corridor_weight
                 elif candidate > corridor_right:
-                    distance_penalty += (candidate - corridor_right) * 4.5
+                    distance_penalty += (candidate - corridor_right) * config.curve_outside_corridor_weight
 
-                score = float(total_hits) * 1800.0 + float(vertical_hits) * 240.0 + distance_penalty
+                score = (
+                    float(total_hits) * config.curve_collision_score_weight
+                    + float(vertical_hits) * config.curve_vertical_score_weight
+                    + distance_penalty
+                )
                 if total_hits < best_path_hits or (total_hits == best_path_hits and score < best_path_score):
                     best_path_hits = float(total_hits)
                     best_path_score = score
@@ -569,8 +685,8 @@ def render_networkx_matplotlib_file(
         direct_hits = _count_direct_hits(src, dst)
         edge_kwargs: Dict[str, Any] = {
             "arrowstyle": "-|>",
-            "mutation_scale": 11,
-            "linewidth": 1.2,
+            "mutation_scale": config.edge_arrow_scale,
+            "linewidth": config.edge_linewidth,
             "color": style.get("color", "black"),
             "zorder": 1,
         }
@@ -580,20 +696,29 @@ def render_networkx_matplotlib_file(
         preferred_sign = 1.0 if x_dst >= x_src else -1.0
         src_center_ratio = abs(x_src - graph_center_x) / graph_span_x
         dst_center_ratio = abs(x_dst - graph_center_x) / graph_span_x
-        moves_toward_center = dst_center_ratio + 0.03 < src_center_ratio
+        moves_toward_center = dst_center_ratio + config.border_move_ratio_eps < src_center_ratio
         border_to_inner = (
-            level_delta >= 2 and src_center_ratio >= 0.34 and dst_center_ratio <= 0.30 and moves_toward_center
+            level_delta >= config.arc_level_delta_threshold
+            and src_center_ratio >= config.border_src_ratio
+            and dst_center_ratio <= config.border_dst_ratio
+            and moves_toward_center
         )
         outward_sign = -1.0 if x_src <= graph_center_x else 1.0
 
         if level_delta <= 1:
             arc_candidates = [0.0]
         else:
-            base = 0.08 * min(level_delta, 5)
-            if abs_dx < 280.0:
-                base += 0.08
-            base = min(0.34, base)
-            magnitudes = [0.0, min(0.16, base * 0.75), base, min(0.28, base + 0.08), 0.34]
+            base = config.arc_base_per_level * min(level_delta, config.arc_base_level_cap)
+            if abs_dx < config.arc_small_dx_threshold:
+                base += config.arc_small_dx_bonus
+            base = min(config.arc_base_max, base)
+            magnitudes = [
+                0.0,
+                min(config.arc_mag_small_cap, base * 0.75),
+                base,
+                min(config.arc_mag_medium_cap, base + config.arc_mag_medium_plus),
+                config.arc_base_max,
+            ]
             arc_candidates = []
             for magnitude in magnitudes:
                 if magnitude <= 0.0:
@@ -610,20 +735,28 @@ def render_networkx_matplotlib_file(
         best_rad_score = float("inf")
         for rad in arc_candidates:
             hard_hits, soft_hits = _score_arc_route(src, dst, rad)
-            score = float(hard_hits) * 1000.0 + float(soft_hits) * 22.0 + abs(rad) * 18.0
+            score = (
+                float(hard_hits) * config.arc_hard_score_weight
+                + float(soft_hits) * config.arc_soft_score_weight
+                + abs(rad) * config.arc_abs_score_weight
+            )
             if rad * preferred_sign < 0.0:
-                score += 2.0 if border_to_inner else 8.0
-            if abs_dx < 170.0 and abs(rad) < 0.14 and level_delta >= 2:
-                score += 12.0
+                score += config.arc_reverse_penalty_border if border_to_inner else config.arc_reverse_penalty_default
+            if (
+                abs_dx < config.arc_short_dx_threshold
+                and abs(rad) < config.arc_short_dx_small_rad
+                and level_delta >= config.arc_level_delta_threshold
+            ):
+                score += config.arc_short_dx_penalty
             if border_to_inner:
-                if abs(rad) < 0.08:
-                    score += 34.0
+                if abs(rad) < config.border_small_rad:
+                    score += config.border_small_rad_penalty
                 if rad * outward_sign > 0.0:
-                    score -= 11.0
-                elif abs(rad) >= 0.08:
-                    score += 17.0
-                if 0.10 <= abs(rad) <= 0.30:
-                    score -= 7.0
+                    score -= config.border_outward_bonus
+                elif abs(rad) >= config.border_small_rad:
+                    score += config.border_wrong_rad_penalty
+                if config.border_mid_rad_min <= abs(rad) <= config.border_mid_rad_max:
+                    score -= config.border_mid_rad_bonus
             if (
                 hard_hits < best_hard_hits
                 or (hard_hits == best_hard_hits and soft_hits < best_soft_hits)
@@ -634,7 +767,7 @@ def render_networkx_matplotlib_file(
                 best_rad_score = score
                 best_rad = rad
 
-        use_long_route = level_delta >= 3 and direct_hits > 0 and best_hard_hits > 0
+        use_long_route = level_delta >= config.long_route_level_delta_min and direct_hits > 0 and best_hard_hits > 0
         long_path = _build_long_edge_path(src, dst) if use_long_route else None
         if long_path is not None:
             arrow = FancyArrowPatch(
@@ -672,7 +805,11 @@ def render_networkx_matplotlib_file(
 
     out_path = Path(output_path).with_suffix(f".{output_format}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    save_kwargs: Dict[str, Any] = {"format": output_format, "bbox_inches": "tight", "pad_inches": 0.15}
+    save_kwargs: Dict[str, Any] = {
+        "format": output_format,
+        "bbox_inches": "tight",
+        "pad_inches": config.save_pad_inches,
+    }
     if output_format == "png":
         save_kwargs["dpi"] = dpi_value
     figure.savefig(out_path, **save_kwargs)

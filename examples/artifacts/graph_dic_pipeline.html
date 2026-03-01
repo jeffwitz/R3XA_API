@@ -33,7 +33,7 @@
 
              #mynetwork {
                  width: 100%;
-                 height: 950px;
+                 height: 900px;
                  background-color: #ffffff;
                  border: 1px solid lightgray;
                  position: relative;
@@ -88,8 +88,8 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"borderWidth": 4, "color": {"background": "white", "border": "lightgreen"}, "id": "okkstfwzdjbeqmegmwtsjcga", "label": "CCD Camera\n(Encoding: 8-bit)", "physics": false, "shape": "ellipse", "x": 0.0, "y": 0.0}, {"borderWidth": 2, "color": {"background": "lightblue", "border": "black"}, "id": "jqhqqqwsoyvavzvpvlnzgxtt", "label": "DIC processing (pyxel)\n(2D DIC using pyxel)", "physics": false, "shape": "ellipse", "x": 0.0, "y": 200.0}, {"borderWidth": 2, "color": {"background": "lightgrey", "border": "black"}, "id": "zqsuxjibaasgwngrbstptcjy", "label": "graylevel images\n(raw images from CCD camera)", "physics": false, "shape": "box", "x": 0.0, "y": 100.0}, {"borderWidth": 6, "color": {"background": "#FFA07A", "border": "red"}, "id": "lyrzrkiyrigrwpghyiofgzsb", "label": "DIC displacement fields\n(ux, uy per frame)", "physics": false, "shape": "box", "x": 0.0, "y": 300.0}]);
-                  edges = new vis.DataSet([{"arrows": "to", "color": "black", "from": "zqsuxjibaasgwngrbstptcjy", "to": "jqhqqqwsoyvavzvpvlnzgxtt"}, {"arrows": "to", "color": "black", "from": "okkstfwzdjbeqmegmwtsjcga", "to": "zqsuxjibaasgwngrbstptcjy"}, {"arrows": "to", "color": "black", "from": "jqhqqqwsoyvavzvpvlnzgxtt", "to": "lyrzrkiyrigrwpghyiofgzsb"}]);
+                  nodes = new vis.DataSet([{"borderWidth": 4, "color": {"background": "white", "border": "lightgreen"}, "id": "qmfwnndacviancleqrtqjdyq", "label": "CCD Camera\n(Encoding: 8-bit)", "physics": false, "shape": "ellipse", "x": 0.0, "y": 0.0}, {"borderWidth": 2, "color": {"background": "lightblue", "border": "black"}, "id": "fkhrrxukwbgirigyqkioppug", "label": "DIC processing (pyxel)\n(2D DIC using pyxel)", "physics": false, "shape": "ellipse", "x": 0.0, "y": 200.0}, {"borderWidth": 2, "color": {"background": "lightgrey", "border": "black"}, "id": "lyuevspmoveampiwslgbfgkh", "label": "graylevel images\n(raw images from CCD camera)", "physics": false, "shape": "box", "x": 0.0, "y": 100.0}, {"borderWidth": 6, "color": {"background": "#FFA07A", "border": "red"}, "id": "qcieiaqkxnokdpjzndovbums", "label": "DIC displacement fields\n(ux, uy per frame)", "physics": false, "shape": "box", "x": 0.0, "y": 300.0}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "black", "from": "lyuevspmoveampiwslgbfgkh", "to": "fkhrrxukwbgirigyqkioppug"}, {"arrows": "to", "color": "black", "from": "qmfwnndacviancleqrtqjdyq", "to": "lyuevspmoveampiwslgbfgkh"}, {"arrows": "to", "color": "black", "from": "fkhrrxukwbgirigyqkioppug", "to": "qcieiaqkxnokdpjzndovbums"}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
