@@ -39,6 +39,7 @@ Quick links
 - :doc:`validation`
 - :doc:`web`
 - :doc:`DEPLOY_RAILWAY`
+- :doc:`dev_workflow`
 
 .. toctree::
    :maxdepth: 2
@@ -56,3 +57,4 @@ Quick links
    web.md
    registry_web.md
    DEPLOY_RAILWAY.md
+   dev_workflow.md
