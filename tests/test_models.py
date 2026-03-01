@@ -1,0 +1,124 @@
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+import r3xa_api
+from r3xa_api import from_model, schema_version, validate
+
+pydantic = pytest.importorskip("pydantic")
+ValidationError = pydantic.ValidationError
+models = pytest.importorskip("r3xa_api.models")
+
+
+def _valid_camera():
+    return models.CameraSource(
+        id="cam_01",
+        kind="data_sources/camera",
+        title="CCD Camera",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[models.Unit(kind="unit", unit="gl", title="graylevel", value=1.0)],
+        image_size=[
+            models.Unit(kind="unit", unit="px", title="width", value=1392),
+            models.Unit(kind="unit", unit="px", title="height", value=1040),
+        ],
+        manufacturer="AVT",
+        model="Dolphin F-145B",
+    )
+
+
+def test_typed_available():
+    assert hasattr(r3xa_api, "_TYPED_AVAILABLE")
+    assert r3xa_api._TYPED_AVAILABLE is True
+
+
+def test_unit_valid():
+    unit = models.Unit(kind="unit", unit="px")
+    assert unit.unit == "px"
+
+
+def test_unit_invalid_missing_unit():
+    with pytest.raises(ValidationError):
+        models.Unit(kind="unit")
+
+
+def test_camera_source_valid():
+    camera = _valid_camera()
+    assert camera.title == "CCD Camera"
+
+
+def test_camera_source_invalid_dimension():
+    with pytest.raises(ValidationError):
+        models.CameraSource(
+            id="cam_01",
+            kind="data_sources/camera",
+            title="CCD Camera",
+            output_components=1,
+            output_dimension="invalid-dimension",
+            output_units=[models.Unit(kind="unit", unit="gl")],
+            image_size=[models.Unit(kind="unit", unit="px")],
+        )
+
+
+def test_camera_source_invalid_components():
+    with pytest.raises(ValidationError):
+        models.CameraSource(
+            id="cam_01",
+            kind="data_sources/camera",
+            title="CCD Camera",
+            output_components="not-an-int",
+            output_dimension="surface",
+            output_units=[models.Unit(kind="unit", unit="gl")],
+            image_size=[models.Unit(kind="unit", unit="px")],
+        )
+
+
+def test_from_model_roundtrip():
+    camera = _valid_camera()
+    payload = {
+        "title": "Typed model roundtrip",
+        "description": "Roundtrip from typed model to dict",
+        "version": schema_version(),
+        "authors": "R3XA Team",
+        "date": "2026-02-19",
+        "settings": [],
+        "data_sources": [from_model(camera)],
+        "data_sets": [],
+    }
+    validate(payload)
+
+
+def test_r3xa_document_valid():
+    doc = models.R3XADocument(
+        title="Typed document",
+        description="Pydantic model",
+        version=schema_version(),
+        authors="R3XA Team",
+        date="2026-02-19",
+        settings=[],
+        data_sources=[],
+        data_sets=[],
+    )
+    assert doc.version == schema_version()
+
+
+def test_models_not_required(tmp_path: Path):
+    fake_pydantic = tmp_path / "pydantic.py"
+    fake_pydantic.write_text("raise ModuleNotFoundError(\"No module named 'pydantic'\")\n", encoding="utf-8")
+
+    repo_root = Path(__file__).resolve().parents[1]
+    env = os.environ.copy()
+    existing = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = f"{tmp_path}:{repo_root}" + (f":{existing}" if existing else "")
+
+    code = (
+        "import r3xa_api\n"
+        "assert hasattr(r3xa_api, '_TYPED_AVAILABLE')\n"
+        "assert r3xa_api._TYPED_AVAILABLE is False\n"
+        "print('ok')\n"
+    )
+    proc = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr + proc.stdout

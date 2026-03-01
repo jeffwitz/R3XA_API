@@ -2,7 +2,11 @@ import argparse
 import json
 from pathlib import Path
 
-from r3xa_api.webcore.graph import render_graphviz_file, render_pyvis_html
+from r3xa_api.webcore.graph import (
+    render_graphviz_file,
+    render_networkx_matplotlib_file,
+    render_pyvis_html,
+)
 
 
 def main() -> None:
@@ -25,6 +29,23 @@ def main() -> None:
         action="store_true",
         help="Export Graphviz DOT source alongside SVG",
     )
+    parser.add_argument(
+        "--networkx",
+        action="store_true",
+        help="Export a static image using NetworkX + Matplotlib (optional backend).",
+    )
+    parser.add_argument(
+        "--networkx-format",
+        default="png",
+        choices=["png", "svg", "pdf"],
+        help="Output format for the NetworkX backend (default: png).",
+    )
+    parser.add_argument(
+        "--networkx-dpi",
+        type=int,
+        default=220,
+        help="DPI used by the NetworkX backend for raster output (default: 220).",
+    )
     args = parser.parse_args()
 
     json_path = Path(args.input)
@@ -38,6 +59,14 @@ def main() -> None:
 
     print(f"Graphviz SVG: {svg_path}")
     print(f"PyVis HTML: {html_path}")
+    if args.networkx:
+        nx_path = render_networkx_matplotlib_file(
+            data,
+            out_base.with_name(f"{out_base.name}_nx"),
+            format=args.networkx_format,
+            dpi=args.networkx_dpi,
+        )
+        print(f"NetworkX + Matplotlib {args.networkx_format.upper()}: {nx_path}")
 
 
 if __name__ == "__main__":

@@ -121,7 +121,7 @@ Run the notebook:
 ./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
 ```
 
-Notebook graph output uses PyVis HTML (no `dot` executable required).
+Notebook graph output uses Graphviz SVG (`dot` executable required).
 
 Optional static export (no backend):
 ```bash

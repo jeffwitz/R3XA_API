@@ -1,0 +1,15 @@
+// R3XA graph
+digraph {
+	node [margin="0.2,0.1"]
+	qmfwnndacviancleqrtqjdyq [label="CCD Camera
+(Encoding: 8-bit)" color=lightgreen fillcolor=white penwidth=4 shape=ellipse style=filled]
+	fkhrrxukwbgirigyqkioppug [label="DIC processing (pyxel)
+(2D DIC using pyxel)" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
+	lyuevspmoveampiwslgbfgkh [label="graylevel images
+(raw images from CCD camera)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
+	qcieiaqkxnokdpjzndovbums [label="DIC displacement fields
+(ux, uy per frame)" color=red fillcolor="#FFA07A" penwidth=6 shape=box style=filled]
+	lyuevspmoveampiwslgbfgkh -> fkhrrxukwbgirigyqkioppug [color=black]
+	qmfwnndacviancleqrtqjdyq -> lyuevspmoveampiwslgbfgkh [color=black]
+	fkhrrxukwbgirigyqkioppug -> qcieiaqkxnokdpjzndovbums [color=black]
+}

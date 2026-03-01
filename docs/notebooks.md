@@ -8,7 +8,7 @@ Notebook source:
 Notebook features:
 - **Load JSON from PC** (upload button)
 - **Export JSON to PC** (download button)
-- **Generate PyVis HTML graph** + **Export graph HTML to PC**
+- **Generate Graphviz SVG graph** + **Export graph SVG to PC**
 
 ---
 
@@ -33,8 +33,8 @@ In the notebook:
 3. Click **Load JSON from PC** and select an existing `.json` file (optional).
 4. Confirm the status callout says the uploaded file was loaded and validated.
 5. Click **Export JSON to PC**.
-6. Click **Generate PyVis HTML graph**.
-7. Click **Export graph HTML to PC**.
+6. Click **Generate Graphviz SVG**.
+7. Click **Export graph SVG to PC**.
 8. Optional repository save:
    ```python
    save_document()
