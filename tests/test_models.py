@@ -1,3 +1,5 @@
+import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -134,3 +136,25 @@ def test_models_not_required(tmp_path: Path):
     )
     proc = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True)
     assert proc.returncode == 0, proc.stderr + proc.stdout
+
+
+def test_typed_example_script_generates_valid_json():
+    root = Path(__file__).resolve().parents[1]
+    script_path = root / "examples" / "python" / "typed_dic_pipeline.py"
+    output_path = root / "examples" / "artifacts" / "dic_pipeline_typed.json"
+
+    previous_content = output_path.read_bytes() if output_path.exists() else None
+
+    spec = importlib.util.spec_from_file_location(script_path.stem, script_path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    try:
+        spec.loader.exec_module(module)
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+        validate(payload)
+    finally:
+        if previous_content is None:
+            if output_path.exists():
+                output_path.unlink()
+        else:
+            output_path.write_bytes(previous_content)

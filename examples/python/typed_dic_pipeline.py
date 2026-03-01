@@ -1,52 +1,15 @@
-# Typed models (optional) — `dic_pipeline` example
+from pathlib import Path
 
-This page explains the optional typed workflow built on top of the existing dict-based API.
+from r3xa_api import R3XAFile, models, typed_available
 
-## Goal
-
-The typed layer gives:
-- IDE autocompletion
-- Earlier validation while building objects
-
-The core API stays unchanged:
-- `R3XAFile` still consumes plain `dict`
-- JSON output remains standard R3XA JSON
-
-## Install
-
-```bash
-pip install -e ".[typed]"
-```
-
-Typed models are generated from the schema:
-
-```bash
-make generate-models
-```
-
-Generated file:
-- `r3xa_api/models.py` (auto-generated; do not edit by hand)
-
-## Public typed entry points
-
-- `from r3xa_api import models`
-- `from r3xa_api import from_model`
-- `from r3xa_api import _TYPED_AVAILABLE` (or `typed_available`)
-
-`from_model(...)` converts a Pydantic model into a plain dict compatible with `R3XAFile`.
-
-## `dic_pipeline` in typed mode
-
-This follows the same logic as `examples/python/complex_dic_pipeline.py`, but creates typed objects first.
-
-```python
-from r3xa_api import R3XAFile, from_model, models
+if not typed_available or models is None:
+    raise RuntimeError('Typed models are not available. Install with: pip install -e ".[typed]"')
 
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline (typed)",
     authors="R3XA API",
-    date="2026-02-19",
+    date="2026-03-01",
 )
 
 specimen = models.SpecimenSetting(
@@ -60,12 +23,13 @@ specimen = models.SpecimenSetting(
     ],
     patterning_technique="white background with black spray paint",
 )
-r3xa.settings.append(from_model(specimen))
+r3xa.settings.append(specimen)
 
 camera = models.CameraSource(
     id="ds_camera_01",
     kind="data_sources/camera",
     title="CCD Camera",
+    description="Encoding: 8-bit",
     output_components=1,
     output_dimension="surface",
     output_units=[models.Unit(kind="unit", title="graylevel", value=1.0, unit="gl", scale=1.0)],
@@ -76,7 +40,7 @@ camera = models.CameraSource(
         models.Unit(kind="unit", title="height", value=1040, unit="px", scale=1.0),
     ],
 )
-r3xa.data_sources.append(from_model(camera))
+r3xa.data_sources.append(camera)
 
 num_frames = 5
 timestamps = [i * 0.5 for i in range(num_frames)]
@@ -95,7 +59,7 @@ images = models.ImageSetList(
     timestamps=timestamps,
     data=image_files,
 )
-r3xa.data_sets.append(from_model(images))
+r3xa.data_sets.append(images)
 
 dic_source = models.GenericSource(
     id="src_dic_01",
@@ -112,7 +76,7 @@ dic_source = models.GenericSource(
     manufacturer="Pyxel",
     model="pyxel-2d",
 )
-r3xa.data_sources.append(from_model(dic_source))
+r3xa.data_sources.append(dic_source)
 
 dic_data = models.ImageSetList(
     id="ds_dic_01",
@@ -126,29 +90,7 @@ dic_data = models.ImageSetList(
     timestamps=timestamps,
     data=dic_files,
 )
-r3xa.data_sets.append(from_model(dic_data))
+r3xa.data_sets.append(dic_data)
 
 r3xa.validate()
-r3xa.save("examples/artifacts/dic_pipeline_typed.json")
-```
-
-## Important compatibility note
-
-- A script that imports `r3xa_api.models` requires the `[typed]` extra.
-- The generated JSON file itself does **not** depend on Pydantic and remains usable by dict-only users.
-
-## Ready-to-run example script
-
-The repository includes a typed example script:
-
-- `examples/python/typed_dic_pipeline.py`
-
-Run it from project root:
-
-```bash
-./.venv/bin/python examples/python/typed_dic_pipeline.py
-```
-
-Generated output:
-
-- `examples/artifacts/dic_pipeline_typed.json`
+r3xa.save(str(Path("examples") / "artifacts" / "dic_pipeline_typed.json"))
