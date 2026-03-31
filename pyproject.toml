@@ -1,6 +1,6 @@
 [project]
 name = "r3xa-api"
-version = "1.1.0"
+version = "1.2.0"
 description = "Python SDK for creating R3XA metadata files (no GUI)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,14 +13,17 @@ license = {text = "GPL-2.0-or-later"}
 Homepage = "https://gitlab.com/photomecanics/r3xa"
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "datamodel-code-generator>=0.25"]
+typed = ["pydantic>=2.0"]
+notebook = ["marimo>=0.11", "graphviz>=0.20"]
+graph_nx = ["networkx>=3.2", "matplotlib>=3.8"]
 web = [
   "fastapi>=0.110",
   "httpx>=0.26",
-  "graphviz>=0.20",
-  "uvicorn>=0.27",
+  "uvicorn[standard]>=0.27",
   "jinja2>=3.1",
   "python-multipart>=0.0.9",
+  "graphviz>=0.20",
 ]
 
 [build-system]

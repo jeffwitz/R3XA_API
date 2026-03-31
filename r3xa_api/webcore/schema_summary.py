@@ -4,6 +4,8 @@ from ..schema import load_schema
 
 
 def _summarize_node(node: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract a compact, UI-oriented summary from a schema node."""
+
     summary: Dict[str, Any] = {}
     for key in ("title", "description", "type", "required", "enum", "const"):
         if key in node:
@@ -24,6 +26,8 @@ def _summarize_node(node: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def build_schema_summary(schema: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Build a normalized summary for top-level R3XA sections."""
+
     schema = schema or load_schema()
     version = schema.get("properties", {}).get("version", {}).get("const")
     properties = schema.get("properties", {})

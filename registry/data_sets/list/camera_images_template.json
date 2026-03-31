@@ -5,8 +5,20 @@
   "description": "images taken by the CCD camera",
   "path": "images/",
   "file_type": "image/tiff",
-  "data_sources": ["ds_cam_avt_dolphin_f145b"],
-  "time_reference": 0.0,
-  "timestamps": [0.0],
-  "data": ["img_0000.tif"]
+  "data_sources": [
+    "ds_cam_avt_dolphin_f145b"
+  ],
+  "time_reference": {
+    "kind": "unit",
+    "title": "time_reference",
+    "value": 0.0,
+    "unit": "s",
+    "scale": 1.0
+  },
+  "timestamps": [
+    0.0
+  ],
+  "data": [
+    "img_0000.tif"
+  ]
 }

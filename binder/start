@@ -1,0 +1,25 @@
+#!/bin/bash
+set -euo pipefail
+
+MARIMO_PORT="${MARIMO_PORT:-2718}"
+MARIMO_NOTEBOOK="${MARIMO_NOTEBOOK:-examples/notebooks/dic_base_marimo.py}"
+PYTHON_BIN="${PYTHON_BIN:-}"
+
+if [[ -z "${PYTHON_BIN}" ]]; then
+  if command -v python >/dev/null 2>&1; then
+    PYTHON_BIN="python"
+  elif [[ -x ".venv/bin/python" ]]; then
+    PYTHON_BIN=".venv/bin/python"
+  else
+    PYTHON_BIN="python3"
+  fi
+fi
+
+echo "[binder] starting marimo on port ${MARIMO_PORT} (${MARIMO_NOTEBOOK})"
+"${PYTHON_BIN}" -m marimo edit "${MARIMO_NOTEBOOK}" \
+  --headless \
+  --host 0.0.0.0 \
+  --port "${MARIMO_PORT}" \
+  --no-token > /tmp/marimo.log 2>&1 &
+
+exec "$@"

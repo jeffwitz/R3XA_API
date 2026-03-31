@@ -47,7 +47,7 @@ images = r3xa.add_image_set_list(
     path="images/",
     file_type="image/tiff",
     data_sources=[camera["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     data=image_files,
 )
@@ -77,7 +77,7 @@ r3xa.add_image_set_list(
     path="dic/",
     file_type="text/csv",
     data_sources=[dic["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     data=dic_files,
 )

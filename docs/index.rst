@@ -12,7 +12,7 @@ Documentation commands assume a virtual environment exists at ``.venv`` (project
      width="100%"
      height="520"
      style="border:1px solid #ddd; margin-bottom: 16px;"
-     title="JC Passieux presentation (IDICS_2024)"
+     title="JC Passieux presentation (PM_IDICS_2024)"
    ></iframe>
 
 R3XA: Toward a metadata standard for experimental (photo)mechanics datasets - Jean-Charles Passieux *et al.* PM-IDICS 2024
@@ -30,14 +30,31 @@ Web UI
 ------
 The optional web interface is documented here: :doc:`web`.
 
+Quick links
+-----------
+- :doc:`overview`
+- :doc:`examples`
+- :doc:`notebooks`
+- :doc:`matlab`
+- :doc:`validation`
+- :doc:`web`
+- :doc:`DEPLOY_RAILWAY`
+- :doc:`dev_workflow`
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents
 
    overview.md
    api.md
-   web.md
+   specification.md
+   typed_models.md
    matlab.md
    examples.md
+   notebooks.md
    qi_case.md
    validation.md
+   web.md
+   registry_web.md
+   DEPLOY_RAILWAY.md
+   dev_workflow.md

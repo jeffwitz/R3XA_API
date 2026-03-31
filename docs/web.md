@@ -32,9 +32,19 @@ Open: `http://127.0.0.1:8002/`
   - Validate the JSON (inline report).
   - Save/load JSON to/from disk.
   - Draft state is stored locally (browser storage).
+- **Registry editor** (`/registry`)
+  - Load, edit, validate, and save a single registry item JSON.
+  - Optional kind override for strict item-level validation.
+  - See dedicated page: [Registry Web Editor](registry_web.md).
 - **Schema viewer** (`/schema`)
   - Inspect the schema summary or the current draft.
   - Generate an SVG graph from the current draft.
+  - Export a fully inlined standalone HTML report (graph + JSON) shareable without server.
+
+## Links
+
+- Source repo: <https://github.com/jeffwitz/R3XA_API>
+- Documentation: <https://r3xa-api.readthedocs.io/en/latest/>
 
 ## API endpoints
 

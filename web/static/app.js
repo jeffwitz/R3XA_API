@@ -157,7 +157,7 @@ const templates = {
       description: "List of data files",
       file_type: "application/octet-stream",
       data_sources: payload?.data_sources?.length ? [payload.data_sources[0].id] : [],
-      time_reference: 0.0,
+      time_reference: { kind: "unit", title: "time_reference", value: 0.0, unit: "s", scale: 1.0 },
       timestamps: [0.0],
       data: ["data_0001.tif"],
     }),
@@ -412,11 +412,10 @@ const buildArrayEditor = (container, key, label, templateSet) => {
           item.file_type || "application/octet-stream",
           (val) => updateItem((obj) => (obj.file_type = val))
         );
-        addField(
-          "time_reference",
-          item.time_reference ?? 0,
-          (val) => updateItem((obj) => (obj.time_reference = Number(val))),
-          "number"
+        addJsonField(
+          "time_reference (JSON object)",
+          item.time_reference || { kind: "unit", title: "time_reference", value: 0.0, unit: "s", scale: 1.0 },
+          (val) => updateItem((obj) => (obj.time_reference = val))
         );
         addField(
           "timestamps (comma numbers)",

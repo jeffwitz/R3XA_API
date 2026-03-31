@@ -27,6 +27,7 @@
       <nav class="nav">
         <a href="/">Home</a>
         <a href="/edit">Editor</a>
+        <a href="/registry">Registry editor</a>
       </nav>
     </header>
 
@@ -60,6 +61,7 @@
         <p class="muted">Generate a Graphviz SVG from the current draft.</p>
         <div class="actions">
           <button id="generate-graph-btn" type="button" onclick="window.renderGraph && window.renderGraph()">Generate SVG</button>
+          <button id="export-standalone-btn" class="ghost" type="button">Export standalone HTML</button>
           <button id="fullscreen-graph-btn" class="ghost" type="button" style="display:none;">Fullscreen</button>
           <button id="save-graph-btn" class="ghost" type="button" style="display:none;">Save SVG</button>
         </div>

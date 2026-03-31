@@ -2,6 +2,10 @@ const treeEl = document.getElementById("schema-tree");
 const filterEl = document.getElementById("schema-filter");
 const clearBtn = document.getElementById("schema-clear");
 const viewSelect = document.getElementById("schema-view");
+const graphContainer = document.getElementById("graph-container");
+const saveGraphBtn = document.getElementById("save-graph-btn");
+const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
+const exportStandaloneBtn = document.getElementById("export-standalone-btn");
 
 let cachedSummary = null;
 
@@ -13,6 +17,16 @@ const ensureServerStart = () => {
     localStorage.setItem("r3xaAppStart", appStart);
     localStorage.removeItem("r3xaDraft");
   }
+};
+
+const getStoredDraftText = () => {
+  return localStorage.getItem("r3xaDraft") || localStorage.getItem("r3xaDraftLast");
+};
+
+const getStoredDraft = () => {
+  const stored = getStoredDraftText();
+  if (!stored) return null;
+  return JSON.parse(stored);
 };
 
 const renderJsonViewer = (data, expand = false) => {
@@ -51,8 +65,7 @@ const buildDisplayDraft = (payload) => {
     const out = {};
     (items || []).forEach((item, index) => {
       const title = item?.title || item?.id || `item_${index + 1}`;
-      const key = `${title}`;
-      out[key] = item;
+      out[title] = item;
     });
     return out;
   };
@@ -64,14 +77,11 @@ const buildDisplayDraft = (payload) => {
 
 const renderDraft = () => {
   try {
-    const stored =
-      localStorage.getItem("r3xaDraft") ||
-      localStorage.getItem("r3xaDraftLast");
-    if (!stored) {
+    const payload = getStoredDraft();
+    if (!payload) {
       treeEl.textContent = "No draft found. Create one in the editor first.";
       return;
     }
-    const payload = JSON.parse(stored);
     renderJsonViewer(buildDisplayDraft(payload), true);
   } catch {
     treeEl.textContent = "Failed to load draft.";
@@ -79,18 +89,13 @@ const renderDraft = () => {
 };
 
 const renderGraph = async () => {
-  const stored =
-    localStorage.getItem("r3xaDraft") ||
-    localStorage.getItem("r3xaDraftLast");
-  const container = document.getElementById("graph-container");
-  const saveBtn = document.getElementById("save-graph-btn");
-  const fullscreenBtn = document.getElementById("fullscreen-graph-btn");
-  if (!container) return false;
-  container.textContent = "Generating graph…";
+  const stored = getStoredDraftText();
+  if (!graphContainer) return false;
+  graphContainer.textContent = "Generating graph…";
   if (!stored) {
-    container.textContent = "No draft found. Create one in the editor first.";
-    if (saveBtn) saveBtn.style.display = "none";
-    if (fullscreenBtn) fullscreenBtn.style.display = "none";
+    graphContainer.textContent = "No draft found. Create one in the editor first.";
+    if (saveGraphBtn) saveGraphBtn.style.display = "none";
+    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = "none";
     return false;
   }
   try {
@@ -106,36 +111,35 @@ const renderGraph = async () => {
         const parsed = JSON.parse(detail);
         detail = parsed.detail || detail;
       } catch {
-        // keep text
+        // keep raw detail
       }
-      container.textContent = `Graph error: ${detail}`;
+      graphContainer.textContent = `Graph error: ${detail}`;
       return false;
     }
     const svgText = await response.text();
-    container.innerHTML = svgText;
-    const svg = container.querySelector("svg");
+    graphContainer.innerHTML = svgText;
+    const svg = graphContainer.querySelector("svg");
     if (svg) {
       svg.removeAttribute("width");
       svg.removeAttribute("height");
       svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     }
-    if (saveBtn) saveBtn.style.display = svg ? "" : "none";
-    if (fullscreenBtn) fullscreenBtn.style.display = svg ? "" : "none";
+    if (saveGraphBtn) saveGraphBtn.style.display = svg ? "" : "none";
+    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = svg ? "" : "none";
     localStorage.setItem("r3xaDraftLast", stored);
     return !!svg;
   } catch (err) {
-    container.textContent = `Failed to generate graph: ${err.message || err}`;
-    if (saveBtn) saveBtn.style.display = "none";
-    if (fullscreenBtn) fullscreenBtn.style.display = "none";
+    graphContainer.textContent = `Failed to generate graph: ${err.message || err}`;
+    if (saveGraphBtn) saveGraphBtn.style.display = "none";
+    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = "none";
     return false;
   }
 };
 
 const showFullscreenGraph = () => {
-  const container = document.getElementById("graph-container");
-  const svg = container?.querySelector("svg");
+  const svg = graphContainer?.querySelector("svg");
   if (!svg) {
-    if (container) container.textContent = "No graph available. Generate it first.";
+    if (graphContainer) graphContainer.textContent = "No graph available. Generate it first.";
     return;
   }
 
@@ -150,9 +154,7 @@ const showFullscreenGraph = () => {
   if (!clone.getAttribute("viewBox")) {
     const w = svg.viewBox?.baseVal?.width || svg.getAttribute("width") || 0;
     const h = svg.viewBox?.baseVal?.height || svg.getAttribute("height") || 0;
-    if (w && h) {
-      clone.setAttribute("viewBox", `0 0 ${w} ${h}`);
-    }
+    if (w && h) clone.setAttribute("viewBox", `0 0 ${w} ${h}`);
   }
   inner.appendChild(clone);
 
@@ -205,11 +207,8 @@ const showFullscreenGraph = () => {
   document.addEventListener("keydown", onKey);
 };
 
-window.showFullscreenGraph = showFullscreenGraph;
-
 const saveGraph = () => {
-  const container = document.getElementById("graph-container");
-  const svg = container?.querySelector("svg");
+  const svg = graphContainer?.querySelector("svg");
   if (!svg) return;
   const serializer = new XMLSerializer();
   const svgText = serializer.serializeToString(svg);
@@ -225,8 +224,7 @@ const saveGraph = () => {
 };
 
 const openFullscreenGraph = async () => {
-  const container = document.getElementById("graph-container");
-  const hasSvg = container?.querySelector("svg");
+  const hasSvg = graphContainer?.querySelector("svg");
   if (!hasSvg) {
     const ok = await renderGraph();
     if (!ok) return;
@@ -234,106 +232,115 @@ const openFullscreenGraph = async () => {
   showFullscreenGraph();
 };
 
-const bindGraphUi = () => {
-  const saveBtn = document.getElementById("save-graph-btn");
-  const fullBtn = document.getElementById("fullscreen-graph-btn");
-  const container = document.getElementById("graph-container");
-  let bound = false;
-  if (saveBtn) {
-    saveBtn.addEventListener("click", saveGraph);
-    bound = true;
-  }
-  if (fullBtn) {
-    fullBtn.addEventListener("click", openFullscreenGraph);
-    bound = true;
-  }
-  if (container) {
-    container.addEventListener("click", () => {
-      if (container.querySelector("svg")) {
-        showFullscreenGraph();
-      }
-    });
-  }
-  return bound;
+const escapeHtml = (text) => {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 };
 
-if (!bindGraphUi()) {
-  document.addEventListener("DOMContentLoaded", bindGraphUi);
-}
+const exportStandaloneHtml = async () => {
+  const payload = getStoredDraft();
+  if (!payload) {
+    if (graphContainer) graphContainer.textContent = "No draft found. Create one in the editor first.";
+    return;
+  }
 
-window.renderGraph = renderGraph;
-window.showFullscreenGraph = showFullscreenGraph;
+  const hasSvg = graphContainer?.querySelector("svg");
+  if (!hasSvg) {
+    const ok = await renderGraph();
+    if (!ok) return;
+  }
+
+  const svg = graphContainer?.querySelector("svg");
+  const svgMarkup = svg ? svg.outerHTML : "<p>No graph available.</p>";
+  const prettyJson = escapeHtml(JSON.stringify(payload, null, 2));
+  const generatedAt = new Date().toISOString();
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>R3XA Standalone Export</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: #f5f7fa; color: #17202a; }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .panel { background: #fff; border: 1px solid #e4e8ee; border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+    .muted { color: #5b6673; }
+    pre { background: #0b0b0b; color: #e8e8e8; border-radius: 6px; padding: 0.75rem; overflow: auto; }
+    .graph svg { width: 100%; height: auto; max-height: 75vh; border: 1px solid #e4e8ee; border-radius: 6px; background: #fff; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>R3XA Standalone Export</h1>
+    <p class="muted">Generated at ${generatedAt}. This file is self-contained and does not require a server.</p>
+    <section class="panel graph">
+      <h2>Graph (SVG)</h2>
+      ${svgMarkup}
+    </section>
+    <section class="panel">
+      <h2>R3XA Draft JSON</h2>
+      <pre>${prettyJson}</pre>
+    </section>
+  </main>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "r3xa-standalone.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
 
 const applyFilter = () => {
   const term = (filterEl?.value || "").trim().toLowerCase();
-  const nodes = Array.from(
-    treeEl.querySelectorAll(".jv-light-current, .jv-dark-current")
-  );
+  const nodes = Array.from(treeEl.querySelectorAll(".jv-light-current, .jv-dark-current"));
   if (!nodes.length) return;
-
   if (!term) {
     nodes.forEach((node) => {
       node.style.display = "";
     });
     return;
   }
-
   nodes.forEach((node) => {
     const text = node.textContent.toLowerCase();
     node.style.display = text.includes(term) ? "" : "none";
   });
 };
 
-filterEl?.addEventListener("input", applyFilter);
-clearBtn?.addEventListener("click", () => {
-  if (filterEl) filterEl.value = "";
-  applyFilter();
-});
-
-viewSelect?.addEventListener("change", () => {
-  const view = viewSelect.value;
-  if (view === "draft") {
-    renderDraft();
-  } else {
-renderSummary();
-
-const bindGraphButton = () => {
-  const btn = document.getElementById("generate-graph-btn");
-  if (!btn) return false;
-  btn.addEventListener("click", () => {
-    const container = document.getElementById("graph-container");
-    if (container) container.textContent = "Click received…";
-    renderGraph();
+const bindEvents = () => {
+  filterEl?.addEventListener("input", applyFilter);
+  clearBtn?.addEventListener("click", () => {
+    if (filterEl) filterEl.value = "";
+    applyFilter();
   });
-  return true;
+  viewSelect?.addEventListener("change", () => {
+    if (viewSelect.value === "draft") renderDraft();
+    else renderSummary();
+  });
+  document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
+  saveGraphBtn?.addEventListener("click", saveGraph);
+  fullscreenGraphBtn?.addEventListener("click", openFullscreenGraph);
+  exportStandaloneBtn?.addEventListener("click", exportStandaloneHtml);
+  graphContainer?.addEventListener("click", () => {
+    if (graphContainer.querySelector("svg")) showFullscreenGraph();
+  });
 };
 
-if (!bindGraphButton()) {
-  document.addEventListener("DOMContentLoaded", bindGraphButton);
-}
-
-const bindGraphContainer = () => {
-  const container = document.getElementById("graph-container");
-  if (!container) return false;
-  container.addEventListener("click", () => {
-    showFullscreenGraph();
-  });
-  return true;
-};
-
-if (!bindGraphContainer()) {
-  document.addEventListener("DOMContentLoaded", bindGraphContainer);
-}
-  }
-});
+window.renderGraph = renderGraph;
+window.showFullscreenGraph = showFullscreenGraph;
 
 ensureServerStart();
-const hasDraft = !!localStorage.getItem("r3xaDraft");
-if (hasDraft && viewSelect) {
+bindEvents();
+if (getStoredDraft() && viewSelect) {
   viewSelect.value = "draft";
 }
-if (viewSelect?.value === "draft") {
-  renderDraft();
-} else {
-  renderSummary();
-}
+if (viewSelect?.value === "draft") renderDraft();
+else renderSummary();

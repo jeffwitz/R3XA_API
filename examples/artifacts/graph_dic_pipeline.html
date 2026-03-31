@@ -32,7 +32,7 @@
         <style type="text/css">
 
              #mynetwork {
-                 width: 1000px;
+                 width: 100%;
                  height: 900px;
                  background-color: #ffffff;
                  border: 1px solid lightgray;
@@ -88,8 +88,8 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"borderWidth": 4, "color": {"background": "white", "border": "lightgreen"}, "id": "nzmhmssjshjwrekfwptifcnr", "label": "CCD Camera\n(Encoding: 8-bit)", "shape": "ellipse"}, {"borderWidth": 2, "color": {"background": "lightblue", "border": "black"}, "id": "bfnwhdylsuhhlgevpcvllvzs", "label": "DIC processing (pyxel)\n(2D DIC using pyxel)", "shape": "ellipse"}, {"borderWidth": 2, "color": {"background": "lightgrey", "border": "black"}, "id": "igcgknngpwvnfhgpttzgvgmf", "label": "graylevel images\n(raw images from CCD camera)", "shape": "box"}, {"borderWidth": 6, "color": {"background": "#FFA07A", "border": "red"}, "id": "tasiosywnfpfwdlscoichgwe", "label": "DIC displacement fields\n(ux, uy per frame)", "shape": "box"}]);
-                  edges = new vis.DataSet([{"arrows": "to", "color": "black", "from": "igcgknngpwvnfhgpttzgvgmf", "to": "bfnwhdylsuhhlgevpcvllvzs"}, {"arrows": "to", "color": "black", "from": "nzmhmssjshjwrekfwptifcnr", "to": "igcgknngpwvnfhgpttzgvgmf"}, {"arrows": "to", "color": "black", "from": "bfnwhdylsuhhlgevpcvllvzs", "to": "tasiosywnfpfwdlscoichgwe"}]);
+                  nodes = new vis.DataSet([{"borderWidth": 4, "color": {"background": "white", "border": "lightgreen"}, "id": "gpwojlubbxomeyrlimsmtaoq", "label": "CCD Camera\n(Encoding: 8-bit)", "physics": false, "shape": "ellipse", "x": 0.0, "y": 0.0}, {"borderWidth": 2, "color": {"background": "lightblue", "border": "black"}, "id": "epjeqxqznutkbdhstnvlzstv", "label": "DIC processing (pyxel)\n(2D DIC using pyxel)", "physics": false, "shape": "ellipse", "x": 0.0, "y": 200.0}, {"borderWidth": 2, "color": {"background": "lightgrey", "border": "black"}, "id": "yzqbcxrpkpmgokzvybbaoaie", "label": "graylevel images\n(raw images from CCD camera)", "physics": false, "shape": "box", "x": 0.0, "y": 100.0}, {"borderWidth": 6, "color": {"background": "#FFA07A", "border": "red"}, "id": "dseyyjnjhhassfgktihvuzga", "label": "DIC displacement fields\n(ux, uy per frame)", "physics": false, "shape": "box", "x": 0.0, "y": 300.0}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "black", "from": "yzqbcxrpkpmgokzvybbaoaie", "to": "epjeqxqznutkbdhstnvlzstv"}, {"arrows": "to", "color": "black", "from": "gpwojlubbxomeyrlimsmtaoq", "to": "yzqbcxrpkpmgokzvybbaoaie"}, {"arrows": "to", "color": "black", "from": "epjeqxqznutkbdhstnvlzstv", "to": "dseyyjnjhhassfgktihvuzga"}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
@@ -100,7 +100,7 @@
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
-                  var options = {"physics": {"enabled": true, "barnesHut": {"gravitationalConstant": -3000, "centralGravity": 0.2, "springLength": 2, "springConstant": 0.003, "damping": 0.09, "avoidOverlap": 0}, "solver": "barnesHut"}};
+                  var options = {"nodes": {"font": {"size": 16, "face": "Arial"}, "margin": 14, "widthConstraint": {"maximum": 420}}, "physics": {"enabled": false}, "edges": {"arrows": {"to": {"enabled": true, "scaleFactor": 0.7}}, "smooth": {"enabled": false}}, "interaction": {"dragNodes": true, "dragView": true, "zoomView": true}};
 
                   
 

@@ -4,6 +4,7 @@ This page shows the **same pipeline** built in two ways:
 1) **From scratch** (explicit creation of every item)
 2) **Registry‑based** (reuse shared items and override only what changes)
 
+For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 
 
 ## Example index
@@ -79,7 +80,7 @@ images = r3xa.add_image_set_list(
     path="images/",
     file_type="image/tiff",
     data_sources=[camera["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     data=image_files,
 )
@@ -107,7 +108,7 @@ r3xa.add_image_set_list(
     path="dic/",
     file_type="text/csv",
     data_sources=[dic["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     data=dic_files,
 )
@@ -158,7 +159,7 @@ images = r3xa.add_image_set_list(
     path="images/",
     file_type="image/tiff",
     data_sources=[camera["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     data=image_files,
 )
@@ -177,7 +178,7 @@ r3xa.add_image_set_list(
     path="dic/",
     file_type="text/csv",
     data_sources=[dic["id"]],
-    time_reference=0.0,
+    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     data=dic_files,
 )

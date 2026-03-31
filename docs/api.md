@@ -55,7 +55,7 @@ add_image_set_list(
     path: str,
     file_type: str,
     data_sources: Sequence[str],
-    time_reference: float,
+    time_reference: dict,
     timestamps: Sequence[float],
     data: Sequence[str],
     **extra,
@@ -93,7 +93,7 @@ Build a schema‑compliant unit object.
 
 ### `data_set_file(...)`
 ```python
-data_set_file(filename: str, delimiter: str | None = None, data_range: list[str] | None = None, **extra) -> dict
+data_set_file(filename: str, delimiter: str | None = None, data_range: str | None = None, **extra) -> dict
 ```
 Build a schema‑compliant data_set_file object.
 
@@ -139,6 +139,8 @@ Validate a JSON instance against the schema.
 ## Graph export (Graphviz / PyVis)
 The `examples/python/graph_r3xa.py` tool can export SVG/HTML, and optionally the **Graphviz DOT** source.
 
+PyVis HTML now uses a directed hierarchical layout (`UD`) with physics disabled to stay visually close to Graphviz layering.
+
 Example:
 ```bash
 python examples/python/graph_r3xa.py --input examples/artifacts/dic_pipeline.json --output examples/artifacts/graph_dic_pipeline --dot
@@ -147,3 +149,59 @@ This creates:
 - `graph_dic_pipeline.svg` (Graphviz)
 - `graph_dic_pipeline.html` (PyVis)
 - `graph_dic_pipeline.dot` (Graphviz DOT source)
+
+Optional non-intrusive backend (experimental):
+- Install: `pip install -e ".[graph_nx]"`
+- Export static image with NetworkX + Matplotlib:
+```bash
+python examples/python/graph_r3xa.py \
+  --input examples/artifacts/dic_pipeline.json \
+  --output examples/artifacts/graph_dic_pipeline \
+  --networkx \
+  --networkx-format png \
+  --networkx-dpi 220
+```
+This adds:
+- `graph_dic_pipeline_nx.png` (NetworkX + Matplotlib)
+
+## Typed models (optional)
+Detailed walkthrough with a DIC pipeline example: `typed_models.md`.
+
+Install typed support:
+
+```bash
+pip install -e ".[typed]"
+```
+
+Public typed entry points:
+- `r3xa_api.models` (generated Pydantic models)
+- `r3xa_api.from_model(model) -> dict` (bridge to dict-based API)
+- `r3xa_api._TYPED_AVAILABLE` / `r3xa_api.typed_available`
+
+Typical usage:
+
+```python
+from r3xa_api import R3XAFile, from_model, models
+
+camera = models.CameraSource(
+    id="cam_01",
+    kind="data_sources/camera",
+    title="CCD Camera",
+    output_components=1,
+    output_dimension="surface",
+    output_units=[models.Unit(kind="unit", unit="gl")],
+    image_size=[models.Unit(kind="unit", unit="px")],
+)
+
+r3xa = R3XAFile(title="...", description="...", authors="...", date="2026-02-19")
+r3xa.data_sources.append(from_model(camera))
+r3xa.validate()
+```
+
+Model generation workflow:
+
+```bash
+make generate-models
+```
+
+`r3xa_api/models.py` is generated from `r3xa_api/resources/schema.json` and should not be edited manually.

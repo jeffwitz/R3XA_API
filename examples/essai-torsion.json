@@ -1,0 +1,247 @@
+{
+    "version": "2024.7.1",
+    "description": "Angle, couple",
+    "title": "Essai torsion",
+    "authors": "Pauline",
+    "date": "2025-07-02",
+    "settings": [
+        {
+            "id": "pfgeukoopqdzvylyltpiqwmk",
+            "kind": "settings/specimen",
+            "title": "Torsion apparatus",
+            "description": "Andilog Twist torsion test stand, precision : 0,1 deg ",
+            "sizes": [
+                {
+                    "title": "angle",
+                    "unit": "deg",
+                    "kind": "unit"
+                },
+                {
+                    "title": "torque",
+                    "unit": "N*m",
+                    "kind": "unit"
+                }
+            ],
+            "patterning_technique": "matte black and white spray paint"
+        },
+        {
+            "id": "oapnauxhzfeuyxlmehjdvbeq",
+            "kind": "settings/specimen",
+            "title": "Glue stick",
+            "description": "cylinder ",
+            "sizes": [
+                {
+                    "title": "diameter",
+                    "value": 0.7,
+                    "unit": "cm",
+                    "kind": "unit"
+                },
+                {
+                    "title": "length",
+                    "value": 15.0,
+                    "unit": "cm",
+                    "kind": "unit"
+                }
+            ]
+        },
+        {
+            "id": "hzuckfxokvyxvnhzfuvfymrk",
+            "kind": "settings/generic",
+            "title": "Calibration grid",
+            "description": "Vic circles calibration grid, 12*9, 5mm spacing"
+        },
+        {
+            "id": "xheswigdkqolumnoubhhxiin",
+            "kind": "settings/generic",
+            "title": "Spotlight ",
+            "description": "2 Spotlights MultiLed QX 100% indirect\nGS Vitec SN : GS01224 and GS01225\n",
+            "Documentation": "https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf"
+        }
+    ],
+    "data_sources": [
+        {
+            "id": "iqydxqrfniyjwbdsebslqrdx",
+            "kind": "data_sources/generic",
+            "title": "Dynamic Torque sensor",
+            "description": "Andilog Dynamic Torque sensor. \nCapacity 6Nm. \nResolution : 0,6 mNm",
+            "output_components": 1,
+            "output_dimension": "point",
+            "output_units": [
+                {
+                    "title": "torque",
+                    "unit": "N*m",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "Andilog",
+            "model": "SPIP TT 6",
+            "documentation": "https://pdf.directindustry.com/pdf/andilog-technologies/andilog-force-torque-measurements/7999-34677.html"
+        },
+        {
+            "id": "emmbeyekwhdrexughhlvufih",
+            "kind": "data_sources/generic",
+            "title": "Dynamic Angle sensor",
+            "description": "Andilog Sensor embedded in the Torsion apparatus",
+            "output_components": 1,
+            "output_dimension": "point",
+            "output_units": [
+                {
+                    "title": "angle",
+                    "unit": "deg",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "Andilog",
+            "model": "Twist Torsion test",
+            "documentation": "https://pdf.directindustry.com/pdf/andilog-technologies/andilog-force-torque-measurements/7999-34677.html"
+        },
+        {
+            "id": "nelnpiymawrygkkiuymxnrkc",
+            "kind": "data_sources/camera",
+            "title": "Camera",
+            "output_components": 1,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "unit": "gl",
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "Flir",
+            "model": "Grasshopper3 GS3-U3-51S5M",
+            "documentation": "https://www.es-france.com/index.php?controller=attachment&id_attachment=14071",
+            "image_size": [
+                {
+                    "value": 2048.0,
+                    "unit": "px",
+                    "kind": "unit"
+                },
+                {
+                    "value": 2048.0,
+                    "unit": "px",
+                    "kind": "unit"
+                }
+            ],
+            "image_scale": {
+                "value": 13.0,
+                "unit": "px/mm",
+                "kind": "unit"
+            },
+            "focal_length": {
+                "value": 50.0,
+                "unit": "mm",
+                "kind": "unit"
+            },
+            "lens": "Tamron C-Mount 50mm f/2.8",
+            "exposure": {
+                "value": 20.0,
+                "unit": "ms",
+                "kind": "unit"
+            },
+            "standoff_distance": {
+                "value": 1.0,
+                "unit": "m",
+                "kind": "unit"
+            },
+            "uncertainty": {
+                "value": 1.12,
+                "unit": "gl",
+                "kind": "unit"
+            }
+        }
+    ],
+    "data_sets": [
+        {
+            "id": "tlajsugaiiipkdekkezfjmmb",
+            "kind": "data_sets/file",
+            "title": "Rotation Torque",
+            "description": "Torque of the glue stick before torsion",
+            "data_sources": [
+                "iqydxqrfniyjwbdsebslqrdx"
+            ],
+            "time_reference": 0.0,
+            "timestamps": {
+                "filename": "resultats_angle&couple_rotation.csv",
+                "file_type": "csv",
+                "delimiter": ":",
+                "data_range": "A2:A63",
+                "kind": "data_set_file"
+            },
+            "data": {
+                "filename": "resultats_angle&couple_rotation.csv",
+                "file_type": "csv",
+                "delimiter": ":",
+                "data_range": "C2:C63",
+                "kind": "data_set_file"
+            }
+        },
+        {
+            "id": "swikllzsoxvbsxntkwpveoyd",
+            "kind": "data_sets/file",
+            "title": "Rotation Angle",
+            "description": "Rotation of the glue stick (before torsion)",
+            "data_sources": [
+                "emmbeyekwhdrexughhlvufih"
+            ],
+            "time_reference": 0.0,
+            "timestamps": {
+                "filename": "resultats_angle&couple_rotation.csv",
+                "delimiter": ";",
+                "data_range": "A2;A63",
+                "kind": "data_set_file"
+            },
+            "data": {
+                "filename": "resultats_angle&couple_rotation.csv",
+                "delimiter": ";",
+                "data_range": "B2;B63",
+                "kind": "data_set_file"
+            }
+        },
+        {
+            "id": "cobcbbhrtpjjtjypurdhfjnp",
+            "kind": "data_sets/file",
+            "title": "Torsion Angle",
+            "description": "Angle of rotation of the glue stick (during torsion)",
+            "data_sources": [
+                "emmbeyekwhdrexughhlvufih"
+            ],
+            "time_reference": 0.0,
+            "timestamps": {
+                "filename": "resultats_angle&couple_torsion.csv",
+                "delimiter": ";",
+                "data_range": "A2;A73",
+                "kind": "data_set_file"
+            },
+            "data": {
+                "filename": "resultats_angle&couple_torsion.csv",
+                "delimiter": ";",
+                "data_range": "B2;B73",
+                "kind": "data_set_file"
+            }
+        },
+        {
+            "id": "lohnjauvurxovjtistnfvyyd",
+            "kind": "data_sets/file",
+            "title": "Torsion Torque",
+            "description": "Torque of the glue stick during torsion",
+            "data_sources": [
+                "iqydxqrfniyjwbdsebslqrdx"
+            ],
+            "time_reference": 0.0,
+            "timestamps": {
+                "filename": "resultats_angle&couple_torsion.csv",
+                "file_type": "csv",
+                "delimiter": ";",
+                "data_range": "A2;A73",
+                "kind": "data_set_file"
+            },
+            "data": {
+                "filename": "resultats_angle&couple_torsion.csv",
+                "file_type": "csv",
+                "delimiter": ";",
+                "data_range": "C2;C73",
+                "kind": "data_set_file"
+            }
+        }
+    ]
+}

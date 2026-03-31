@@ -4,11 +4,15 @@ from .schema import load_schema
 
 
 def _make_context_message(error: jsonschema.ValidationError, context_error: jsonschema.ValidationError) -> str:
+    """Build a readable message for a nested anyOf/oneOf validation branch."""
+
     i = list(context_error.relative_schema_path)[0]
     return context_error.message + " of " + error.validator_value[i]["$ref"].replace("#/$defs/", "")
 
 
 def validate(instance: Dict[str, Any], schema: Optional[Dict[str, Any]] = None) -> None:
+    """Validate an R3XA payload and raise ValidationError with aggregated details."""
+
     schema = schema or load_schema()
     validator = jsonschema.validators.Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(instance), key=jsonschema.exceptions.relevance)
