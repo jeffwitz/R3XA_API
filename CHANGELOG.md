@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2026-03-31
+- Documentation: point the public MyBinder notebook link to a stable tagged release instead of the moving `develop` branch.
+
 ## [1.2.1] - 2026-03-31
 - Documentation: add a homepage installation matrix for core, typed, web, notebook, graph fallback, and full contributor setups.
 - Documentation: make the local `.venv` workflow explicit and show how to create and activate it.
