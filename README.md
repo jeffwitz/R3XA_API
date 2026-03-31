@@ -8,7 +8,21 @@ pip install -e .
 ```
 
 ## Assumed environment
-Documentation commands assume a virtual environment exists at `.venv` (project root).
+Documentation commands assume a local virtual environment exists at `.venv` (project root).
+
+Create it once from the project root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+```
+
+On Windows:
+
+```bat
+.venv\Scripts\activate
+```
 
 ## Quick start
 ```python
