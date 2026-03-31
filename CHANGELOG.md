@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0.dev0] - 2026-03-31
+- Start the next development cycle after the `1.2.0` release.
+
 ## [1.2.0] - 2026-03-31
 - Typed models: add generated Pydantic workflow, direct typed item insertion in `R3XAFile`, and a runnable typed DIC pipeline example.
 - Graphs: refactor web graph rendering into dedicated backends, extend non-regression coverage, and add NetworkX/Matplotlib fallback rendering.
