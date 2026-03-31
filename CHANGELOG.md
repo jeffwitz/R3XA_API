@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-03-31
+- Documentation: add a homepage installation matrix for core, typed, web, notebook, graph fallback, and full contributor setups.
+- Documentation: make the local `.venv` workflow explicit and show how to create and activate it.
+- Documentation: highlight that SVG graph generation requires the Graphviz executable `dot`, not just the Python package.
+
 ## [1.2.0] - 2026-03-31
 - Typed models: add generated Pydantic workflow, direct typed item insertion in `R3XAFile`, and a runnable typed DIC pipeline example.
 - Graphs: refactor web graph rendering into dedicated backends, extend non-regression coverage, and add NetworkX/Matplotlib fallback rendering.
