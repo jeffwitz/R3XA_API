@@ -3,7 +3,21 @@ R3XA_API Documentation
 
 Environment assumption
 ----------------------
-Documentation commands assume a virtual environment exists at ``.venv`` (project root).
+Documentation commands assume a local virtual environment exists at ``.venv`` (project root).
+
+Create it once from the project root:
+
+.. code-block:: bash
+
+   python3 -m venv .venv
+   source .venv/bin/activate
+   python -m pip install --upgrade pip
+
+On Windows, activate it with:
+
+.. code-block:: bat
+
+   .venv\Scripts\activate
 
 .. raw:: html
 
@@ -25,6 +39,69 @@ Credits and origin
 ------------------
 - Initial implementation by **E. Roubin**, based on a shared specification led by **J‑C. Passieux**.
 - Original repository: ``https://gitlab.com/photomecanics/r3xa``
+
+Installation profiles
+---------------------
+Choose one profile from the project root, inside ``.venv``:
+
+- **Install everything** — all optional Python features in one command:
+
+  .. code-block:: bash
+
+     pip install -e ".[dev,typed,web,notebook,graph_nx]"
+
+  .. warning::
+
+     This installs all Python extras, but it does **not** install the Graphviz executable ``dot``.
+     If you want SVG graph generation in the web UI or notebook, install Graphviz at system level too:
+
+     - Linux: ``sudo apt-get install graphviz``
+     - macOS: ``brew install graphviz``
+     - Windows: install from ``https://graphviz.org/download/`` and make sure ``dot`` is in ``PATH``
+
+- **Core SDK** — create and validate JSON files:
+
+  .. code-block:: bash
+
+     pip install -e .
+
+- **Typed SDK** — add IDE autocompletion with generated Pydantic models:
+
+  .. code-block:: bash
+
+     pip install -e ".[typed]"
+
+- **Web UI** — run the FastAPI editor and validator:
+
+  .. code-block:: bash
+
+     pip install -e ".[web]"
+     ./.venv/bin/uvicorn web.app.main:app --reload --port 8002
+
+- **Notebook** — run the Marimo notebook example:
+
+  .. code-block:: bash
+
+     pip install -e ".[notebook]"
+     ./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
+
+- **Static graph fallback** — enable the optional NetworkX/Matplotlib renderer:
+
+  .. code-block:: bash
+
+     pip install -e ".[graph_nx]"
+
+- **Contributor setup** — install the full local stack:
+
+  .. code-block:: bash
+
+     pip install -e ".[dev,typed,web,notebook,graph_nx]"
+
+.. warning::
+
+   SVG graph generation depends on the Graphviz executable ``dot``.
+   The Python package ``graphviz`` alone is **not sufficient**.
+   See :doc:`web` and :doc:`notebooks` for details.
 
 Web UI
 ------

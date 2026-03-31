@@ -19,6 +19,21 @@ Notebook features:
 ./.venv/bin/pip install -r requirements-notebook.txt
 ```
 
+### Graphviz requirement
+
+The notebook renders graphs as SVG with Graphviz.
+The Python requirements are **not enough** on their own: the Graphviz executable `dot` must also be installed on the system.
+
+- Linux: `sudo apt-get install graphviz`
+- macOS: `brew install graphviz`
+- Windows: install from <https://graphviz.org/download/> and ensure `dot` is in `PATH`
+
+Quick check:
+
+```bash
+dot -V
+```
+
 ### Start Marimo
 ```bash
 ./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
