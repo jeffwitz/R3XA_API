@@ -12,6 +12,7 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - `basic_create.py`: minimal end‑to‑end JSON generation.
 - `complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
 - `complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
+- `create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
 - `qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
 - `graph_r3xa.py`: graph generator (Graphviz + PyVis).
 - `registry_usage.py`: registry loading/overrides.
@@ -187,6 +188,20 @@ r3xa.add_image_set_list(
 ## Outputs
 - From scratch: `examples/artifacts/dic_pipeline.json`
 - Registry‑based: `examples/artifacts/dic_pipeline_registry.json`
+
+## 3) Creating a new registry item
+File: `examples/python/create_registry_camera.py`
+
+Key ideas:
+- build a single registry item with `new_item(...)`
+- validate and save it with `save_item_path(...)`
+- reload it through `Registry(...).get_validated(...)`
+
+This example writes:
+- `registry/data_sources/camera/example_generated_camera.json`
+
+Reusable registry key:
+- `data_sources/camera/example_generated_camera`
 
 ## DIC pipeline graph (from scratch example)
 SVG (Graphviz backend):

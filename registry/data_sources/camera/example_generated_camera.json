@@ -1,0 +1,42 @@
+{
+  "id": "ds_cam_example_generated",
+  "title": "Example generated camera",
+  "description": "Example registry camera generated with R3XA_API",
+  "output_components": 1,
+  "output_dimension": "surface",
+  "output_units": [
+    {
+      "kind": "unit",
+      "title": "graylevel",
+      "value": 1.0,
+      "unit": "gl",
+      "scale": 1.0
+    }
+  ],
+  "manufacturer": "Example manufacturer",
+  "model": "Example model",
+  "image_size": [
+    {
+      "kind": "unit",
+      "title": "width",
+      "value": 2048,
+      "unit": "px",
+      "scale": 1.0
+    },
+    {
+      "kind": "unit",
+      "title": "height",
+      "value": 1536,
+      "unit": "px",
+      "scale": 1.0
+    }
+  ],
+  "focal_length": {
+    "kind": "unit",
+    "title": "focal_length",
+    "value": 35.0,
+    "unit": "mm",
+    "scale": 1.0
+  },
+  "kind": "data_sources/camera"
+}

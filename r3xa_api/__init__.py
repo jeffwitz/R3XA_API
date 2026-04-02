@@ -1,7 +1,7 @@
 import importlib
 
 from .core import R3XAFile, new_item, unit, data_set_file
-from .registry import load_item, validate_item, load_registry, merge_item, Registry
+from .registry import load_item, save_item, load_item_path, save_item_path, validate_item, load_registry, merge_item, Registry
 from .schema import load_schema, schema_version
 from .typed import from_model
 from .validate import validate
@@ -30,6 +30,9 @@ __all__ = [
     "schema_version",
     "validate",
     "load_item",
+    "save_item",
+    "load_item_path",
+    "save_item_path",
     "validate_item",
     "load_registry",
     "merge_item",

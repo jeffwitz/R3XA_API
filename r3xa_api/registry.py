@@ -16,12 +16,51 @@ def load_item(path: str | Path) -> Dict[str, Any]:
         return json.load(f)
 
 
+def save_item(
+    path: str | Path,
+    item: Dict[str, Any],
+    *,
+    validate: bool = True,
+    kind: Optional[str] = None,
+) -> Path:
+    """Validate then save a registry item to a JSON file."""
+
+    if validate:
+        validate_item(item, kind=kind)
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(item, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 def load_item_path(root: str | Path, tree_path: str) -> Dict[str, Any]:
     """Load a registry item addressed as section/kind/name."""
 
     root = Path(root)
     path = root / f"{tree_path}.json"
     return load_item(path)
+
+
+def save_item_path(
+    root: str | Path,
+    tree_path: str,
+    item: Dict[str, Any],
+    *,
+    validate: bool = True,
+    kind: Optional[str] = None,
+) -> Path:
+    """Validate then save a registry item addressed as `section/kind/name`."""
+
+    root = Path(root)
+    inferred_kind = kind
+    if inferred_kind is None:
+        parts = tree_path.split("/")
+        if len(parts) >= 2:
+            inferred_kind = "/".join(parts[:2])
+
+    path = root / f"{tree_path}.json"
+    return save_item(path, item, validate=validate, kind=inferred_kind)
 
 
 def _wrap_def(schema: Dict[str, Any], kind: str) -> Dict[str, Any]:
@@ -92,6 +131,18 @@ class Registry:
         """Load an item from `section/kind/name` path."""
 
         return load_item_path(self.root, tree_path)
+
+    def save(
+        self,
+        tree_path: str,
+        item: Dict[str, Any],
+        *,
+        validate: bool = True,
+        kind: Optional[str] = None,
+    ) -> Path:
+        """Validate then save an item to `section/kind/name` path."""
+
+        return save_item_path(self.root, tree_path, item, validate=validate, kind=kind)
 
     def validate(self, item: Dict[str, Any], kind: Optional[str] = None) -> None:
         """Validate an item using explicit `kind` or embedded `item.kind`."""
