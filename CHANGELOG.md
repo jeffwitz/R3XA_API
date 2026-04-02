@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-04-02
+- Registry: add `save_item(...)`, `save_item_path(...)`, and `Registry.save(...)` to generate, validate, and write reusable registry entries directly from the Python API.
+- Examples: add `examples/python/create_registry_camera.py` plus a validated camera example stored under `registry/data_sources/camera/`.
+- Documentation: explain the registry creation workflow in the API, overview, and examples pages.
+
 ## [1.2.2] - 2026-03-31
 - Documentation: point the public MyBinder notebook link to a stable tagged release instead of the moving `develop` branch.
 
