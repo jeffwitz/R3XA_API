@@ -2,8 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3.0.dev0] - 2026-03-31
-- Start the next development cycle after the `1.2.0` release.
+## [1.4.0.dev0] - 2026-04-02
+- Start the next development cycle after the `1.3.0` release.
+
+## [1.3.0] - 2026-04-02
+- Registry: add `save_item(...)`, `save_item_path(...)`, and `Registry.save(...)` to generate, validate, and write reusable registry entries directly from the Python API.
+- Examples: add `examples/python/create_registry_camera.py` plus a validated camera example stored under `registry/data_sources/camera/`.
+- Documentation: explain the registry creation workflow in the API, overview, and examples pages.
 
 ## [1.2.0] - 2026-03-31
 - Typed models: add generated Pydantic workflow, direct typed item insertion in `R3XAFile`, and a runnable typed DIC pipeline example.
