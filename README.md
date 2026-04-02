@@ -173,6 +173,7 @@ Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 ## Examples
 - From scratch pipeline: `examples/python/complex_dic_pipeline.py`
 - Registry pipeline: `examples/python/complex_dic_pipeline_registry.py`
+- Registry item creation: `examples/python/create_registry_camera.py`
 - Typed (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
 - Validate all: `examples/python/validate_all.py`
 

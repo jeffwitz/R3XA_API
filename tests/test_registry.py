@@ -7,14 +7,7 @@ from r3xa_api import load_item, validate_item, load_registry, merge_item, Regist
 
 def test_validate_registry_items():
     root = Path(__file__).parents[1] / "registry"
-    items = [
-        root / "settings" / "generic" / "instron_5800.json",
-        root / "settings" / "specimen" / "openhole_sample.json",
-        root / "data_sources" / "camera" / "avt_dolphin_f145b.json",
-        root / "data_sources" / "generic" / "pyxel_dic_2d.json",
-        root / "data_sets" / "list" / "camera_images_template.json",
-        root / "data_sets" / "file" / "tabular_timeseries_template.json",
-    ]
+    items = sorted(root.rglob("*.json"))
 
     for path in items:
         item = load_item(path)

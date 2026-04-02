@@ -102,14 +102,34 @@ Build a schema‑compliant data_set_file object.
 ### `load_item(path) -> dict`
 Load a registry JSON item from disk.
 
+### `save_item(path, item, validate=True, kind=None) -> Path`
+Validate and save a single registry item JSON to disk.
+
 ### `Registry`
-Helper class that encapsulates the registry root and provides `get()` and `get_validated()` methods.
+Helper class that encapsulates the registry root and provides `get()`, `get_validated()`, and `save()` methods.
 
 ```python
-from r3xa_api import Registry
+from r3xa_api import Registry, new_item, save_item_path, unit
 
 registry = Registry("registry")
 camera = registry.get_validated("data_sources/camera/avt_dolphin_f145b")
+
+new_camera = new_item(
+    "data_sources/camera",
+    title="Example generated camera",
+    description="Example registry camera generated with R3XA_API",
+    output_components=1,
+    output_dimension="surface",
+    output_units=[unit(title="graylevel", value=1.0, unit="gl", scale=1.0)],
+    manufacturer="Example manufacturer",
+    model="Example model",
+    image_size=[
+        unit(title="width", value=2048, unit="px", scale=1.0),
+        unit(title="height", value=1536, unit="px", scale=1.0),
+    ],
+)
+
+save_item_path("registry", "data_sources/camera/example_generated_camera", new_camera)
 ```
 
 ### `validate_item(item, kind=None, schema=None) -> None`
@@ -118,6 +138,9 @@ Validate a single item against its schema definition (e.g. `data_sources/camera`
 ### Advanced
 `load_item_path(root, tree_path) -> dict`  
 Internal/advanced helper to load a registry item by its tree path string, e.g. `settings/specimen/openhole_sample`.
+
+`save_item_path(root, tree_path, item, validate=True, kind=None) -> Path`  
+Validate then save a registry item using a `section/kind/name` tree path, e.g. `data_sources/camera/example_generated_camera`.
 
 ### `load_registry(root) -> dict`
 Load a full registry tree into memory.

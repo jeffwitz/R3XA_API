@@ -231,6 +231,7 @@ registry/
 ```
 
 Each file is a single JSON item (not a full R3XA file) that can be loaded and validated individually.
+Registry entries are not only reusable templates: they can also be **generated directly with the API**, validated on their own, and saved back into the registry tree.
 
 ### How to load registry items
 ```python
@@ -249,6 +250,38 @@ validate_item(camera_base)
 pyxel_base = load_item_path(registry_root, "data_sources/generic/pyxel_dic_2d")
 validate_item(pyxel_base)
 ```
+
+### How to create a new registry item
+```python
+from pathlib import Path
+from r3xa_api import new_item, save_item_path, unit
+
+registry_root = Path("registry")
+
+camera = new_item(
+    "data_sources/camera",
+    id="ds_cam_example_generated",
+    title="Example generated camera",
+    description="Example registry camera generated with R3XA_API",
+    output_components=1,
+    output_dimension="surface",
+    output_units=[unit(title="graylevel", value=1.0, unit="gl", scale=1.0)],
+    manufacturer="Example manufacturer",
+    model="Example model",
+    image_size=[
+        unit(title="width", value=2048, unit="px", scale=1.0),
+        unit(title="height", value=1536, unit="px", scale=1.0),
+    ],
+)
+
+save_item_path(
+    registry_root,
+    "data_sources/camera/example_generated_camera",
+    camera,
+)
+```
+
+This is the pattern used in `examples/python/create_registry_camera.py`.
 
 ### How it maps to the schema
 - Path `registry/settings/specimen/*.json` → items with `kind = "settings/specimen"`
