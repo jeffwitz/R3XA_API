@@ -1,4 +1,5 @@
 import pytest
+import jsonschema
 
 from r3xa_api import R3XAFile, data_set_file, unit, validate
 
@@ -151,3 +152,50 @@ def test_add_item_rejects_unknown_kind_prefix() -> None:
     r3xa = R3XAFile(title="Kinds", description="Kinds", authors="R3XA API", date="2026-03-01")
     with pytest.raises(ValueError):
         r3xa.add_item("unknown/item", title="bad", description="bad")
+
+
+def test_r3xafile_dump_save_and_load_roundtrip(tmp_path) -> None:
+    r3xa = R3XAFile(
+        title="Roundtrip",
+        description="Roundtrip test",
+        authors="R3XA API",
+        date="2026-03-01",
+    )
+    source = r3xa.add_data_source(
+        "data_sources/generic",
+        title="Load cell",
+        description="Force measurement",
+        output_components=1,
+        output_dimension="point",
+        output_units=[unit(title="force", value=1.0, unit="N")],
+        manufacturer="Instron",
+        model="5800",
+    )
+    r3xa.add_data_set(
+        "data_sets/file",
+        title="Force",
+        description="Force signal",
+        data_sources=[source["id"]],
+        time_reference=0.0,
+        timestamps=data_set_file(filename="t.csv"),
+        data=data_set_file(filename="d.csv"),
+    )
+
+    dumped = r3xa.dump(indent=2)
+    assert '"title": "Roundtrip"' in dumped
+
+    output_path = tmp_path / "roundtrip.json"
+    saved_path = r3xa.save(output_path, indent=2)
+    loaded = R3XAFile.load(output_path)
+    loaded_from_text = R3XAFile.loads(dumped)
+
+    assert saved_path == output_path
+    assert loaded.to_dict() == r3xa.to_dict()
+    assert loaded_from_text.to_dict() == r3xa.to_dict()
+
+
+def test_r3xafile_save_validates_by_default(tmp_path) -> None:
+    r3xa = R3XAFile(description="Missing required fields")
+
+    with pytest.raises(jsonschema.ValidationError):
+        r3xa.save(tmp_path / "invalid.json")

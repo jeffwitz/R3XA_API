@@ -27,6 +27,38 @@ def test_registry_class():
     registry = Registry(root)
     item = registry.get_validated("settings/specimen/openhole_sample")
     assert item["kind"] == "settings/specimen"
+    assert registry.load("settings/specimen/openhole_sample")["kind"] == "settings/specimen"
+    assert registry.load_validated("settings/specimen/openhole_sample")["kind"] == "settings/specimen"
+
+
+def test_registry_list_and_iteration():
+    root = Path(__file__).parents[1] / "registry"
+    registry = Registry(root)
+
+    all_items = registry.list()
+    specimen_items = registry.list(section="settings")
+    camera_items = registry.list(kind="data_sources/camera")
+    validated_items = list(registry.iter_items(kind="data_sources/camera", validated=True))
+
+    assert "settings/specimen/openhole_sample" in all_items
+    assert all(tree_path.startswith("settings/") for tree_path in specimen_items)
+    assert "data_sources/camera/avt_dolphin_f145b" in camera_items
+    assert validated_items
+    assert validated_items[0][0].startswith("data_sources/camera/")
+    assert validated_items[0][1]["kind"] == "data_sources/camera"
+
+
+def test_registry_merge():
+    root = Path(__file__).parents[1] / "registry"
+    registry = Registry(root)
+    merged = registry.merge(
+        "data_sources/generic/pyxel_dic_2d",
+        id="ds_custom",
+        description="custom",
+    )
+
+    assert merged["id"] == "ds_custom"
+    assert merged["description"] == "custom"
 
 
 def test_load_registry_structure():

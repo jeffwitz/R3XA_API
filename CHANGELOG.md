@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [1.4.0.dev0] - 2026-04-02
 - Start the next development cycle after the `1.3.0` release.
+- API ergonomics: add `R3XAFile.load(...)`, `R3XAFile.loads(...)`, `R3XAFile.dump(...)`, and make `save(...)` validate by default.
+- Registry ergonomics: add `Registry.load(...)`, `load_validated(...)`, `list(...)`, `iter_items(...)`, and `merge(...)`.
+- Documentation: add a formal API ergonomics action plan and document the new load/edit/save and registry discovery workflows.
 
 ## [1.3.0] - 2026-04-02
 - Registry: add `save_item(...)`, `save_item_path(...)`, and `Registry.save(...)` to generate, validate, and write reusable registry entries directly from the Python API.

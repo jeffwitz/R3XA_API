@@ -16,6 +16,13 @@ R3XAFile(version: str | None = None, **header)
 
 **Methods**
 ```python
+R3XAFile.from_dict(payload: dict) -> R3XAFile
+R3XAFile.load(path: str | Path) -> R3XAFile
+R3XAFile.loads(text: str) -> R3XAFile
+```
+Create a builder from an existing payload, JSON file, or JSON string.
+
+```python
 set_header(**fields) -> R3XAFile
 ```
 Update header fields.
@@ -78,10 +85,21 @@ Guided helper for file‑based datasets.
 
 ```python
 to_dict() -> dict
+dump(indent: int = 4) -> str
 validate() -> None
-save(path: str, indent: int = 4) -> None
+save(path: str | Path, indent: int = 4, validate: bool = True) -> Path
 ```
 Serialize, validate, and write to disk.
+
+Typical edit cycle:
+
+```python
+from r3xa_api import R3XAFile
+
+r3xa = R3XAFile.load("experiment.json")
+r3xa.set_header(title="Updated title")
+r3xa.save("experiment_updated.json")
+```
 
 ## Helper functions
 
@@ -106,7 +124,7 @@ Load a registry JSON item from disk.
 Validate and save a single registry item JSON to disk.
 
 ### `Registry`
-Helper class that encapsulates the registry root and provides `get()`, `get_validated()`, and `save()` methods.
+Helper class that encapsulates the registry root and provides loading, validation, discovery, merge, and save methods.
 
 ```python
 from r3xa_api import Registry, new_item, save_item_path, unit
@@ -132,6 +150,34 @@ new_camera = new_item(
 save_item_path("registry", "data_sources/camera/example_generated_camera", new_camera)
 ```
 
+Most useful instance methods:
+
+```python
+load(tree_path: str) -> dict
+load_validated(tree_path: str, kind: str | None = None) -> dict
+list(section: str | None = None, kind: str | None = None) -> list[str]
+iter_items(section: str | None = None, kind: str | None = None, validated: bool = False) -> Iterator[tuple[str, dict]]
+merge(tree_path: str, **overrides) -> dict
+save(tree_path: str, item: dict, validate: bool = True, kind: str | None = None) -> Path
+```
+
+Typical registry workflow:
+
+```python
+from r3xa_api import Registry
+
+registry = Registry("registry")
+
+for tree_path in registry.list(kind="data_sources/camera"):
+    print(tree_path)
+
+camera = registry.merge(
+    "data_sources/camera/avt_dolphin_f145b",
+    id="cam_exp01",
+    description="Camera used in experiment 01",
+)
+```
+
 ### `validate_item(item, kind=None, schema=None) -> None`
 Validate a single item against its schema definition (e.g. `data_sources/camera`).
 
@@ -147,6 +193,8 @@ Load a full registry tree into memory.
 
 ### `merge_item(base, **overrides) -> dict`
 Create a new item by overriding fields of a registry item.
+
+This is a shallow merge helper. For end-user workflows, prefer `Registry.merge(...)`.
 
 ## Schema utilities
 

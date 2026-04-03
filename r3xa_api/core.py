@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import random
 import string
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from .schema import schema_version
@@ -115,6 +116,21 @@ class R3XAFile:
         obj.data_sources = _ModelAwareList(payload.get("data_sources", []))
         obj.data_sets = _ModelAwareList(payload.get("data_sets", []))
         return obj
+
+    @classmethod
+    def load(cls, path: str | Path) -> "R3XAFile":
+        """Load an R3XA JSON file from disk."""
+
+        return cls.loads(Path(path).read_text(encoding="utf-8"))
+
+    @classmethod
+    def loads(cls, text: str) -> "R3XAFile":
+        """Load an R3XA document from a JSON string."""
+
+        payload = json.loads(text)
+        if not isinstance(payload, dict):
+            raise TypeError("R3XA document root must be a JSON object")
+        return cls.from_dict(payload)
 
     def set_header(self, **fields: Any) -> "R3XAFile":
         """Update top-level header fields in place."""
@@ -287,8 +303,17 @@ class R3XAFile:
 
         validate(self.to_dict())
 
-    def save(self, path: str, indent: int = 4) -> None:
-        """Serialize payload as JSON to disk."""
+    def dump(self, indent: int = 4) -> str:
+        """Serialize payload as a JSON string."""
 
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(self.to_dict(), f, indent=indent)
+        return json.dumps(self.to_dict(), indent=indent)
+
+    def save(self, path: str | Path, indent: int = 4, validate: bool = True) -> Path:
+        """Validate optionally, then serialize payload as JSON to disk."""
+
+        if validate:
+            self.validate()
+
+        path = Path(path)
+        path.write_text(self.dump(indent=indent) + "\n", encoding="utf-8")
+        return path
