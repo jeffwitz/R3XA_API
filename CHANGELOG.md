@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - Registry ergonomics: add `Registry.load(...)`, `load_validated(...)`, `list(...)`, `iter_items(...)`, and `merge(...)`.
 - Documentation: add a formal API ergonomics action plan and document the new load/edit/save and registry discovery workflows.
 - Examples: add runnable `load_edit_save.py` and `registry_discovery.py` scripts to showcase the new ergonomic API entry points.
+- Schema: allow optional `uncertainty` on `data_sources/generic` and sync the packaged runtime schema from `R3XA_SPEC`.
 
 ## [1.3.0] - 2026-04-02
 - Registry: add `save_item(...)`, `save_item_path(...)`, and `Registry.save(...)` to generate, validate, and write reusable registry entries directly from the Python API.
