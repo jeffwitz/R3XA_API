@@ -85,6 +85,7 @@ def test_examples_validate_all():
         for path in [
             examples / "valid_camera_list.json",
             examples / "valid_tabular_file.json",
+            examples / "essai-torsion.json",
             artifacts / "dic_pipeline.json",
             artifacts / "dic_pipeline_registry.json",
             artifacts / "dic_pipeline_loaded.json",

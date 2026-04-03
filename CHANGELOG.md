@@ -2,13 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.4.0.dev0] - 2026-04-02
+## [1.4.0.dev0] - 2026-04-03
 - Start the next development cycle after the `1.3.0` release.
 - API ergonomics: add `R3XAFile.load(...)`, `R3XAFile.loads(...)`, `R3XAFile.dump(...)`, and make `save(...)` validate by default.
 - Registry ergonomics: add `Registry.load(...)`, `load_validated(...)`, `list(...)`, `iter_items(...)`, and `merge(...)`.
 - Documentation: add a formal API ergonomics action plan and document the new load/edit/save and registry discovery workflows.
 - Examples: add runnable `load_edit_save.py` and `registry_discovery.py` scripts to showcase the new ergonomic API entry points.
 - Schema: allow optional `uncertainty` on `data_sources/generic` and sync the packaged runtime schema from `R3XA_SPEC`.
+- Schema/API consistency: normalize `settings/generic.documentation` to lowercase `documentation` across the source schema, packaged schema, typed models, docs, and the torsion example.
+- Core API: align `unit()` with the schema so only `unit` is required and generate guided helpers for all schema kinds, while keeping the image-set aliases.
+- Tooling/tests: make `make generate-spec` use a configurable Python executable and extend coverage for the new helper layer and torsion validation.
 
 ## [1.3.0] - 2026-04-02
 - Registry: add `save_item(...)`, `save_item_path(...)`, and `Registry.save(...)` to generate, validate, and write reusable registry entries directly from the Python API.

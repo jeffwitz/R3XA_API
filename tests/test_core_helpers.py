@@ -1,7 +1,7 @@
-import pytest
 import jsonschema
+import pytest
 
-from r3xa_api import R3XAFile, data_set_file, unit, validate
+from r3xa_api import R3XAFile, data_set_file, load_schema, unit, validate
 
 
 class _FakeTypedModel:
@@ -55,6 +55,16 @@ def test_data_set_file_rejects_non_string_range() -> None:
         data_set_file(filename="timestamps.csv", data_range=["A2:A100"])  # type: ignore[arg-type]
 
 
+def test_unit_accepts_minimal_schema_payload() -> None:
+    payload = unit(unit="px")
+    assert payload == {"kind": "unit", "unit": "px", "scale": 1.0}
+
+
+def test_unit_requires_unit_field() -> None:
+    with pytest.raises(TypeError):
+        unit(title="width")
+
+
 def test_generic_data_source_accepts_uncertainty() -> None:
     r3xa = R3XAFile(
         title="Generic source uncertainty",
@@ -76,6 +86,23 @@ def test_generic_data_source_accepts_uncertainty() -> None:
     )
 
     assert source["uncertainty"]["unit"] == "mN*m"
+    validate(r3xa.to_dict())
+
+
+def test_generic_setting_accepts_lowercase_documentation() -> None:
+    r3xa = R3XAFile(
+        title="Generic setting documentation",
+        description="Lowercase documentation field",
+        authors="R3XA API",
+        date="2026-04-03",
+    )
+
+    r3xa.add_generic_setting(
+        title="Lighting setup",
+        description="LED lighting for torsion setup",
+        documentation="https://example.org/light.pdf",
+    )
+
     validate(r3xa.to_dict())
 
 
@@ -223,3 +250,56 @@ def test_r3xafile_save_validates_by_default(tmp_path) -> None:
 
     with pytest.raises(jsonschema.ValidationError):
         r3xa.save(tmp_path / "invalid.json")
+
+
+def test_guided_helpers_cover_all_schema_kinds() -> None:
+    schema = load_schema()
+    suffixes = {
+        "settings": "setting",
+        "data_sources": "source",
+        "data_sets": "data_set",
+    }
+
+    expected = {
+        f"add_{kind_name}_{suffixes[section]}"
+        for section in suffixes
+        for kind_name in schema["$defs"][section]
+    }
+    expected.update({"add_image_set_list", "add_image_set_file"})
+
+    missing = sorted(name for name in expected if not hasattr(R3XAFile, name))
+    assert missing == []
+
+
+def test_new_guided_helpers_validate_against_schema() -> None:
+    r3xa = R3XAFile(
+        title="Guided helper coverage",
+        description="Exercise helpers generated from schema kinds",
+        authors="R3XA API",
+        date="2026-04-03",
+    )
+
+    r3xa.add_testing_machine_setting(
+        title="Testing machine",
+        description="Torsion testing machine",
+        type="torsion",
+    )
+
+    source = r3xa.add_load_cell_source(
+        output_components=1,
+        output_dimension="point",
+        output_units=[unit(unit="N")],
+        capacity=unit(title="capacity", value=1000.0, unit="N"),
+        title="Load cell",
+        description="Primary force measurement",
+    )
+
+    r3xa.add_generic_data_set(
+        title="Force archive",
+        description="Generic archived force dataset",
+        data_sources=[source["id"]],
+        file_type="application/octet-stream",
+        path="force/",
+    )
+
+    validate(r3xa.to_dict())

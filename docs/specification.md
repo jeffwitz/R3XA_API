@@ -47,7 +47,7 @@ Generic setup: testing device, environmental chamber, lights...
 | `kind` | "settings/generic" (fixed) | ✅ | Only required for specs implementation purposes. |
 | `title` | string | ✅ | Title of the setting. |
 | `description` | string | ✅ | Description of the setting. |
-| `Documentation` | string |  | Path to external documentation/information |
+| `documentation` | string |  | Path to external documentation/information |
 | `associated_data_sources` | array[Data source id] |  | List of datasources linked to this setting |
 
 ### Specimen (`settings/specimen`)
