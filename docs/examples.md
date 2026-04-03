@@ -13,6 +13,8 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - `complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
 - `complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
 - `create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
+- `load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
+- `registry_discovery.py`: list registry entries, merge one item, and save the merged result.
 - `qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
 - `graph_r3xa.py`: graph generator (Graphviz + PyVis).
 - `registry_usage.py`: registry loading/overrides.
@@ -202,6 +204,31 @@ This example writes:
 
 Reusable registry key:
 - `data_sources/camera/example_generated_camera`
+
+## 4) Loading an existing file and saving it again
+File: `examples/python/load_edit_save.py`
+
+Key ideas:
+- load a full R3XA file with `R3XAFile.load(...)`
+- update the header in place
+- save a validated JSON file with `save(...)`
+
+This example reads:
+- `examples/artifacts/dic_pipeline.json`
+
+This example writes:
+- `examples/artifacts/dic_pipeline_loaded.json`
+
+## 5) Discovering and merging registry items
+File: `examples/python/registry_discovery.py`
+
+Key ideas:
+- discover available registry items with `Registry.list(...)`
+- clone an existing registry item with `Registry.merge(...)`
+- save the merged result as a validated JSON item
+
+This example writes:
+- `examples/artifacts/registry_camera_merged.json`
 
 ## DIC pipeline graph (from scratch example)
 SVG (Graphviz backend):

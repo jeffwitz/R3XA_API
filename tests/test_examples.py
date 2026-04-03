@@ -42,15 +42,27 @@ def test_examples_validate_all():
         examples_python / "complex_dic_pipeline_registry.py",
         restore_paths=[artifacts / "dic_pipeline_registry.json"],
     )
+    _run_script(
+        examples_python / "load_edit_save.py",
+        restore_paths=[artifacts / "dic_pipeline_loaded.json"],
+    )
+    _run_script(
+        examples_python / "registry_discovery.py",
+        restore_paths=[artifacts / "registry_camera_merged.json"],
+    )
 
     for path in [
         examples / "valid_camera_list.json",
         examples / "valid_tabular_file.json",
         artifacts / "dic_pipeline.json",
         artifacts / "dic_pipeline_registry.json",
+        artifacts / "dic_pipeline_loaded.json",
         artifacts / "qi_hu_from_scratch.json",
         artifacts / "qi_hu_from_scratch_matlab.json",
     ]:
         with path.open("r", encoding="utf-8") as f:
             payload = json.load(f)
         validate(payload)
+
+    merged_registry_item = json.loads((artifacts / "registry_camera_merged.json").read_text(encoding="utf-8"))
+    assert merged_registry_item["kind"] == "data_sources/camera"
