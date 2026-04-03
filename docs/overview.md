@@ -239,9 +239,19 @@ from r3xa_api import Registry
 
 registry = Registry("registry")
 
-specimen = registry.get_item("settings/specimen/openhole_sample")
-camera = registry.get_item("data_sources/camera/avt_dolphin_f145b")
-pyxel = registry.get_item("data_sources/generic/pyxel_dic_2d")
+specimen = registry.load("settings/specimen/openhole_sample")
+camera = registry.load("data_sources/camera/avt_dolphin_f145b")
+pyxel = registry.load("data_sources/generic/pyxel_dic_2d")
+```
+
+When you want item-level helpers such as `merge(...)`, `validate()`, or `save(...)`, load the same
+entry as a `RegistryItem`:
+
+```python
+from r3xa_api import Registry
+
+registry = Registry("registry")
+camera_item = registry.get_item("data_sources/camera/avt_dolphin_f145b")
 ```
 
 ### How to create a new registry item

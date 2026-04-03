@@ -13,11 +13,13 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - `complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
 - `complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
 - `create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
-- `load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
-- `registry_discovery.py`: list registry entries, merge one item, and save the merged result.
-- `qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
 - `graph_r3xa.py`: graph generator (Graphviz + PyVis).
-- `registry_usage.py`: registry loading/overrides.
+- `load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
+- `qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
+- `registry_discovery.py`: list registry entries, merge one item, and save the merged result.
+- `registry_usage.py`: minimal registry loading and override example.
+- `typed_dic_pipeline.py`: typed/Pydantic version of the DIC pipeline.
+- `qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
 - `validate_all.py`: validate all example JSON.
 - `validate_examples.py`: quick validation of example files.
 
@@ -230,6 +232,28 @@ Key ideas:
 
 This example writes:
 - `examples/artifacts/registry_camera_merged.json`
+
+## 6) Typed DIC pipeline
+File: `examples/python/typed_dic_pipeline.py`
+
+Key ideas:
+- install the optional `typed` extra
+- build the same DIC pipeline using generated Pydantic models
+- append typed objects directly into `R3XAFile`
+
+This example writes:
+- `examples/artifacts/dic_pipeline_typed.json`
+
+## 7) Qi Hu from a literal JSON reconstruction
+File: `examples/python/qi_hu_from_json_literal.py`
+
+Key ideas:
+- rebuild the Qi Hu document with explicit `add_setting(...)`, `add_data_source(...)`, and `add_data_set(...)` calls
+- compare the generated file to the reference `qi_hu_from_scratch.json`
+- use it as a literal baseline when validating future API changes
+
+This example writes:
+- `examples/artifacts/qi_hu_from_json_literal.json`
 
 ## DIC pipeline graph (from scratch example)
 SVG (Graphviz backend):

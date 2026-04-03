@@ -11,23 +11,24 @@ def validate_json(path: Path) -> None:
 
 
 def main() -> None:
-    base = Path(__file__).parent
+    script_dir = Path(__file__).resolve().parent
+    examples_dir = script_dir.parent
 
     # Generate complex examples first
     import importlib.util
 
     for script in ["complex_dic_pipeline.py", "complex_dic_pipeline_registry.py"]:
-        spec = importlib.util.spec_from_file_location("_tmp", base / script)
+        spec = importlib.util.spec_from_file_location("_tmp", script_dir / script)
         module = importlib.util.module_from_spec(spec)
         assert spec and spec.loader
         spec.loader.exec_module(module)
 
     # Validate static examples
     for path in [
-        base / "valid_camera_list.json",
-        base / "valid_tabular_file.json",
-        Path("examples/artifacts/dic_pipeline.json"),
-        Path("examples/artifacts/dic_pipeline_registry.json"),
+        examples_dir / "valid_camera_list.json",
+        examples_dir / "valid_tabular_file.json",
+        examples_dir / "artifacts" / "dic_pipeline.json",
+        examples_dir / "artifacts" / "dic_pipeline_registry.json",
     ]:
         validate_json(path)
 

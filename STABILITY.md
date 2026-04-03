@@ -21,6 +21,7 @@ This includes:
 Lower-level helpers such as:
 - `load_item(...)`
 - `save_item(...)`
+- `validate_item(...)`
 - `load_item_path(...)`
 - `save_item_path(...)`
 - `load_registry(...)`
