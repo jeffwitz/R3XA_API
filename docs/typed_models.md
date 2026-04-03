@@ -12,6 +12,24 @@ The core API stays unchanged:
 - `R3XAFile` still consumes plain `dict`
 - JSON output remains standard R3XA JSON
 
+## Why Pydantic helps in the workflow
+
+Pydantic is useful here as an **authoring layer**, not as a replacement for the dict-based API.
+It gives earlier feedback while the JSON is being built, before the final schema validation step.
+
+| What changes | Auto-generated after schema update | Still manual |
+|---|---|---|
+| New `kind` in the schema | Typed model class in `r3xa_api/models.py` | Convenience helpers in `R3XAFile` |
+| New field in an existing object | Updated typed constructor and field hints | Builder methods that hard-code that object |
+| New object compatible with the schema | Usable through `new_item(...)` / `add_item(...)` | A dedicated helper like `add_lidar_source(...)` |
+| Schema constraint changes | Reflected in generated models and validation | Business logic that depends on the old structure |
+
+Main benefit:
+- faster feedback in the IDE
+- less trial-and-error while assembling objects
+- same JSON output in the end
+- no change for dict-only users
+
 ## Install
 
 ```bash

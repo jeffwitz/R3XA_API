@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterator, Optional
 
 import jsonschema
 
@@ -132,6 +132,11 @@ class Registry:
 
         return load_item_path(self.root, tree_path)
 
+    def load(self, tree_path: str) -> Dict[str, Any]:
+        """Alias for `get()` with a more discoverable name."""
+
+        return self.get(tree_path)
+
     def save(
         self,
         tree_path: str,
@@ -155,3 +160,52 @@ class Registry:
         item = self.get(tree_path)
         self.validate(item, kind=kind)
         return item
+
+    def load_validated(self, tree_path: str, kind: Optional[str] = None) -> Dict[str, Any]:
+        """Alias for `get_validated()` with a more discoverable name."""
+
+        return self.get_validated(tree_path, kind=kind)
+
+    def list(self, section: Optional[str] = None, kind: Optional[str] = None) -> list[str]:
+        """List available registry tree paths, optionally filtered by section or kind."""
+
+        if kind is not None:
+            if "/" not in kind:
+                raise ValueError("kind filter must look like 'section/name'")
+            if section is not None and not kind.startswith(f"{section}/"):
+                raise ValueError("section and kind filters are inconsistent")
+
+            kind_dir = self.root / kind
+            if not kind_dir.exists():
+                return []
+            return sorted(f"{kind}/{path.stem}" for path in kind_dir.glob("*.json"))
+
+        sections = [section] if section is not None else ["settings", "data_sources", "data_sets"]
+        tree_paths: list[str] = []
+        for current_section in sections:
+            section_dir = self.root / current_section
+            if not section_dir.exists():
+                continue
+            for kind_dir in sorted(path for path in section_dir.iterdir() if path.is_dir()):
+                tree_paths.extend(
+                    sorted(f"{current_section}/{kind_dir.name}/{path.stem}" for path in kind_dir.glob("*.json"))
+                )
+        return tree_paths
+
+    def iter_items(
+        self,
+        section: Optional[str] = None,
+        kind: Optional[str] = None,
+        *,
+        validated: bool = False,
+    ) -> Iterator[tuple[str, Dict[str, Any]]]:
+        """Iterate over registry items, optionally validated, yielding `(tree_path, item)`."""
+
+        for tree_path in self.list(section=section, kind=kind):
+            item = self.get_validated(tree_path) if validated else self.get(tree_path)
+            yield tree_path, item
+
+    def merge(self, tree_path: str, **overrides: Any) -> Dict[str, Any]:
+        """Load a registry item and return a shallow merged copy with overrides."""
+
+        return merge_item(self.get_validated(tree_path), **overrides)

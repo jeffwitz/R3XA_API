@@ -80,6 +80,16 @@ r3xa.validate()
 r3xa.save("hello-world.json")
 ```
 
+Load and edit an existing file:
+
+```python
+from r3xa_api import R3XAFile
+
+r3xa = R3XAFile.load("hello-world.json")
+r3xa.set_header(title="Updated title")
+r3xa.save("hello-world-updated.json")
+```
+
 ## Documentation
 - `docs/overview.md`
 - `docs/api.md`
@@ -169,6 +179,8 @@ MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
 Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 ## Registry
 - Reusable items live in `registry/` (cameras, machines, software, datasets templates).
+- Discover items with `Registry.list(...)` / `Registry.iter_items(...)`.
+- Reuse and override an existing item with `Registry.merge(...)`.
 
 ## Examples
 - From scratch pipeline: `examples/python/complex_dic_pipeline.py`
