@@ -100,3 +100,19 @@ def test_examples_validate_all():
         assert merged_registry_item["kind"] == "data_sources/camera"
     finally:
         _restore_paths(generated_snapshots)
+
+
+def test_validation_scripts_run() -> None:
+    root = Path(__file__).parents[1]
+    examples = root / "examples"
+    examples_python = examples / "python"
+    artifacts = examples / "artifacts"
+
+    _run_script(examples_python / "validate_examples.py")
+    _run_script(
+        examples_python / "validate_all.py",
+        restore_paths=[
+            artifacts / "dic_pipeline.json",
+            artifacts / "dic_pipeline_registry.json",
+        ],
+    )

@@ -24,6 +24,23 @@ pip install -e ".[dev]"            # pytest and developer tools
 
 Graphviz (`dot`) is a **system dependency** for SVG graph generation.
 
+## Test matrix
+
+The exact number of collected tests depends on the optional extras installed in the active `.venv`.
+
+- `pip install -e ".[dev]"`  
+  Core SDK tests and developer tooling.
+- `pip install -e ".[dev,typed]"`  
+  Adds typed-model tests.
+- `pip install -e ".[dev,web]"`  
+  Adds web/API tests.
+- `pip install -e ".[dev,graph_nx]"`  
+  Adds NetworkX + Matplotlib graph backend tests.
+- `pip install -e ".[dev,typed,web,graph_nx]"`  
+  Gives the full local matrix used for repository maintenance.
+
+If two contributors report different totals, check the installed extras before comparing raw pytest counts.
+
 ## Common developer commands
 
 From project root:

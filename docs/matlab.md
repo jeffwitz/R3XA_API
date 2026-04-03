@@ -57,6 +57,22 @@ images = r3xa_file.add_image_set_list( ...
 r3xa_file.save("hello-world.json");
 ```
 
+## MATLAB vs Python helper signatures
+The MATLAB binding currently keeps a small handwritten helper layer. It is intentionally close to the
+Python API, but not identical.
+
+In particular, `add_camera_source(...)` is stricter in MATLAB:
+
+- Python guided helper:
+  - `add_camera_source(title, output_components, output_dimension, output_units, image_size, **extra)`
+- MATLAB helper:
+  - `add_camera_source(title, description, output_components, output_dimension, output_units, manufacturer, model, image_size, ...)`
+
+So `description`, `manufacturer`, and `model` are positional in MATLAB, while they stay optional
+schema fields passed through `**extra` in Python.
+
+When switching from Python to MATLAB, use the MATLAB examples in this page as the reference call signature.
+
 ## What is implemented
 - `r3xa.R3XAFile` (constructor + add_* helpers)
 - `r3xa.new_item`, `r3xa.unit`, `r3xa.data_set_file`

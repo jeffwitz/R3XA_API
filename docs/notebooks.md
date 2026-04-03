@@ -61,7 +61,7 @@ In the notebook:
 ## 2) MyBinder (public interactive run)
 
 Open:
-- [Launch notebook on MyBinder](https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/)
+- [Launch notebook on MyBinder](https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.4.2?urlpath=proxy/2718/)
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

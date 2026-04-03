@@ -12,7 +12,7 @@ from r3xa_api import R3XAFile, Registry, RegistryItem, new_item, unit, validate
 Use the advanced compatibility helpers only when you really need the lower-level registry functions:
 
 ```python
-from r3xa_api import load_item_path, save_item_path, merge_item
+from r3xa_api import load_item_path, save_item_path, validate_item, merge_item
 ```
 
 These compatibility helpers remain importable explicitly, but they are intentionally excluded from
@@ -84,6 +84,33 @@ add_generic_data_set(title, description, data_sources, file_type, path, **extra)
 add_list_data_set(title, description, file_type, data_sources, time_reference, timestamps, data, **extra) -> dict
 add_file_data_set(title, description, data_sources, time_reference, timestamps, data, **extra) -> dict
 ```
+
+Complete guided helper inventory for the current schema:
+
+- Settings
+  - `add_generic_setting(...)`
+  - `add_specimen_setting(...)`
+  - `add_stereorig_setting(...)`
+  - `add_testing_machine_setting(...)`
+- Data sources
+  - `add_camera_source(...)`
+  - `add_dic_measurement_source(...)`
+  - `add_generic_source(...)`
+  - `add_identification_source(...)`
+  - `add_infrared_source(...)`
+  - `add_load_cell_source(...)`
+  - `add_mechanical_analysis_source(...)`
+  - `add_point_temperature_source(...)`
+  - `add_strain_computation_source(...)`
+  - `add_strain_gauge_source(...)`
+  - `add_tomograph_source(...)`
+- Data sets
+  - `add_file_data_set(...)`
+  - `add_generic_data_set(...)`
+  - `add_list_data_set(...)`
+- Legacy aliases
+  - `add_image_set_list(...)`
+  - `add_image_set_file(...)`
 
 Backward-compatible aliases remain available:
 
@@ -247,6 +274,10 @@ new_camera.validate().save()
 ### `validate_item(item, kind=None, schema=None) -> None`
 Validate a single item against its schema definition (e.g. `data_sources/camera`).
 
+This function is part of the advanced compatibility helper layer. It remains supported in the
+1.x series, but for end-user workflows the recommended entry points are `RegistryItem.validate(...)`
+and `Registry.validate(...)`.
+
 ### Advanced
 `load_item_path(root, tree_path) -> dict`  
 Internal/advanced helper to load a registry item by its tree path string, e.g. `settings/specimen/openhole_sample`.
@@ -274,72 +305,11 @@ Extract the schema version.
 ### `validate(instance: dict, schema: dict | None = None) -> None`
 Validate a JSON instance against the schema.
 
-## Graph export (Graphviz / PyVis)
-The `examples/python/graph_r3xa.py` tool can export SVG/HTML, and optionally the **Graphviz DOT** source.
+## Related pages
+This page stays focused on the core SDK contract.
 
-PyVis HTML now uses a directed hierarchical layout (`UD`) with physics disabled to stay visually close to Graphviz layering.
-
-Example:
-```bash
-python examples/python/graph_r3xa.py --input examples/artifacts/dic_pipeline.json --output examples/artifacts/graph_dic_pipeline --dot
-```
-This creates:
-- `graph_dic_pipeline.svg` (Graphviz)
-- `graph_dic_pipeline.html` (PyVis)
-- `graph_dic_pipeline.dot` (Graphviz DOT source)
-
-Optional non-intrusive backend (experimental):
-- Install: `pip install -e ".[graph_nx]"`
-- Export static image with NetworkX + Matplotlib:
-```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/dic_pipeline.json \
-  --output examples/artifacts/graph_dic_pipeline \
-  --networkx \
-  --networkx-format png \
-  --networkx-dpi 220
-```
-This adds:
-- `graph_dic_pipeline_nx.png` (NetworkX + Matplotlib)
-
-## Typed models (optional)
-Detailed walkthrough with a DIC pipeline example: `typed_models.md`.
-
-Install typed support:
-
-```bash
-pip install -e ".[typed]"
-```
-
-Public typed entry points:
-- `r3xa_api.models` (generated Pydantic models)
-- `r3xa_api.from_model(model) -> dict` (bridge to dict-based API)
-- `r3xa_api._TYPED_AVAILABLE` / `r3xa_api.typed_available`
-
-Typical usage:
-
-```python
-from r3xa_api import R3XAFile, from_model, models
-
-camera = models.CameraSource(
-    id="cam_01",
-    kind="data_sources/camera",
-    title="CCD Camera",
-    output_components=1,
-    output_dimension="surface",
-    output_units=[models.Unit(kind="unit", unit="gl")],
-    image_size=[models.Unit(kind="unit", unit="px")],
-)
-
-r3xa = R3XAFile(title="...", description="...", authors="...", date="2026-02-19")
-r3xa.data_sources.append(from_model(camera))
-r3xa.validate()
-```
-
-Model generation workflow:
-
-```bash
-make generate-models
-```
-
-`r3xa_api/models.py` is generated from `r3xa_api/resources/schema.json` and should not be edited manually.
+For adjacent topics, use the dedicated pages:
+- `typed_models.md` for generated Pydantic models and `from_model(...)`
+- `examples.md` for runnable scripts, including `graph_r3xa.py`
+- `notebooks.md` for the Marimo notebook workflow
+- `web.md` for the FastAPI web UI/API
