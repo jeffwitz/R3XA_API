@@ -153,7 +153,7 @@ Optional static export (no backend):
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.2.2?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.
@@ -186,6 +186,8 @@ Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 - From scratch pipeline: `examples/python/complex_dic_pipeline.py`
 - Registry pipeline: `examples/python/complex_dic_pipeline_registry.py`
 - Registry item creation: `examples/python/create_registry_camera.py`
+- Full file load/edit/save: `examples/python/load_edit_save.py`
+- Registry discovery and merge: `examples/python/registry_discovery.py`
 - Typed (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
 - Validate all: `examples/python/validate_all.py`
 
