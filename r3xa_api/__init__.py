@@ -15,7 +15,6 @@ from .registry import (
 from .schema import load_schema, schema_version
 from .typed import from_model
 from .validate import validate
-from .webcore import build_validation_report, build_schema_summary
 
 _TYPED_AVAILABLE = False
 typed_available = False
@@ -39,18 +38,8 @@ __all__ = [
     "load_schema",
     "schema_version",
     "validate",
-    "load_item",
-    "save_item",
-    "load_item_path",
-    "save_item_path",
-    "validate_item",
-    "load_registry",
-    "merge_item",
     "Registry",
     "RegistryItem",
-    "build_validation_report",
-    "build_schema_summary",
     "models",
-    "_TYPED_AVAILABLE",
     "typed_available",
 ]

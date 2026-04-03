@@ -2,6 +2,36 @@
 
 This page documents the public API intended for library users.
 
+## Recommended imports
+For most user code, keep imports at the SDK level:
+
+```python
+from r3xa_api import R3XAFile, Registry, RegistryItem, new_item, unit, validate
+```
+
+Use the advanced compatibility helpers only when you really need the lower-level registry functions:
+
+```python
+from r3xa_api import load_item_path, save_item_path, merge_item
+```
+
+These compatibility helpers remain importable explicitly, but they are intentionally excluded from
+`r3xa_api.__all__` to keep the recommended SDK surface small.
+
+Web-only helpers are intentionally exposed from `r3xa_api.webcore`, not from the SDK top level:
+
+```python
+from r3xa_api.webcore import build_validation_report, build_schema_summary
+```
+
+## Stability policy
+- Symbols documented on this page define the supported public SDK for the 1.x series.
+- Compatibility helpers remain available throughout the 1.x series and will not be removed before `2.0`.
+- Guided helpers (`add_<kind>_setting/source/data_set`) are part of the public contract and are tested against the schema-derived required fields.
+- Undocumented module internals may evolve more freely.
+
+See `STABILITY.md` at the repository root for the concise policy.
+
 ## Core class
 
 ### `R3XAFile`
@@ -104,6 +134,9 @@ Load a registry JSON item from disk.
 Validate and save a single registry item JSON to disk. `item` can be a plain `dict`
 or a `RegistryItem`.
 
+These helpers remain available for advanced use cases and backward compatibility. For day-to-day usage,
+prefer `Registry.get_item(...)`, `RegistryItem.merge(...)`, and `RegistryItem.save(...)`.
+
 ### `Registry`
 Helper class that encapsulates the registry root and provides loading, validation, discovery, merge, wrapping, and save methods.
 
@@ -143,6 +176,10 @@ iter_items(section: str | None = None, kind: str | None = None, validated: bool 
 merge(tree_path: str, **overrides) -> RegistryItem
 save(tree_path: str, item: dict | RegistryItem, validate: bool = True, kind: str | None = None) -> Path
 ```
+
+Naming rule:
+- prefer `load(...)` / `load_validated(...)` in new code because these methods read JSON files from the registry tree
+- `get(...)` / `get_validated(...)` remain available as compatibility aliases
 
 Typical registry workflow:
 

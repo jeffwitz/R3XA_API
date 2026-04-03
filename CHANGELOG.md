@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2] - 2026-04-03
+- API stability: narrow the recommended top-level surface, document the public 1.x contract in `STABILITY.md`, and lock the guided-helper contract with dedicated public API tests.
+
 ## [1.4.1] - 2026-04-03
 - Registry ergonomics: add `RegistryItem` with item-level `merge(...)`, `validate(...)`, `save(...)`, and `save_to(...)`.
 - Registry API: add `Registry.get_item(...)` and `Registry.wrap(...)`, and make `Registry.merge(...)` return a bound item wrapper.
