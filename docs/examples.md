@@ -124,19 +124,19 @@ Key ideas:
 - Load reusable items from `registry/`
 - Validate each item **by kind**
 - Override only what changes (IDs, experiment‑specific values)
+- Use `RegistryItem.merge(...)` so the merge operation stays attached to the item itself
 
 ```python
-from r3xa_api import R3XAFile, Registry, merge_item, unit
+from r3xa_api import R3XAFile, Registry, unit
 
 registry = Registry("registry")
 
-specimen_base = registry.get_validated("settings/specimen/openhole_sample")
-camera_base = registry.get_validated("data_sources/camera/avt_dolphin_f145b")
-pyxel_base = registry.get_validated("data_sources/generic/pyxel_dic_2d")
+specimen_base = registry.get_item("settings/specimen/openhole_sample")
+camera_base = registry.get_item("data_sources/camera/avt_dolphin_f145b")
+pyxel_base = registry.get_item("data_sources/generic/pyxel_dic_2d")
 
-specimen = merge_item(specimen_base, id="set_spec_exp01")
-camera = merge_item(
-    camera_base,
+specimen = specimen_base.merge(id="set_spec_exp01")
+camera = camera_base.merge(
     id="ds_cam_exp01",
     description="CCD Camera (exp01)",
     standoff_distance=unit(title="standoff", value=0.5, unit="m", scale=1.0),
@@ -167,8 +167,7 @@ images = r3xa.add_image_set_list(
     data=image_files,
 )
 
-dic = merge_item(
-    pyxel_base,
+dic = pyxel_base.merge(
     id="ds_dic_exp01",
     input_data_sets=[images["id"]],
 )
@@ -196,8 +195,9 @@ File: `examples/python/create_registry_camera.py`
 
 Key ideas:
 - build a single registry item with `new_item(...)`
-- validate and save it with `save_item_path(...)`
-- reload it through `Registry(...).get_validated(...)`
+- bind it to a registry key with `Registry.wrap(...)`
+- validate and save it with `RegistryItem.save(...)`
+- reload it through `Registry(...).get_item(...)`
 
 This example writes:
 - `registry/data_sources/camera/example_generated_camera.json`
@@ -224,8 +224,9 @@ File: `examples/python/registry_discovery.py`
 
 Key ideas:
 - discover available registry items with `Registry.list(...)`
-- clone an existing registry item with `Registry.merge(...)`
-- save the merged result as a validated JSON item
+- load an existing registry item with `Registry.get_item(...)`
+- clone it with `RegistryItem.merge(...)`
+- save the merged result with `RegistryItem.save(...)`
 
 This example writes:
 - `examples/artifacts/registry_camera_merged.json`

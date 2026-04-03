@@ -235,28 +235,20 @@ Registry entries are not only reusable templates: they can also be **generated d
 
 ### How to load registry items
 ```python
-from pathlib import Path
-from r3xa_api import load_item_path, validate_item
+from r3xa_api import Registry
 
-registry_root = Path(__file__).parents[1] / "registry"
+registry = Registry("registry")
 
-# Load reusable items
-specimen_base = load_item_path(registry_root, "settings/specimen/openhole_sample")
-validate_item(specimen_base)
-
-camera_base = load_item_path(registry_root, "data_sources/camera/avt_dolphin_f145b")
-validate_item(camera_base)
-
-pyxel_base = load_item_path(registry_root, "data_sources/generic/pyxel_dic_2d")
-validate_item(pyxel_base)
+specimen = registry.get_item("settings/specimen/openhole_sample")
+camera = registry.get_item("data_sources/camera/avt_dolphin_f145b")
+pyxel = registry.get_item("data_sources/generic/pyxel_dic_2d")
 ```
 
 ### How to create a new registry item
 ```python
-from pathlib import Path
-from r3xa_api import new_item, save_item_path, unit
+from r3xa_api import Registry, new_item, unit
 
-registry_root = Path("registry")
+registry = Registry("registry")
 
 camera = new_item(
     "data_sources/camera",
@@ -274,14 +266,24 @@ camera = new_item(
     ],
 )
 
-save_item_path(
-    registry_root,
-    "data_sources/camera/example_generated_camera",
-    camera,
-)
+registry.wrap(camera, tree_path="data_sources/camera/example_generated_camera").save()
 ```
 
 This is the pattern used in `examples/python/create_registry_camera.py`.
+
+### How to reuse and override a registry item
+```python
+from r3xa_api import Registry
+
+registry = Registry("registry")
+
+camera = registry.get_item("data_sources/camera/avt_dolphin_f145b").merge(
+    id="ds_cam_exp01",
+    description="Camera used in experiment 01",
+)
+
+camera.save("camera_exp01.json")
+```
 
 ### How it maps to the schema
 - Path `registry/settings/specimen/*.json` → items with `kind = "settings/specimen"`

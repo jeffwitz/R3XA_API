@@ -118,6 +118,14 @@ Quick links
 - :doc:`DEPLOY_RAILWAY`
 - :doc:`dev_workflow`
 
+Common workflows
+----------------
+If you do not want to read the whole documentation, start from one of these three workflows:
+
+- **Create a new R3XA file** — use ``R3XAFile`` with the guided helpers documented in :doc:`api`.
+- **Load, edit, and save an existing file** — see :doc:`api` and ``examples/python/load_edit_save.py``.
+- **Reuse or create registry items** — use ``Registry`` and ``RegistryItem``, documented in :doc:`api` and demonstrated in ``examples/python/create_registry_camera.py`` and ``examples/python/registry_discovery.py``.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents

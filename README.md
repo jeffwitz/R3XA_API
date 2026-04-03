@@ -107,6 +107,35 @@ Legacy aliases remain available for datasets:
 - `add_image_set_list(...)`
 - `add_image_set_file(...)`
 
+## Common workflows
+For most users, the public API now boils down to three entry points:
+
+1. **Create a new file from scratch**
+   - `R3XAFile(...)`
+   - `add_<kind>_setting/source/data_set(...)`
+   - `validate()` / `save(...)`
+
+2. **Load, edit, and save an existing file**
+   - `R3XAFile.load(...)`
+   - `set_header(...)`
+   - `save(...)`
+
+3. **Load, edit, and save a reusable registry item**
+   - `Registry.get_item(...)`
+   - `RegistryItem.merge(...)`
+   - `RegistryItem.validate()` / `RegistryItem.save(...)`
+
+Example:
+
+```python
+from r3xa_api import Registry
+
+registry = Registry("registry")
+camera = registry.get_item("data_sources/camera/avt_dolphin_f145b")
+camera = camera.merge(description="Camera used in experiment 01")
+camera.save("camera_exp01.json")
+```
+
 ## Documentation
 - `docs/overview.md`
 - `docs/api.md`
@@ -197,7 +226,9 @@ Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 ## Registry
 - Reusable items live in `registry/` (cameras, machines, software, datasets templates).
 - Discover items with `Registry.list(...)` / `Registry.iter_items(...)`.
-- Reuse and override an existing item with `Registry.merge(...)`.
+- Load an item as a `RegistryItem` with `Registry.get_item(...)`.
+- Reuse and override an existing item with `RegistryItem.merge(...)`.
+- Save it back with `RegistryItem.save(...)` or `RegistryItem.save_to(...)`.
 
 ## Examples
 - From scratch pipeline: `examples/python/complex_dic_pipeline.py`

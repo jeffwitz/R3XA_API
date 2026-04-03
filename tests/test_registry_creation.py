@@ -29,3 +29,27 @@ def test_save_item_path_creates_valid_registry_camera(tmp_path: Path):
     registry = Registry(tmp_path)
     loaded = registry.get_validated(tree_path)
     assert loaded["id"] == "ds_cam_test_generated"
+
+
+def test_registry_wrap_and_save_creates_valid_registry_camera(tmp_path: Path):
+    tree_path = "data_sources/camera/test_wrapped_camera"
+    camera = new_item(
+        "data_sources/camera",
+        id="ds_cam_wrapped",
+        title="Wrapped test camera",
+        description="Registry camera saved through RegistryItem.save()",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[unit(unit="gl")],
+        manufacturer="Wrapped manufacturer",
+        model="Wrapped model",
+        image_size=[
+            unit(unit="px"),
+        ],
+    )
+
+    registry = Registry(tmp_path)
+    output_path = registry.wrap(camera, tree_path=tree_path).validate().save()
+
+    assert output_path == tmp_path / "data_sources" / "camera" / "test_wrapped_camera.json"
+    assert registry.get_item(tree_path)["id"] == "ds_cam_wrapped"
