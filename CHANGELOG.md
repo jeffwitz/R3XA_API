@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.3] - 2026-04-03
+- Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, document the test matrix by optional extras, and keep the public MyBinder links pinned to the latest stable tag.
+
 ## [1.4.2] - 2026-04-03
 - API stability: narrow the recommended top-level surface, document the public 1.x contract in `STABILITY.md`, and lock the guided-helper contract with dedicated public API tests.
 
