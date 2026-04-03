@@ -37,13 +37,10 @@ class OutputDimension(Enum):
 class DataSetFile(BaseModel):
     filename: str
     file_type: Optional[str] = Field(
-        None,
-        description='MIME type of the file.',
-        examples=['text/csv', 'text/txt'],
-        title='MIME',
+        None, description='MIME type of the file.', title='MIME'
     )
-    delimiter: Optional[str] = Field(';', examples=[';', ',', ':', '\t'])
-    data_range: Optional[str] = Field(None, examples=['B42:B421'])
+    delimiter: Optional[str] = ';'
+    data_range: Optional[str] = None
     kind: Literal['data_set_file'] = Field(
         ...,
         description='Only required for specs implementation purposes',
@@ -64,19 +61,9 @@ class Uint(RootModel[int]):
 
 
 class Unit(BaseModel):
-    title: Optional[str] = Field(
-        None,
-        description='Title of the unit.',
-        examples=['length', 'width', 'speed'],
-        title='Title',
-    )
+    title: Optional[str] = Field(None, description='Title of the unit.', title='Title')
     value: Optional[float] = Field(None, description='Numerical value.', title='Value')
-    unit: str = Field(
-        ...,
-        description='Sign of the unit.',
-        examples=['m', 'kN', 'kg', 'm/s'],
-        title='Unit',
-    )
+    unit: str = Field(..., description='Sign of the unit.', title='Unit')
     scale: Optional[float] = Field(
         None, description='Factor with respect to the standard system', title='Scale'
     )
@@ -104,7 +91,6 @@ class File(BaseModel):
     folder: Optional[str] = Field(
         None,
         description='Relative path to the folder containing the timestamps and data file(s).',
-        examples=['..', '.', 'my_folder/my_tabular.txt'],
         title='Folder',
     )
     data_sources: list[DataSourceId] = Field(
@@ -140,15 +126,8 @@ class Generic(BaseModel):
     description: str = Field(
         ..., description='Description of the data set.', title='Description'
     )
-    file_type: str = Field(
-        ..., description='MIME type of the file.', examples=['text/csv'], title='MIME'
-    )
-    path: str = Field(
-        ...,
-        description='Relative path to the data file.',
-        examples=['../my_values.csv', 'my_folder/my_image.tif'],
-        title='Path',
-    )
+    file_type: str = Field(..., description='MIME type of the file.', title='MIME')
+    path: str = Field(..., description='Relative path to the data file.', title='Path')
     data_sources: list[DataSourceId] = Field(
         ..., description='List of IDs of the data sources.', title='Data sources'
     )
@@ -169,16 +148,10 @@ class List(BaseModel):
         ..., description='Description of the data set.', title='Description'
     )
     path: Optional[str] = Field(
-        None,
-        description='Relative path to the data folder.',
-        examples=['..', 'my_folder'],
-        title='Path',
+        None, description='Relative path to the data folder.', title='Path'
     )
     file_type: str = Field(
-        ...,
-        description='MIME type of the data files.',
-        examples=['text/csv'],
-        title='MIME',
+        ..., description='MIME type of the data files.', title='MIME'
     )
     data_sources: list[DataSourceId] = Field(
         ..., description='List if IDs of the data sources.', title='Data sources'
@@ -219,7 +192,6 @@ class Camera(BaseModel):
     output_components: Uint = Field(
         ...,
         description='Number of components or channels of the ouput data.',
-        examples=['3 channels for a RVB image'],
         title='Output components',
     )
     output_dimension: OutputDimension = Field(
@@ -299,10 +271,7 @@ class DicMeasurement(BaseModel):
         title='List of the data sets',
     )
     output_components: Uint = Field(
-        ...,
-        description='Number of components',
-        examples=['2 components of displacement in 2D-DIC, 3 in DVC and Stereo DIC'],
-        title='Output components',
+        ..., description='Number of components', title='Output components'
     )
     output_dimension: OutputDimension = Field(
         ...,
@@ -412,6 +381,9 @@ class GenericModel(BaseModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
+    uncertainty: Optional[Unit] = Field(
+        None, description='Quantification of data uncertainty.', title='Uncertainty'
+    )
 
 
 class Identification(BaseModel):
@@ -438,10 +410,7 @@ class Identification(BaseModel):
         title='List of the data sets',
     )
     output_components: Uint = Field(
-        ...,
-        description='Number of components',
-        examples=['3 or 3 components of strains is 2D, 6 in 3D'],
-        title='Output components',
+        ..., description='Number of components', title='Output components'
     )
     output_dimension: OutputDimension = Field(
         ...,
@@ -536,7 +505,7 @@ class Infrared(BaseModel):
         title='Camera or lens filter',
     )
     aperture: Optional[str] = Field(
-        None, description='Aperture of the lens.', examples='f/8', title='Aperture'
+        None, description='Aperture of the lens.', title='Aperture'
     )
     exposure: Optional[Unit] = Field(
         None, description='Exposure time in time unit.', title='Exposure'
@@ -638,10 +607,7 @@ class MechanicalAnalysis(BaseModel):
         title='List of the data sets',
     )
     output_components: Uint = Field(
-        ...,
-        description='Number of components',
-        examples=['3 or 3 components of strains is 2D, 6 in 3D'],
-        title='Output components',
+        ..., description='Number of components', title='Output components'
     )
     output_dimension: OutputDimension = Field(
         ...,
@@ -742,10 +708,7 @@ class StrainComputation(BaseModel):
         title='List of the data sets',
     )
     output_components: Uint = Field(
-        ...,
-        description='Number of components',
-        examples=['3 or 3 components of strains is 2D, 6 in 3D'],
-        title='Output components',
+        ..., description='Number of components', title='Output components'
     )
     output_dimension: OutputDimension = Field(
         ...,
@@ -880,11 +843,9 @@ class Tomograph(BaseModel):
         title='Image scale',
     )
     source: str = Field(..., description='Source characteristics.', title='Source')
-    voltage: Optional[Unit] = Field(
-        None, description='Used voltage.', examples='50 kV', title='Voltage'
-    )
+    voltage: Optional[Unit] = Field(None, description='Used voltage.', title='Voltage')
     current: Optional[Unit] = Field(
-        None, description='electric current.', examples='200 microA', title='Current'
+        None, description='electric current.', title='Current'
     )
     detector: Optional[str] = Field(
         None, description='electric current.', title='Detector'
@@ -934,7 +895,7 @@ class GenericModel1(BaseModel):
     description: str = Field(
         ..., description='Description of the setting.', title='Description'
     )
-    Documentation: Optional[str] = Field(
+    documentation: Optional[str] = Field(
         None,
         description='Path to external documentation/information',
         title='Documentation',
@@ -961,16 +922,12 @@ class Specimen(BaseModel):
         ..., description='Description of the specimen.', title='Description'
     )
     cad: Optional[str] = Field(
-        None,
-        description='Path to the design of the specimen.',
-        examples=['my-specimen.vtk'],
-        title='CAD',
+        None, description='Path to the design of the specimen.', title='CAD'
     )
     sizes: list[Unit] = Field(..., description='Sizes of the specimen.', title='Sizes')
     patterning_technique: Optional[str] = Field(
         None,
         description='Patterning technique used on the specimen.',
-        examples=['Base coat of white spray paint with ink stamped speckles'],
         title='Patterning technique',
     )
     patterning_feature_size: Optional[Unit] = Field(
@@ -998,17 +955,7 @@ class Stereorig(BaseModel):
         ..., description='Stereo angle between the camera axes.', title='Stereo Angle'
     )
     calibration_target_type: Optional[str] = Field(
-        None,
-        description='Type of calibration board.',
-        examples=[
-            '(a)symmetric Circle Grid',
-            'Checkerboard',
-            'ChArUco',
-            'AprilTag Grid',
-            'Pattern',
-            'Custom',
-        ],
-        title='Calibration Target type',
+        None, description='Type of calibration board.', title='Calibration Target type'
     )
     calibration_target_size: Optional[list[Unit]] = Field(
         None,
@@ -1076,36 +1023,23 @@ class R3XADocument(BaseModel):
     version: Literal['2024.7.1'] = Field(
         ..., description='Version of the schema used.', title='Version'
     )
-    authors: str = Field(
-        ...,
-        description='Names, ORCID, IDHAL...',
-        examples=['M. Palin, J. Cleese', 'ORCID', 'HAL-ID'],
-        title='Author',
-    )
+    authors: str = Field(..., description='Names, ORCID, IDHAL...', title='Author')
     date: str = Field(
         ...,
         description='Global date of the experiment (YYYY-MM-DD).',
-        examples=['2020-03-17'],
         pattern='^[1-2]{1}[0-9]{3}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$',
         title='Date',
     )
     repository: Optional[str] = Field(
         None,
         description='URL to the repository where the dataset is stored.',
-        examples=['https://zenodo.org/records/42'],
         title='Repository',
     )
     documentation: Optional[str] = Field(
-        None,
-        description='URI to the documentation (pdf)',
-        examples=['./doc/my_doc.pdf', 'https://zenodo.org/records/42/doc/my_doc.pdf'],
-        title='Documentation',
+        None, description='URI to the documentation (pdf)', title='Documentation'
     )
     license: Optional[str] = Field(
-        None,
-        description='Public domain, CC-BY, ...',
-        examples=['Creative common'],
-        title='License',
+        None, description='Public domain, CC-BY, ...', title='License'
     )
     settings: Optional[
         list[Union[GenericModel1, Specimen, TestingMachine, Stereorig]]

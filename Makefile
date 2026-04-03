@@ -1,7 +1,9 @@
 .PHONY: docs generate-spec generate-models notebook-dic notebook-dic-export clean-artifacts source-archive
 
+PYTHON ?= python3
+
 generate-spec:
-	python tools/generate_spec.py \
+	$(PYTHON) tools/generate_spec.py \
 		r3xa_api/resources/schema.json \
 		docs/specification.md
 

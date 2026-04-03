@@ -167,7 +167,7 @@
             "description": "Description of the setting.",
             "type": "string"
           },
-          "Documentation": {
+          "documentation": {
             "title": "Documentation",
             "description": "Path to external documentation/information",
             "type": "string"

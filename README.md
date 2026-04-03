@@ -90,6 +90,23 @@ r3xa.set_header(title="Updated title")
 r3xa.save("hello-world-updated.json")
 ```
 
+Guided helper methods now exist for every schema kind using a consistent naming rule:
+
+```python
+add_<kind>_setting(...)
+add_<kind>_source(...)
+add_<kind>_data_set(...)
+```
+
+Examples:
+- `add_testing_machine_setting(...)`
+- `add_load_cell_source(...)`
+- `add_generic_data_set(...)`
+
+Legacy aliases remain available for datasets:
+- `add_image_set_list(...)`
+- `add_image_set_file(...)`
+
 ## Documentation
 - `docs/overview.md`
 - `docs/api.md`
@@ -153,7 +170,7 @@ Optional static export (no backend):
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/develop?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.4.0?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.

@@ -119,6 +119,17 @@ def test_r3xa_document_valid():
     assert doc.version == schema_version()
 
 
+def test_generic_setting_uses_lowercase_documentation_field():
+    setting = models.GenericSetting(
+        id="set_generic_01",
+        kind="settings/generic",
+        title="Lighting",
+        description="LED setup",
+        documentation="https://example.org/lighting.pdf",
+    )
+    assert setting.documentation == "https://example.org/lighting.pdf"
+
+
 def test_models_not_required(tmp_path: Path):
     fake_pydantic = tmp_path / "pydantic.py"
     fake_pydantic.write_text("raise ModuleNotFoundError(\"No module named 'pydantic'\")\n", encoding="utf-8")

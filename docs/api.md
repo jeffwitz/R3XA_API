@@ -35,53 +35,32 @@ add_data_set(kind: str, **fields) -> dict
 Low‑level methods for any schema kind.
 
 ```python
-add_generic_setting(title: str, description: str, **extra) -> dict
-add_specimen_setting(title: str, description: str, sizes=None, patterning_technique=None, **extra) -> dict
+add_<kind>_setting(...)
+add_<kind>_source(...)
+add_<kind>_data_set(...)
 ```
-Guided helpers for settings.
+Schema‑driven guided helpers exist for every supported kind. They expose the schema `required`
+fields as explicit parameters and accept optional schema fields through `**extra`.
+
+Examples:
 
 ```python
-add_camera_source(
-    title: str,
-    description: str,
-    output_components: int,
-    output_dimension: str,
-    output_units: Sequence[dict],
-    manufacturer: str,
-    model: str,
-    image_size: Sequence[dict],
-    **extra,
-) -> dict
+add_generic_setting(title, description, **extra) -> dict
+add_specimen_setting(title, description, sizes, **extra) -> dict
+add_testing_machine_setting(title, description, type, **extra) -> dict
+add_camera_source(title, output_components, output_dimension, output_units, image_size, **extra) -> dict
+add_load_cell_source(output_components, output_dimension, output_units, capacity, **extra) -> dict
+add_generic_data_set(title, description, data_sources, file_type, path, **extra) -> dict
+add_list_data_set(title, description, file_type, data_sources, time_reference, timestamps, data, **extra) -> dict
+add_file_data_set(title, description, data_sources, time_reference, timestamps, data, **extra) -> dict
 ```
-Guided helper for camera data sources.
+
+Backward-compatible aliases remain available:
 
 ```python
-add_image_set_list(
-    title: str,
-    description: str,
-    path: str,
-    file_type: str,
-    data_sources: Sequence[str],
-    time_reference: dict,
-    timestamps: Sequence[float],
-    data: Sequence[str],
-    **extra,
-) -> dict
+add_image_set_list(...) == add_list_data_set(...)
+add_image_set_file(...) == add_file_data_set(...)
 ```
-Guided helper for list‑based datasets.
-
-```python
-add_image_set_file(
-    title: str,
-    description: str,
-    data_sources: Sequence[str],
-    time_reference: float,
-    timestamps: str | dict,
-    data: str | dict,
-    **extra,
-) -> dict
-```
-Guided helper for file‑based datasets.
 
 ```python
 to_dict() -> dict
@@ -105,9 +84,10 @@ r3xa.save("experiment_updated.json")
 
 ### `unit(...)`
 ```python
-unit(title: str, value: float, unit: str, scale: float = 1.0, **extra) -> dict
+unit(title: str | None = None, value: float | None = None, unit: str | None = None, scale: float | None = 1.0, **extra) -> dict
 ```
-Build a schema‑compliant unit object.
+Build a schema‑compliant unit object. Only `unit` is required by the schema; `title`,
+`value`, and `scale` are optional metadata.
 
 ### `data_set_file(...)`
 ```python

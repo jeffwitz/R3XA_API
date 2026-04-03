@@ -55,7 +55,7 @@
             "kind": "settings/generic",
             "title": "Spotlight ",
             "description": "2 Spotlights MultiLed QX 100% indirect\nGS Vitec SN : GS01224 and GS01225\n",
-            "Documentation": "https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf"
+            "documentation": "https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf"
         }
     ],
     "data_sources": [

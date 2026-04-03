@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import inspect
 import random
 import string
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Union
 
-from .schema import schema_version
+from .schema import load_schema, schema_version
 from .typed import from_model
 from .validate import validate
 
@@ -27,16 +29,27 @@ def new_item(kind: str, **fields: Any) -> Dict[str, Any]:
     return item
 
 
-def unit(title: str, value: float, unit: str, scale: float = 1.0, **extra: Any) -> Dict[str, Any]:
+def unit(
+    title: Optional[str] = None,
+    value: Optional[float] = None,
+    unit: Optional[str] = None,
+    scale: Optional[float] = 1.0,
+    **extra: Any,
+) -> Dict[str, Any]:
     """Build a unit payload compatible with R3XA schema."""
 
     payload = {
         "kind": "unit",
-        "title": title,
-        "value": value,
-        "unit": unit,
-        "scale": scale,
     }
+    if unit is None:
+        raise TypeError("unit requires the `unit` field")
+    payload["unit"] = unit
+    if title is not None:
+        payload["title"] = title
+    if value is not None:
+        payload["value"] = value
+    if scale is not None:
+        payload["scale"] = scale
     payload.update(extra)
     return payload
 
@@ -64,6 +77,98 @@ def _ensure_data_set_file(value: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
     if isinstance(value, dict):
         return value
     return data_set_file(filename=value)
+
+
+_GUIDED_SECTION_SUFFIX = {
+    "settings": "setting",
+    "data_sources": "source",
+    "data_sets": "data_set",
+}
+_GUIDED_ALIAS_TARGETS = {
+    "add_image_set_list": "add_list_data_set",
+    "add_image_set_file": "add_file_data_set",
+}
+
+
+@lru_cache(maxsize=1)
+def _guided_kind_specs() -> Dict[str, Dict[str, Any]]:
+    """Return schema-derived helper metadata for every supported kind."""
+
+    schema = load_schema()
+    specs: Dict[str, Dict[str, Any]] = {}
+    for section, suffix in _GUIDED_SECTION_SUFFIX.items():
+        section_defs = schema.get("$defs", {}).get(section, {})
+        for kind_name, item_schema in section_defs.items():
+            kind = f"{section}/{kind_name}"
+            properties = item_schema.get("properties", {})
+            required = tuple(
+                field
+                for field in item_schema.get("required", [])
+                if field not in {"id", "kind"}
+            )
+            array_fields = tuple(
+                field_name
+                for field_name, field_schema in properties.items()
+                if field_schema.get("type") == "array"
+            )
+            specs[kind] = {
+                "required": required,
+                "array_fields": array_fields,
+                "helper_name": f"add_{kind_name}_{suffix}",
+            }
+    return specs
+
+
+def _guided_item_spec(kind: str) -> Dict[str, Any]:
+    """Return schema-derived metadata for a specific kind."""
+
+    try:
+        return _guided_kind_specs()[kind]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported guided helper kind: {kind}") from exc
+
+
+def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., Dict[str, Any]]:
+    """Create a guided helper with explicit required parameters for one kind."""
+
+    params = ["self"] + [f"{field}: Any" for field in required_fields] + ["**extra: Any"]
+    header = ", ".join(params)
+    field_lines = "\n".join(
+        f"    fields[{field!r}] = {field}" for field in required_fields
+    ) or "    fields = {}"
+    if required_fields:
+        field_lines = "    fields: Dict[str, Any] = {}\n" + field_lines
+
+    source = (
+        f"def {method_name}({header}) -> Dict[str, Any]:\n"
+        f"    \"\"\"Add a `{kind}` item.\"\"\"\n"
+        f"{field_lines}\n"
+        "    fields.update(extra)\n"
+        f"    return self._add_guided_item({kind!r}, fields)\n"
+    )
+    namespace: Dict[str, Any] = {"Any": Any, "Dict": Dict}
+    exec(source, namespace)
+    helper = namespace[method_name]
+    helper.__qualname__ = f"R3XAFile.{method_name}"
+    helper.__doc__ = (
+        f"Add a `{kind}` item.\n\n"
+        f"Required fields: {', '.join(required_fields) if required_fields else '(none)'}.\n"
+        "Optional schema fields can be passed through `**extra`."
+    )
+    return helper
+
+
+def _make_guided_alias(alias_name: str, target_name: str) -> Callable[..., Dict[str, Any]]:
+    """Create a backward-compatible guided helper alias."""
+
+    def alias(self: "R3XAFile", *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        return getattr(self, target_name)(*args, **kwargs)
+
+    alias.__name__ = alias_name
+    alias.__qualname__ = f"R3XAFile.{alias_name}"
+    alias.__doc__ = f"Alias for `{target_name}`."
+    alias.__signature__ = inspect.signature(getattr(R3XAFile, target_name))
+    return alias
 
 
 class _ModelAwareList(list):
@@ -178,116 +283,39 @@ class R3XAFile:
             raise ValueError("add_data_set expects a kind starting with data_sets/")
         return self.add_item(kind, **fields)
 
-    # Guided helpers
-    def add_generic_setting(self, title: str, description: str, **extra: Any) -> Dict[str, Any]:
-        """Add a `settings/generic` item."""
+    def _normalize_guided_fields(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize guided helper fields before delegating to low-level add methods."""
 
-        return self.add_setting(
-            "settings/generic",
-            title=title,
-            description=description,
-            **extra,
-        )
+        normalized = dict(fields)
+        spec = _guided_item_spec(kind)
+        for field_name in spec["array_fields"]:
+            if field_name not in normalized or isinstance(normalized[field_name], list):
+                continue
+            value = normalized[field_name]
+            if isinstance(value, (str, bytes, dict)):
+                continue
+            normalized[field_name] = list(value)
 
-    def add_specimen_setting(
-        self,
-        title: str,
-        description: str,
-        sizes: Optional[List[Dict[str, Any]]] = None,
-        patterning_technique: Optional[str] = None,
-        **extra: Any,
-    ) -> Dict[str, Any]:
-        """Add a `settings/specimen` item with optional specimen metadata."""
+        if kind == "data_sets/file":
+            normalized["timestamps"] = _ensure_data_set_file(normalized["timestamps"])
+            normalized["data"] = _ensure_data_set_file(normalized["data"])
 
-        fields: Dict[str, Any] = {
-            "title": title,
-            "description": description,
-        }
-        if sizes is not None:
-            fields["sizes"] = sizes
-        if patterning_technique is not None:
-            fields["patterning_technique"] = patterning_technique
-        fields.update(extra)
-        return self.add_setting("settings/specimen", **fields)
+        if kind == "data_sets/list":
+            time_reference = normalized["time_reference"]
+            if not isinstance(time_reference, dict) or time_reference.get("kind") != "unit":
+                raise ValueError("time_reference for data_sets/list must be a unit payload")
 
-    def add_camera_source(
-        self,
-        title: str,
-        description: str,
-        output_components: int,
-        output_dimension: str,
-        output_units: Sequence[Dict[str, Any]],
-        manufacturer: str,
-        model: str,
-        image_size: Sequence[Dict[str, Any]],
-        **extra: Any,
-    ) -> Dict[str, Any]:
-        """Add a `data_sources/camera` item."""
+        return normalized
 
-        return self.add_data_source(
-            "data_sources/camera",
-            title=title,
-            description=description,
-            output_components=output_components,
-            output_dimension=output_dimension,
-            output_units=list(output_units),
-            manufacturer=manufacturer,
-            model=model,
-            image_size=list(image_size),
-            **extra,
-        )
+    def _add_guided_item(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate required schema fields and append one guided item."""
 
-    def add_image_set_list(
-        self,
-        title: str,
-        description: str,
-        path: str,
-        file_type: str,
-        data_sources: Sequence[str],
-        time_reference: Dict[str, Any],
-        timestamps: Sequence[float],
-        data: Sequence[str],
-        **extra: Any,
-    ) -> Dict[str, Any]:
-        """Add a `data_sets/list` item with explicit unit-based time reference."""
-
-        if not isinstance(time_reference, dict) or time_reference.get("kind") != "unit":
-            raise ValueError("time_reference for data_sets/list must be a unit payload")
-        return self.add_data_set(
-            "data_sets/list",
-            title=title,
-            description=description,
-            path=path,
-            file_type=file_type,
-            data_sources=list(data_sources),
-            time_reference=time_reference,
-            timestamps=list(timestamps),
-            data=list(data),
-            **extra,
-        )
-
-    def add_image_set_file(
-        self,
-        title: str,
-        description: str,
-        data_sources: Sequence[str],
-        time_reference: float,
-        timestamps: Union[str, Dict[str, Any]],
-        data: Union[str, Dict[str, Any]],
-        **extra: Any,
-    ) -> Dict[str, Any]:
-        """Add a `data_sets/file` item, normalizing file descriptors."""
-
-        return self.add_data_set(
-            "data_sets/file",
-            title=title,
-            description=description,
-            data_sources=list(data_sources),
-            time_reference=time_reference,
-            timestamps=_ensure_data_set_file(timestamps),
-            data=_ensure_data_set_file(data),
-            **extra,
-        )
+        spec = _guided_item_spec(kind)
+        missing_fields = [field for field in spec["required"] if field not in fields]
+        if missing_fields:
+            missing = ", ".join(missing_fields)
+            raise TypeError(f"{spec['helper_name']} missing required arguments: {missing}")
+        return self.add_item(kind, **self._normalize_guided_fields(kind, fields))
 
     def to_dict(self) -> Dict[str, Any]:
         """Return the complete JSON payload for this builder."""
@@ -317,3 +345,20 @@ class R3XAFile:
         path = Path(path)
         path.write_text(self.dump(indent=indent) + "\n", encoding="utf-8")
         return path
+
+
+def _install_guided_helpers() -> None:
+    """Attach schema-driven guided helper methods to `R3XAFile`."""
+
+    for kind, spec in _guided_kind_specs().items():
+        setattr(
+            R3XAFile,
+            spec["helper_name"],
+            _make_guided_helper(spec["helper_name"], kind, spec["required"]),
+        )
+
+    for alias_name, target_name in _GUIDED_ALIAS_TARGETS.items():
+        setattr(R3XAFile, alias_name, _make_guided_alias(alias_name, target_name))
+
+
+_install_guided_helpers()
