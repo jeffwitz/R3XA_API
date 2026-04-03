@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-04-03
+- Registry ergonomics: add `RegistryItem` with item-level `merge(...)`, `validate(...)`, `save(...)`, and `save_to(...)`.
+- Registry API: add `Registry.get_item(...)` and `Registry.wrap(...)`, and make `Registry.merge(...)` return a bound item wrapper.
+- Examples/docs: update the registry workflows and homepage quickstart to use the new item-centered API.
+
 ## [1.4.0] - 2026-04-03
 - Start the next development cycle after the `1.3.0` release.
 - API ergonomics: add `R3XAFile.load(...)`, `R3XAFile.loads(...)`, `R3XAFile.dump(...)`, and make `save(...)` validate by default.
