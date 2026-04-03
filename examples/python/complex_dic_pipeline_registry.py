@@ -1,17 +1,16 @@
-from r3xa_api import R3XAFile, Registry, merge_item, unit
+from r3xa_api import R3XAFile, Registry, unit
 
 registry = Registry("registry")
 
 # Load reusable items
-specimen_base = registry.get_validated("settings/specimen/openhole_sample")
-camera_base = registry.get_validated("data_sources/camera/avt_dolphin_f145b")
-pyxel_base = registry.get_validated("data_sources/generic/pyxel_dic_2d")
+specimen_base = registry.get_item("settings/specimen/openhole_sample")
+camera_base = registry.get_item("data_sources/camera/avt_dolphin_f145b")
+pyxel_base = registry.get_item("data_sources/generic/pyxel_dic_2d")
 
 # Customize for this experiment
-specimen = merge_item(specimen_base, id="set_spec_exp01")
+specimen = specimen_base.merge(id="set_spec_exp01")
 
-camera = merge_item(
-    camera_base,
+camera = camera_base.merge(
     id="ds_cam_exp01",
     description="CCD Camera (exp01)",
     standoff_distance=unit(title="standoff", value=0.5, unit="m", scale=1.0),
@@ -45,8 +44,7 @@ images = r3xa.add_image_set_list(
 )
 
 # DIC processing data source (generic from registry)
-dic = merge_item(
-    pyxel_base,
+dic = pyxel_base.merge(
     id="ds_dic_exp01",
     input_data_sets=[images["id"]],
 )

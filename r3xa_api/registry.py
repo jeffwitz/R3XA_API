@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional
 
 import jsonschema
 
 from .schema import load_schema
+
+
+def _coerce_item_payload(item: Mapping[str, Any] | RegistryItem) -> Dict[str, Any]:
+    """Return a plain dictionary payload for registry helpers."""
+
+    if isinstance(item, RegistryItem):
+        return item.to_dict()
+    return dict(item)
 
 
 def load_item(path: str | Path) -> Dict[str, Any]:
@@ -18,19 +27,20 @@ def load_item(path: str | Path) -> Dict[str, Any]:
 
 def save_item(
     path: str | Path,
-    item: Dict[str, Any],
+    item: Mapping[str, Any] | RegistryItem,
     *,
     validate: bool = True,
     kind: Optional[str] = None,
 ) -> Path:
     """Validate then save a registry item to a JSON file."""
 
+    payload = _coerce_item_payload(item)
     if validate:
-        validate_item(item, kind=kind)
+        validate_item(payload, kind=kind)
 
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(item, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
 
 
@@ -45,7 +55,7 @@ def load_item_path(root: str | Path, tree_path: str) -> Dict[str, Any]:
 def save_item_path(
     root: str | Path,
     tree_path: str,
-    item: Dict[str, Any],
+    item: Mapping[str, Any] | RegistryItem,
     *,
     validate: bool = True,
     kind: Optional[str] = None,
@@ -73,9 +83,14 @@ def _wrap_def(schema: Dict[str, Any], kind: str) -> Dict[str, Any]:
     }
 
 
-def validate_item(item: Dict[str, Any], kind: Optional[str] = None, schema: Optional[Dict[str, Any]] = None) -> None:
+def validate_item(
+    item: Mapping[str, Any] | RegistryItem,
+    kind: Optional[str] = None,
+    schema: Optional[Dict[str, Any]] = None,
+) -> None:
     """Validate a registry item against its `$defs` entry."""
 
+    item = _coerce_item_payload(item)
     schema = schema or load_schema()
     if kind is None:
         kind = item.get("kind")
@@ -111,12 +126,127 @@ def load_registry(root: str | Path) -> Dict[str, Dict[str, Dict[str, Any]]]:
     return registry
 
 
-def merge_item(base: Dict[str, Any], **overrides: Any) -> Dict[str, Any]:
+def merge_item(base: Mapping[str, Any] | RegistryItem, **overrides: Any) -> Dict[str, Any]:
     """Return a shallow-merged item while ignoring `None` override values."""
 
-    merged = dict(base)
+    merged = dict(_coerce_item_payload(base))
     merged.update({k: v for k, v in overrides.items() if v is not None})
     return merged
+
+
+class RegistryItem(MutableMapping[str, Any]):
+    """Dictionary-like wrapper for a single registry item with item-level helpers."""
+
+    def __init__(
+        self,
+        payload: Mapping[str, Any],
+        *,
+        registry_root: str | Path | None = None,
+        tree_path: str | None = None,
+    ) -> None:
+        self._payload = dict(payload)
+        self.registry_root = Path(registry_root) if registry_root is not None else None
+        self.tree_path = tree_path
+
+    def __getitem__(self, key: str) -> Any:
+        return self._payload[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self._payload[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self._payload[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._payload)
+
+    def __len__(self) -> int:
+        return len(self._payload)
+
+    def __repr__(self) -> str:
+        return (
+            f"RegistryItem(kind={self.kind!r}, tree_path={self.tree_path!r}, "
+            f"keys={sorted(self._payload.keys())!r})"
+        )
+
+    @property
+    def kind(self) -> Optional[str]:
+        """Return the embedded schema kind if present."""
+
+        return self._payload.get("kind")
+
+    @property
+    def path(self) -> Optional[Path]:
+        """Return the bound registry file path when both root and tree path are known."""
+
+        if self.registry_root is None or self.tree_path is None:
+            return None
+        return self.registry_root / f"{self.tree_path}.json"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a plain dictionary copy of the payload."""
+
+        return dict(self._payload)
+
+    def bind(
+        self,
+        *,
+        registry_root: str | Path | None = None,
+        tree_path: str | None = None,
+    ) -> RegistryItem:
+        """Return a copy bound to a registry root and/or tree path."""
+
+        return RegistryItem(
+            self._payload,
+            registry_root=self.registry_root if registry_root is None else registry_root,
+            tree_path=self.tree_path if tree_path is None else tree_path,
+        )
+
+    def validate(self, kind: Optional[str] = None, schema: Optional[Dict[str, Any]] = None) -> RegistryItem:
+        """Validate the current item payload and return `self`."""
+
+        validate_item(self._payload, kind=kind, schema=schema)
+        return self
+
+    def merge(self, **overrides: Any) -> RegistryItem:
+        """Return a shallow-merged copy while preserving registry binding."""
+
+        return RegistryItem(
+            merge_item(self._payload, **overrides),
+            registry_root=self.registry_root,
+            tree_path=self.tree_path,
+        )
+
+    def save(
+        self,
+        path: str | Path | None = None,
+        *,
+        validate: bool = True,
+        kind: Optional[str] = None,
+    ) -> Path:
+        """Save to a raw JSON file path or back to the bound registry location."""
+
+        if path is None:
+            if self.registry_root is None or self.tree_path is None:
+                raise ValueError("RegistryItem.save() needs a file path or a bound registry tree path")
+            return save_item_path(self.registry_root, self.tree_path, self._payload, validate=validate, kind=kind)
+        return save_item(path, self._payload, validate=validate, kind=kind)
+
+    def save_to(
+        self,
+        registry: Registry | str | Path,
+        tree_path: str | None = None,
+        *,
+        validate: bool = True,
+        kind: Optional[str] = None,
+    ) -> Path:
+        """Save into a registry root with an explicit or bound tree path."""
+
+        registry_root = registry.root if isinstance(registry, Registry) else Path(registry)
+        resolved_tree_path = tree_path or self.tree_path
+        if resolved_tree_path is None:
+            raise ValueError("RegistryItem.save_to() needs an explicit tree_path when the item is not bound")
+        return save_item_path(registry_root, resolved_tree_path, self._payload, validate=validate, kind=kind)
 
 
 class Registry:
@@ -137,10 +267,21 @@ class Registry:
 
         return self.get(tree_path)
 
+    def wrap(self, item: Mapping[str, Any], tree_path: str | None = None) -> RegistryItem:
+        """Wrap a plain item payload into a bound `RegistryItem`."""
+
+        return RegistryItem(item, registry_root=self.root, tree_path=tree_path)
+
+    def get_item(self, tree_path: str, *, validated: bool = True, kind: Optional[str] = None) -> RegistryItem:
+        """Load a registry item and return it as a `RegistryItem` wrapper."""
+
+        item = self.get_validated(tree_path, kind=kind) if validated else self.get(tree_path)
+        return RegistryItem(item, registry_root=self.root, tree_path=tree_path)
+
     def save(
         self,
         tree_path: str,
-        item: Dict[str, Any],
+        item: Mapping[str, Any] | RegistryItem,
         *,
         validate: bool = True,
         kind: Optional[str] = None,
@@ -149,7 +290,7 @@ class Registry:
 
         return save_item_path(self.root, tree_path, item, validate=validate, kind=kind)
 
-    def validate(self, item: Dict[str, Any], kind: Optional[str] = None) -> None:
+    def validate(self, item: Mapping[str, Any] | RegistryItem, kind: Optional[str] = None) -> None:
         """Validate an item using explicit `kind` or embedded `item.kind`."""
 
         validate_item(item, kind=kind)
@@ -198,14 +339,18 @@ class Registry:
         kind: Optional[str] = None,
         *,
         validated: bool = False,
-    ) -> Iterator[tuple[str, Dict[str, Any]]]:
-        """Iterate over registry items, optionally validated, yielding `(tree_path, item)`."""
+        wrapped: bool = False,
+    ) -> Iterator[tuple[str, Dict[str, Any] | RegistryItem]]:
+        """Iterate over registry items, optionally validated and/or wrapped."""
 
         for tree_path in self.list(section=section, kind=kind):
-            item = self.get_validated(tree_path) if validated else self.get(tree_path)
+            if wrapped:
+                item = self.get_item(tree_path, validated=validated)
+            else:
+                item = self.get_validated(tree_path) if validated else self.get(tree_path)
             yield tree_path, item
 
-    def merge(self, tree_path: str, **overrides: Any) -> Dict[str, Any]:
+    def merge(self, tree_path: str, **overrides: Any) -> RegistryItem:
         """Load a registry item and return a shallow merged copy with overrides."""
 
-        return merge_item(self.get_validated(tree_path), **overrides)
+        return self.get_item(tree_path, validated=True).merge(**overrides)

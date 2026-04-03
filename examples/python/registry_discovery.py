@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from r3xa_api import Registry, save_item
+from r3xa_api import Registry
 
 
 def main() -> None:
@@ -13,13 +13,12 @@ def main() -> None:
     for tree_path in camera_keys:
         print(f"- {tree_path}")
 
-    merged_camera = registry.merge(
-        "data_sources/camera/avt_dolphin_f145b",
+    merged_camera = registry.get_item("data_sources/camera/avt_dolphin_f145b").merge(
         id="ds_cam_registry_demo",
         title="Registry camera clone",
         description="Merged from registry discovery example",
     )
-    saved_path = save_item(output_path, merged_camera)
+    saved_path = merged_camera.save(output_path)
 
     print(f"Merged camera saved to: {saved_path}")
 

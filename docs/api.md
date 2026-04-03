@@ -101,16 +101,17 @@ Build a schema‑compliant data_set_file object.
 Load a registry JSON item from disk.
 
 ### `save_item(path, item, validate=True, kind=None) -> Path`
-Validate and save a single registry item JSON to disk.
+Validate and save a single registry item JSON to disk. `item` can be a plain `dict`
+or a `RegistryItem`.
 
 ### `Registry`
-Helper class that encapsulates the registry root and provides loading, validation, discovery, merge, and save methods.
+Helper class that encapsulates the registry root and provides loading, validation, discovery, merge, wrapping, and save methods.
 
 ```python
-from r3xa_api import Registry, new_item, save_item_path, unit
+from r3xa_api import Registry, new_item, unit
 
 registry = Registry("registry")
-camera = registry.get_validated("data_sources/camera/avt_dolphin_f145b")
+camera = registry.get_item("data_sources/camera/avt_dolphin_f145b")
 
 new_camera = new_item(
     "data_sources/camera",
@@ -127,7 +128,7 @@ new_camera = new_item(
     ],
 )
 
-save_item_path("registry", "data_sources/camera/example_generated_camera", new_camera)
+registry.wrap(new_camera, tree_path="data_sources/camera/example_generated_camera").save()
 ```
 
 Most useful instance methods:
@@ -135,10 +136,12 @@ Most useful instance methods:
 ```python
 load(tree_path: str) -> dict
 load_validated(tree_path: str, kind: str | None = None) -> dict
+get_item(tree_path: str, validated: bool = True, kind: str | None = None) -> RegistryItem
+wrap(item: Mapping[str, Any], tree_path: str | None = None) -> RegistryItem
 list(section: str | None = None, kind: str | None = None) -> list[str]
-iter_items(section: str | None = None, kind: str | None = None, validated: bool = False) -> Iterator[tuple[str, dict]]
-merge(tree_path: str, **overrides) -> dict
-save(tree_path: str, item: dict, validate: bool = True, kind: str | None = None) -> Path
+iter_items(section: str | None = None, kind: str | None = None, validated: bool = False, wrapped: bool = False) -> Iterator[tuple[str, dict | RegistryItem]]
+merge(tree_path: str, **overrides) -> RegistryItem
+save(tree_path: str, item: dict | RegistryItem, validate: bool = True, kind: str | None = None) -> Path
 ```
 
 Typical registry workflow:
@@ -151,11 +154,57 @@ registry = Registry("registry")
 for tree_path in registry.list(kind="data_sources/camera"):
     print(tree_path)
 
-camera = registry.merge(
-    "data_sources/camera/avt_dolphin_f145b",
+camera = registry.get_item("data_sources/camera/avt_dolphin_f145b").merge(
     id="cam_exp01",
     description="Camera used in experiment 01",
 )
+camera.save("camera_exp01.json")
+```
+
+### `RegistryItem`
+Dictionary-like wrapper returned by `Registry.get_item(...)`.
+
+It keeps the current dict-based design, but attaches the common item-level operations directly to the item:
+you can still use it anywhere a plain item `dict` is expected (for example `r3xa.data_sources.append(camera_item)`).
+
+```python
+validate(kind: str | None = None, schema: dict | None = None) -> RegistryItem
+merge(**overrides) -> RegistryItem
+save(path: str | Path | None = None, validate: bool = True, kind: str | None = None) -> Path
+save_to(registry: Registry | str | Path, tree_path: str | None = None, validate: bool = True, kind: str | None = None) -> Path
+bind(registry_root: str | Path | None = None, tree_path: str | None = None) -> RegistryItem
+to_dict() -> dict
+```
+
+Typical workflows:
+
+```python
+from r3xa_api import Registry
+
+registry = Registry("registry")
+
+# Load an existing registry item, edit it, and save a standalone JSON copy.
+camera = registry.get_item("data_sources/camera/avt_dolphin_f145b")
+camera = camera.merge(description="Camera used in experiment 01")
+camera.save("camera_exp01.json")
+
+# Build a new item, bind it to a registry key, and save it into the registry tree.
+new_camera = registry.wrap(
+    {
+        "id": "ds_cam_exp02",
+        "kind": "data_sources/camera",
+        "title": "Experiment camera",
+        "description": "Bound registry item",
+        "output_components": 1,
+        "output_dimension": "surface",
+        "output_units": [{"kind": "unit", "unit": "gl"}],
+        "manufacturer": "Example",
+        "model": "Cam-01",
+        "image_size": [{"kind": "unit", "unit": "px"}],
+    },
+    tree_path="data_sources/camera/experiment_camera",
+)
+new_camera.validate().save()
 ```
 
 ### `validate_item(item, kind=None, schema=None) -> None`
@@ -174,7 +223,8 @@ Load a full registry tree into memory.
 ### `merge_item(base, **overrides) -> dict`
 Create a new item by overriding fields of a registry item.
 
-This is a shallow merge helper. For end-user workflows, prefer `Registry.merge(...)`.
+This is a shallow merge helper. For end-user workflows, prefer `RegistryItem.merge(...)`
+or `Registry.merge(...)`.
 
 ## Schema utilities
 

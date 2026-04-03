@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from r3xa_api import Registry, new_item, save_item_path, unit
+from r3xa_api import Registry, new_item, unit
 
 registry_root = Path(__file__).parents[2] / "registry"
 tree_path = "data_sources/camera/example_generated_camera"
@@ -22,10 +22,11 @@ camera = new_item(
     focal_length=unit(title="focal_length", value=35.0, unit="mm", scale=1.0),
 )
 
-output_path = save_item_path(registry_root, tree_path, camera)
-
 registry = Registry(registry_root)
-loaded = registry.get_validated(tree_path)
+camera_item = registry.wrap(camera, tree_path=tree_path)
+output_path = camera_item.save()
+loaded = registry.get_item(tree_path)
+loaded.validate()
 
 print(f"Registry item written to: {output_path}")
 print(f"Validated kind: {loaded['kind']}")
