@@ -3,7 +3,7 @@ author = "R3XA_API"
 extensions = ["myst_parser", "sphinxcontrib.mermaid"]
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 master_doc = "index"
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "internal/*"]
 html_theme = "sphinx_rtd_theme"
 html_title = "R3XA_API"
 html_theme_options = {
@@ -12,7 +12,7 @@ html_theme_options = {
     "titles_only": False,
     "includehidden": True,
 }
-html_extra_path = ["figures", "../PM_IDICS_2024"]
+html_extra_path = ["figures", "archive/PM_IDICS_2024"]
 
 # Force a global, uniform sidebar on every page (no local overrides)
 html_sidebars = {
