@@ -33,6 +33,9 @@ def _run_script(path: Path, restore_paths: Iterable[Path] = ()) -> None:
     assert spec and spec.loader
     try:
         spec.loader.exec_module(module)
+        main = getattr(module, "main", None)
+        if callable(main):
+            main()
     finally:
         _restore_paths(snapshots)
 
@@ -44,6 +47,9 @@ def _run_script_preserving_outputs(path: Path, output_paths: Iterable[Path]) -> 
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
     spec.loader.exec_module(module)
+    main = getattr(module, "main", None)
+    if callable(main):
+        main()
     return snapshots
 
 
