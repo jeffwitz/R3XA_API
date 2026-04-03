@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.4] - 2026-04-03
+- Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
+
 ## [1.4.3] - 2026-04-03
 - Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, document the test matrix by optional extras, and keep the public MyBinder links pinned to the latest stable tag.
 
