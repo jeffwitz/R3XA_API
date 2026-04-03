@@ -6,13 +6,27 @@ from typing import Iterable
 from r3xa_api import validate
 
 
-def _run_script(path: Path, restore_paths: Iterable[Path] = ()) -> None:
+def _snapshot_paths(paths: Iterable[Path]) -> dict[Path, bytes | None]:
     snapshots: dict[Path, bytes | None] = {}
-    for restore_path in restore_paths:
-        if restore_path.exists():
-            snapshots[restore_path] = restore_path.read_bytes()
+    for path in paths:
+        if path.exists():
+            snapshots[path] = path.read_bytes()
         else:
-            snapshots[restore_path] = None
+            snapshots[path] = None
+    return snapshots
+
+
+def _restore_paths(snapshots: dict[Path, bytes | None]) -> None:
+    for path, content in snapshots.items():
+        if content is None:
+            if path.exists():
+                path.unlink()
+        else:
+            path.write_bytes(content)
+
+
+def _run_script(path: Path, restore_paths: Iterable[Path] = ()) -> None:
+    snapshots = _snapshot_paths(restore_paths)
 
     spec = importlib.util.spec_from_file_location(path.stem, path)
     module = importlib.util.module_from_spec(spec)
@@ -20,12 +34,17 @@ def _run_script(path: Path, restore_paths: Iterable[Path] = ()) -> None:
     try:
         spec.loader.exec_module(module)
     finally:
-        for restore_path, content in snapshots.items():
-            if content is None:
-                if restore_path.exists():
-                    restore_path.unlink()
-            else:
-                restore_path.write_bytes(content)
+        _restore_paths(snapshots)
+
+
+def _run_script_preserving_outputs(path: Path, output_paths: Iterable[Path]) -> dict[Path, bytes | None]:
+    snapshots = _snapshot_paths(output_paths)
+
+    spec = importlib.util.spec_from_file_location(path.stem, path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(module)
+    return snapshots
 
 
 def test_examples_validate_all():
@@ -42,27 +61,35 @@ def test_examples_validate_all():
         examples_python / "complex_dic_pipeline_registry.py",
         restore_paths=[artifacts / "dic_pipeline_registry.json"],
     )
-    _run_script(
-        examples_python / "load_edit_save.py",
-        restore_paths=[artifacts / "dic_pipeline_loaded.json"],
-    )
-    _run_script(
-        examples_python / "registry_discovery.py",
-        restore_paths=[artifacts / "registry_camera_merged.json"],
-    )
+    generated_snapshots: dict[Path, bytes | None] = {}
+    try:
+        generated_snapshots.update(
+            _run_script_preserving_outputs(
+                examples_python / "load_edit_save.py",
+                output_paths=[artifacts / "dic_pipeline_loaded.json"],
+            )
+        )
+        generated_snapshots.update(
+            _run_script_preserving_outputs(
+                examples_python / "registry_discovery.py",
+                output_paths=[artifacts / "registry_camera_merged.json"],
+            )
+        )
 
-    for path in [
-        examples / "valid_camera_list.json",
-        examples / "valid_tabular_file.json",
-        artifacts / "dic_pipeline.json",
-        artifacts / "dic_pipeline_registry.json",
-        artifacts / "dic_pipeline_loaded.json",
-        artifacts / "qi_hu_from_scratch.json",
-        artifacts / "qi_hu_from_scratch_matlab.json",
-    ]:
-        with path.open("r", encoding="utf-8") as f:
-            payload = json.load(f)
-        validate(payload)
+        for path in [
+            examples / "valid_camera_list.json",
+            examples / "valid_tabular_file.json",
+            artifacts / "dic_pipeline.json",
+            artifacts / "dic_pipeline_registry.json",
+            artifacts / "dic_pipeline_loaded.json",
+            artifacts / "qi_hu_from_scratch.json",
+            artifacts / "qi_hu_from_scratch_matlab.json",
+        ]:
+            with path.open("r", encoding="utf-8") as f:
+                payload = json.load(f)
+            validate(payload)
 
-    merged_registry_item = json.loads((artifacts / "registry_camera_merged.json").read_text(encoding="utf-8"))
-    assert merged_registry_item["kind"] == "data_sources/camera"
+        merged_registry_item = json.loads((artifacts / "registry_camera_merged.json").read_text(encoding="utf-8"))
+        assert merged_registry_item["kind"] == "data_sources/camera"
+    finally:
+        _restore_paths(generated_snapshots)
