@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.3] - 2026-04-03
+- Schema: allow optional `uncertainty` on `data_sources/generic`.
+- Packaging: sync `r3xa_api/resources/schema.json` with the generated runtime schema from `R3XA_SPEC`.
+- Documentation: regenerate the local API specification to reflect the generic data source update.
+- Tests: lock the new generic `uncertainty` support with a targeted validation test.
+
 ## [1.3.2] - 2026-04-03
 - Examples: add runnable `load_edit_save.py` and `registry_discovery.py` scripts to showcase the new ergonomic API entry points.
 

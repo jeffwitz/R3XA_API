@@ -121,6 +121,7 @@ A data source is a procedure or a system that generates a data set. If it is a s
 | `manufacturer` | string | ✅ | Manufacturer, vendor or software editor. |
 | `model` | string | ✅ | Model of the source or software version. |
 | `documentation` | string |  | Documentation filename, path or URL |
+| `uncertainty` | <a href="#unit">Unit</a> |  | Quantification of data uncertainty. |
 
 ### Visible Camera (`data_sources/camera`)
 

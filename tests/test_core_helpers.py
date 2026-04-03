@@ -55,6 +55,30 @@ def test_data_set_file_rejects_non_string_range() -> None:
         data_set_file(filename="timestamps.csv", data_range=["A2:A100"])  # type: ignore[arg-type]
 
 
+def test_generic_data_source_accepts_uncertainty() -> None:
+    r3xa = R3XAFile(
+        title="Generic source uncertainty",
+        description="Generic data source with explicit uncertainty",
+        authors="R3XA API",
+        date="2026-04-03",
+    )
+
+    source = r3xa.add_data_source(
+        "data_sources/generic",
+        title="Torque sensor",
+        description="Generic torque measurement",
+        output_components=1,
+        output_dimension="point",
+        output_units=[unit(title="torque", value=1.0, unit="N*m")],
+        manufacturer="Andilog",
+        model="TT 6",
+        uncertainty=unit(title="resolution", value=0.6, unit="mN*m"),
+    )
+
+    assert source["uncertainty"]["unit"] == "mN*m"
+    validate(r3xa.to_dict())
+
+
 def test_r3xafile_lists_accept_model_dump_objects() -> None:
     r3xa = R3XAFile(
         title="Typed-like model compatibility",
