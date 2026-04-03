@@ -136,6 +136,31 @@ camera = camera.merge(description="Camera used in experiment 01")
 camera.save("camera_exp01.json")
 ```
 
+Recommended import surface:
+
+```python
+from r3xa_api import R3XAFile, Registry, RegistryItem, new_item, unit, validate
+```
+
+Advanced compatibility helpers still exist, but they are no longer the recommended entry point
+and are intentionally excluded from `r3xa_api.__all__`:
+
+```python
+from r3xa_api import load_item_path, save_item_path, merge_item
+```
+
+Registry naming rule:
+- prefer `load(...)` / `load_validated(...)` for file-backed registry access
+- keep `get(...)` / `get_validated(...)` as compatibility aliases
+
+Stability policy:
+- symbols shown in `docs/api.md` are the public SDK contract for the 1.x series
+- compatibility helpers remain importable during the 1.x series and will not be removed before `2.0`
+- guided helpers (`add_<kind>_setting/source/data_set`) are part of that public contract and are tested against the schema
+- details not documented in `docs/api.md` remain internal and may evolve more freely
+
+See `STABILITY.md` for the compact policy.
+
 ## Documentation
 - `docs/overview.md`
 - `docs/api.md`

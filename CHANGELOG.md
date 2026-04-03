@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.0.dev0] - 2026-04-03
 - Start the next development cycle after the `1.4.0` release.
+- API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
 
 ## [1.4.0] - 2026-04-03
 - Start the next development cycle after the `1.3.0` release.
