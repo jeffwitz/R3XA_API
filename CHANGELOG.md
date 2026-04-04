@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.0.dev0] - 2026-04-04
 - Start the next development cycle after the `1.5.0` release.
-- Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.0`).
+- Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.1`).
 
 ## [1.5.0] - 2026-04-04
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
