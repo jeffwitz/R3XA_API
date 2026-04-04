@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.7] - 2026-04-04
+- Internal planning: refresh `docs/internal/PLAN_ACTION_API_ERGO.md` so completed ergonomics work and remaining v2 topics are tracked accurately.
+
 ## [1.4.6] - 2026-04-04
 - Developer docs: explain how the generated `core.pyi` stub, `py.typed`, and `make generate-stubs` keep IDE signatures aligned with the schema-driven guided helpers.
 

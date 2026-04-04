@@ -23,7 +23,7 @@ Ce document formalise les retours d'usage sur `R3XA_API` et fixe un ordre d'exec
 
 ## Strategie retenue
 
-### P0 - Ergonomie immediate
+### P0 - Ergonomie immediate — **fait**
 
 - Ajouter `R3XAFile.load(path)` et `R3XAFile.loads(text)`.
 - Ajouter `R3XAFile.dump(indent=4)`.
@@ -34,13 +34,13 @@ Ce document formalise les retours d'usage sur `R3XA_API` et fixe un ordre d'exec
   - `list(...)`
   - `iter_items(...)`
 
-### P1 - Clarification de la couche guidee
+### P1 - Clarification de la couche guidee — **fait**
 
 - Conserver une vraie couche guidee coherente.
 - Les helpers guides doivent imposer les champs `required` du schema.
 - La couverture doit devenir systematique sur les types importants, ou etre explicitement bornee si on s'arrete avant.
 
-### P2 - Abstraction `RegistryItem`
+### P2 - Abstraction `RegistryItem` — **fait**
 
 - Introduire une vraie classe `RegistryItem`.
 - Y rattacher les operations utiles:
@@ -49,31 +49,46 @@ Ce document formalise les retours d'usage sur `R3XA_API` et fixe un ordre d'exec
   - `save(...)` ou `save_to(...)`
 - Garder les fonctions libres existantes pour compatibilite.
 
-### P3 - Generation depuis le schema
+### P3 - Generation depuis le schema — **partiellement fait**
 
 - Generer les helpers guides depuis le schema plutot que les maintenir manuellement.
 - Generer egalement des enums/constantes de `kind` pour la decouverte et l'autocompletion.
+- Etat actuel:
+  - les helpers guides sont bien derives du schema;
+  - un stub `r3xa_api/core.pyi` est genere pour exposer ces helpers aux IDE;
+  - les enums/constantes de `kind` ne sont pas encore en place.
 
-### P4 - Nommage utilisateur
+### P4 - Nommage utilisateur — **non fait**
 
 - Garder `unit()` pour compatibilite et coherence avec le schema (`kind="unit"`).
 - Ajouter un alias utilisateur plus explicite:
   - `value()`, ou
   - `quantity()`
 
-### P5 - Chantier schema separe
+### P5 - Chantier schema separe — **fait pour `uncertainty`**
 
 - Traiter explicitement `uncertainty` dans le schema.
 - Ne pas melanger ce sujet avec le refactoring ergonomique Python.
 
+## Etat actuel
+
+- `R3XAFile.load(...)`, `loads(...)`, `dump(...)` et `save(..., validate=True)` sont en place.
+- `Registry` expose `load(...)`, `load_validated(...)`, `list(...)`, `iter_items(...)` et `merge(...)`.
+- `RegistryItem` existe et porte `validate()`, `merge(...)`, `save(...)`, `save_to(...)`.
+- La couche guidee est maintenant systematique sur les `kind` du schema et verifiee par tests de contrat.
+- Le schema source vit dans `R3XA_SPEC`; `R3XA_API` embarque une copie runtime synchronisee.
+- `uncertainty` a ete ajoute a `data_sources/generic` dans la source de verite du schema.
+- Un stub type `r3xa_api/core.pyi` + `py.typed` expose les helpers guides aux IDE.
+- Restent ouverts:
+  - enums/constantes de `kind`;
+  - alias utilisateur pour `unit()` (`value()` / `quantity()`);
+  - eventuelle sortie de `exec()` pour la v2.0.
+
 ## Ordre d'execution
 
-1. P0 - Chargement/sauvegarde symetriques + decouverte du registre.
-2. P1 - Helpers guides stricts et coherents.
-3. P2 - `RegistryItem`.
-4. P3 - Generation d'API depuis le schema.
-5. P4 - Alias de nommage.
-6. P5 - Corrections schema hors API.
+1. P3 restant - enums/constantes de `kind`.
+2. P4 - alias de nommage utilisateur pour `unit()`.
+3. Stabilisation v2.0 - decision sur le remplacement ou non de `exec()` pour les helpers guides.
 
 ## Principe directeur
 
