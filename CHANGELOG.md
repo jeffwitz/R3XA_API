@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.11] - 2026-04-04
+- Documentation structure: expose the current Diátaxis roles more clearly by turning the notebook into the visible tutorial entry point, re-labeling major pages by purpose, and restructuring the main toctree into Tutorials / How-to / Explanation / Reference sections.
+
 ## [1.4.10] - 2026-04-04
 - Documentation: add a public engineering contract page that explains the API and engineering choices from both user and developer perspectives.
 

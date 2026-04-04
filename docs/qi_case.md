@@ -1,4 +1,7 @@
-# Qi Hu (LaMcube Ph. D.) case study (IR Lagrangian thermography)
+# Tutorial — Qi Hu case study (IR Lagrangian thermography)
+
+This page is a **worked tutorial case study**.
+Use it after the interactive notebook if you want to study a larger real-world R3XA pipeline.
 
 This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
 

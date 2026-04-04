@@ -110,39 +110,51 @@ The optional web interface is documented here: :doc:`web`.
 
 Quick links
 -----------
-- :doc:`overview`
-- :doc:`examples`
-- :doc:`notebooks`
-- :doc:`matlab`
-- :doc:`validation`
-- :doc:`web`
-- :doc:`engineering_contract`
-- :doc:`DEPLOY_RAILWAY`
-- :doc:`dev_workflow`
+- **Tutorials**: :doc:`notebooks`, :doc:`qi_case`
+- **How-to guides**: :doc:`examples`, :doc:`registry_web`, :doc:`DEPLOY_RAILWAY`
+- **Explanation**: :doc:`overview`, :doc:`engineering_contract`
+- **Reference**: :doc:`api`, :doc:`specification`, :doc:`validation`, :doc:`matlab`, :doc:`web`, :doc:`dev_workflow`
 
 Common workflows
 ----------------
 If you do not want to read the whole documentation, start from one of these three workflows:
 
+- **Learn the library interactively** — start with :doc:`notebooks`.
+- **Study a full worked case** — continue with :doc:`qi_case`.
 - **Create a new R3XA file** — use ``R3XAFile`` with the guided helpers documented in :doc:`api`.
 - **Load, edit, and save an existing file** — see :doc:`api` and ``examples/python/load_edit_save.py``.
 - **Reuse or create registry items** — use ``Registry`` and ``RegistryItem``, documented in :doc:`api` and demonstrated in ``examples/python/create_registry_camera.py`` and ``examples/python/registry_discovery.py``.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
+   :caption: Tutorials
+
+   notebooks.md
+   qi_case.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: How-to guides
+
+   examples.md
+   registry_web.md
+   DEPLOY_RAILWAY.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Explanation
 
    overview.md
+   engineering_contract.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
+
    api.md
    specification.md
    typed_models.md
    matlab.md
-   examples.md
-   notebooks.md
-   qi_case.md
    validation.md
    web.md
-   engineering_contract.md
-   registry_web.md
-   DEPLOY_RAILWAY.md
    dev_workflow.md

@@ -1,4 +1,7 @@
-# Validation & Best Practices
+# Validation — concepts and best practices
+
+This page is primarily **reference + explanation**.
+Use it to understand what validation checks and when to run it.
 
 ## Why validation matters
 R3XA is defined by a JSON Schema. Validation ensures:

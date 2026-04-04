@@ -1,5 +1,8 @@
 # Engineering Contract — user and developer requirements
 
+This page is **explanation documentation**.
+Use it to understand the engineering choices, stability rules, and maintenance constraints behind the public API.
+
 This document explains **how to use R3XA_API correctly** and **why some engineering decisions were made**.
 
 It targets two audiences:
@@ -142,6 +145,8 @@ Some functions still exist for compatibility:
 
 - `load_item(...)`
 - `save_item(...)`
+- `load_item_path(...)`
+- `save_item_path(...)`
 - `validate_item(...)`
 - `merge_item(...)`
 - `Registry.get(...)`
@@ -300,7 +305,7 @@ The project follows a pragmatic policy:
 - what is documented in `docs/api.md` is part of the public contract;
 - compatibility helpers remain available during `1.x`;
 - they must not disappear abruptly before `2.0`;
-- `main` and release tags (`v1.4.9`, etc.) carry stable releases;
+- `main` and release tags (`v1.x.y`, etc.) carry stable releases;
 - `develop` carries preparation work for the next version.
 
 In short:
@@ -367,7 +372,7 @@ Keeping compatibility aliases during the `1.x` series makes it possible to impro
 ### For users
 
 - use the documented workflows first;
-- use stable tags (`v1.4.9`, etc.) if you want a frozen behavior;
+- use stable tags (`v1.x.y`, for example the latest stable release tag) if you want a frozen behavior;
 - treat `develop` as a preparation branch, not as a release.
 
 ### For developers

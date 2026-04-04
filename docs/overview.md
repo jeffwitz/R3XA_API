@@ -1,4 +1,8 @@
-# R3XA_API — Overview
+# R3XA_API — Overview and rationale
+
+This page is an **explanation** page.
+It focuses on concepts, design rationale, and the high-level data model.
+If you want to learn the library hands-on, start with [notebooks.md](notebooks.md).
 
 ![R3XA logo](figures/R3XA.png)
 

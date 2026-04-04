@@ -1,5 +1,8 @@
 # R3XA_API — API Reference
 
+This page is **reference documentation**.
+Use it to look up exact symbols, signatures, and return types.
+
 This page documents the public API intended for library users.
 
 ## Recommended imports
