@@ -1,3 +1,5 @@
+import os
+
 project = "R3XA_API"
 author = "R3XA_API"
 extensions = ["myst_parser", "sphinxcontrib.mermaid"]
@@ -13,6 +15,19 @@ html_theme_options = {
     "includehidden": True,
 }
 html_extra_path = ["figures", "archive/PM_IDICS_2024"]
+
+_rtd_version = os.environ.get("READTHEDOCS_VERSION", "develop")
+if _rtd_version == "latest":
+    _rtd_version = "develop"
+elif _rtd_version == "stable":
+    _rtd_version = "main"
+
+github_base = f"https://github.com/jeffwitz/R3XA_API/blob/{_rtd_version}"
+
+myst_substitutions = globals().get("myst_substitutions", {})
+myst_substitutions.update({
+    "github_base": github_base,
+})
 
 # Force a global, uniform sidebar on every page (no local overrides)
 html_sidebars = {

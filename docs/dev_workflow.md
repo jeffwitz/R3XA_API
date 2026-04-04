@@ -56,13 +56,13 @@ make source-archive
 ### Schema-driven stubs
 
 The guided helper methods on `R3XAFile` are reflected for static tooling through
-the generated stub file `r3xa_api/core.pyi`.
+the generated stub file [r3xa_api/core.pyi](https://github.com/jeffwitz/R3XA_API/blob/develop/r3xa_api/core.pyi).
 
 How this works:
 
-- `r3xa_api/core.py` remains the runtime implementation used by Python.
-- `r3xa_api/core.pyi` is a **type stub** read by IDEs and static type checkers.
-- `r3xa_api/py.typed` marks the installed package as shipping official typing
+- [r3xa_api/core.py](https://github.com/jeffwitz/R3XA_API/blob/develop/r3xa_api/core.py) remains the runtime implementation used by Python.
+- [r3xa_api/core.pyi](https://github.com/jeffwitz/R3XA_API/blob/develop/r3xa_api/core.pyi) is a **type stub** read by IDEs and static type checkers.
+- [r3xa_api/py.typed](https://github.com/jeffwitz/R3XA_API/blob/develop/r3xa_api/py.typed) marks the installed package as shipping official typing
   information.
 - This improves completion and signature awareness for schema-driven guided
   helpers without changing runtime behavior.

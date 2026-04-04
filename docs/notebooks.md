@@ -6,7 +6,7 @@ If you want to understand the library by running a real workflow, start here.
 This page explains how to run the **base DIC notebook** with a real Python runtime.
 
 Notebook source:
-- `examples/notebooks/dic_base_marimo.py`
+- [examples/notebooks/dic_base_marimo.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/notebooks/dic_base_marimo.py)
 
 Notebook features:
 - **Load JSON from PC** (upload button)

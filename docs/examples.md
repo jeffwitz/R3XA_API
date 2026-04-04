@@ -12,22 +12,22 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 
 ## Example index
 ### Python scripts (`examples/python/`)
-- `basic_create.py`: minimal end‑to‑end JSON generation.
-- `complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
-- `complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
-- `create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
-- `graph_r3xa.py`: graph generator (Graphviz + PyVis).
-- `load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
-- `qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
-- `registry_discovery.py`: list registry entries, merge one item, and save the merged result.
-- `registry_usage.py`: minimal registry loading and override example.
-- `typed_dic_pipeline.py`: typed/Pydantic version of the DIC pipeline.
-- `qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
-- `validate_all.py`: validate all example JSON.
-- `validate_examples.py`: quick validation of example files.
+- [`basic_create.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/basic_create.py): minimal end‑to‑end JSON generation.
+- [`complex_dic_pipeline.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/complex_dic_pipeline.py): from‑scratch DIC pipeline (detailed below).
+- [`complex_dic_pipeline_registry.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/complex_dic_pipeline_registry.py): registry‑based DIC pipeline (detailed below).
+- [`create_registry_camera.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/create_registry_camera.py): generate, validate, and save a new camera item directly into `registry/`.
+- [`graph_r3xa.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/graph_r3xa.py): graph generator (Graphviz + PyVis).
+- [`load_edit_save.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/load_edit_save.py): load an existing R3XA file, edit it, and save it again.
+- [`qi_hu_from_json_literal.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/qi_hu_from_json_literal.py): literal Python reconstruction of the Qi Hu JSON payload.
+- [`registry_discovery.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/registry_discovery.py): list registry entries, merge one item, and save the merged result.
+- [`registry_usage.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/registry_usage.py): minimal registry loading and override example.
+- [`typed_dic_pipeline.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/typed_dic_pipeline.py): typed/Pydantic version of the DIC pipeline.
+- [`qi_hu_from_scratch.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/qi_hu_from_scratch.py): full Qi Hu case built from scratch with loops (see Qi Hu page for details).
+- [`validate_all.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/validate_all.py): validate all example JSON.
+- [`validate_examples.py`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/validate_examples.py): quick validation of example files.
 
 ### MATLAB scripts (`examples/matlab/`)
-- `qi_hu_from_scratch.m`: Qi Hu case built from scratch using the MATLAB binding.
+- [`qi_hu_from_scratch.m`](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/matlab/qi_hu_from_scratch.m): Qi Hu case built from scratch using the MATLAB binding.
 
 ### Data files
 - `examples/valid_camera_list.json`: minimal valid camera dataset.
@@ -35,7 +35,7 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - `examples/artifacts/`: generated outputs (JSON + graphs) from scripts.
 
 ## 1) From scratch
-File: `examples/python/complex_dic_pipeline.py`
+Source: [examples/python/complex_dic_pipeline.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/complex_dic_pipeline.py)
 
 Key ideas:
 - Define specimen, camera, and DIC source explicitly.
@@ -123,7 +123,7 @@ r3xa.add_image_set_list(
 ```
 
 ## 2) Registry‑based
-File: `examples/python/complex_dic_pipeline_registry.py`
+Source: [examples/python/complex_dic_pipeline_registry.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/complex_dic_pipeline_registry.py)
 
 Key ideas:
 - Load reusable items from `registry/`
@@ -196,7 +196,7 @@ r3xa.add_image_set_list(
 - Registry‑based: `examples/artifacts/dic_pipeline_registry.json`
 
 ## 3) Creating a new registry item
-File: `examples/python/create_registry_camera.py`
+Source: [examples/python/create_registry_camera.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/create_registry_camera.py)
 
 Key ideas:
 - build a single registry item with `new_item(...)`
@@ -216,7 +216,7 @@ Built-in registry templates worth knowing:
 - `data_sets/file/tabular_timeseries_template`: minimal tabular time-series file template.
 
 ## 4) Loading an existing file and saving it again
-File: `examples/python/load_edit_save.py`
+Source: [examples/python/load_edit_save.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/load_edit_save.py)
 
 Key ideas:
 - load a full R3XA file with `R3XAFile.load(...)`
@@ -230,7 +230,7 @@ This example writes:
 - `examples/artifacts/dic_pipeline_loaded.json`
 
 ## 5) Discovering and merging registry items
-File: `examples/python/registry_discovery.py`
+Source: [examples/python/registry_discovery.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/registry_discovery.py)
 
 Key ideas:
 - discover available registry items with `Registry.list(...)`
@@ -248,7 +248,7 @@ See also:
 - `registry/settings/generic/instron_5800.json`
 
 ## 6) Typed DIC pipeline
-File: `examples/python/typed_dic_pipeline.py`
+Source: [examples/python/typed_dic_pipeline.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/typed_dic_pipeline.py)
 
 Key ideas:
 - install the optional `typed` extra
@@ -259,7 +259,7 @@ This example writes:
 - `examples/artifacts/dic_pipeline_typed.json`
 
 ## 7) Qi Hu from a literal JSON reconstruction
-File: `examples/python/qi_hu_from_json_literal.py`
+Source: [examples/python/qi_hu_from_json_literal.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/qi_hu_from_json_literal.py)
 
 Key ideas:
 - rebuild the Qi Hu document with explicit `add_setting(...)`, `add_data_source(...)`, and `add_data_set(...)` calls
