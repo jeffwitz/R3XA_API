@@ -47,10 +47,25 @@ From project root:
 
 ```bash
 make generate-models
+make generate-stubs
 make generate-spec
 make clean-artifacts
 make source-archive
 ```
+
+### Schema-driven stubs
+
+The guided helper methods on `R3XAFile` are reflected for static tooling through
+the generated stub file `r3xa_api/core.pyi`.
+
+Regenerate it after schema changes with:
+
+```bash
+make generate-stubs
+```
+
+This does not change runtime behavior. It refreshes the static API description
+used by IDEs and type checkers.
 
 ### Test commands
 

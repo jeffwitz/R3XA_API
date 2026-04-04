@@ -1,4 +1,4 @@
-.PHONY: docs generate-spec generate-models notebook-dic notebook-dic-export clean-artifacts source-archive
+.PHONY: docs generate-spec generate-models generate-stubs notebook-dic notebook-dic-export clean-artifacts source-archive
 
 PYTHON ?= python3
 
@@ -23,6 +23,9 @@ generate-models:
 		--disable-timestamp \
 		--no-use-union-operator
 	./.venv/bin/python scripts/postprocess_models.py
+
+generate-stubs:
+	$(PYTHON) scripts/generate_core_stub.py
 
 notebook-dic:
 	./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
