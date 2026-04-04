@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
 - Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, prefer stable MyBinder links, and document the test matrix by optional extras.
 - Typing: add a generated `r3xa_api/core.pyi` stub plus a `py.typed` marker so schema-driven guided helpers are visible to IDEs and static type checkers.
+- Developer docs: explain how the generated `core.pyi` stub, `py.typed`, and `make generate-stubs` keep IDE signatures aligned with the schema-driven guided helpers.
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
 - Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.4.4`).
 
