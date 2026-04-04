@@ -10,7 +10,8 @@ dependencies = [
 license = {text = "GPL-2.0-or-later"}
 
 [project.urls]
-Homepage = "https://gitlab.com/photomecanics/r3xa"
+Homepage = "https://github.com/jeffwitz/R3XA_API"
+Upstream = "https://gitlab.com/photomecanics/r3xa"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "datamodel-code-generator>=0.25"]

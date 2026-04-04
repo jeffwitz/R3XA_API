@@ -2,7 +2,7 @@
 
 Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modifier le schéma JSON.
 
-## P0 — Hygiène dépôt / archive (immédiat)
+## P0 — Hygiène dépôt / archive — **fait**
 
 - Nettoyer définitivement les artefacts générés :
   - `docs/_build/`
@@ -15,7 +15,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 **Critère de validation :**
 - Clone propre + tests OK + archive légère sans fichiers générés.
 
-## P1 — Stabilisation graphes (priorité haute)
+## P1 — Stabilisation graphes — **fait**
 
 - Conserver Graphviz (`dot`) comme moteur principal de layout.
 - Utiliser le fallback uniquement si `dot` est absent.
@@ -26,7 +26,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 **Critère de validation :**
 - Sorties stables entre exécutions, sans régression visuelle majeure sur les cas de référence.
 
-## P2 — Simplification API typée (priorité haute)
+## P2 — Simplification API typée — **fait**
 
 - Permettre à `R3XAFile` d’accepter directement des objets Pydantic.
 - Conserver compatibilité totale avec l’API dict actuelle.
@@ -35,7 +35,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 **Critère de validation :**
 - Un même flux de création fonctionne en mode dict et en mode typé.
 
-## P3 — Réduction du boilerplate `core.py` (priorité moyenne)
+## P3 — Réduction du boilerplate `core.py` — **fait**
 
 - Réduire les helpers redondants en les générant depuis le schéma (ou un mapping dérivé).
 - Conserver manuellement seulement les helpers les plus utilisés / lisibles.
@@ -43,7 +43,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 **Critère de validation :**
 - Moins de duplication, API publique inchangée ou clairement versionnée.
 
-## P4 — Documentation technique ciblée (priorité moyenne)
+## P4 — Documentation technique ciblée — **fait**
 
 - Documenter explicitement :
   - moteur graphe principal vs fallback
@@ -53,11 +53,18 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 **Critère de validation :**
 - Un nouveau contributeur peut reproduire l’environnement et le pipeline sans ambiguïté.
 
-## Ordre d'exécution recommandé
+## Etat actuel
 
-1. P0  
-2. P1  
-3. P2  
-4. P3  
-5. P4
+- `make clean-artifacts` et `make source-archive` existent et sont documentes.
+- Les graphes de reference (`dic_pipeline`, `qi_hu`) sont testes et regenerables.
+- `R3XAFile` accepte directement les objets Pydantic.
+- Les helpers guides sont derives du schema et exposes aux IDE via `core.pyi`.
+- Le workflow developpeur (modele, stub, spec, tests, archive) est documente.
 
+## Suite utile
+
+- Ce plan est globalement termine.
+- Les sujets restants relevent plutot:
+  - de l'hygiene documentaire continue;
+  - de la stabilisation de l'API publique;
+  - ou du chantier v2.0 autour des helpers guides.

@@ -121,7 +121,8 @@ For most users, the public API now boils down to three entry points:
    - `save(...)`
 
 3. **Load, edit, and save a reusable registry item**
-   - `Registry.get_item(...)`
+   - `Registry.load(...)` for plain dict access
+   - `Registry.get_item(...)` for a `RegistryItem` wrapper
    - `RegistryItem.merge(...)`
    - `RegistryItem.validate()` / `RegistryItem.save(...)`
 
@@ -224,7 +225,7 @@ Optional static export (no backend):
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.4.4?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.4.7?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.
@@ -233,7 +234,7 @@ Run on MyBinder (no local install):
 ## Web UI (v0)
 Install extras and run a minimal FastAPI shell:
 ```bash
-pip install -e .[web,dev]
+pip install -e ".[web,dev]"
 ./.venv/bin/uvicorn web.app.main:app --reload --port 8002
 ```
 Then open `http://127.0.0.1:8002/`.

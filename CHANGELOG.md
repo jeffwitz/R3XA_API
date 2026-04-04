@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
 - Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.4.4`).
 - Internal planning: refresh `docs/internal/PLAN_ACTION_API_ERGO.md` so completed ergonomics work and remaining v2 topics are tracked accurately.
+- Documentation/meta: update Binder links to `v1.4.7`, clarify GitHub as the public repository with GitLab as upstream, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
 
 ## [1.4.0] - 2026-04-03
 - Start the next development cycle after the `1.3.0` release.

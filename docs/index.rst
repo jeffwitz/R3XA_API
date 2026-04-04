@@ -38,7 +38,8 @@ R3XA: Toward a metadata standard for experimental (photo)mechanics datasets - Je
 Credits and origin
 ------------------
 - Initial implementation by **E. Roubin**, based on a shared specification led by **J‑C. Passieux**.
-- Original repository: ``https://gitlab.com/photomecanics/r3xa``
+- Original upstream repository: ``https://gitlab.com/photomecanics/r3xa``
+- Current public repository: ``https://github.com/jeffwitz/R3XA_API``
 
 Installation profiles
 ---------------------
