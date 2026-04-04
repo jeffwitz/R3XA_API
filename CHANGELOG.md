@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.6.0.dev0] - 2026-04-04
 - Start the next development cycle after the `1.5.0` release.
-- Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.1`).
+- Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.2`).
 - Tests: make `tests/test_dev_cli.py` hermetic by simulating a project-local `.venv` instead of depending on the contributor's real environment.
 
 ## [1.5.0] - 2026-04-04
