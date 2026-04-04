@@ -207,6 +207,11 @@ This example writes:
 Reusable registry key:
 - `data_sources/camera/example_generated_camera`
 
+Built-in registry templates worth knowing:
+- `settings/generic/instron_5800`: generic testing-machine setting template.
+- `data_sets/list/camera_images_template`: minimal camera image list template.
+- `data_sets/file/tabular_timeseries_template`: minimal tabular time-series file template.
+
 ## 4) Loading an existing file and saving it again
 File: `examples/python/load_edit_save.py`
 
@@ -232,6 +237,12 @@ Key ideas:
 
 This example writes:
 - `examples/artifacts/registry_camera_merged.json`
+
+See also:
+- `examples/python/registry_usage.py` for the smaller `load_validated(...)` + `get_item(...)` workflow.
+- `registry/data_sets/list/camera_images_template.json`
+- `registry/data_sets/file/tabular_timeseries_template.json`
+- `registry/settings/generic/instron_5800.json`
 
 ## 6) Typed DIC pipeline
 File: `examples/python/typed_dic_pipeline.py`

@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.9] - 2026-04-04
+- Examples/docs: fix the `qi_hu_from_json_literal.py` SHA-256 guard, add a regression test for the literal Qi Hu export, document shipped registry templates, and align `registry_usage.py` with the preferred `load_validated(...)` registry API.
+
 ## [1.4.8] - 2026-04-04
 - Documentation/meta: update Binder links to `v1.4.7`, clarify GitHub as the public repository with GitLab as upstream, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
 

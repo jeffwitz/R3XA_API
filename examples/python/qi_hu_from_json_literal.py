@@ -8,7 +8,7 @@ from pathlib import Path
 from r3xa_api import R3XAFile
 
 SOURCE_PATH = 'examples/artifacts/qi_hu_from_scratch.json'
-SOURCE_SHA256 = 'cd927f90006e091ee40121400b26263b9bc9473237ff3f51e92152c6f82229e5'
+SOURCE_SHA256 = '587278ed9eda09b5929b7fb7b7c2b4550171089b5edd6b2bd226d8c9d26c6db9'
 DEFAULT_OUTPUT = 'examples/artifacts/qi_hu_from_json_literal.json'
 
 parser = argparse.ArgumentParser(
