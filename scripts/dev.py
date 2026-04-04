@@ -26,7 +26,14 @@ def _project_python() -> str:
     )
 
 
-PYTHON = _project_python()
+def project_python() -> str:
+    return _project_python()
+
+
+class ShowPythonAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):  # type: ignore[override]
+        print(project_python())
+        parser.exit()
 
 
 def _run(*args: str) -> None:
@@ -41,8 +48,9 @@ def _run_or_print(args: tuple[str, ...], *, dry_run: bool) -> None:
 
 
 def cmd_generate_spec(_: argparse.Namespace) -> None:
+    python = project_python()
     _run(
-        PYTHON,
+        python,
         "tools/generate_spec.py",
         "r3xa_api/resources/schema.json",
         "docs/specification.md",
@@ -50,13 +58,15 @@ def cmd_generate_spec(_: argparse.Namespace) -> None:
 
 
 def cmd_build_docs(args: argparse.Namespace) -> None:
+    python = project_python()
     cmd_generate_spec(args)
-    _run(PYTHON, "-m", "sphinx", "-b", "html", "docs", "docs/_build/html")
+    _run(python, "-m", "sphinx", "-b", "html", "docs", "docs/_build/html")
 
 
 def cmd_generate_models(_: argparse.Namespace) -> None:
+    python = project_python()
     _run(
-        PYTHON,
+        python,
         "-m",
         "datamodel_code_generator",
         "--input",
@@ -76,16 +86,17 @@ def cmd_generate_models(_: argparse.Namespace) -> None:
         "--disable-timestamp",
         "--no-use-union-operator",
     )
-    _run(PYTHON, "scripts/postprocess_models.py")
+    _run(python, "scripts/postprocess_models.py")
 
 
 def cmd_generate_stubs(_: argparse.Namespace) -> None:
-    _run(PYTHON, "scripts/generate_core_stub.py")
+    _run(project_python(), "scripts/generate_core_stub.py")
 
 
 def cmd_notebook_dic(args: argparse.Namespace) -> None:
+    python = project_python()
     command = [
-        PYTHON,
+        python,
         "-m",
         "marimo",
         "edit",
@@ -97,8 +108,9 @@ def cmd_notebook_dic(args: argparse.Namespace) -> None:
 
 
 def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
+    python = project_python()
     _run(
-        PYTHON,
+        python,
         "-m",
         "marimo",
         "export",
@@ -111,10 +123,11 @@ def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
 
 
 def cmd_run_web(args: argparse.Namespace) -> None:
+    python = project_python()
     if args.install:
-        _run(PYTHON, "-m", "pip", "install", "-e", ".[web]")
+        _run(python, "-m", "pip", "install", "-e", ".[web]")
     command = [
-        PYTHON,
+        python,
         "-m",
         "uvicorn",
         args.app,
@@ -177,12 +190,13 @@ def cmd_source_archive(_: argparse.Namespace) -> None:
 
 
 def cmd_setup_dev(args: argparse.Namespace) -> None:
+    python = project_python()
     steps: list[tuple[str, ...]] = []
 
     if not args.skip_install:
         steps.append(
             (
-                PYTHON,
+                python,
                 "-m",
                 "pip",
                 "install",
@@ -192,7 +206,7 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
         )
         steps.append(
             (
-                PYTHON,
+                python,
                 "-m",
                 "pip",
                 "install",
@@ -205,7 +219,7 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
     steps.extend(
         [
             (
-                PYTHON,
+                python,
                 "-m",
                 "datamodel_code_generator",
                 "--input",
@@ -225,8 +239,8 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
                 "--disable-timestamp",
                 "--no-use-union-operator",
             ),
-            (PYTHON, "scripts/postprocess_models.py"),
-            (PYTHON, "scripts/generate_core_stub.py"),
+            (python, "scripts/postprocess_models.py"),
+            (python, "scripts/generate_core_stub.py"),
         ]
     )
 
@@ -234,18 +248,18 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
         steps.extend(
             [
                 (
-                    PYTHON,
+                    python,
                     "tools/generate_spec.py",
                     "r3xa_api/resources/schema.json",
                     "docs/specification.md",
                 ),
-                (PYTHON, "-m", "sphinx", "-b", "html", "docs", "docs/_build/html"),
+                (python, "-m", "sphinx", "-b", "html", "docs", "docs/_build/html"),
             ]
         )
     else:
         steps.append(
             (
-                PYTHON,
+                python,
                 "tools/generate_spec.py",
                 "r3xa_api/resources/schema.json",
                 "docs/specification.md",
@@ -262,8 +276,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--python",
-        action="version",
-        version=PYTHON,
+        nargs=0,
+        action=ShowPythonAction,
         help="show the Python interpreter used by the task runner",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)

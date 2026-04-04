@@ -6,6 +6,8 @@ import shlex
 from contextlib import redirect_stdout
 from pathlib import Path
 
+import pytest
+
 
 def _load_dev_module():
     script_path = Path("scripts/dev.py")
@@ -41,16 +43,31 @@ def test_dev_cli_exposes_cross_platform_commands():
 
 def test_dev_cli_uses_a_real_python_interpreter():
     module = _load_dev_module()
-    python_path = Path(module.PYTHON)
+    python_path = Path(module.project_python())
 
     assert python_path.exists()
     assert python_path.is_file()
     assert ".venv" in python_path.parts
 
 
+def test_dev_cli_parser_does_not_require_a_venv(tmp_path: Path):
+    module = _load_dev_module()
+    original_root = module.ROOT
+    module.ROOT = tmp_path
+
+    try:
+        parser = module.build_parser()
+        assert parser is not None
+        with pytest.raises(RuntimeError, match="Project virtual environment not found"):
+            module.project_python()
+    finally:
+        module.ROOT = original_root
+
+
 def test_setup_dev_dry_run_prints_bootstrap_plan():
     module = _load_dev_module()
     stdout = io.StringIO()
+    python = module.project_python()
 
     with redirect_stdout(stdout):
         exit_code = module.main(["setup-dev", "--dry-run"])
@@ -59,7 +76,7 @@ def test_setup_dev_dry_run_prints_bootstrap_plan():
     bootstrap_line = " ".join(
         shlex.quote(part)
         for part in (
-            module.PYTHON,
+            python,
             "-m",
             "pip",
             "install",
@@ -70,7 +87,7 @@ def test_setup_dev_dry_run_prints_bootstrap_plan():
     install_line = " ".join(
         shlex.quote(part)
         for part in (
-            module.PYTHON,
+            python,
             "-m",
             "pip",
             "install",

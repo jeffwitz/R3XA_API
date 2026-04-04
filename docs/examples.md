@@ -242,7 +242,7 @@ This example writes:
 - `examples/artifacts/registry_camera_merged.json`
 
 See also:
-- `examples/python/registry_usage.py` for the smaller `load_validated(...)` + `get_item(...)` workflow.
+- {ghsrc}`examples/python/registry_usage.py` for the smaller `load_validated(...)` + `get_item(...)` workflow.
 - `registry/data_sets/list/camera_images_template.json`
 - `registry/data_sets/file/tabular_timeseries_template.json`
 - `registry/settings/generic/instron_5800.json`
