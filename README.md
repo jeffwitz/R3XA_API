@@ -251,7 +251,7 @@ python scripts/dev.py notebook-dic-export
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.5.1?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.5.2?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.

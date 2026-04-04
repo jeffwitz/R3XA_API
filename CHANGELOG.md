@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.2] - 2026-04-04
+- Tests: make `tests/test_dev_cli.py` hermetic by simulating a project-local `.venv` instead of depending on the contributor's real environment.
+
 ## [1.5.1] - 2026-04-04
 - Developer tooling: resolve the project `.venv` interpreter lazily in `scripts/dev.py` so the CLI module and its tests can be imported without a pre-existing virtual environment.
 - Documentation: convert the remaining inline source references in `docs/examples.md` and `docs/qi_case.md` to `{ghsrc}` links.
