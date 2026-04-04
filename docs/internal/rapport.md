@@ -106,3 +106,22 @@ Option C (évolution de schéma):
 
 - Étendre le schéma pour autoriser `capacity` / `uncertainty` sur `data_sources/generic` si c’est une convention souhaitée à long terme.
 
+## Mise à jour — 2026-04-04
+
+Statut actuel :
+
+- **VALID**
+
+La cause de l’invalidité originale — refus de `capacity` et `uncertainty` sur `data_sources/generic` — a été résolue par l’évolution du schéma en version **1.3.3**.
+
+Le choix retenu correspond à l’**option C** du rapport original :
+
+- évolution du schéma pour autoriser `uncertainty` sur `data_sources/generic`
+
+Le fichier est désormais couvert par un test automatisé :
+
+- `tests/test_examples.py::test_essai_torsion_validates`
+
+Validation confirmée contre le schéma `2024.7.1` embarqué dans :
+
+- `r3xa_api/resources/schema.json`
