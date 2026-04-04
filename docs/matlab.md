@@ -46,15 +46,15 @@ camera = r3xa_file.add_camera_source( ...
     "exposure", unit("exposure", 2.0, "ms", 1.0) ...
 );
 
-images = r3xa_file.add_image_set_list( ...
+images = r3xa_file.add_list_data_set( ...
     "graylevel images", ...
     "images taken by the CCD camera", ...
-    "images/", ...
     "image/tiff", ...
     {camera.id}, ...
     unit("time_reference", 0.0, "s", 1.0), ...
     [0.0, 1.0], ...
-    {"zoom-0050_1.tif", "zoom-0070_1.tif"} ...
+    {"zoom-0050_1.tif", "zoom-0070_1.tif"}, ...
+    "path", "images/" ...
 );
 
 r3xa_file.save("hello-world.json");
@@ -63,6 +63,15 @@ r3xa_file.save("hello-world.json");
 ## MATLAB vs Python helper signatures
 The MATLAB binding currently keeps a small handwritten helper layer. It is intentionally close to the
 Python API, but not identical.
+
+General rule:
+
+- schema-required fields are positional in MATLAB helpers
+- optional fields go through trailing name/value arguments (`varargin`)
+- low-level methods remain available for every kind:
+  - `add_setting(kind, ...)`
+  - `add_data_source(kind, ...)`
+  - `add_data_set(kind, ...)`
 
 In particular, `add_camera_source(...)` is stricter in MATLAB:
 
@@ -76,12 +85,79 @@ schema fields passed through `**extra` in Python.
 
 When switching from Python to MATLAB, use the MATLAB examples in this page as the reference call signature.
 
+## `unit()` signature difference
+
+Python `unit()` requires only the `unit` keyword:
+
+```python
+unit(unit="mm")
+unit(title="width", value=30.0, unit="mm")
+```
+
+MATLAB `unit()` keeps `title`, `value`, and `unit_name` as positional parameters:
+
+```matlab
+r3xa.unit("width", 30.0, "mm")
+r3xa.unit("width", 30.0, "mm", 1.0)
+```
+
+This divergence is intentional. MATLAB does not support keyword-only arguments, and changing the
+existing signature would break current MATLAB scripts.
+
 ## What is implemented
-- `r3xa.R3XAFile` (constructor + add_* helpers)
-- `r3xa.new_item`, `r3xa.unit`, `r3xa.data_set_file`
+- `r3xa.R3XAFile` constructor, header editing, JSON serialization, and save
+- Low-level item builders:
+  - `add_setting(kind, ...)`
+  - `add_data_source(kind, ...)`
+  - `add_data_set(kind, ...)`
+- Guided settings helpers:
+  - `add_generic_setting(...)`
+  - `add_specimen_setting(...)`
+  - `add_stereorig_setting(...)`
+  - `add_testing_machine_setting(...)`
+- Guided data source helpers:
+  - `add_camera_source(...)`
+  - `add_dic_measurement_source(...)`
+  - `add_generic_source(...)`
+  - `add_identification_source(...)`
+  - `add_infrared_source(...)`
+  - `add_load_cell_source(...)`
+  - `add_mechanical_analysis_source(...)`
+  - `add_point_temperature_source(...)`
+  - `add_strain_computation_source(...)`
+  - `add_strain_gauge_source(...)`
+  - `add_tomograph_source(...)`
+- Guided data set helpers:
+  - `add_file_data_set(...)`
+  - `add_generic_data_set(...)`
+  - `add_list_data_set(...)`
+- Legacy MATLAB aliases:
+  - `add_image_set_list(...)`
+  - `add_image_set_file(...)`
+- Core helper functions:
+  - `r3xa.new_item`
+  - `r3xa.unit`
+  - `r3xa.data_set_file`
+  - `r3xa.ensure_data_set_file`
 - `r3xa.schema_version` (reads `r3xa_api/resources/schema.json`)
+
+## Legacy aliases
+
+The canonical data set helper names now match the Python API:
+
+- `add_list_data_set(...)`
+- `add_file_data_set(...)`
+
+For backward compatibility, the legacy MATLAB names remain available:
+
+- `add_image_set_list(...)`
+- `add_image_set_file(...)`
+
+`add_image_set_list(...)` keeps the historical positional `path` argument. Use it only when you need
+to preserve existing MATLAB scripts unchanged.
 
 ## What is intentionally omitted
 - Graph generation backends
 - JSON schema validation
 - Registry tooling
+- JSON loading / `from_dict()`
