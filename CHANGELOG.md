@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.10] - 2026-04-04
+- Documentation: add a public engineering contract page that explains the API and engineering choices from both user and developer perspectives.
+
 ## [1.4.9] - 2026-04-04
 - Examples/docs: fix the `qi_hu_from_json_literal.py` SHA-256 guard, add a regression test for the literal Qi Hu export, document shipped registry templates, and align `registry_usage.py` with the preferred `load_validated(...)` registry API.
 
