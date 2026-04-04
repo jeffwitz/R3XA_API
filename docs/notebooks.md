@@ -1,4 +1,7 @@
-# Notebooks (Marimo)
+# Tutorial — Interactive DIC notebook (Marimo)
+
+This page is the main **learn-by-doing tutorial entry point** for the project.
+If you want to understand the library by running a real workflow, start here.
 
 This page explains how to run the **base DIC notebook** with a real Python runtime.
 

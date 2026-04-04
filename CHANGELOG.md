@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.5.0.dev0] - 2026-04-03
 - Start the next development cycle after the `1.4.0` release.
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
+- Documentation structure: expose the current Diátaxis roles more clearly by turning the notebook into the visible tutorial entry point, re-labeling major pages by purpose, and restructuring the main toctree into Tutorials / How-to / Explanation / Reference sections.
 - Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, prefer stable MyBinder links, and document the test matrix by optional extras.
 - Documentation: add a public engineering contract page that explains the API and engineering choices from both user and developer perspectives.
 - Examples/docs: fix the `qi_hu_from_json_literal.py` SHA-256 guard, add a regression test for the literal Qi Hu export, document shipped registry templates, and align `registry_usage.py` with the preferred `load_validated(...)` registry API.

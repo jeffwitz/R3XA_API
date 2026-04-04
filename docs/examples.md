@@ -1,4 +1,7 @@
-# Examples — From Scratch vs Registry
+# Examples and recipes — from scratch vs registry
+
+This page is a **cookbook / how-to guide**.
+Use it when you already know the basics and want a practical script to adapt to your own workflow.
 
 This page shows the **same pipeline** built in two ways:
 1) **From scratch** (explicit creation of every item)

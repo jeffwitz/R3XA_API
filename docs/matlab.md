@@ -1,4 +1,7 @@
-# MATLAB binding (minimal)
+# MATLAB binding reference (minimal)
+
+This page is mostly **reference documentation** for the MATLAB binding.
+Use it when you need the exact supported scope and MATLAB call patterns.
 
 This binding focuses **only on generating R3XA JSON** from MATLAB.  
 No graph generation, no GUI dependencies, and no Python packages required inside MATLAB.
