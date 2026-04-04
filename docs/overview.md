@@ -4,7 +4,8 @@
 
 **Credits and origin**
 - Initial implementation by **E. Roubin**, based on a shared specification led by **J‑C. Passieux**.
-- Original repository: `https://gitlab.com/photomecanics/r3xa`
+- Original upstream repository: `https://gitlab.com/photomecanics/r3xa`
+- Current public repository: `https://github.com/jeffwitz/R3XA_API`
 
 ## Why R3XA
 Researchers often lose crucial experimental context (camera focal length, calibration targets, acquisition settings). R3XA proposes a **metadata standard** to help remember, reuse, and replicate experiments without inventing a new data format.

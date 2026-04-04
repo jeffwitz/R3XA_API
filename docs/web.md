@@ -16,7 +16,7 @@ This keeps the **core API** (`r3xa_api`) as the single source of truth, while th
 From the project root (using the `.venv` convention):
 
 ```bash
-pip install -e .[web,dev]
+pip install -e ".[web,dev]"
 ./.venv/bin/uvicorn web.app.main:app --reload --port 8002
 ```
 
@@ -59,6 +59,7 @@ dot -V
 ## Links
 
 - Source repo: <https://github.com/jeffwitz/R3XA_API>
+- Original upstream repository: <https://gitlab.com/photomecanics/r3xa>
 - Documentation: <https://r3xa-api.readthedocs.io/en/latest/>
 
 ## API endpoints
