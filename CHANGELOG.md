@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Start the next development cycle after the `1.5.0` release.
 - Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.2`).
 - Tests: make `tests/test_dev_cli.py` hermetic by simulating a project-local `.venv` instead of depending on the contributor's real environment.
+- MATLAB: add the missing guided helpers, introduce canonical `add_list_data_set(...)` / `add_file_data_set(...)` names, and align the MATLAB reference page with the current v1.5 helper surface.
 
 ## [1.5.0] - 2026-04-04
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.

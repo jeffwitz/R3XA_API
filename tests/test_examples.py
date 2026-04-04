@@ -147,3 +147,13 @@ def test_essai_torsion_validates() -> None:
         payload = json.load(f)
 
     validate(payload)
+
+
+def test_qi_hu_matlab_artifact_validates() -> None:
+    root = Path(__file__).parents[1]
+    path = root / "examples" / "artifacts" / "qi_hu_from_scratch_matlab.json"
+
+    with path.open("r", encoding="utf-8") as f:
+        payload = json.load(f)
+
+    validate(payload)
