@@ -34,4 +34,4 @@ build-backend = "setuptools.build_meta"
 packages = ["r3xa_api", "r3xa_api.webcore"]
 
 [tool.setuptools.package-data]
-r3xa_api = ["resources/schema.json"]
+r3xa_api = ["resources/schema.json", "py.typed", "*.pyi"]
