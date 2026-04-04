@@ -6,7 +6,7 @@ If you want to understand the library by running a real workflow, start here.
 This page explains how to run the **base DIC notebook** with a real Python runtime.
 
 Notebook source:
-- `examples/notebooks/dic_base_marimo.py`
+- {ghsrc}`examples/notebooks/dic_base_marimo.py`
 
 Notebook features:
 - **Load JSON from PC** (upload button)
@@ -19,7 +19,7 @@ Notebook features:
 
 ### Install notebook dependencies
 ```bash
-./.venv/bin/pip install -r requirements-notebook.txt
+python -m pip install -r requirements-notebook.txt
 ```
 
 ### Graphviz requirement
@@ -39,7 +39,7 @@ dot -V
 
 ### Start Marimo
 ```bash
-./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
+python scripts/dev.py notebook-dic
 ```
 
 Then open the URL printed by Marimo (usually `http://127.0.0.1:2718`).
@@ -64,7 +64,7 @@ In the notebook:
 ## 2) MyBinder (public interactive run)
 
 Open:
-- [Launch notebook on MyBinder](https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.4.7?urlpath=proxy/2718/)
+- [Launch notebook on MyBinder](https://mybinder.org/v2/gh/jeffwitz/R3XA_API/v1.5.0?urlpath=proxy/2718/)
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

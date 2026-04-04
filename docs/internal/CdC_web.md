@@ -332,5 +332,5 @@ Output :
 
   * installation
   * `pip install -e .[web,dev]`
-  * `uvicorn web.app.main:app --reload`
+  * `python scripts/dev.py run-web --port 8002`
   * exemples

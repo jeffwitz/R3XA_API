@@ -8,7 +8,7 @@ MODELS_PATH = Path("r3xa_api/models.py")
 HEADER = (
     "# THIS FILE IS AUTO-GENERATED\n"
     "# Source: r3xa_api/resources/schema.json\n"
-    "# Command: make generate-models\n"
+    "# Command: python scripts/dev.py generate-models\n"
     "# DO NOT EDIT MANUALLY\n"
 )
 

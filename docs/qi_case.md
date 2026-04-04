@@ -5,6 +5,11 @@ Use it after the interactive notebook if you want to study a larger real-world R
 
 This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
 
+Sources:
+- {ghsrc}`examples/python/qi_hu_from_scratch.py`
+- {ghsrc}`examples/python/graph_r3xa.py`
+- {ghsrc}`examples/matlab/qi_hu_from_scratch.m`
+
 ## Context
 The Qi Hu dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
 For more scientific context, see the Qi Hu thesis (LaMCube): `https://theses.hal.science/tel-04993338`.
@@ -37,9 +42,8 @@ The Qi Hu file is built **from scratch in Python** (no input JSON at runtime).
 The script uses **loops** for repetitive file lists (IR frames, calibration series, time grids)
 so the dataset is defined compactly and remains easy to edit.
 
-To generate the R3XA JSON:
+To generate the R3XA JSON from an activated `.venv`:
 ```bash
-. .venv/bin/activate
 PYTHONPATH=. python examples/python/qi_hu_from_scratch.py
 ```
 
@@ -51,7 +55,6 @@ run('path/to/R3XA_API/examples/matlab/qi_hu_from_scratch.m');
 
 Then generate the graph:
 ```bash
-. .venv/bin/activate
 python examples/python/graph_r3xa.py \
   --input examples/artifacts/qi_hu_from_scratch.json \
   --output docs/figures/graph_qi_from_scratch
@@ -95,6 +98,6 @@ The graph encodes **object types** and **data‑flow roles**:
 These styles are defined in `examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
 
 ## Files used
-- Build script: `examples/python/qi_hu_from_scratch.py`
-- Graph tool: `examples/python/graph_r3xa.py`
+- Build script: {ghsrc}`examples/python/qi_hu_from_scratch.py`
+- Graph tool: {ghsrc}`examples/python/graph_r3xa.py`
 - Output SVG: `docs/figures/graph_qi_from_scratch.svg`

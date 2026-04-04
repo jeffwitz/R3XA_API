@@ -9,15 +9,36 @@ Create it once from the project root:
 
 .. code-block:: bash
 
-   python3 -m venv .venv
+   python -m venv .venv
+
+Activate it:
+
+.. code-block:: bash
+
+   # Linux / macOS
    source .venv/bin/activate
+
+   # Windows (PowerShell)
+   .venv\Scripts\Activate.ps1
+
+Then upgrade ``pip``:
+
+.. code-block:: bash
+
    python -m pip install --upgrade pip
 
-On Windows, activate it with:
+Once the environment is activated, the documented ``python ...`` commands are the
+same across Linux, macOS, and Windows.
 
-.. code-block:: bat
+Bootstrap the full contributor environment with one command:
 
-   .venv\Scripts\activate
+.. code-block:: bash
+
+   python scripts/dev.py setup-dev
+
+This installs the editable contributor stack (``dev``, ``docs``, ``typed``,
+``web``, ``notebook``, ``graph_nx``) and regenerates the schema-derived
+artifacts tracked in the repository.
 
 .. raw:: html
 
@@ -49,7 +70,7 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,typed,web,notebook,graph_nx]"
+     pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
 
   .. warning::
 
@@ -77,14 +98,14 @@ Choose one profile from the project root, inside ``.venv``:
   .. code-block:: bash
 
      pip install -e ".[web]"
-     ./.venv/bin/uvicorn web.app.main:app --reload --port 8002
+     python scripts/dev.py run-web --port 8002
 
 - **Notebook** — run the Marimo notebook example:
 
   .. code-block:: bash
 
      pip install -e ".[notebook]"
-     ./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
+     python scripts/dev.py notebook-dic
 
 - **Static graph fallback** — enable the optional NetworkX/Matplotlib renderer:
 
@@ -96,7 +117,13 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,typed,web,notebook,graph_nx]"
+     python scripts/dev.py setup-dev
+
+  If you only want the dependencies without regeneration, the equivalent install is:
+
+  .. code-block:: bash
+
+     pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
 
 .. warning::
 

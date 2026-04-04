@@ -137,3 +137,13 @@ def test_qi_hu_json_literal_script_runs_with_sha_check(tmp_path: Path) -> None:
     with output.open("r", encoding="utf-8") as f:
         payload = json.load(f)
     validate(payload)
+
+
+def test_essai_torsion_validates() -> None:
+    root = Path(__file__).parents[1]
+    path = root / "examples" / "essai-torsion.json"
+
+    with path.open("r", encoding="utf-8") as f:
+        payload = json.load(f)
+
+    validate(payload)

@@ -2,40 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.4.11] - 2026-04-04
+## [1.5.0] - 2026-04-04
+- API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
 - Documentation structure: expose the current Diátaxis roles more clearly by turning the notebook into the visible tutorial entry point, re-labeling major pages by purpose, and restructuring the main toctree into Tutorials / How-to / Explanation / Reference sections.
-
-## [1.4.10] - 2026-04-04
+- Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, prefer stable MyBinder links, and document the test matrix by optional extras.
 - Documentation: add a public engineering contract page that explains the API and engineering choices from both user and developer perspectives.
-
-## [1.4.9] - 2026-04-04
 - Examples/docs: fix the `qi_hu_from_json_literal.py` SHA-256 guard, add a regression test for the literal Qi Hu export, document shipped registry templates, and align `registry_usage.py` with the preferred `load_validated(...)` registry API.
-
-## [1.4.8] - 2026-04-04
-- Documentation/meta: update Binder links to `v1.4.7`, clarify GitHub as the public repository with GitLab as upstream, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
-
-## [1.4.7] - 2026-04-04
-- Internal planning: refresh `docs/internal/PLAN_ACTION_API_ERGO.md` so completed ergonomics work and remaining v2 topics are tracked accurately.
-
-## [1.4.6] - 2026-04-04
-- Developer docs: explain how the generated `core.pyi` stub, `py.typed`, and `make generate-stubs` keep IDE signatures aligned with the schema-driven guided helpers.
-
-## [1.4.5] - 2026-04-04
-- Typing: ship a generated `r3xa_api/core.pyi` stub plus a `py.typed` marker so schema-driven guided helpers are visible to IDEs and static type checkers.
-
-## [1.4.4] - 2026-04-03
+- Typing: add a generated `r3xa_api/core.pyi` stub plus a `py.typed` marker so schema-driven guided helpers are visible to IDEs and static type checkers.
+- Developer docs: explain how the generated `core.pyi` stub, `py.typed`, and the cross-platform `python scripts/dev.py generate-stubs` flow keep IDE signatures aligned with the schema-driven guided helpers.
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
-
-## [1.4.3] - 2026-04-03
-- Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, document the test matrix by optional extras, and keep the public MyBinder links pinned to the latest stable tag.
-
-## [1.4.2] - 2026-04-03
-- API stability: narrow the recommended top-level surface, document the public 1.x contract in `STABILITY.md`, and lock the guided-helper contract with dedicated public API tests.
-
-## [1.4.1] - 2026-04-03
-- Registry ergonomics: add `RegistryItem` with item-level `merge(...)`, `validate(...)`, `save(...)`, and `save_to(...)`.
-- Registry API: add `Registry.get_item(...)` and `Registry.wrap(...)`, and make `Registry.merge(...)` return a bound item wrapper.
-- Examples/docs: update the registry workflows and homepage quickstart to use the new item-centered API.
+- Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.4.4`).
+- Internal planning: refresh `docs/internal/PLAN_ACTION_API_ERGO.md` so completed ergonomics work and remaining v2 topics are tracked accurately.
+- Documentation/meta: update Binder links to `v1.4.7`, clarify GitHub as the public repository with GitLab as upstream, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
+- Validation: lock `examples/essai-torsion.json` behind an automated validation test and update the internal traceability report now that the schema accepts the resolved generic-source fields.
+- Developer tooling: replace the old shell wrappers and `Makefile` entry points with the cross-platform `python scripts/dev.py ...` runner, add `setup-dev` for one-shot contributor bootstrap, and verify the workflow from a fresh clone.
 
 ## [1.4.0] - 2026-04-03
 - Start the next development cycle after the `1.3.0` release.

@@ -1,6 +1,6 @@
 <!-- THIS FILE IS AUTO-GENERATED -->
 <!-- Source: r3xa_api/resources/schema.json -->
-<!-- Command: make generate-spec -->
+<!-- Command: python scripts/dev.py generate-spec -->
 <!-- DO NOT EDIT MANUALLY -->
 
 # R3XA Specification
