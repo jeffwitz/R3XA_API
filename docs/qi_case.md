@@ -95,7 +95,7 @@ The graph encodes **object types** and **data‑flow roles**:
 - **Input flow** (`input_data_sets` → data_source): black
 - **Output flow** (data_source → data_set): black  
 
-These styles are defined in `examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
+These styles are defined in {ghsrc}`examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
 
 ## Files used
 - Build script: {ghsrc}`examples/python/qi_hu_from_scratch.py`
