@@ -1,6 +1,6 @@
 # THIS FILE IS AUTO-GENERATED
 # Source: r3xa_api/resources/schema.json
-# Command: make generate-models
+# Command: python scripts/dev.py generate-models
 # DO NOT EDIT MANUALLY
 
 from __future__ import annotations

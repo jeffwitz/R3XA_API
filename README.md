@@ -13,16 +13,41 @@ Documentation commands assume a local virtual environment exists at `.venv` (pro
 Create it once from the project root:
 
 ```bash
-python3 -m venv .venv
+python -m venv .venv
+```
+
+Activate it:
+
+```bash
+# Linux / macOS
 source .venv/bin/activate
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+```
+
+Then upgrade `pip`:
+
+```bash
 python -m pip install --upgrade pip
 ```
 
-On Windows:
+Once the environment is activated, the documented `python ...` commands are the
+same across Linux, macOS, and Windows.
 
-```bat
-.venv\Scripts\activate
+Bootstrap the full contributor environment with one command:
+
+```bash
+python scripts/dev.py setup-dev
 ```
+
+This installs the editable contributor stack (`dev`, `docs`, `typed`, `web`,
+`notebook`, `graph_nx`) and regenerates the schema-derived artifacts tracked in
+the repository. The bootstrap uses `pip install --no-build-isolation -e ...`
+so it works cleanly inside an already-created project `.venv` without trying to
+re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
+environment, it first bootstraps `pip`, `setuptools`, and `wheel`, because
+editable installs using the setuptools backend cannot start without them.
 
 ## Quick start
 ```python
@@ -202,7 +227,7 @@ r3xa.validate()
 Regenerate typed models after schema updates:
 
 ```bash
-make generate-models
+python scripts/dev.py generate-models
 ```
 
 ## Marimo notebook (base DIC example)
@@ -215,14 +240,14 @@ pip install -r requirements-notebook.txt
 
 Run the notebook:
 ```bash
-./.venv/bin/marimo edit examples/notebooks/dic_base_marimo.py
+python scripts/dev.py notebook-dic
 ```
 
 Notebook graph output uses Graphviz SVG (`dot` executable required).
 
 Optional static export (no backend):
 ```bash
-./.venv/bin/marimo export html examples/notebooks/dic_base_marimo.py -o docs/figures/dic_base_marimo/index.html --force
+python scripts/dev.py notebook-dic-export
 ```
 
 Run on MyBinder (no local install):
@@ -236,7 +261,7 @@ Run on MyBinder (no local install):
 Install extras and run a minimal FastAPI shell:
 ```bash
 pip install -e ".[web,dev]"
-./.venv/bin/uvicorn web.app.main:app --reload --port 8002
+python scripts/dev.py run-web --port 8002
 ```
 Then open `http://127.0.0.1:8002/`.
 
@@ -289,15 +314,27 @@ python examples/python/graph_r3xa.py \
 ```
 
 ## Developer workflow (local)
-- Generate typed models after schema updates: `make generate-models`
-- Regenerate IDE/type-checker stubs for guided helpers: `make generate-stubs`
-- Regenerate schema spec markdown: `make generate-spec`
-- Clean generated artifacts before packaging: `make clean-artifacts`
-- Build clean source zip from git tracked files: `make source-archive`
-- Full test run: `./.venv/bin/pytest -q`
+- Bootstrap the full contributor environment: `python scripts/dev.py setup-dev`
+- Generate typed models after schema updates: `python scripts/dev.py generate-models`
+- Regenerate IDE/type-checker stubs for guided helpers: `python scripts/dev.py generate-stubs`
+- Regenerate schema spec markdown: `python scripts/dev.py generate-spec`
+- Build the HTML docs: `python scripts/dev.py build-docs`
+- Clean generated artifacts before packaging: `python scripts/dev.py clean-artifacts`
+- Build clean source zip from git tracked files: `python scripts/dev.py source-archive`
+- Full test run: `python -m pytest -q`
+
+`python scripts/dev.py ...` is the canonical cross-platform workflow.
+
+`setup-dev` is the fastest way to provision a fresh contributor `.venv`. If you
+only want the dependencies without the regeneration steps, the equivalent install is:
+
+```bash
+pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
+```
 
 Test totals depend on installed extras:
 - `.[dev]` covers the core SDK suite
+- `.[docs]` adds the Sphinx documentation toolchain
 - `.[typed]` adds typed-model tests
 - `.[web]` adds web/API tests
 - `.[graph_nx]` adds the NetworkX static graph backend tests

@@ -162,7 +162,7 @@ def _generate_markdown(schema: dict[str, Any], schema_path: Path) -> str:
     lines: list[str] = [
         "<!-- THIS FILE IS AUTO-GENERATED -->",
         f"<!-- Source: {_display_path(schema_path)} -->",
-        "<!-- Command: make generate-spec -->",
+        "<!-- Command: python scripts/dev.py generate-spec -->",
         "<!-- DO NOT EDIT MANUALLY -->",
         "",
         "# R3XA Specification",

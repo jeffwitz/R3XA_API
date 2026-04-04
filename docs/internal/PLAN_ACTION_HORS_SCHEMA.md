@@ -10,7 +10,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
   - `build/`, `dist/`, `*.egg-info/`
   - `__pycache__/`, `*.pyc`
 - Verrouiller `.gitignore` pour éviter les réintroductions.
-- Ajouter une cible de nettoyage (`make clean-artifacts`) et une commande d’archive source propre.
+- Ajouter une commande de nettoyage (`python scripts/dev.py clean-artifacts`) et une commande d’archive source propre.
 
 **Critère de validation :**
 - Clone propre + tests OK + archive légère sans fichiers générés.
@@ -55,7 +55,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 
 ## Etat actuel
 
-- `make clean-artifacts` et `make source-archive` existent et sont documentes.
+- `python scripts/dev.py clean-artifacts` et `python scripts/dev.py source-archive` existent et sont documentes.
 - Les graphes de reference (`dic_pipeline`, `qi_hu`) sont testes et regenerables.
 - `R3XAFile` accepte directement les objets Pydantic.
 - Les helpers guides sont derives du schema et exposes aux IDE via `core.pyi`.

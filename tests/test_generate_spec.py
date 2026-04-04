@@ -40,7 +40,7 @@ def test_output_is_markdown(tmp_path):
     text = output_path.read_text(encoding="utf-8")
     assert text.startswith("<!-- THIS FILE IS AUTO-GENERATED -->")
     assert "<!-- Source: " in text
-    assert "<!-- Command: make generate-spec -->" in text
+    assert "<!-- Command: python scripts/dev.py generate-spec -->" in text
 
 
 def test_sections_present(tmp_path):

@@ -39,11 +39,11 @@ pip install -e ".[typed]"
 Typed models are generated from the schema:
 
 ```bash
-make generate-models
+python scripts/dev.py generate-models
 ```
 
 Generated file:
-- [r3xa_api/models.py](https://github.com/jeffwitz/R3XA_API/blob/develop/r3xa_api/models.py) (auto-generated; do not edit by hand)
+- {ghsrc}`r3xa_api/models.py` (auto-generated; do not edit by hand)
 
 ## Public typed entry points
 
@@ -55,7 +55,7 @@ Generated file:
 
 ## `dic_pipeline` in typed mode
 
-This follows the same logic as [examples/python/complex_dic_pipeline.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/complex_dic_pipeline.py), but creates typed objects first.
+This follows the same logic as {ghsrc}`examples/python/complex_dic_pipeline.py`, but creates typed objects first.
 
 ```python
 from r3xa_api import R3XAFile, from_model, models
@@ -159,12 +159,12 @@ r3xa.save("examples/artifacts/dic_pipeline_typed.json")
 
 The repository includes a typed example script:
 
-- [examples/python/typed_dic_pipeline.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/typed_dic_pipeline.py)
+- {ghsrc}`examples/python/typed_dic_pipeline.py`
 
 Run it from project root:
 
 ```bash
-./.venv/bin/python examples/python/typed_dic_pipeline.py
+python examples/python/typed_dic_pipeline.py
 ```
 
 Generated output:

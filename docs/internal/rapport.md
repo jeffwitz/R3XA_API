@@ -21,7 +21,7 @@ Vérification complémentaire:
 
 ```bash
 cd /home/jeff/Code/R3XA/R3XA_API
-./.venv/bin/python - <<'PY'
+python - <<'PY'
 import json
 from pathlib import Path
 from r3xa_api.validate import validate

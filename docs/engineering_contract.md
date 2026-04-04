@@ -318,16 +318,22 @@ In short:
 Before publishing:
 
 1. verify that the runtime schema is the intended one;
-2. regenerate models if needed:
-   - `make generate-models`
-3. regenerate IDE stubs if needed:
-   - `make generate-stubs`
-4. regenerate the specification page:
-   - `make generate-spec`
-5. run the tests:
-   - `./.venv/bin/pytest -q`
-6. rebuild the docs:
-   - `./docs/build.sh`
+2. bootstrap or refresh the contributor environment if needed:
+   - `python scripts/dev.py setup-dev`
+3. regenerate models if needed:
+   - `python scripts/dev.py generate-models`
+4. regenerate IDE stubs if needed:
+   - `python scripts/dev.py generate-stubs`
+5. regenerate the specification page:
+   - `python scripts/dev.py generate-spec`
+6. run the tests:
+   - `python -m pytest -q`
+7. rebuild the docs:
+   - `python scripts/dev.py build-docs`
+
+`setup-dev` is the one-shot bootstrap command. The later steps remain relevant
+when you only want to refresh one artifact instead of reinstalling the full
+contributor stack.
 
 This is not bureaucracy. It is the mechanism that prevents silent drift between:
 

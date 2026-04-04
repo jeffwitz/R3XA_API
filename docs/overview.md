@@ -289,7 +289,7 @@ camera = new_item(
 registry.wrap(camera, tree_path="data_sources/camera/example_generated_camera").save()
 ```
 
-This is the pattern used in [examples/python/create_registry_camera.py](https://github.com/jeffwitz/R3XA_API/blob/develop/examples/python/create_registry_camera.py).
+This is the pattern used in {ghsrc}`examples/python/create_registry_camera.py`.
 
 ### How to reuse and override a registry item
 ```python

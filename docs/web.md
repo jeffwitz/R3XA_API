@@ -17,7 +17,7 @@ From the project root (using the `.venv` convention):
 
 ```bash
 pip install -e ".[web,dev]"
-./.venv/bin/uvicorn web.app.main:app --reload --port 8002
+python scripts/dev.py run-web --port 8002
 ```
 
 Open: `http://127.0.0.1:8002/`
