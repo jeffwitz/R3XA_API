@@ -170,6 +170,7 @@ See `STABILITY.md` for the compact policy.
 - `docs/validation.md`
 - `docs/qi_case.md`
 - `docs/matlab.md`
+- `docs/engineering_contract.md`
 
 ## IDE autocompletion (optional)
 Typed models are available as an optional extra:

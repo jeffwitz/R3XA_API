@@ -116,6 +116,7 @@ Quick links
 - :doc:`matlab`
 - :doc:`validation`
 - :doc:`web`
+- :doc:`engineering_contract`
 - :doc:`DEPLOY_RAILWAY`
 - :doc:`dev_workflow`
 
@@ -141,6 +142,7 @@ If you do not want to read the whole documentation, start from one of these thre
    qi_case.md
    validation.md
    web.md
+   engineering_contract.md
    registry_web.md
    DEPLOY_RAILWAY.md
    dev_workflow.md
