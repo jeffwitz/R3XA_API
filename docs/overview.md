@@ -234,6 +234,11 @@ registry/
 Each file is a single JSON item (not a full R3XA file) that can be loaded and validated individually.
 Registry entries are not only reusable templates: they can also be **generated directly with the API**, validated on their own, and saved back into the registry tree.
 
+Built-in registry templates already shipped with the repository include:
+- `settings/generic/instron_5800`
+- `data_sets/list/camera_images_template`
+- `data_sets/file/tabular_timeseries_template`
+
 ### How to load registry items
 ```python
 from r3xa_api import Registry

@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - Start the next development cycle after the `1.4.0` release.
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
 - Documentation/examples: fix the validation helper scripts, complete the examples index, clarify advanced compatibility helpers, prefer stable MyBinder links, and document the test matrix by optional extras.
+- Examples/docs: fix the `qi_hu_from_json_literal.py` SHA-256 guard, add a regression test for the literal Qi Hu export, document shipped registry templates, and align `registry_usage.py` with the preferred `load_validated(...)` registry API.
 - Typing: add a generated `r3xa_api/core.pyi` stub plus a `py.typed` marker so schema-driven guided helpers are visible to IDEs and static type checkers.
 - Developer docs: explain how the generated `core.pyi` stub, `py.typed`, and `make generate-stubs` keep IDE signatures aligned with the schema-driven guided helpers.
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.

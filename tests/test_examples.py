@@ -1,6 +1,8 @@
 from pathlib import Path
 import importlib.util
 import json
+import subprocess
+import sys
 from typing import Iterable
 
 from r3xa_api import validate
@@ -116,3 +118,22 @@ def test_validation_scripts_run() -> None:
             artifacts / "dic_pipeline_registry.json",
         ],
     )
+
+
+def test_qi_hu_json_literal_script_runs_with_sha_check(tmp_path: Path) -> None:
+    root = Path(__file__).parents[1]
+    script = root / "examples" / "python" / "qi_hu_from_json_literal.py"
+    output = tmp_path / "qi_hu_from_json_literal.json"
+
+    completed = subprocess.run(
+        [sys.executable, str(script), "--output", str(output)],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr or completed.stdout
+    with output.open("r", encoding="utf-8") as f:
+        payload = json.load(f)
+    validate(payload)

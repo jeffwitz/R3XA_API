@@ -8,7 +8,7 @@ camera_base = registry.get_item("data_sources/camera/avt_dolphin_f145b")
 # Override ID and description for a specific experiment
 camera = camera_base.merge(id="ds_cam_exp01", description="CCD Camera (exp01)")
 
-specimen = registry.get_validated("settings/specimen/openhole_sample")
+specimen = registry.load_validated("settings/specimen/openhole_sample")
 
 r3xa = R3XAFile(
     title="Experiment with registry items",

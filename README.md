@@ -289,6 +289,7 @@ python examples/python/graph_r3xa.py \
 
 ## Developer workflow (local)
 - Generate typed models after schema updates: `make generate-models`
+- Regenerate IDE/type-checker stubs for guided helpers: `make generate-stubs`
 - Regenerate schema spec markdown: `make generate-spec`
 - Clean generated artifacts before packaging: `make clean-artifacts`
 - Build clean source zip from git tracked files: `make source-archive`
