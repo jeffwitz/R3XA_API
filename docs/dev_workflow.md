@@ -58,6 +58,15 @@ make source-archive
 The guided helper methods on `R3XAFile` are reflected for static tooling through
 the generated stub file `r3xa_api/core.pyi`.
 
+How this works:
+
+- `r3xa_api/core.py` remains the runtime implementation used by Python.
+- `r3xa_api/core.pyi` is a **type stub** read by IDEs and static type checkers.
+- `r3xa_api/py.typed` marks the installed package as shipping official typing
+  information.
+- This improves completion and signature awareness for schema-driven guided
+  helpers without changing runtime behavior.
+
 Regenerate it after schema changes with:
 
 ```bash
@@ -65,7 +74,9 @@ make generate-stubs
 ```
 
 This does not change runtime behavior. It refreshes the static API description
-used by IDEs and type checkers.
+used by IDEs and type checkers. If the runtime helpers change but
+`r3xa_api/core.pyi` is not regenerated, editors may show stale signatures even
+though the package still runs.
 
 ### Test commands
 

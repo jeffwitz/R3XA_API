@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.4.5] - 2026-04-04
 - Typing: ship a generated `r3xa_api/core.pyi` stub plus a `py.typed` marker so schema-driven guided helpers are visible to IDEs and static type checkers.
+- Developer docs: explain how the generated `core.pyi` stub, `py.typed`, and `make generate-stubs` keep IDE signatures aligned with the schema-driven guided helpers.
 
 ## [1.4.4] - 2026-04-03
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
