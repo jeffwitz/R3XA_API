@@ -110,10 +110,31 @@ async def test_registry_page_available() -> None:
 
 
 @pytest.mark.anyio
+async def test_api_graph_svg_can_hide_descriptions(monkeypatch: pytest.MonkeyPatch) -> None:
+    svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
+
+    def _fake_generate_svg(payload: dict, include_description: bool = True) -> bytes:
+        assert isinstance(payload, dict)
+        assert include_description is False
+        return svg_payload
+
+    monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph?show_description=false", json=_load_example())
+
+    assert response.status_code == 200
+    assert response.headers.get("content-type", "").startswith("image/svg+xml")
+    assert response.content == svg_payload
+
+
+@pytest.mark.anyio
 async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
     svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
 
-    def _fake_generate_svg(payload: dict) -> bytes:
+    def _fake_generate_svg(payload: dict, include_description: bool = True) -> bytes:
         assert isinstance(payload, dict)
         return svg_payload
 
@@ -131,7 +152,7 @@ async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.anyio
 async def test_api_graph_svg_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _fake_generate_svg(payload: dict) -> bytes:
+    def _fake_generate_svg(payload: dict, include_description: bool = True) -> bytes:
         raise RuntimeError("Graph feature not available (graphviz not installed).")
 
     monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)

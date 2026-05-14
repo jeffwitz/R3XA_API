@@ -33,6 +33,23 @@ def test_render_networkx_matplotlib_png(case_name: str, filename: str, tmp_path:
     assert output_path.stat().st_size > 0
 
 
+def test_render_networkx_matplotlib_can_hide_descriptions(tmp_path: Path) -> None:
+    payload = _load_example_payload("dic_pipeline.json")
+    output_base = tmp_path / "graph_dic_pipeline_nx_hidden"
+
+    output_path = render_networkx_matplotlib_file(
+        payload,
+        output_base,
+        format="svg",
+        dpi=120,
+        include_description=False,
+    )
+    svg_text = output_path.read_text(encoding="utf-8")
+
+    assert "raw images from CCD camera" not in svg_text
+    assert "graylevel images" in svg_text
+
+
 def test_render_networkx_matplotlib_invalid_format(tmp_path: Path) -> None:
     payload = _load_example_payload("dic_pipeline.json")
     output_base = tmp_path / "graph_dic_pipeline_nx"

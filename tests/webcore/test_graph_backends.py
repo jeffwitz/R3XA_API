@@ -36,6 +36,22 @@ def test_generate_svg_returns_svg_document(case_name: str, filename: str) -> Non
     assert "</svg>" in svg_text
 
 
+def test_graph_renderers_can_hide_descriptions(tmp_path: Path) -> None:
+    payload = _load_example_payload("dic_pipeline.json")
+    output_base = tmp_path / "graph_dic_pipeline_hidden"
+
+    render_graphviz_file(payload, output_base, export_dot=True, include_description=False)
+    html_path = render_pyvis_html(payload, output_base, include_description=False)
+
+    dot_text = output_base.with_suffix(".dot").read_text(encoding="utf-8")
+    html_text = html_path.read_text(encoding="utf-8")
+
+    assert "raw images from CCD camera" not in dot_text
+    assert "raw images from CCD camera" not in html_text
+    assert "graylevel images" in dot_text
+    assert "graylevel images" in html_text
+
+
 @pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
 def test_render_graphviz_file_exports_svg_and_dot(case_name: str, filename: str, tmp_path: Path) -> None:
     payload = _load_example_payload(filename)

@@ -6,6 +6,7 @@ const graphContainer = document.getElementById("graph-container");
 const saveGraphBtn = document.getElementById("save-graph-btn");
 const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const exportStandaloneBtn = document.getElementById("export-standalone-btn");
+const graphDescriptionToggle = document.getElementById("graph-show-description");
 
 let cachedSummary = null;
 
@@ -100,7 +101,8 @@ const renderGraph = async () => {
   }
   try {
     const payload = JSON.parse(stored);
-    const response = await fetch("/api/graph", {
+    const showDescription = graphDescriptionToggle ? graphDescriptionToggle.checked : true;
+    const response = await fetch(`/api/graph?show_description=${showDescription ? "true" : "false"}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

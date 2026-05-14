@@ -147,6 +147,13 @@ python examples/python/graph_r3xa.py \
 
 ```bash
 python examples/python/graph_r3xa.py \
+  --input examples/artifacts/dic_pipeline.json \
+  --output examples/artifacts/graph_dic_pipeline_titles_only \
+  --hide-description
+```
+
+```bash
+python examples/python/graph_r3xa.py \
   --input examples/artifacts/qi_hu_from_scratch.json \
   --output examples/artifacts/graph_qi \
   --dot \

@@ -30,6 +30,11 @@ def main() -> None:
         help="Export Graphviz DOT source alongside SVG",
     )
     parser.add_argument(
+        "--hide-description",
+        action="store_true",
+        help="Render graph node labels with titles only.",
+    )
+    parser.add_argument(
         "--networkx",
         action="store_true",
         help="Export a static image using NetworkX + Matplotlib (optional backend).",
@@ -54,8 +59,10 @@ def main() -> None:
 
     data = json.loads(json_path.read_text(encoding="utf-8"))
 
-    svg_path = render_graphviz_file(data, out_base, export_dot=args.dot)
-    html_path = render_pyvis_html(data, out_base)
+    include_description = not args.hide_description
+
+    svg_path = render_graphviz_file(data, out_base, export_dot=args.dot, include_description=include_description)
+    html_path = render_pyvis_html(data, out_base, include_description=include_description)
 
     print(f"Graphviz SVG: {svg_path}")
     print(f"PyVis HTML: {html_path}")
@@ -65,6 +72,7 @@ def main() -> None:
             out_base.with_name(f"{out_base.name}_nx"),
             format=args.networkx_format,
             dpi=args.networkx_dpi,
+            include_description=include_description,
         )
         print(f"NetworkX + Matplotlib {args.networkx_format.upper()}: {nx_path}")
 

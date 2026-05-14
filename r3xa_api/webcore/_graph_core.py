@@ -206,10 +206,12 @@ def wrap_label_text(value: Any, max_chars: int) -> str:
     return "\n".join(wrapped_lines)
 
 
-def format_node_label(title: Any, description: Any) -> str:
-    """Build node label with wrapped title and description."""
+def format_node_label(title: Any, description: Any, include_description: bool = True) -> str:
+    """Build node label with wrapped title and optional description."""
 
     title_text = wrap_label_text(title, max_chars=34)
+    if not include_description:
+        return title_text
     description_text = wrap_label_text(description, max_chars=44)
     if description_text:
         return f"{title_text}\n({description_text})"

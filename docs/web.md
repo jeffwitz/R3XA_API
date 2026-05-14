@@ -54,6 +54,7 @@ dot -V
 - **Schema viewer** (`/schema`)
   - Inspect the schema summary or the current draft.
   - Generate an SVG graph from the current draft.
+  - Optional: hide node descriptions and keep titles only.
   - Export a fully inlined standalone HTML report (graph + JSON) shareable without server.
 
 ## Links
