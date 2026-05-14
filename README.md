@@ -313,6 +313,14 @@ python examples/python/graph_r3xa.py \
   --networkx-format png
 ```
 
+Hide long node descriptions and keep titles only:
+```bash
+python examples/python/graph_r3xa.py \
+  --input examples/artifacts/dic_pipeline.json \
+  --output examples/artifacts/graph_dic_pipeline_titles_only \
+  --hide-description
+```
+
 ## Developer workflow (local)
 - Bootstrap the full contributor environment: `python scripts/dev.py setup-dev`
 - Generate typed models after schema updates: `python scripts/dev.py generate-models`

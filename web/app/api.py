@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from fastapi import APIRouter, Request, Response, HTTPException
+from fastapi import APIRouter, Request, Response, HTTPException, Query
 from jsonschema.exceptions import ValidationError
 from r3xa_api.registry import validate_item
 from r3xa_api.schema import load_schema
@@ -28,10 +28,10 @@ async def validate_registry_item(request: Request) -> Dict[str, Any]:
 
 
 @router.post("/graph")
-async def graph_svg(request: Request) -> Response:
+async def graph_svg(request: Request, show_description: bool = Query(default=True)) -> Response:
     payload = await request.json()
     try:
-        svg_bytes = generate_svg(payload)
+        svg_bytes = generate_svg(payload, include_description=show_description)
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return Response(content=svg_bytes, media_type="image/svg+xml")

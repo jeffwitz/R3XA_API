@@ -36,7 +36,7 @@ PYVIS_OPTIONS = {
 }
 
 
-def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
+def render_pyvis_html(data: Dict[str, Any], output_path: Path, include_description: bool = True) -> Path:
     """Render an interactive PyVis HTML graph from an R3XA payload."""
 
     try:
@@ -51,11 +51,19 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path) -> Path:
     for source in data.get("data_sources", []):
         source_id = source.get("id")
         if source_id:
-            node_labels[source_id] = format_node_label(source.get("title", ""), source.get("description", ""))
+            node_labels[source_id] = format_node_label(
+                source.get("title", ""),
+                source.get("description", ""),
+                include_description=include_description,
+            )
     for dataset in data.get("data_sets", []):
         dataset_id = dataset.get("id")
         if dataset_id:
-            node_labels[dataset_id] = format_node_label(dataset.get("title", ""), dataset.get("description", ""))
+            node_labels[dataset_id] = format_node_label(
+                dataset.get("title", ""),
+                dataset.get("description", ""),
+                include_description=include_description,
+            )
 
     edge_pairs = [(edge.src, edge.dst) for edge in model.edge_records]
     label_widths = {node_id: estimate_label_width(label) for node_id, label in node_labels.items()}

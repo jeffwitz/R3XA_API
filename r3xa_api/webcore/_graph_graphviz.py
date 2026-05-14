@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict
 
-from ._graph_core import STYLES, build_graph_model
+from ._graph_core import STYLES, build_graph_model, format_node_label
 
 
-def build_graphviz_dot(data: Dict[str, Any], format: str = "svg") -> Any:
+def build_graphviz_dot(data: Dict[str, Any], format: str = "svg", include_description: bool = True) -> Any:
     """Build a Graphviz Digraph from a full R3XA payload."""
 
     try:
@@ -21,13 +21,21 @@ def build_graphviz_dot(data: Dict[str, Any], format: str = "svg") -> Any:
     for source in data.get("data_sources", []):
         is_intermediate = source.get("id") in model.intermediate_sources
         style = STYLES["data_sources"]["intermediate" if is_intermediate else "initial"]
-        label = f"{source.get('title','')}\n({source.get('description','')})"
+        label = format_node_label(
+            source.get("title", ""),
+            source.get("description", ""),
+            include_description=include_description,
+        )
         dot.node(source["id"], label, **style)
 
     for dataset in data.get("data_sets", []):
         is_intermediate = dataset["id"] in model.used_datasets
         style = STYLES["data_sets"]["intermediate" if is_intermediate else "final"]
-        label = f"{dataset.get('title','')}\n({dataset.get('description','')})"
+        label = format_node_label(
+            dataset.get("title", ""),
+            dataset.get("description", ""),
+            include_description=include_description,
+        )
         dot.node(dataset["id"], label, **style)
 
     for edge in model.edge_records:
@@ -36,7 +44,7 @@ def build_graphviz_dot(data: Dict[str, Any], format: str = "svg") -> Any:
     return dot
 
 
-def generate_svg(data: Dict[str, Any]) -> bytes:
+def generate_svg(data: Dict[str, Any], include_description: bool = True) -> bytes:
     """Generate an SVG graph from an R3XA payload."""
 
     try:
@@ -44,14 +52,19 @@ def generate_svg(data: Dict[str, Any]) -> bytes:
     except Exception as exc:  # pragma: no cover - depends on optional dependency
         raise RuntimeError("Graph feature not available (graphviz not installed).") from exc
 
-    dot = build_graphviz_dot(data, format="svg")
+    dot = build_graphviz_dot(data, format="svg", include_description=include_description)
     try:
         return dot.pipe(format="svg")
     except ExecutableNotFound as exc:  # pragma: no cover - runtime dependency
         raise RuntimeError("Graph feature not available (dot executable missing).") from exc
 
 
-def render_graphviz_file(data: Dict[str, Any], output_path: Path, export_dot: bool = False) -> Path:
+def render_graphviz_file(
+    data: Dict[str, Any],
+    output_path: Path,
+    export_dot: bool = False,
+    include_description: bool = True,
+) -> Path:
     """Render a Graphviz SVG file and optionally export the DOT source."""
 
     try:
@@ -61,7 +74,7 @@ def render_graphviz_file(data: Dict[str, Any], output_path: Path, export_dot: bo
 
     out_base = Path(output_path)
     out_base.parent.mkdir(parents=True, exist_ok=True)
-    dot = build_graphviz_dot(data, format="svg")
+    dot = build_graphviz_dot(data, format="svg", include_description=include_description)
 
     if export_dot:
         dot.save(str(out_base.with_suffix(".dot")))

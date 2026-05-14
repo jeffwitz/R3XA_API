@@ -115,6 +115,7 @@ def render_networkx_matplotlib_file(
     format: str = "png",
     dpi: int = 220,
     layout_config: NetworkXLayoutConfig | None = None,
+    include_description: bool = True,
 ) -> Path:
     """Render a static graph image with NetworkX + Matplotlib."""
 
@@ -146,7 +147,7 @@ def render_networkx_matplotlib_file(
     node_shapes: Dict[str, str] = {}
     node_style_map: Dict[str, Dict[str, Any]] = {}
 
-    def _format_static_label(title: Any, description: Any, shape: str) -> str:
+    def _format_static_label(title: Any, description: Any, shape: str, include_description: bool = True) -> str:
         if shape == "ellipse":
             title_chars = 18
             desc_chars = 24
@@ -154,6 +155,8 @@ def render_networkx_matplotlib_file(
             title_chars = 24
             desc_chars = 30
         title_text = wrap_label_text(title, max_chars=title_chars)
+        if not include_description:
+            return title_text
         description_text = wrap_label_text(description, max_chars=desc_chars)
         if description_text:
             return f"{title_text}\n({description_text})"
@@ -171,6 +174,7 @@ def render_networkx_matplotlib_file(
             source.get("title", ""),
             source.get("description", ""),
             "ellipse",
+            include_description=include_description,
         )
 
     for dataset in data.get("data_sets", []):
@@ -185,6 +189,7 @@ def render_networkx_matplotlib_file(
             dataset.get("title", ""),
             dataset.get("description", ""),
             "box",
+            include_description=include_description,
         )
 
     label_widths: Dict[str, float] = {}
