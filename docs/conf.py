@@ -24,7 +24,7 @@ elif _rtd_version == "stable":
     _rtd_version = "main"
 
 
-def _github_ref() -> str:
+def _gitlab_ref() -> str:
     commit_hash = os.environ.get("READTHEDOCS_GIT_COMMIT_HASH")
     if commit_hash:
         return commit_hash
@@ -37,10 +37,10 @@ def _github_ref() -> str:
         return _rtd_version
 
 
-github_ref = _github_ref()
-github_base = f"https://github.com/jeffwitz/R3XA_API/blob/{github_ref}"
+gitlab_ref = _gitlab_ref()
+gitlab_base = f"https://gitlab.com/photomechanics/R3XA_API/-/blob/{gitlab_ref}"
 extlinks = {
-    "ghsrc": (f"{github_base}/%s", "%s"),
+    "glsrc": (f"{gitlab_base}/%s", "%s"),
 }
 
 # Force a global, uniform sidebar on every page (no local overrides)

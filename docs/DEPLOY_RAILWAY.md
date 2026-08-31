@@ -4,7 +4,7 @@ This guide describes how to deploy the FastAPI web app on Railway.
 
 ## 1) Create the Railway project
 
-1. Go to Railway → **New Project** → **Deploy from GitHub**.
+1. Go to Railway → **New Project** and connect a repository.
 2. Select the `R3XA_API` repository.
 3. Choose the branch you want to deploy (typically `main`).
 

@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
 - Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.4.4`).
 - Internal planning: refresh `docs/internal/PLAN_ACTION_API_ERGO.md` so completed ergonomics work and remaining v2 topics are tracked accurately.
-- Documentation/meta: update Binder links to `v1.4.7`, clarify GitHub as the public repository with GitLab as upstream, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
+- Documentation/meta: update Binder links to `v1.4.7`, clarify repository locations, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
 - Validation: lock `examples/essai-torsion.json` behind an automated validation test and update the internal traceability report now that the schema accepts the resolved generic-source fields.
 - Developer tooling: replace the old shell wrappers and `Makefile` entry points with the cross-platform `python scripts/dev.py ...` runner, add `setup-dev` for one-shot contributor bootstrap, and verify the workflow from a fresh clone.
 

@@ -9,7 +9,7 @@ If you want to learn the library hands-on, start with [notebooks.md](notebooks.m
 **Credits and origin**
 - Initial implementation by **E. Roubin**, based on a shared specification led by **J‑C. Passieux**.
 - Original upstream repository: `https://gitlab.com/photomecanics/r3xa`
-- Current public repository: `https://github.com/jeffwitz/R3XA_API`
+- Current public repository: `https://gitlab.com/photomechanics/R3XA_API`
 
 ## Why R3XA
 Researchers often lose crucial experimental context (camera focal length, calibration targets, acquisition settings). R3XA proposes a **metadata standard** to help remember, reuse, and replicate experiments without inventing a new data format.
@@ -289,7 +289,7 @@ camera = new_item(
 registry.wrap(camera, tree_path="data_sources/camera/example_generated_camera").save()
 ```
 
-This is the pattern used in {ghsrc}`examples/python/create_registry_camera.py`.
+This is the pattern used in {glsrc}`examples/python/create_registry_camera.py`.
 
 ### How to reuse and override a registry item
 ```python
