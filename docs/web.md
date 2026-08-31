@@ -13,10 +13,17 @@ This keeps the **core API** (`r3xa_api`) as the single source of truth, while th
 
 ## Install & run
 
-From the project root (using the `.venv` convention):
+The web UI is included in the PyPI package. Install it with:
 
 ```bash
-pip install -e ".[web,dev]"
+python -m pip install "r3xa-api[web]"
+python -m uvicorn web.app.asgi:app --host 127.0.0.1 --port 8002
+```
+
+From a source checkout, the repository runner is also available:
+
+```bash
+python -m pip install -e ".[web,dev]"
 python scripts/dev.py run-web --port 8002
 ```
 

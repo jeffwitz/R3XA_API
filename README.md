@@ -265,12 +265,15 @@ Run on MyBinder (no local install):
 - First launch can take a few minutes (cold start).
 
 ## Web UI (v0)
-Install extras and run a minimal FastAPI shell:
+The web UI is available from PyPI:
 ```bash
-pip install -e ".[web,dev]"
-python scripts/dev.py run-web --port 8002
+python -m pip install "r3xa-api[web]"
+python -m uvicorn web.app.asgi:app --host 127.0.0.1 --port 8002
 ```
 Then open `http://127.0.0.1:8002/`.
+
+For a source checkout, use `python -m pip install -e ".[web,dev]"` and
+`python scripts/dev.py run-web --port 8002` instead.
 
 Notes:
 - SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system:

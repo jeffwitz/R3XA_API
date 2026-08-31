@@ -74,6 +74,32 @@ async def test_api_validate_invalid() -> None:
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("path", ["/api/validate", "/api/registry/validate", "/api/graph"])
+async def test_api_rejects_malformed_json(path: str) -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            path,
+            content=b"{bad",
+            headers={"content-type": "application/json"},
+        )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Request body must contain valid JSON."
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("path", ["/api/registry/validate", "/api/graph"])
+async def test_api_rejects_non_object_json_for_object_endpoints(path: str) -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(path, json=[])
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Request body must be a JSON object."
+
+
+@pytest.mark.anyio
 async def test_api_registry_validate_valid() -> None:
     app = create_app()
     transport = ASGITransport(app=app)
