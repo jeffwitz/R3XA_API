@@ -2,12 +2,25 @@
 
 Minimal Python SDK (no GUI) to create and validate R3XA metadata files.
 
+> **Documentation:** [latest development documentation](https://r3xa-api.readthedocs.io/en/latest/)
+
 ## Install from PyPI
 ```bash
 python -m pip install r3xa-api
 ```
 
 This installs the latest stable release from the Python Package Index.
+
+Graph support is part of the standard SDK installation: the Python `graphviz`
+wrapper is installed automatically. The system Graphviz executable (`dot`) is
+separate; after installation, run `r3xa-ensure-graphviz` on macOS or Windows,
+or install it with your Linux package manager.
+
+**Windows and macOS warning:** `pip install r3xa-api` cannot install system
+software. On Windows, run `r3xa-ensure-graphviz` from the activated virtual
+environment; it uses WinGet or Chocolatey and may request administrator
+approval. On macOS, run the same command after installing Homebrew if needed;
+it installs Graphviz with Homebrew. Verify with `dot -V`.
 
 ## Install from source (development)
 ```bash
@@ -247,7 +260,7 @@ pip install -r requirements-notebook.txt
 
 Run the notebook:
 ```bash
-python scripts/dev.py notebook-dic
+python scripts/dev.py notebook-dic --ensure-graphviz
 ```
 
 Notebook graph output uses Graphviz SVG (`dot` executable required).
@@ -273,13 +286,14 @@ python -m uvicorn web.app.asgi:app --host 127.0.0.1 --port 8002
 Then open `http://127.0.0.1:8002/`.
 
 For a source checkout, use `python -m pip install -e ".[web,dev]"` and
-`python scripts/dev.py run-web --port 8002` instead.
+`python scripts/dev.py run-web --ensure-graphviz --port 8002` instead.
 
 Notes:
 - SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system:
   - Linux: `sudo apt-get install graphviz` (or your distro equivalent), then `dot -V`
-  - macOS: `brew install graphviz`, then `dot -V`
-  - Windows: install from <https://graphviz.org/download/>, add `Graphviz\\bin` to `PATH`, then `dot -V`
+  - macOS: run `r3xa-ensure-graphviz` (uses Homebrew), then `dot -V`
+  - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
+  - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
 
 ## MATLAB (minimal binding)
