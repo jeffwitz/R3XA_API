@@ -2,6 +2,8 @@
 
 Minimal Python SDK (no GUI) to create and validate R3XA metadata files.
 
+> **Documentation:** [stable documentation](https://r3xa-api.readthedocs.io/en/stable/)
+
 ## Install from PyPI
 ```bash
 python -m pip install r3xa-api
