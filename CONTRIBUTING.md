@@ -6,7 +6,7 @@ Thanks for your interest in improving R3XA_API!
 ```bash
 python -m venv .venv
 . .venv/bin/activate
-pip install -e .[dev]
+python -m pip install -e ".[dev,docs]"
 ```
 
 ## Run tests
@@ -16,8 +16,7 @@ python -m pytest
 
 ## Build docs
 ```bash
-pip install -r docs/requirements.txt
-make docs
+python scripts/dev.py build-docs
 ```
 
 ## Style
