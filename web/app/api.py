@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from typing import Any, Dict
 
 from fastapi import APIRouter, Request, Response, HTTPException, Query
@@ -9,15 +10,24 @@ from r3xa_api.webcore import build_schema_summary, build_validation_report, gene
 router = APIRouter()
 
 
+async def _read_json(request: Request) -> Any:
+    try:
+        return await request.json()
+    except (JSONDecodeError, UnicodeDecodeError) as exc:
+        raise HTTPException(status_code=400, detail="Request body must contain valid JSON.") from exc
+
+
 @router.post("/validate")
 async def validate_payload(request: Request) -> Dict[str, Any]:
-    payload = await request.json()
+    payload = await _read_json(request)
     return build_validation_report(payload)
 
 
 @router.post("/registry/validate")
 async def validate_registry_item(request: Request) -> Dict[str, Any]:
-    payload = await request.json()
+    payload = await _read_json(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
     item = payload.get("item", payload)
     kind = payload.get("kind")
     try:
@@ -29,7 +39,9 @@ async def validate_registry_item(request: Request) -> Dict[str, Any]:
 
 @router.post("/graph")
 async def graph_svg(request: Request, show_description: bool = Query(default=True)) -> Response:
-    payload = await request.json()
+    payload = await _read_json(request)
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
     try:
         svg_bytes = generate_svg(payload, include_description=show_description)
     except RuntimeError as exc:

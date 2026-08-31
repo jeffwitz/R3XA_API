@@ -39,7 +39,8 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["r3xa_api", "r3xa_api.webcore"]
+packages = ["r3xa_api", "r3xa_api.webcore", "web", "web.app"]
 
 [tool.setuptools.package-data]
 r3xa_api = ["resources/schema.json", "py.typed", "*.pyi"]
+web = ["templates/*.html", "static/*.js", "static/*.css", "static/*.png", "static/vendor/json-viewer-js/*"]

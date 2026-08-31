@@ -1,0 +1,55 @@
+stages:
+  - test
+  - package
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+test:
+  stage: test
+  image: python:3.12-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends graphviz
+    - python -m pip install --upgrade pip
+    - python -m pip install -e ".[dev,typed,web,graph_nx]"
+  script:
+    - python -m pytest -q --junitxml=pytest.xml
+  artifacts:
+    when: always
+    reports:
+      junit: pytest.xml
+
+package:
+  stage: package
+  image: python:3.12-slim
+  before_script:
+    - python -m pip install --upgrade pip build
+  script:
+    - python -m build
+    - |
+      python - <<'PY'
+      from pathlib import Path
+      from zipfile import ZipFile
+
+      wheel = next(Path("dist").glob("*.whl"))
+      with ZipFile(wheel) as archive:
+          names = set(archive.namelist())
+      required = {
+          "web/app/asgi.py",
+          "web/templates/index.html",
+          "web/static/app.js",
+          "web/static/vendor/json-viewer-js/json-viewer.global.js",
+      }
+      missing = required - names
+      if missing:
+          raise SystemExit(f"Wheel is missing web files: {sorted(missing)}")
+      print(f"Validated package contents in {wheel.name}")
+      PY
+  artifacts:
+    paths:
+      - dist/

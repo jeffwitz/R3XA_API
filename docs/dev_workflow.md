@@ -85,6 +85,10 @@ The exact number of collected tests depends on the optional extras installed in 
 
 If two contributors report different totals, check the installed extras before comparing raw pytest counts.
 
+GitLab CI runs the full test suite with the `dev`, `typed`, `web`, and `graph_nx`
+extras, and installs the Graphviz `dot` executable. A package job also verifies
+that the distributed wheel contains the web application and its static assets.
+
 ## Common developer commands
 
 From project root, use the Python task runner for a cross-platform workflow:
