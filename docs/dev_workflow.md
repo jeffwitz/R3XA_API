@@ -106,13 +106,13 @@ for targeted day-to-day work.
 ### Schema-driven stubs
 
 The guided helper methods on `R3XAFile` are reflected for static tooling through
-the generated stub file {ghsrc}`r3xa_api/core.pyi`.
+the generated stub file {glsrc}`r3xa_api/core.pyi`.
 
 How this works:
 
-- {ghsrc}`r3xa_api/core.py` remains the runtime implementation used by Python.
-- {ghsrc}`r3xa_api/core.pyi` is a **type stub** read by IDEs and static type checkers.
-- {ghsrc}`r3xa_api/py.typed` marks the installed package as shipping official typing
+- {glsrc}`r3xa_api/core.py` remains the runtime implementation used by Python.
+- {glsrc}`r3xa_api/core.pyi` is a **type stub** read by IDEs and static type checkers.
+- {glsrc}`r3xa_api/py.typed` marks the installed package as shipping official typing
   information.
 - This improves completion and signature awareness for schema-driven guided
   helpers without changing runtime behavior.

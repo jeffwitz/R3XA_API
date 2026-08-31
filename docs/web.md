@@ -59,7 +59,7 @@ dot -V
 
 ## Links
 
-- Source repo: <https://github.com/jeffwitz/R3XA_API>
+- Source repo: <https://gitlab.com/photomechanics/R3XA_API>
 - Original upstream repository: <https://gitlab.com/photomecanics/r3xa>
 - Documentation: <https://r3xa-api.readthedocs.io/en/latest/>
 

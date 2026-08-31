@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.1] - 2026-04-04
 - Developer tooling: resolve the project `.venv` interpreter lazily in `scripts/dev.py` so the CLI module and its tests can be imported without a pre-existing virtual environment.
-- Documentation: convert the remaining inline source references in `docs/examples.md` and `docs/qi_case.md` to `{ghsrc}` links.
+- Documentation: convert the remaining inline source references in `docs/examples.md` and `docs/qi_case.md` to `{glsrc}` links.
 
 ## [1.5.0] - 2026-04-04
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.

@@ -6,9 +6,9 @@ Use it after the interactive notebook if you want to study a larger real-world R
 This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
 
 Sources:
-- {ghsrc}`examples/python/qi_hu_from_scratch.py`
-- {ghsrc}`examples/python/graph_r3xa.py`
-- {ghsrc}`examples/matlab/qi_hu_from_scratch.m`
+- {glsrc}`examples/python/qi_hu_from_scratch.py`
+- {glsrc}`examples/python/graph_r3xa.py`
+- {glsrc}`examples/matlab/qi_hu_from_scratch.m`
 
 ## Context
 The Qi Hu dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
@@ -95,9 +95,9 @@ The graph encodes **object types** and **data‑flow roles**:
 - **Input flow** (`input_data_sets` → data_source): black
 - **Output flow** (data_source → data_set): black  
 
-These styles are defined in {ghsrc}`examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
+These styles are defined in {glsrc}`examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
 
 ## Files used
-- Build script: {ghsrc}`examples/python/qi_hu_from_scratch.py`
-- Graph tool: {ghsrc}`examples/python/graph_r3xa.py`
+- Build script: {glsrc}`examples/python/qi_hu_from_scratch.py`
+- Graph tool: {glsrc}`examples/python/graph_r3xa.py`
 - Output SVG: `docs/figures/graph_qi_from_scratch.svg`

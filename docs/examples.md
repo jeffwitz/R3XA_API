@@ -12,22 +12,22 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 
 ## Example index
 ### Python scripts (`examples/python/`)
-- {ghsrc}`examples/python/basic_create.py`: minimal end‑to‑end JSON generation.
-- {ghsrc}`examples/python/complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
-- {ghsrc}`examples/python/complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
-- {ghsrc}`examples/python/create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
-- {ghsrc}`examples/python/graph_r3xa.py`: graph generator (Graphviz + PyVis).
-- {ghsrc}`examples/python/load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
-- {ghsrc}`examples/python/qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
-- {ghsrc}`examples/python/registry_discovery.py`: list registry entries, merge one item, and save the merged result.
-- {ghsrc}`examples/python/registry_usage.py`: minimal registry loading and override example.
-- {ghsrc}`examples/python/typed_dic_pipeline.py`: typed/Pydantic version of the DIC pipeline.
-- {ghsrc}`examples/python/qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
-- {ghsrc}`examples/python/validate_all.py`: validate all example JSON.
-- {ghsrc}`examples/python/validate_examples.py`: quick validation of example files.
+- {glsrc}`examples/python/basic_create.py`: minimal end‑to‑end JSON generation.
+- {glsrc}`examples/python/complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
+- {glsrc}`examples/python/complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
+- {glsrc}`examples/python/create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
+- {glsrc}`examples/python/graph_r3xa.py`: graph generator (Graphviz + PyVis).
+- {glsrc}`examples/python/load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
+- {glsrc}`examples/python/qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
+- {glsrc}`examples/python/registry_discovery.py`: list registry entries, merge one item, and save the merged result.
+- {glsrc}`examples/python/registry_usage.py`: minimal registry loading and override example.
+- {glsrc}`examples/python/typed_dic_pipeline.py`: typed/Pydantic version of the DIC pipeline.
+- {glsrc}`examples/python/qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
+- {glsrc}`examples/python/validate_all.py`: validate all example JSON.
+- {glsrc}`examples/python/validate_examples.py`: quick validation of example files.
 
 ### MATLAB scripts (`examples/matlab/`)
-- {ghsrc}`examples/matlab/qi_hu_from_scratch.m`: Qi Hu case built from scratch using the MATLAB binding.
+- {glsrc}`examples/matlab/qi_hu_from_scratch.m`: Qi Hu case built from scratch using the MATLAB binding.
 
 ### Data files
 - `examples/valid_camera_list.json`: minimal valid camera dataset.
@@ -35,7 +35,7 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - `examples/artifacts/`: generated outputs (JSON + graphs) from scripts.
 
 ## 1) From scratch
-Source: {ghsrc}`examples/python/complex_dic_pipeline.py`
+Source: {glsrc}`examples/python/complex_dic_pipeline.py`
 
 Key ideas:
 - Define specimen, camera, and DIC source explicitly.
@@ -123,7 +123,7 @@ r3xa.add_image_set_list(
 ```
 
 ## 2) Registry‑based
-Source: {ghsrc}`examples/python/complex_dic_pipeline_registry.py`
+Source: {glsrc}`examples/python/complex_dic_pipeline_registry.py`
 
 Key ideas:
 - Load reusable items from `registry/`
@@ -196,7 +196,7 @@ r3xa.add_image_set_list(
 - Registry‑based: `examples/artifacts/dic_pipeline_registry.json`
 
 ## 3) Creating a new registry item
-Source: {ghsrc}`examples/python/create_registry_camera.py`
+Source: {glsrc}`examples/python/create_registry_camera.py`
 
 Key ideas:
 - build a single registry item with `new_item(...)`
@@ -216,7 +216,7 @@ Built-in registry templates worth knowing:
 - `data_sets/file/tabular_timeseries_template`: minimal tabular time-series file template.
 
 ## 4) Loading an existing file and saving it again
-Source: {ghsrc}`examples/python/load_edit_save.py`
+Source: {glsrc}`examples/python/load_edit_save.py`
 
 Key ideas:
 - load a full R3XA file with `R3XAFile.load(...)`
@@ -230,7 +230,7 @@ This example writes:
 - `examples/artifacts/dic_pipeline_loaded.json`
 
 ## 5) Discovering and merging registry items
-Source: {ghsrc}`examples/python/registry_discovery.py`
+Source: {glsrc}`examples/python/registry_discovery.py`
 
 Key ideas:
 - discover available registry items with `Registry.list(...)`
@@ -242,13 +242,13 @@ This example writes:
 - `examples/artifacts/registry_camera_merged.json`
 
 See also:
-- {ghsrc}`examples/python/registry_usage.py` for the smaller `load_validated(...)` + `get_item(...)` workflow.
+- {glsrc}`examples/python/registry_usage.py` for the smaller `load_validated(...)` + `get_item(...)` workflow.
 - `registry/data_sets/list/camera_images_template.json`
 - `registry/data_sets/file/tabular_timeseries_template.json`
 - `registry/settings/generic/instron_5800.json`
 
 ## 6) Typed DIC pipeline
-Source: {ghsrc}`examples/python/typed_dic_pipeline.py`
+Source: {glsrc}`examples/python/typed_dic_pipeline.py`
 
 Key ideas:
 - install the optional `typed` extra
@@ -259,7 +259,7 @@ This example writes:
 - `examples/artifacts/dic_pipeline_typed.json`
 
 ## 7) Qi Hu from a literal JSON reconstruction
-Source: {ghsrc}`examples/python/qi_hu_from_json_literal.py`
+Source: {glsrc}`examples/python/qi_hu_from_json_literal.py`
 
 Key ideas:
 - rebuild the Qi Hu document with explicit `add_setting(...)`, `add_data_source(...)`, and `add_data_set(...)` calls
