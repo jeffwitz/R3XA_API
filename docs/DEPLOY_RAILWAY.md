@@ -45,7 +45,7 @@ You can find the public URL in the Railway project dashboard.
 
 ```bash
 pip install -e ".[web]"
-python scripts/dev.py run-web --app web.app.asgi:app --port 8000
+python scripts/dev.py run-web --ensure-graphviz --app web.app.asgi:app --port 8000
 ```
 
 ## Notes

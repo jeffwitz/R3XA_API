@@ -38,36 +38,60 @@
 
       <section class="panel">
         <h2>Schema</h2>
-        <div id="schema-summary">Loading schema summary…</div>
+        <div id="schema-summary">Loading schema catalogue…</div>
       </section>
 
-      <section class="panel">
+      <section class="panel editor-controls">
+        <div class="mode-tabs" role="tablist" aria-label="Editor mode">
+          <button class="mode-tab" data-editor-mode="guided" type="button">Guided</button>
+          <button class="mode-tab" data-editor-mode="advanced" type="button">Advanced</button>
+          <button class="mode-tab" data-editor-mode="expert" type="button">Expert</button>
+        </div>
+        <label class="profile-control" for="profile-select">
+          Experience profile
+          <select id="profile-select"></select>
+        </label>
+        <p id="mode-help" class="muted"></p>
+      </section>
+
+      <section class="panel guided-panel">
+        <h2>Guided checklist</h2>
+        <p class="muted">Follow the profile steps. This view edits the same canonical JSON document as the other modes.</p>
+        <div class="guided-navigation">
+          <button id="guided-previous" class="ghost" type="button">Previous</button>
+          <span id="guided-progress" class="muted"></span>
+          <button id="guided-next" type="button">Next</button>
+        </div>
+        <div id="guided-steps"></div>
+      </section>
+
+      <section class="panel editor-surface" data-editor-surface="header">
         <h2>Header form</h2>
         <p class="muted">Edit common header fields and sync with JSON.</p>
         <div id="header-form"></div>
       </section>
 
-      <section class="panel">
+      <section class="panel editor-surface" data-editor-surface="settings">
         <h2>Settings</h2>
         <p class="muted">Array of settings items.</p>
         <div id="settings-form"></div>
       </section>
 
-      <section class="panel">
+      <section class="panel editor-surface" data-editor-surface="data_sources">
         <h2>Data sources</h2>
         <p class="muted">Array of data source items.</p>
         <div id="data-sources-form"></div>
       </section>
 
-      <section class="panel">
+      <section class="panel editor-surface" data-editor-surface="data_sets">
         <h2>Data sets</h2>
         <p class="muted">Array of data set items.</p>
         <div id="data-sets-form"></div>
       </section>
 
-      <section class="panel">
-        <h2>Validate JSON</h2>
-        <p class="muted">Paste an R3XA JSON or edit the default example, then validate.</p>
+      <section class="panel document-actions">
+        <h2>Document</h2>
+        <p class="muted">Save, load, or validate the same document from any editor mode.</p>
         <div class="actions">
           <button id="save-json-btn" class="ghost" type="button">Save JSON</button>
           <label class="file-btn ghost">
@@ -75,12 +99,17 @@
             <input id="load-json-input" type="file" accept=".json,application/json" />
           </label>
         </div>
-        <textarea id="json-input" spellcheck="false"></textarea>
         <div class="actions">
           <button id="validate-btn">Validate</button>
           <button id="reset-btn" class="ghost">Reset</button>
         </div>
         <pre id="validation-output"></pre>
+      </section>
+
+      <section class="panel expert-panel">
+        <h2>Expert JSON</h2>
+        <p class="muted">Inspect or edit the canonical R3XA JSON directly.</p>
+        <textarea id="json-input" spellcheck="false"></textarea>
       </section>
     </main>
     <script src="/static/app.js"></script>

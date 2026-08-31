@@ -1,0 +1,12 @@
+{
+  "id": "generic",
+  "title": "Generic R3XA document",
+  "description": "Create a document by choosing the objects that describe your experiment.",
+  "recommended_kinds": [],
+  "steps": [
+    {"id": "document", "title": "Document information", "section": "header"},
+    {"id": "settings", "title": "Experimental settings", "section": "settings"},
+    {"id": "data_sources", "title": "Data sources", "section": "data_sources"},
+    {"id": "data_sets", "title": "Data sets", "section": "data_sets"}
+  ]
+}

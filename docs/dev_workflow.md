@@ -23,6 +23,11 @@ pip install -e ".[graph_nx]"       # NetworkX + Matplotlib static graph backend
 pip install -e ".[dev]"            # pytest and developer tools
 ```
 
+The base installation includes the Python `graphviz` wrapper because graph
+generation is used by the SDK, notebook, and web workflows. It cannot install
+the system Graphviz executable (`dot`) through `pip`; install that executable
+with `r3xa-ensure-graphviz` on macOS/Windows or with the Linux package manager.
+
 Graphviz (`dot`) is a **system dependency** for SVG graph generation.
 
 ## Bootstrap a contributor environment
@@ -83,11 +88,18 @@ The exact number of collected tests depends on the optional extras installed in 
 - `pip install -e ".[dev,typed,web,graph_nx]"`  
   Gives the full local matrix used for repository maintenance.
 
+For local graph support, run `r3xa-ensure-graphviz` after installing the package.
+In a source checkout, `python scripts/dev.py ensure-graphviz` provides the same
+cross-platform helper.
+
 If two contributors report different totals, check the installed extras before comparing raw pytest counts.
 
 GitLab CI runs the full test suite with the `dev`, `typed`, `web`, and `graph_nx`
-extras, and installs the Graphviz `dot` executable. A package job also verifies
-that the distributed wheel contains the web application and its static assets.
+extras on Python 3.9 through 3.13, and installs the Graphviz `dot` executable.
+A separate quality job builds the documentation with warnings treated as
+errors. The package job verifies the wheel contents and runs a smoke test from
+an environment where the installed wheel, rather than the source tree, is
+imported.
 
 ## Common developer commands
 

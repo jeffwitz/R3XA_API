@@ -1,0 +1,18 @@
+{
+  "id": "mechanical_test",
+  "title": "Mechanical test",
+  "description": "Describe a specimen, loading device, measurements, and resulting data.",
+  "recommended_kinds": [
+    "settings/specimen",
+    "settings/testing_machine",
+    "data_sources/load_cell",
+    "data_sets/generic"
+  ],
+  "steps": [
+    {"id": "experiment", "title": "Experiment", "section": "header", "questions": [{"field": "title", "title": "What is the name of the test?"}]},
+    {"id": "specimen", "title": "Specimen", "section": "settings", "kind": "settings/specimen", "questions": [{"field": "title", "title": "What specimen was tested?"}, {"field": "description", "title": "Describe the specimen."}]},
+    {"id": "loading", "title": "Loading machine", "section": "settings", "kind": "settings/testing_machine", "questions": [{"field": "title", "title": "What machine was used?"}, {"field": "type", "title": "What type of loading was applied?"}]},
+    {"id": "measurements", "title": "Measurements", "section": "data_sources", "kind": "data_sources/load_cell", "questions": [{"field": "title", "title": "Which measurement device was used?"}]},
+    {"id": "data", "title": "Data", "section": "data_sets", "kind": "data_sets/generic", "questions": [{"field": "title", "title": "How should the result data be named?"}]}
+  ]
+}

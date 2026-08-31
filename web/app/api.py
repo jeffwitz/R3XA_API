@@ -5,7 +5,13 @@ from fastapi import APIRouter, Request, Response, HTTPException, Query
 from jsonschema.exceptions import ValidationError
 from r3xa_api.registry import validate_item
 from r3xa_api.schema import load_schema
-from r3xa_api.webcore import build_schema_summary, build_validation_report, generate_svg
+from r3xa_api.webcore import (
+    build_schema_catalog,
+    build_schema_summary,
+    build_ui_catalog,
+    build_validation_report,
+    generate_svg,
+)
 
 router = APIRouter()
 
@@ -56,6 +62,21 @@ async def schema_raw() -> Dict[str, Any]:
 @router.get("/schema/summary")
 async def schema_summary() -> Dict[str, Any]:
     return build_schema_summary()
+
+
+@router.get("/schema/catalog")
+async def schema_catalog() -> Dict[str, Any]:
+    return build_schema_catalog()
+
+
+@router.get("/ui")
+async def ui_catalog() -> Dict[str, Any]:
+    return build_ui_catalog()
+
+
+@router.get("/profiles")
+async def profiles() -> Dict[str, Any]:
+    return build_ui_catalog()["profiles"]
 
 
 @router.get("/schema-summary")

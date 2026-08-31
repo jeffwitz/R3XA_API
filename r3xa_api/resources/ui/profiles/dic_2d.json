@@ -1,0 +1,81 @@
+{
+  "id": "dic_2d",
+  "title": "2D Digital Image Correlation",
+  "description": "Describe a mechanical experiment measured with one visible camera and DIC.",
+  "recommended_kinds": [
+    "settings/specimen",
+    "settings/testing_machine",
+    "data_sources/camera",
+    "data_sources/dic_measurement",
+    "data_sets/file"
+  ],
+  "steps": [
+    {
+      "id": "experiment",
+      "title": "Experiment",
+      "section": "header",
+      "questions": [
+        {"field": "title", "title": "What is the name of the experiment?", "required": true},
+        {"field": "authors", "title": "Who performed the experiment?"}
+      ]
+    },
+    {
+      "id": "specimen",
+      "title": "Specimen",
+      "section": "settings",
+      "kind": "settings/specimen",
+      "questions": [
+        {"field": "title", "title": "What specimen was tested?", "required": true},
+        {"field": "description", "title": "Describe the specimen.", "required": true},
+        {"field": "patterning_technique", "title": "How was the specimen patterned?"}
+      ]
+    },
+    {
+      "id": "loading",
+      "title": "Loading machine",
+      "section": "settings",
+      "kind": "settings/testing_machine",
+      "questions": [
+        {"field": "title", "title": "What machine was used?", "required": true},
+        {"field": "description", "title": "Describe the machine.", "required": true},
+        {"field": "type", "title": "What type of loading was applied?", "required": true},
+        {"field": "manufacturer", "title": "Who manufactured the machine?"},
+        {"field": "model", "title": "What is the machine model?"}
+      ]
+    },
+    {
+      "id": "camera",
+      "title": "Camera",
+      "section": "data_sources",
+      "kind": "data_sources/camera",
+      "questions": [
+        {"field": "title", "title": "Which camera recorded the images?", "required": true},
+        {"field": "manufacturer", "title": "Who manufactured the camera?"},
+        {"field": "model", "title": "What is the camera model?"}
+      ]
+    },
+    {
+      "id": "images",
+      "title": "Images",
+      "section": "data_sets",
+      "kind": "data_sets/file",
+      "questions": [
+        {"field": "title", "title": "How should the image data be named?", "required": true},
+        {"field": "description", "title": "Describe the image data.", "required": true},
+        {"field": "folder", "title": "Where are the image files stored?"}
+      ]
+    },
+    {
+      "id": "dic_results",
+      "title": "DIC results",
+      "section": "data_sources",
+      "kind": "data_sources/dic_measurement",
+      "questions": [
+        {"field": "title", "title": "What DIC results are available?", "required": true},
+        {"field": "manufacturer", "title": "Which DIC software was used?"},
+        {"field": "model", "title": "What is the software version?"},
+        {"field": "matching_criterion", "title": "Which matching criterion was used?"}
+      ]
+    }
+  ]
+}

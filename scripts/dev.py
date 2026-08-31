@@ -12,6 +12,12 @@ FULL_DEV_EXTRAS = ".[dev,docs,typed,web,notebook,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
 
 
+def _ensure_graphviz() -> Path:
+    from r3xa_api.graphviz_setup import ensure_graphviz
+
+    return ensure_graphviz()
+
+
 def _project_python() -> str:
     candidates = [
         ROOT / ".venv" / "Scripts" / "python.exe",
@@ -95,6 +101,8 @@ def cmd_generate_stubs(_: argparse.Namespace) -> None:
 
 def cmd_notebook_dic(args: argparse.Namespace) -> None:
     python = project_python()
+    if args.ensure_graphviz:
+        print(f"Graphviz is ready: {_ensure_graphviz()}")
     command = [
         python,
         "-m",
@@ -124,6 +132,8 @@ def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
 
 def cmd_run_web(args: argparse.Namespace) -> None:
     python = project_python()
+    if args.ensure_graphviz:
+        print(f"Graphviz is ready: {_ensure_graphviz()}")
     if args.install:
         _run(python, "-m", "pip", "install", "-e", ".[web]")
     command = [
@@ -270,6 +280,10 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
         _run_or_print(step, dry_run=args.dry_run)
 
 
+def cmd_ensure_graphviz(_: argparse.Namespace) -> None:
+    print(f"Graphviz is ready: {_ensure_graphviz()}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Cross-platform developer commands for R3XA_API.",
@@ -323,6 +337,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     notebook_dic = subparsers.add_parser("notebook-dic", help="launch the interactive Marimo DIC notebook")
     notebook_dic.add_argument("--port", type=int, default=None, help="optional Marimo port override")
+    notebook_dic.add_argument(
+        "--ensure-graphviz",
+        action="store_true",
+        help="install Graphviz with the platform package manager when dot is missing",
+    )
     notebook_dic.set_defaults(func=cmd_notebook_dic)
 
     notebook_export = subparsers.add_parser("notebook-dic-export", help="export the Marimo notebook to static HTML")
@@ -334,7 +353,18 @@ def build_parser() -> argparse.ArgumentParser:
     run_web.add_argument("--app", default="web.app.main:app", help="ASGI application import path")
     run_web.add_argument("--no-reload", dest="reload", action="store_false", help="disable Uvicorn autoreload")
     run_web.add_argument("--install", action="store_true", help="install the web extra before launching the server")
+    run_web.add_argument(
+        "--ensure-graphviz",
+        action="store_true",
+        help="install Graphviz with the platform package manager when dot is missing",
+    )
     run_web.set_defaults(func=cmd_run_web, reload=True)
+
+    ensure_graphviz_command = subparsers.add_parser(
+        "ensure-graphviz",
+        help="install Graphviz with the platform package manager when dot is missing",
+    )
+    ensure_graphviz_command.set_defaults(func=cmd_ensure_graphviz)
 
     clean = subparsers.add_parser("clean-artifacts", help="remove build products, caches, and generated artifacts")
     clean.set_defaults(func=cmd_clean_artifacts)

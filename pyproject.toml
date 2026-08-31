@@ -6,12 +6,16 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
   "jsonschema>=4.21.1",
+  "graphviz>=0.20",
 ]
 license = {text = "GPL-2.0-or-later"}
 
 [project.urls]
 Homepage = "https://gitlab.com/photomechanics/R3XA_API"
 Repository = "https://gitlab.com/photomechanics/R3XA_API"
+
+[project.scripts]
+r3xa-ensure-graphviz = "r3xa_api.graphviz_setup:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "datamodel-code-generator>=0.25"]
@@ -22,7 +26,7 @@ docs = [
   "sphinxcontrib-mermaid>=0.9",
 ]
 typed = ["pydantic>=2.0"]
-notebook = ["marimo>=0.11", "graphviz>=0.20"]
+notebook = ["marimo>=0.11"]
 graph_nx = ["networkx>=3.2", "matplotlib>=3.8"]
 web = [
   "fastapi>=0.110",
@@ -30,7 +34,6 @@ web = [
   "uvicorn[standard]>=0.27",
   "jinja2>=3.1",
   "python-multipart>=0.0.9",
-  "graphviz>=0.20",
   "pyvis>=0.3",
 ]
 
@@ -42,5 +45,11 @@ build-backend = "setuptools.build_meta"
 packages = ["r3xa_api", "r3xa_api.webcore", "web", "web.app"]
 
 [tool.setuptools.package-data]
-r3xa_api = ["resources/schema.json", "py.typed", "*.pyi"]
+r3xa_api = [
+  "resources/schema.json",
+  "resources/ui/*.json",
+  "resources/ui/profiles/*.json",
+  "py.typed",
+  "*.pyi",
+]
 web = ["templates/*.html", "static/*.js", "static/*.css", "static/*.png", "static/vendor/json-viewer-js/*"]

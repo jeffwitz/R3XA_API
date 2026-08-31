@@ -36,6 +36,40 @@ async def test_api_schema_summary() -> None:
 
 
 @pytest.mark.anyio
+async def test_api_schema_catalog() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/schema/catalog")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema_version"] == "2024.7.1"
+    assert "data_sources/camera" in payload["sections"]["data_sources"]["kinds"]
+
+
+@pytest.mark.anyio
+async def test_api_ui_catalog() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/ui")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["schema_version"] == "2024.7.1"
+    assert "dic_2d" in payload["profiles"]
+
+
+@pytest.mark.anyio
+async def test_api_profiles() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/profiles")
+    assert response.status_code == 200
+    assert set(response.json()) == {"generic", "mechanical_test", "dic_2d"}
+
+
+@pytest.mark.anyio
 async def test_api_schema_raw() -> None:
     app = create_app()
     transport = ASGITransport(app=app)

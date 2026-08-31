@@ -72,20 +72,28 @@ Choose one profile from the project root, inside ``.venv``:
 
      pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
 
+  The standard SDK dependency set already includes the Python ``graphviz``
+  wrapper. The system Graphviz executable (``dot``) must still be installed
+  separately:
+
   .. warning::
 
      This installs all Python extras, but it does **not** install the Graphviz executable ``dot``.
      If you want SVG graph generation in the web UI or notebook, install Graphviz at system level too:
 
      - Linux: ``sudo apt-get install graphviz``
-     - macOS: ``brew install graphviz``
-     - Windows: install from ``https://graphviz.org/download/`` and make sure ``dot`` is in ``PATH``
+     - macOS: ``r3xa-ensure-graphviz`` (Homebrew)
+     - Windows: ``r3xa-ensure-graphviz`` (WinGet or Chocolatey)
 
 - **Core SDK** — create and validate JSON files:
 
   .. code-block:: bash
 
      pip install -e .
+
+  Graph support is included in this default installation. On macOS or Windows,
+  run ``r3xa-ensure-graphviz`` to install the system executable. On Linux, use
+  the distribution package manager, for example ``sudo apt-get install graphviz``.
 
 - **Typed SDK** — add IDE autocompletion with generated Pydantic models:
 
@@ -98,14 +106,14 @@ Choose one profile from the project root, inside ``.venv``:
   .. code-block:: bash
 
      pip install -e ".[web]"
-     python scripts/dev.py run-web --port 8002
+     python scripts/dev.py run-web --ensure-graphviz --port 8002
 
 - **Notebook** — run the Marimo notebook example:
 
   .. code-block:: bash
 
      pip install -e ".[notebook]"
-     python scripts/dev.py notebook-dic
+     python scripts/dev.py notebook-dic --ensure-graphviz
 
 - **Static graph fallback** — enable the optional NetworkX/Matplotlib renderer:
 
@@ -127,8 +135,12 @@ Choose one profile from the project root, inside ``.venv``:
 
 .. warning::
 
-   SVG graph generation depends on the Graphviz executable ``dot``.
-   The Python package ``graphviz`` alone is **not sufficient**.
+   **Windows and macOS users:** ``pip install r3xa-api`` installs the Python
+   wrapper but cannot install system software. From the activated virtual
+   environment, run ``r3xa-ensure-graphviz``. On Windows it uses WinGet or
+   Chocolatey and may request administrator approval. On macOS it uses
+   Homebrew; install Homebrew first if it is not available. Verify with
+   ``dot -V``. The Python package ``graphviz`` alone is **not sufficient**.
    See :doc:`web` and :doc:`notebooks` for details.
 
 Web UI

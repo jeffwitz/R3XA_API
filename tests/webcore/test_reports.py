@@ -24,4 +24,4 @@ def test_validation_report_invalid() -> None:
     assert report["valid"] is False
     assert report["errors"]
     error = report["errors"][0]
-    assert {"path", "message", "validator", "schema_path"} <= set(error.keys())
+    assert {"path", "message", "user_message", "validator", "schema_path"} <= set(error.keys())
