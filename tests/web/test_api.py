@@ -66,7 +66,17 @@ async def test_api_profiles() -> None:
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/api/profiles")
     assert response.status_code == 200
-    assert set(response.json()) == {"generic", "mechanical_test", "dic_2d"}
+    assert set(response.json()) == {
+        "generic",
+        "mechanical_test",
+        "dic_2d",
+        "camera_images",
+        "tabular_file",
+        "torsion_test",
+        "fatigue_with_overload",
+        "tomography",
+        "in_situ_tensile",
+    }
 
 
 @pytest.mark.anyio

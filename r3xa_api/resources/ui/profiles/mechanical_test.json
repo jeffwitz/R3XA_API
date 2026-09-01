@@ -1,27 +1,98 @@
 {
   "id": "mechanical_test",
   "title": "Mechanical test",
-  "description": "Describe a specimen, loading device, measurements, and resulting data.",
+  "description": "A prefilled mechanical-test workflow linking a testing machine to its final force and displacement files.",
   "recommended_kinds": [
     "settings/specimen",
-    "settings/testing_machine",
-    "data_sources/load_cell",
     "data_sources/generic",
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "force_source", "to_step": "loading", "to_field": "associated_data_sources", "to_many": true},
-    {"from_step": "displacement_source", "to_step": "loading", "to_field": "associated_data_sources", "to_many": true},
-    {"from_step": "force_source", "to_step": "force_data", "to_field": "data_sources", "to_many": true},
-    {"from_step": "displacement_source", "to_step": "displacement_data", "to_field": "data_sources", "to_many": true}
+    {"from_step": "machine", "to_step": "machine_data", "to_field": "data_sources", "to_many": true}
   ],
   "steps": [
-    {"id": "experiment", "title": "Experiment", "section": "header", "questions": [{"field": "title", "title": "What is the name of the test?"}]},
-    {"id": "specimen", "title": "Specimen", "section": "settings", "kind": "settings/specimen", "questions": [{"field": "title", "title": "What specimen was tested?"}, {"field": "description", "title": "Describe the specimen."}]},
-    {"id": "loading", "title": "Loading machine", "section": "settings", "kind": "settings/testing_machine", "questions": [{"field": "title", "title": "What machine was used?"}, {"field": "description", "title": "Describe the machine."}, {"field": "type", "title": "What type of loading was applied?"}]},
-    {"id": "force_source", "title": "Force measurement", "section": "data_sources", "kind": "data_sources/load_cell", "questions": [{"field": "title", "title": "Which device measured force?"}, {"field": "capacity", "title": "What is the force capacity?"}]},
-    {"id": "displacement_source", "title": "Displacement measurement", "section": "data_sources", "kind": "data_sources/generic", "questions": [{"field": "title", "title": "Which device measured displacement?"}, {"field": "description", "title": "Describe the displacement measurement."}, {"field": "manufacturer", "title": "Who manufactured it?"}, {"field": "model", "title": "What is its model?"}]},
-    {"id": "force_data", "title": "Force data", "section": "data_sets", "kind": "data_sets/file", "questions": [{"field": "title", "title": "Where is the force CSV data?"}, {"field": "description", "title": "Describe the force data."}, {"field": "folder", "title": "Where is the CSV file stored?"}]},
-    {"id": "displacement_data", "title": "Displacement data", "section": "data_sets", "kind": "data_sets/file", "questions": [{"field": "title", "title": "Where is the displacement CSV data?"}, {"field": "description", "title": "Describe the displacement data."}, {"field": "folder", "title": "Where is the CSV file stored?"}]}
+    {
+      "id": "experiment",
+      "title": "Experiment",
+      "section": "header",
+      "defaults": {
+        "title": "Tensile mechanical test",
+        "description": "Prefilled example of a tensile test with force and displacement recorded by one testing machine.",
+        "version": "2024.7.1",
+        "authors": "R3XA Team",
+        "date": "2026-09-01"
+      },
+      "questions": [
+        {"field": "title", "title": "What is the name of the test?", "required": true},
+        {"field": "description", "title": "How would you describe the test?", "required": true},
+        {"field": "authors", "title": "Who performed the test?"},
+        {"field": "date", "title": "When was the test performed?"}
+      ]
+    },
+    {
+      "id": "specimen",
+      "title": "Specimen",
+      "section": "settings",
+      "kind": "settings/specimen",
+      "defaults": {
+        "title": "Tensile specimen",
+        "description": "Flat specimen prepared for a tensile test.",
+        "sizes": [
+          {"kind": "unit", "title": "gauge length", "value": 50.0, "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "width", "value": 12.5, "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "thickness", "value": 1.0, "unit": "mm", "scale": 1.0}
+        ],
+        "patterning_technique": "Not specified"
+      },
+      "questions": [
+        {"field": "title", "title": "What specimen was tested?", "required": true},
+        {"field": "description", "title": "Describe the specimen.", "required": true},
+        {"field": "sizes", "title": "What are the specimen dimensions?"},
+        {"field": "patterning_technique", "title": "How was the specimen prepared?"}
+      ]
+    },
+    {
+      "id": "machine",
+      "title": "Testing machine",
+      "section": "data_sources",
+      "kind": "data_sources/generic",
+      "defaults": {
+        "title": "Universal testing machine",
+        "description": "Testing machine acquisition providing force and displacement channels during the test.",
+        "output_components": 2,
+        "output_dimension": "curve",
+        "output_units": [
+          {"kind": "unit", "title": "force", "unit": "N", "scale": 1.0},
+          {"kind": "unit", "title": "displacement", "unit": "mm", "scale": 1.0}
+        ],
+        "manufacturer": "Instron",
+        "model": "5800"
+      },
+      "questions": [
+        {"field": "title", "title": "Which machine recorded the measurements?", "required": true},
+        {"field": "description", "title": "Describe the measured channels.", "required": true},
+        {"field": "manufacturer", "title": "Who manufactured the machine?", "required": true},
+        {"field": "model", "title": "What is the machine model?", "required": true}
+      ]
+    },
+    {
+      "id": "machine_data",
+      "title": "Machine test file",
+      "section": "data_sets",
+      "kind": "data_sets/file",
+      "defaults": {
+        "title": "Machine force and displacement data",
+        "description": "Final CSV file containing the force and displacement channels recorded during the tensile test.",
+        "folder": "machine/",
+        "time_reference": 0.0,
+        "timestamps": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","},
+        "data": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
+      },
+      "questions": [
+        {"field": "title", "title": "How should the machine file be named?", "required": true},
+        {"field": "description", "title": "Describe the machine data.", "required": true},
+        {"field": "folder", "title": "Where is the machine file stored?"}
+      ]
+    }
   ]
 }

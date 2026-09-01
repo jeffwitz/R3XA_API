@@ -1,0 +1,88 @@
+{
+  "id": "tabular_file",
+  "title": "Tabular measurement file",
+  "description": "A prefilled measurement workflow linking a generic source to a final tabular time-series file.",
+  "recommended_kinds": [
+    "settings/generic",
+    "data_sources/generic",
+    "data_sets/file"
+  ],
+  "links": [
+    {"from_step": "measurement", "to_step": "measurement_file", "to_field": "data_sources", "to_many": true}
+  ],
+  "steps": [
+    {
+      "id": "experiment",
+      "title": "Experiment",
+      "section": "header",
+      "defaults": {
+        "title": "Tabular measurement",
+        "description": "Prefilled example with a generic measurement source and a CSV file.",
+        "version": "2024.7.1",
+        "authors": "R3XA Team",
+        "date": "2026-09-01"
+      },
+      "questions": [
+        {"field": "title", "title": "What is the name of the experiment?", "required": true},
+        {"field": "description", "title": "How would you describe it?", "required": true},
+        {"field": "authors", "title": "Who performed it?"},
+        {"field": "date", "title": "When was it performed?"}
+      ]
+    },
+    {
+      "id": "machine",
+      "title": "Measurement setting",
+      "section": "settings",
+      "kind": "settings/generic",
+      "defaults": {
+        "title": "Testing machine",
+        "description": "Electromechanical tensile machine."
+      },
+      "questions": [
+        {"field": "title", "title": "What setting produced the measurement?", "required": true},
+        {"field": "description", "title": "Describe the setting.", "required": true}
+      ]
+    },
+    {
+      "id": "measurement",
+      "title": "Measurement source",
+      "section": "data_sources",
+      "kind": "data_sources/generic",
+      "defaults": {
+        "title": "Load cell",
+        "description": "Force measurement.",
+        "output_components": 1,
+        "output_dimension": "point",
+        "output_units": [{"kind": "unit", "title": "force", "unit": "N", "scale": 1.0}],
+        "manufacturer": "Instron",
+        "model": "5800"
+      },
+      "questions": [
+        {"field": "title", "title": "Which source produced the values?", "required": true},
+        {"field": "description", "title": "Describe the measurement.", "required": true},
+        {"field": "output_units", "title": "Which units are measured?", "required": true},
+        {"field": "manufacturer", "title": "Who manufactured the source?", "required": true},
+        {"field": "model", "title": "What is its model?", "required": true}
+      ]
+    },
+    {
+      "id": "measurement_file",
+      "title": "Tabular data file",
+      "section": "data_sets",
+      "kind": "data_sets/file",
+      "defaults": {
+        "title": "Force time series",
+        "description": "Force versus time stored in a CSV file.",
+        "folder": "data/",
+        "time_reference": 0.0,
+        "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
+        "data": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv", "delimiter": ","}
+      },
+      "questions": [
+        {"field": "title", "title": "How should the data file be named?", "required": true},
+        {"field": "description", "title": "Describe the data file.", "required": true},
+        {"field": "folder", "title": "Where is the CSV file stored?"}
+      ]
+    }
+  ]
+}

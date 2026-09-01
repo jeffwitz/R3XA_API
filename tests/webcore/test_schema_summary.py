@@ -26,7 +26,13 @@ def _prefilled_profile_document(profile: dict) -> dict:
         payload[step["section"]].append(item)
         items[step["id"]] = item
     for link in profile.get("links", []):
-        items[link["to_step"]][link["to_field"]] = [items[link["from_step"]]["id"]]
+        target = items[link["to_step"]]
+        field = link["to_field"]
+        current = target.get(field, [])
+        if not isinstance(current, list):
+            current = [current]
+        current.append(items[link["from_step"]]["id"])
+        target[field] = list(dict.fromkeys(current))
     return payload
 
 
@@ -162,7 +168,17 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
 
     assert catalog["schema_version"] == "2024.7.1"
     assert catalog["default"]["fields"]["kind"]["level"] == "expert"
-    assert set(catalog["profiles"]) == {"generic", "mechanical_test", "dic_2d"}
+    assert set(catalog["profiles"]) == {
+        "generic",
+        "mechanical_test",
+        "dic_2d",
+        "camera_images",
+        "tabular_file",
+        "torsion_test",
+        "fatigue_with_overload",
+        "tomography",
+        "in_situ_tensile",
+    }
     assert catalog["profiles"]["dic_2d"]["steps"][-2]["kind"] == "data_sources/dic_measurement"
     assert catalog["profiles"]["dic_2d"]["steps"][0]["questions"][0]["field"] == "title"
     assert catalog["profiles"]["dic_2d"]["steps"][0]["defaults"]["title"] == "Tensile test with 2D DIC"
@@ -211,6 +227,76 @@ def test_prefilled_dic_profile_builds_a_valid_dependency_chain() -> None:
         ("images_id", "dic_id"),
         ("dic_id", "displacement_fields_id"),
     }
+
+
+@pytest.mark.parametrize(
+    ("profile_id", "expected_edges"),
+    [
+        (
+            "mechanical_test",
+            {("machine_id", "machine_data_id")},
+        ),
+        (
+            "camera_images",
+            {("camera_id", "images_id")},
+        ),
+        (
+            "tabular_file",
+            {("measurement_id", "measurement_file_id")},
+        ),
+        (
+            "torsion_test",
+            {
+                ("torque_source_id", "rotation_torque_id"),
+                ("angle_source_id", "rotation_angle_id"),
+                ("angle_source_id", "torsion_angle_id"),
+                ("torque_source_id", "torsion_torque_id"),
+            },
+        ),
+        (
+            "fatigue_with_overload",
+            {
+                ("camera_id", "images_id"),
+                ("images_id", "fe_dic_id"),
+                ("load_sensor_id", "load_data_id"),
+                ("sif_extractor_id", "sif_data_id"),
+                ("fe_dic_id", "displacement_id"),
+            },
+        ),
+        (
+            "tomography",
+            {
+                ("tomograph_id", "projections_id"),
+                ("projections_id", "reconstruction_id"),
+                ("reconstruction_id", "volume_id"),
+                ("volume_id", "dvc_id"),
+                ("dvc_id", "dvc_displacement_id"),
+            },
+        ),
+        (
+            "in_situ_tensile",
+            {
+                ("machine_id", "machine_data_id"),
+                ("camera_id", "images_id"),
+                ("images_id", "dic_id"),
+                ("dic_id", "displacement_fields_id"),
+            },
+        ),
+    ],
+)
+def test_prefilled_profiles_build_valid_dependency_graph(
+    profile_id: str, expected_edges: set[tuple[str, str]]
+) -> None:
+    profile = build_ui_catalog()["profiles"][profile_id]
+    payload = _prefilled_profile_document(profile)
+
+    validate(payload)
+    assert {
+        (edge.src, edge.dst) for edge in build_graph_model(payload).edge_records
+    } == expected_edges
+    for step in profile["steps"]:
+        for question in step.get("questions", []):
+            assert question["field"] in step.get("defaults", {})
 
 
 def test_ui_profile_validation_reports_invalid_sections_and_steps() -> None:
