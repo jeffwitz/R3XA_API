@@ -63,6 +63,7 @@ package:
       if missing:
           raise SystemExit(f"Wheel is missing web files: {sorted(missing)}")
       print(f"Validated package contents in {wheel.name}")
+      PY
     - python -m venv .wheel-venv
     - .wheel-venv/bin/python -m pip install --upgrade pip
     - .wheel-venv/bin/python -m pip install dist/*.whl
