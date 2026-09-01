@@ -6,13 +6,22 @@
     "settings/specimen",
     "settings/testing_machine",
     "data_sources/load_cell",
-    "data_sets/generic"
+    "data_sources/generic",
+    "data_sets/file"
+  ],
+  "links": [
+    {"from_step": "force_source", "to_step": "loading", "to_field": "associated_data_sources", "to_many": true},
+    {"from_step": "displacement_source", "to_step": "loading", "to_field": "associated_data_sources", "to_many": true},
+    {"from_step": "force_source", "to_step": "force_data", "to_field": "data_sources", "to_many": true},
+    {"from_step": "displacement_source", "to_step": "displacement_data", "to_field": "data_sources", "to_many": true}
   ],
   "steps": [
     {"id": "experiment", "title": "Experiment", "section": "header", "questions": [{"field": "title", "title": "What is the name of the test?"}]},
     {"id": "specimen", "title": "Specimen", "section": "settings", "kind": "settings/specimen", "questions": [{"field": "title", "title": "What specimen was tested?"}, {"field": "description", "title": "Describe the specimen."}]},
-    {"id": "loading", "title": "Loading machine", "section": "settings", "kind": "settings/testing_machine", "questions": [{"field": "title", "title": "What machine was used?"}, {"field": "type", "title": "What type of loading was applied?"}]},
-    {"id": "measurements", "title": "Measurements", "section": "data_sources", "kind": "data_sources/load_cell", "questions": [{"field": "title", "title": "Which measurement device was used?"}]},
-    {"id": "data", "title": "Data", "section": "data_sets", "kind": "data_sets/generic", "questions": [{"field": "title", "title": "How should the result data be named?"}]}
+    {"id": "loading", "title": "Loading machine", "section": "settings", "kind": "settings/testing_machine", "questions": [{"field": "title", "title": "What machine was used?"}, {"field": "description", "title": "Describe the machine."}, {"field": "type", "title": "What type of loading was applied?"}]},
+    {"id": "force_source", "title": "Force measurement", "section": "data_sources", "kind": "data_sources/load_cell", "questions": [{"field": "title", "title": "Which device measured force?"}, {"field": "capacity", "title": "What is the force capacity?"}]},
+    {"id": "displacement_source", "title": "Displacement measurement", "section": "data_sources", "kind": "data_sources/generic", "questions": [{"field": "title", "title": "Which device measured displacement?"}, {"field": "description", "title": "Describe the displacement measurement."}, {"field": "manufacturer", "title": "Who manufactured it?"}, {"field": "model", "title": "What is its model?"}]},
+    {"id": "force_data", "title": "Force data", "section": "data_sets", "kind": "data_sets/file", "questions": [{"field": "title", "title": "Where is the force CSV data?"}, {"field": "description", "title": "Describe the force data."}, {"field": "folder", "title": "Where is the CSV file stored?"}]},
+    {"id": "displacement_data", "title": "Displacement data", "section": "data_sets", "kind": "data_sets/file", "questions": [{"field": "title", "title": "Where is the displacement CSV data?"}, {"field": "description", "title": "Describe the displacement data."}, {"field": "folder", "title": "Where is the CSV file stored?"}]}
   ]
 }

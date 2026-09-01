@@ -7,6 +7,15 @@ from typing import Any, Dict, Iterable
 
 
 STYLES = {
+    "settings": {
+        "root": {
+            "shape": "hexagon",
+            "fillcolor": "#e8f1fb",
+            "color": "#2b587a",
+            "style": "filled",
+            "penwidth": "3",
+        },
+    },
     "data_sources": {
         "initial": {
             "shape": "ellipse",
@@ -40,6 +49,7 @@ STYLES = {
         },
     },
     "edges": {
+        "setting": {"color": "#2b587a", "style": "dashed"},
         "data_initial": {"color": "black"},
         "data": {"color": "black"},
         "input": {"color": "black"},
@@ -60,6 +70,7 @@ class EdgeRecord:
 class GraphModel:
     """Normalized graph model shared by all render backends."""
 
+    setting_ids: list[str]
     source_ids: list[str]
     data_set_ids: list[str]
     node_ids: list[str]
@@ -95,6 +106,17 @@ def get_data_sources(dataset: Dict[str, Any]) -> Iterable[str]:
     return [value]
 
 
+def get_associated_data_sources(setting: Dict[str, Any]) -> Iterable[str]:
+    """Return data source ids declared as part of an experimental setting."""
+
+    value = setting.get("associated_data_sources")
+    if not value:
+        return []
+    if isinstance(value, list):
+        return [item for item in value if item]
+    return [value]
+
+
 def compute_used_datasets(data: Dict[str, Any]) -> set[str]:
     """Return dataset ids consumed as inputs by intermediate data sources."""
 
@@ -111,11 +133,19 @@ def build_graph_model(data: Dict[str, Any]) -> GraphModel:
     used_datasets = compute_used_datasets(data)
     intermediate_sources = {source.get("id") for source in data.get("data_sources", []) if get_input_data_sets(source)}
 
+    setting_ids = [setting.get("id") for setting in data.get("settings", []) if setting.get("id")]
     source_ids = [source.get("id") for source in data.get("data_sources", []) if source.get("id")]
     data_set_ids = [dataset.get("id") for dataset in data.get("data_sets", []) if dataset.get("id")]
-    node_ids = source_ids + data_set_ids
+    node_ids = setting_ids + source_ids + data_set_ids
 
     edge_records: list[EdgeRecord] = []
+
+    for setting in data.get("settings", []):
+        setting_id = setting.get("id")
+        if not setting_id:
+            continue
+        for source_id in get_associated_data_sources(setting):
+            edge_records.append(EdgeRecord(src=setting_id, dst=source_id, style_key="setting"))
 
     for source in data.get("data_sources", []):
         source_id = source.get("id")
@@ -136,6 +166,7 @@ def build_graph_model(data: Dict[str, Any]) -> GraphModel:
     levels = compute_hierarchical_levels(node_ids, edge_pairs)
 
     return GraphModel(
+        setting_ids=setting_ids,
         source_ids=source_ids,
         data_set_ids=data_set_ids,
         node_ids=node_ids,
@@ -481,9 +512,9 @@ def graphviz_styles_to_pyvis(styles: Dict[str, Any] | None = None) -> Dict[str, 
     """Map Graphviz styles to PyVis styles using a single source of truth."""
 
     graphviz_styles = styles or STYLES
-    pyvis_styles: Dict[str, Any] = {"data_sources": {}, "data_sets": {}, "edges": {}}
+    pyvis_styles: Dict[str, Any] = {"settings": {}, "data_sources": {}, "data_sets": {}, "edges": {}}
 
-    for node_type in ("data_sources", "data_sets"):
+    for node_type in ("settings", "data_sources", "data_sets"):
         for status, attrs in graphviz_styles[node_type].items():
             pyvis_styles[node_type][status] = {
                 "borderWidth": int(attrs.get("penwidth", 2)),
@@ -495,6 +526,9 @@ def graphviz_styles_to_pyvis(styles: Dict[str, Any] | None = None) -> Dict[str, 
             }
 
     for edge_type, attrs in graphviz_styles["edges"].items():
-        pyvis_styles["edges"][edge_type] = {"color": attrs.get("color", "black")}
+        pyvis_styles["edges"][edge_type] = {
+            "color": attrs.get("color", "black"),
+            "dashes": attrs.get("style") == "dashed",
+        }
 
     return pyvis_styles

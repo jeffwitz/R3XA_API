@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>R3XA Editor</title>
-    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/style.css?v={{ app_start }}" />
   </head>
   <body data-app-start="{{ app_start }}">
     <header class="topbar">
@@ -57,6 +57,9 @@
       <section class="panel guided-panel">
         <h2>Guided checklist</h2>
         <p class="muted">Follow the profile steps. This view edits the same canonical JSON document as the other modes.</p>
+        <div class="actions">
+          <button id="guided-prefill" class="ghost" type="button" hidden>Create prefilled workflow</button>
+        </div>
         <div class="guided-navigation">
           <button id="guided-previous" class="ghost" type="button">Previous</button>
           <span id="guided-progress" class="muted"></span>
@@ -112,6 +115,6 @@
         <textarea id="json-input" spellcheck="false"></textarea>
       </section>
     </main>
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v={{ app_start }}"></script>
   </body>
 </html>

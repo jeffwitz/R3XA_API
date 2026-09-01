@@ -228,6 +228,62 @@ button.ghost,
   line-height: 1.35;
 }
 
+.relationship-panel {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding: 0.65rem;
+  border: 1px solid #b7d4ef;
+  border-radius: 6px;
+  background: #f3f8fd;
+}
+
+.relationship-heading {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--text);
+}
+
+.relationship-help {
+  margin-bottom: 0.25rem;
+}
+
+.guided-item-picker {
+  min-width: 180px;
+  max-width: 280px;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid #c9d5e2;
+  border-radius: 6px;
+  background: white;
+  color: var(--text);
+}
+
+.reference-checklist {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.45rem;
+  border: 1px solid #d6dee7;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.reference-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.reference-option input {
+  width: auto;
+  margin: 0;
+}
+
+.reference-clear {
+  align-self: start;
+  margin-top: 0.4rem;
+}
+
 .unit-editor {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -350,6 +406,12 @@ body[data-editor-mode="expert"] .guided-panel {
 .guided-step-block {
   display: grid;
   gap: 0.4rem;
+}
+
+.guided-dependency {
+  padding-left: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
 }
 
 .guided-questions {

@@ -17,6 +17,10 @@ const ensureServerStart = () => {
   if (stored !== appStart) {
     localStorage.setItem("r3xaAppStart", appStart);
     localStorage.removeItem("r3xaDraft");
+    localStorage.removeItem("r3xaDraftLast");
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("r3xaGuidedStepItems:"))
+      .forEach((key) => localStorage.removeItem(key));
   }
 };
 

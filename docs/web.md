@@ -97,6 +97,11 @@ actions. The Advanced view shows the schema-driven forms, while the Expert view
 also exposes the raw JSON editor. Switching views changes visibility only; it
 does not rebuild or discard the canonical document.
 
+Profiles can expose a **Create prefilled workflow** action. It starts a complete
+example document whose Guided fields already have editable values, making it
+possible to inspect the workflow and validate it immediately before replacing
+the illustrative metadata with experimental values.
+
 In Guided mode, validation uses short corrective messages such as “Add the
 required field” or “Choose one of”. Advanced and Expert modes keep the original
 JSON Schema message available for technical diagnosis.
@@ -120,6 +125,23 @@ remains the final authority.
 The Generic profile also exposes every schema-discovered kind in each collection
 step. It is therefore possible to start in Guided mode without first knowing
 which specialized R3XA object to choose.
+
+Profile relationships are pre-filled in Guided mode when the referenced objects
+already exist. An explicit empty selection is preserved, so optional dependencies
+remain under the user's control.
+
+Profiles also describe data dependencies explicitly. When a Guided item is
+created, the editor links the corresponding identifiers instead of leaving the
+collections as unrelated lists. For example, the **Tensile test with 2D DIC**
+profile builds two explicit chains: `Camera → Images → DIC processing →
+2D DIC displacement file` and `Universal testing machine → Machine test
+files`. Both files are final datasets. Camera, machine, and specimen are root
+objects without antecedents. The data-flow edges remain the schema-defined
+`data_sources` and `input_data_sets` identifiers.
+
+Graph exports include settings as root nodes. A dashed edge connects a setting
+to each of its `associated_data_sources`, making the machine and specimen
+context visible alongside the source/dataset dependency graph.
 
 ## Developer contract
 

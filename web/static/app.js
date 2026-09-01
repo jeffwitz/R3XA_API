@@ -22,6 +22,7 @@ const guidedStepsEl = document.getElementById("guided-steps");
 const guidedPreviousEl = document.getElementById("guided-previous");
 const guidedNextEl = document.getElementById("guided-next");
 const guidedProgressEl = document.getElementById("guided-progress");
+const guidedPrefillEl = document.getElementById("guided-prefill");
 const modeButtons = document.querySelectorAll("[data-editor-mode]");
 
 let schemaCatalog = null;
@@ -29,7 +30,29 @@ let uiCatalog = null;
 let editorMode = localStorage.getItem("r3xaEditorMode") || "guided";
 let selectedProfile = localStorage.getItem("r3xaProfile") || "generic";
 let guidedStepIndex = Number(localStorage.getItem("r3xaGuidedStep")) || 0;
+let guidedStepItems = {};
 let syncing = false;
+
+const guidedStepItemsStorageKey = () => `r3xaGuidedStepItems:${selectedProfile}`;
+
+const loadGuidedStepItems = () => {
+  try {
+    const value = JSON.parse(localStorage.getItem(guidedStepItemsStorageKey()) || "{}");
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveGuidedStepItems = () => {
+  localStorage.setItem(guidedStepItemsStorageKey(), JSON.stringify(guidedStepItems));
+};
+
+const selectGuidedStepItem = (stepId, itemId) => {
+  if (itemId) guidedStepItems[stepId] = itemId;
+  else delete guidedStepItems[stepId];
+  saveGuidedStepItems();
+};
 
 const loadDraft = () => {
   const stored = localStorage.getItem("r3xaDraft");
@@ -58,11 +81,18 @@ const setObjectField = (object, key, value, required) => {
   object[key] = value;
 };
 
+const cloneJsonValue = (value) => JSON.parse(JSON.stringify(value));
+
 const fieldLevel = (key) => uiCatalog?.default?.fields?.[key]?.level || "basic";
 
-const isFieldVisible = (key, required = false, forceVisible = false) => {
+const isReferenceMeta = (meta) => {
+  const reference = meta?.ref || meta?.items?.ref;
+  return reference?.endsWith("data_set_id") || reference?.endsWith("data_source_id");
+};
+
+const isFieldVisible = (key, required = false, forceVisible = false, meta = null) => {
   const level = fieldLevel(key);
-  if (required || forceVisible) return true;
+  if (required || forceVisible || isReferenceMeta(meta)) return true;
   if (editorMode === "expert") return true;
   if (editorMode === "advanced") return level !== "expert";
   return level === "basic";
@@ -119,6 +149,112 @@ const appendItem = (sectionName, kind) => {
   syncFormFromJson();
 };
 
+const profileStepItem = (step, payload) => {
+  if (!step.kind) return null;
+  const candidates = (payload[step.section] || []).filter((item) => item.kind === step.kind);
+  const rememberedId = guidedStepItems[step.id];
+  if (rememberedId) {
+    const remembered = candidates.find((item) => item.id === rememberedId);
+    if (remembered) return remembered;
+  }
+  if (candidates.length !== 1) return null;
+  selectGuidedStepItem(step.id, candidates[0].id);
+  return candidates[0];
+};
+
+const stepProperties = (step) => step.section === "header"
+  ? schemaCatalog?.sections?.header?.properties || {}
+  : schemaCatalog?.sections?.[step.section]?.kinds?.[step.kind]?.properties || {};
+
+const applyStepDefaults = (step, target, payload) => {
+  Object.entries(step.defaults || {}).forEach(([key, value]) => {
+    target[key] = cloneJsonValue(value);
+  });
+  Object.entries(stepProperties(step)).forEach(([key, meta]) => {
+    const isGuidedQuestion = (step.questions || []).some((question) => question.field === key);
+    if (!isGuidedQuestion || Object.prototype.hasOwnProperty.call(target, key)) return;
+    target[key] = defaultForField(key, meta, payload);
+  });
+};
+
+const applyProfileLinks = (profile, payload, options = {}) => {
+  const updates = new Map();
+  (profile?.links || []).forEach((link) => {
+    const fromStep = profile.steps?.find((step) => step.id === link.from_step);
+    const toStep = profile.steps?.find((step) => step.id === link.to_step);
+    if (!fromStep || !toStep || !fromStep.kind || !toStep.kind) return;
+    const fromItem = profileStepItem(fromStep, payload);
+    const toItem = profileStepItem(toStep, payload);
+    if (!fromItem?.id || !toItem || !link.to_field) return;
+    const fields = updates.get(toItem) || new Map();
+    const update = fields.get(link.to_field) || {ids: [], many: false};
+    update.ids.push(fromItem.id);
+    update.many = update.many || link.to_many !== false || Array.isArray(toItem[link.to_field]);
+    fields.set(link.to_field, update);
+    updates.set(toItem, fields);
+  });
+  updates.forEach((fields, item) => {
+    fields.forEach((update, field) => {
+      const ids = [...new Set(update.ids)];
+      if (!options.overwrite && Object.prototype.hasOwnProperty.call(item, field)) return;
+      item[field] = update.many ? ids : ids[0];
+    });
+  });
+};
+
+const appendGuidedItem = (step, selectedKind = step.kind) => {
+  const payload = readPayload();
+  const meta = schemaCatalog?.sections?.[step.section]?.kinds?.[selectedKind];
+  const profile = uiCatalog?.profiles?.[selectedProfile];
+  if (!payload || !meta || !profile) return;
+  payload[step.section] = payload[step.section] || [];
+  const item = createItem(selectedKind, meta, payload);
+  applyStepDefaults(step, item, payload);
+  payload[step.section].push(item);
+  selectGuidedStepItem(step.id, item.id);
+  applyProfileLinks(profile, payload, {overwrite: true});
+  inputEl.value = JSON.stringify(payload, null, 2);
+  saveDraft();
+  syncFormFromJson();
+};
+
+const profileHasPrefilledWorkflow = (profile) => Boolean(
+  profile?.steps?.some((step) => step.kind) && profile?.steps?.some(
+    (step) => Object.keys(step.defaults || {}).length > 0,
+  ),
+);
+
+const createPrefilledWorkflow = () => {
+  const profile = uiCatalog?.profiles?.[selectedProfile];
+  if (!profile || !profileHasPrefilledWorkflow(profile)) return;
+  const current = readPayload();
+  const hasItems = ["settings", "data_sources", "data_sets"].some((section) => current?.[section]?.length);
+  if (hasItems && !window.confirm("Replace the current document with the prefilled workflow?")) return;
+
+  const payload = cloneJsonValue(defaultPayload);
+  guidedStepItems = {};
+  profile.steps.forEach((step) => {
+    if (step.section === "header") {
+      applyStepDefaults(step, payload, payload);
+      return;
+    }
+    if (!step.kind) return;
+    const meta = schemaCatalog?.sections?.[step.section]?.kinds?.[step.kind];
+    if (!meta) return;
+    const item = createItem(step.kind, meta, payload);
+    applyStepDefaults(step, item, payload);
+    payload[step.section] = payload[step.section] || [];
+    payload[step.section].push(item);
+    selectGuidedStepItem(step.id, item.id);
+  });
+  applyProfileLinks(profile, payload, {overwrite: true});
+  guidedStepIndex = 0;
+  localStorage.setItem("r3xaGuidedStep", "0");
+  inputEl.value = JSON.stringify(payload, null, 2);
+  saveDraft();
+  syncFormFromJson();
+};
+
 const hasValue = (value) => {
   if (Array.isArray(value)) return value.length > 0;
   return value !== undefined && value !== null && value !== "";
@@ -147,7 +283,8 @@ const stepIsComplete = (step, payload) => {
   const items = payload[step.section] || [];
   if (!step.kind) return items.length > 0;
   const meta = schemaCatalog?.sections?.[step.section]?.kinds?.[step.kind];
-  return Boolean(meta && items.some((item) => item.kind === step.kind && itemIsComplete(item, meta)));
+  const item = profileStepItem(step, payload);
+  return Boolean(meta && item && itemIsComplete(item, meta));
 };
 
 const stepCanAdvance = (step, payload) => {
@@ -155,7 +292,7 @@ const stepCanAdvance = (step, payload) => {
   const target = step.section === "header"
     ? payload
     : step.kind
-      ? guidedItem(step, payload)
+      ? profileStepItem(step, payload)
       : payload[step.section] || [];
   if (!target) return false;
   return (step.questions || [])
@@ -179,16 +316,13 @@ const conditionMatches = (condition, payload) => {
   return true;
 };
 
-const guidedItem = (step, payload) => {
-  if (!step.kind) return null;
-  return (payload[step.section] || []).find((item) => item.kind === step.kind) || null;
-};
-
 const renderGuidedQuestions = (step, payload, container) => {
+  const questionFields = new Set();
   (step.questions || []).forEach((question) => {
     if (!conditionMatches(question.when, payload)) return;
-    const target = step.section === "header" ? payload : guidedItem(step, payload);
+    const target = step.section === "header" ? payload : profileStepItem(step, payload);
     if (!target || !question.field) return;
+    questionFields.add(question.field);
     const properties = step.section === "header"
       ? schemaCatalog.sections.header.properties
       : schemaCatalog.sections[step.section].kinds[step.kind]?.properties;
@@ -210,7 +344,7 @@ const renderGuidedQuestions = (step, payload, container) => {
       (value) => {
         const currentPayload = readPayload();
         if (!currentPayload) return;
-        const currentTarget = step.section === "header" ? currentPayload : guidedItem(step, currentPayload);
+        const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
         if (!currentTarget) return;
         setObjectField(currentTarget, question.field, value, required);
         inputEl.value = JSON.stringify(currentPayload, null, 2);
@@ -226,12 +360,64 @@ const renderGuidedQuestions = (step, payload, container) => {
       }
     );
   });
+  const target = step.section === "header" ? payload : profileStepItem(step, payload);
+  const properties = step.section === "header"
+    ? schemaCatalog.sections.header.properties
+    : schemaCatalog.sections[step.section]?.kinds?.[step.kind]?.properties;
+  if (!target || !properties) return;
+  const relationshipEntries = Object.entries(properties).filter(([, meta]) => isReferenceMeta(meta));
+  if (relationshipEntries.length) {
+    const heading = document.createElement("strong");
+    heading.className = "relationship-heading";
+    heading.textContent = "Optional relationships (pre-filled when possible)";
+    container.appendChild(heading);
+    const help = document.createElement("small");
+    help.className = "field-description relationship-help";
+    help.textContent = "Select existing data sources or data sets. Leave empty when there is no dependency.";
+    container.appendChild(help);
+  }
+  relationshipEntries.forEach(([key, meta]) => {
+    if (questionFields.has(key) || !isReferenceMeta(meta)) return;
+    renderField(
+      container,
+      key,
+      meta,
+      target[key],
+      (value) => {
+        const currentPayload = readPayload();
+        if (!currentPayload) return;
+        const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
+        if (!currentTarget) return;
+        setObjectField(currentTarget, key, value, false);
+        inputEl.value = JSON.stringify(currentPayload, null, 2);
+        saveDraft();
+        refreshGuidedNavigation();
+      },
+      {
+        required: false,
+        forceVisible: true,
+        payload,
+        id: `guided-${step.id}-${key}`,
+        path: step.section === "header" ? key : `${step.section}/0/${key}`,
+      }
+    );
+  });
 };
 
 const renderGuidedSteps = () => {
   if (!guidedStepsEl || !uiCatalog || !schemaCatalog) return;
   const profile = uiCatalog.profiles?.[selectedProfile];
   const steps = profile?.steps || [];
+  if (guidedPrefillEl) guidedPrefillEl.hidden = !profileHasPrefilledWorkflow(profile);
+  if (profile?.links?.length) {
+    const payload = readPayload() || {};
+    const before = JSON.stringify(payload);
+    applyProfileLinks(profile, payload);
+    if (JSON.stringify(payload) !== before) {
+      inputEl.value = JSON.stringify(payload, null, 2);
+      saveDraft();
+    }
+  }
   guidedStepIndex = Math.min(Math.max(guidedStepIndex, 0), Math.max(steps.length - 1, 0));
   guidedStepsEl.innerHTML = "";
   guidedStepsEl.className = "guided-steps";
@@ -256,6 +442,35 @@ const renderGuidedSteps = () => {
     label.className = "guided-step-label";
     label.textContent = `${complete ? "✓" : "○"} ${step.title || step.id}`;
     row.appendChild(label);
+    if (step.kind) {
+      const candidates = (payload[step.section] || []).filter((item) => item.kind === step.kind);
+      if (candidates.length) {
+        const picker = document.createElement("select");
+        picker.className = "guided-item-picker";
+        picker.setAttribute("aria-label", `Select ${step.title || step.id}`);
+        const activeItem = profileStepItem(step, payload);
+        if (!activeItem) {
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "Choose an existing item…";
+          picker.appendChild(placeholder);
+        }
+        candidates.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.title || item.id;
+          option.selected = item.id === activeItem?.id;
+          picker.appendChild(option);
+        });
+        picker.addEventListener("click", (event) => event.stopPropagation());
+        picker.addEventListener("change", (event) => {
+          event.stopPropagation();
+          selectGuidedStepItem(step.id, picker.value);
+          renderGuidedSteps();
+        });
+        row.appendChild(picker);
+      }
+    }
     if (step.section !== "header" && !complete) {
       const kinds = step.kind
         ? [[step.kind, schemaCatalog.sections[step.section].kinds[step.kind]]]
@@ -266,9 +481,19 @@ const renderGuidedSteps = () => {
         addButton.className = "ghost";
         addButton.textContent = `Add ${meta.title || kind}`;
         addButton.addEventListener("click", (event) => event.stopPropagation());
-        addButton.addEventListener("click", () => appendItem(step.section, kind));
+        addButton.addEventListener("click", () => appendGuidedItem(step, kind));
         row.appendChild(addButton);
       });
+    }
+    const incomingLinks = (profile.links || []).filter((link) => link.to_step === step.id);
+    if (incomingLinks.length) {
+      const dependency = document.createElement("small");
+      dependency.className = "guided-dependency";
+      dependency.textContent = `Uses: ${incomingLinks.map((link) => {
+        const sourceStep = steps.find((candidate) => candidate.id === link.from_step);
+        return sourceStep?.title || link.from_step;
+      }).join(", ")}`;
+      block.appendChild(dependency);
     }
     block.appendChild(row);
     const questions = document.createElement("div");
@@ -303,7 +528,7 @@ const defaultForField = (key, meta, payload) => {
 
   if (key === "id") return makeId();
   if (key === "title") return `New ${meta.title || "item"}`;
-  if (key === "description") return "";
+  if (key === "description") return "Not specified.";
   if (key === "file_type") return "application/octet-stream";
   if (key === "path" || key === "folder") return "data/";
   if (key === "filename") return "data.csv";
@@ -320,7 +545,7 @@ const defaultForField = (key, meta, payload) => {
     return dataSetId ? [dataSetId] : [];
   }
 
-  if (meta.type === "string") return "";
+  if (meta.type === "string") return "Not specified";
   if (meta.type === "number" || meta.type === "integer") return 0;
   if (meta.type === "boolean") return false;
   if (meta.type === "array") return [];
@@ -370,8 +595,9 @@ const isUnitMeta = (meta) => meta?.ref === "#/$defs/types/unit";
 
 const referenceSection = (meta, options) => {
   if (options.referenceSection) return options.referenceSection;
-  if (meta?.ref?.endsWith("data_set_id")) return "data_sets";
-  if (meta?.ref?.endsWith("data_source_id")) return "data_sources";
+  const reference = meta?.ref || meta?.items?.ref;
+  if (reference?.endsWith("data_set_id")) return "data_sets";
+  if (reference?.endsWith("data_source_id")) return "data_sources";
   return null;
 };
 
@@ -382,42 +608,95 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
   if (options.path) wrapper.dataset.jsonPath = options.path;
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  const labels = {
+    data_sources: "Related data sources",
+    input_data_sets: "Input data sets",
+    associated_data_sources: "Associated data sources",
+  };
+  label.textContent = `${labels[key] || meta.title || key}${options.required ? " *" : ""}`;
   const fieldId = options.id || `field-${key}`;
   label.setAttribute("for", fieldId);
   wrapper.appendChild(label);
 
-  const control = document.createElement("select");
-  control.id = fieldId;
-  control.name = key;
-  control.multiple = meta.type === "array";
-  if (control.multiple) control.size = 3;
   const section = referenceSection(meta, options);
   const known = options.payload?.[section] || [];
-  const current = Array.isArray(value) ? value : value ? [value] : [];
+  const currentIds = Array.isArray(value) ? value : value ? [value] : [];
   const choices = new Map(known.map((item) => [item.id, item.title || item.kind || item.id]));
-  current.forEach((id) => {
+  currentIds.forEach((id) => {
     if (!choices.has(id)) choices.set(id, `${id} (not loaded)`);
   });
-  if (!control.multiple && !current.length) {
-    const blank = document.createElement("option");
-    blank.value = "";
-    blank.textContent = "Select an object…";
-    control.appendChild(blank);
+  if (meta.type === "array") {
+    const selectedIds = new Set(currentIds);
+    const checklist = document.createElement("div");
+    checklist.id = fieldId;
+    checklist.className = "reference-checklist";
+    checklist.setAttribute("role", "group");
+    checklist.setAttribute("aria-label", label.textContent);
+    if (!choices.size) {
+      const empty = document.createElement("small");
+      empty.className = "field-description";
+      empty.textContent = "No compatible objects have been created yet.";
+      checklist.appendChild(empty);
+    }
+    choices.forEach((title, id) => {
+      if (!id) return;
+      const option = document.createElement("label");
+      option.className = "reference-option";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedIds.has(id);
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) selectedIds.add(id);
+        else selectedIds.delete(id);
+        onChange([...selectedIds]);
+      });
+      const text = document.createElement("span");
+      text.textContent = title;
+      option.append(checkbox, text);
+      checklist.appendChild(option);
+    });
+    wrapper.appendChild(checklist);
+    if (currentIds.length) {
+      const clearButton = document.createElement("button");
+      clearButton.type = "button";
+      clearButton.className = "ghost reference-clear";
+      clearButton.textContent = "Clear selection";
+      clearButton.addEventListener("click", () => {
+        selectedIds.clear();
+        checklist.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+        onChange([]);
+      });
+      wrapper.appendChild(clearButton);
+    }
+  } else {
+    const control = document.createElement("select");
+    control.id = fieldId;
+    control.name = key;
+    if (!currentIds.length) {
+      const blank = document.createElement("option");
+      blank.value = "";
+      blank.textContent = "Select an object…";
+      control.appendChild(blank);
+    }
+    choices.forEach((title, id) => {
+      if (!id) return;
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = title;
+      option.selected = currentIds.includes(id);
+      control.appendChild(option);
+    });
+    control.addEventListener("change", () => onChange(control.value));
+    wrapper.appendChild(control);
   }
-  choices.forEach((title, id) => {
-    if (!id) return;
-    const option = document.createElement("option");
-    option.value = id;
-    option.textContent = title;
-    option.selected = current.includes(id);
-    control.appendChild(option);
-  });
-  control.addEventListener("change", () => {
-    const selected = Array.from(control.selectedOptions).map((option) => option.value).filter(Boolean);
-    onChange(meta.type === "array" ? selected : selected[0]);
-  });
-  wrapper.appendChild(control);
+  const help = document.createElement("small");
+  help.className = "field-description";
+  help.textContent = meta.type === "array"
+    ? "Optional: check every upstream object this item depends on. Selections are preserved."
+    : "Optional: select an existing item from this document.";
+  wrapper.appendChild(help);
   if (meta.description) {
     const description = document.createElement("small");
     description.className = "field-description";
@@ -425,7 +704,7 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
     wrapper.appendChild(description);
   }
   container.appendChild(wrapper);
-  return control;
+  return wrapper;
 };
 
 const renderUnitField = (container, key, meta, value, onChange, options) => {
@@ -588,7 +867,7 @@ const renderObjectArrayField = (container, key, meta, value, onChange, options) 
 };
 
 const renderField = (container, key, meta, value, onChange, options = {}) => {
-  if (!isFieldVisible(key, options.required)) return null;
+  if (!isFieldVisible(key, options.required, options.forceVisible, meta)) return null;
   if (isUnitMeta(meta)) return renderUnitField(container, key, meta, value, onChange, options);
   if (meta.type === "array" && isUnitMeta(meta.items)) {
     return renderUnitArrayField(container, key, meta, value, onChange, options);
@@ -888,9 +1167,9 @@ const buildArrayEditor = (container, sectionName) => {
       form.appendChild(unknown);
     } else {
       const required = new Set(meta.required || []);
-      Object.entries(meta.properties || {}).forEach(([key, propertyMeta]) => {
+      const renderItemField = (key, propertyMeta, target = form) => {
         renderField(
-          form,
+          target,
           key,
           propertyMeta,
           item[key],
@@ -912,7 +1191,25 @@ const buildArrayEditor = (container, sectionName) => {
             path: `${sectionName}/${index}/${key}`,
           }
         );
-      });
+      };
+      const entries = Object.entries(meta.properties || {});
+      const relationshipEntries = entries.filter(([, propertyMeta]) => isReferenceMeta(propertyMeta));
+      if (relationshipEntries.length) {
+        const relationshipPanel = document.createElement("div");
+        relationshipPanel.className = "relationship-panel";
+        const heading = document.createElement("strong");
+        heading.textContent = "Optional relationships (pre-filled when possible)";
+        relationshipPanel.appendChild(heading);
+        const help = document.createElement("small");
+        help.className = "field-description";
+        help.textContent = "Select existing data sources or data sets. Leave empty when there is no dependency.";
+        relationshipPanel.appendChild(help);
+        relationshipEntries.forEach(([key, propertyMeta]) => renderItemField(key, propertyMeta, relationshipPanel));
+        form.appendChild(relationshipPanel);
+      }
+      entries
+        .filter(([, propertyMeta]) => !isReferenceMeta(propertyMeta))
+        .forEach(([key, propertyMeta]) => renderItemField(key, propertyMeta));
     }
     card.appendChild(form);
     list.appendChild(card);
@@ -958,6 +1255,8 @@ const renderSummary = async () => {
 
 const reset = () => {
   inputEl.value = JSON.stringify(defaultPayload, null, 2);
+  guidedStepItems = {};
+  saveGuidedStepItems();
   outputEl.textContent = "";
   saveDraft();
   syncFormFromJson();
@@ -1030,6 +1329,8 @@ const loadJsonFile = (file) => {
       return;
     }
     inputEl.value = reader.result;
+    guidedStepItems = {};
+    saveGuidedStepItems();
     saveDraft();
     syncFormFromJson();
   };
@@ -1043,6 +1344,10 @@ const ensureServerStart = () => {
   if (stored !== appStart) {
     localStorage.setItem("r3xaAppStart", appStart);
     localStorage.removeItem("r3xaDraft");
+    localStorage.removeItem("r3xaDraftLast");
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("r3xaGuidedStepItems:"))
+      .forEach((key) => localStorage.removeItem(key));
   }
 };
 
@@ -1064,6 +1369,7 @@ if (profileSelectEl) {
   profileSelectEl.addEventListener("change", () => {
     selectedProfile = profileSelectEl.value;
     guidedStepIndex = 0;
+    guidedStepItems = loadGuidedStepItems();
     localStorage.setItem("r3xaProfile", selectedProfile);
     localStorage.setItem("r3xaGuidedStep", "0");
     syncFormFromJson();
@@ -1084,6 +1390,7 @@ if (guidedNextEl) {
     renderGuidedSteps();
   });
 }
+if (guidedPrefillEl) guidedPrefillEl.addEventListener("click", createPrefilledWorkflow);
 inputEl.addEventListener("input", () => {
   saveDraft();
   syncFormFromJson();
@@ -1092,4 +1399,5 @@ inputEl.addEventListener("input", () => {
 ensureServerStart();
 updateEditorMode();
 inputEl.value = loadDraft();
+guidedStepItems = loadGuidedStepItems();
 renderSummary();

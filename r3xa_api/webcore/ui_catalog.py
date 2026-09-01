@@ -70,6 +70,23 @@ def _validate_profile_questions(
             properties = {}
         else:
             raise ValueError(f"Profile {profile.get('id', '<unknown>')} references unknown section: {section}")
+        defaults = step.get("defaults", {})
+        if not isinstance(defaults, dict):
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} step {step_id} defaults must be an object"
+            )
+        protected_defaults = {"id", "kind"}.intersection(defaults)
+        if protected_defaults:
+            names = ", ".join(sorted(protected_defaults))
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} step {step_id} cannot default: {names}"
+            )
+        unknown_defaults = set(defaults) - set(properties)
+        if unknown_defaults:
+            names = ", ".join(sorted(unknown_defaults))
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} step {step_id} references unknown default fields: {names}"
+            )
         questions = step.get("questions", [])
         if not isinstance(questions, list):
             raise ValueError(
@@ -85,6 +102,53 @@ def _validate_profile_questions(
                 raise ValueError(
                     f"Profile {profile.get('id', '<unknown>')} references unknown field: {field}"
                 )
+
+
+def _validate_profile_links(
+    profile: Dict[str, Any], schema_catalog: Dict[str, Any]
+) -> None:
+    links = profile.get("links", [])
+    if not isinstance(links, list):
+        raise ValueError(f"Profile {profile.get('id', '<unknown>')} links must be a list")
+    steps = {
+        step["id"]: step
+        for step in profile.get("steps", [])
+        if isinstance(step, dict) and isinstance(step.get("id"), str)
+    }
+    for link in links:
+        if not isinstance(link, dict):
+            raise ValueError(f"Profile {profile.get('id', '<unknown>')} links must contain objects")
+        from_step = steps.get(link.get("from_step"))
+        to_step = steps.get(link.get("to_step"))
+        if from_step is None or to_step is None:
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} link references an unknown step"
+            )
+        if not isinstance(from_step.get("kind"), str) or not isinstance(to_step.get("kind"), str):
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} links require kind-specific steps"
+            )
+        section_catalog = schema_catalog["sections"].get(to_step.get("section"), {})
+        kind_catalog = section_catalog.get("kinds", {}).get(to_step["kind"], {})
+        field = link.get("to_field")
+        if not isinstance(field, str):
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} link references unknown target field: {field}"
+            )
+        field_meta = kind_catalog.get("properties", {}).get(field)
+        if field_meta is None:
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} link references unknown target field: {field}"
+            )
+        to_many = link.get("to_many", True)
+        if not isinstance(to_many, bool):
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} link to {field} must define a boolean to_many"
+            )
+        if to_many and field_meta.get("type") != "array":
+            raise ValueError(
+                f"Profile {profile.get('id', '<unknown>')} link target must be an array: {field}"
+            )
 
 
 def build_ui_catalog(
@@ -104,6 +168,7 @@ def build_ui_catalog(
                 names = ", ".join(sorted(unknown))
                 raise ValueError(f"Profile {entry.name} references unknown kinds: {names}")
             _validate_profile_questions(profile, schema_catalog)
+            _validate_profile_links(profile, schema_catalog)
             profile_id = profile.get("id")
             if not isinstance(profile_id, str) or not profile_id:
                 raise ValueError(f"Profile {entry.name} must define a non-empty id")
