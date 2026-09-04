@@ -88,7 +88,7 @@ dot -V
 
 The editor offers three views over the same JSON document:
 
-- **Guided**: choose an experience profile and follow a checklist of recommended objects. Technical fields are hidden unless they are required by the schema; the generic object forms are replaced by the current business step.
+- **Guided**: choose an experience profile and follow a checklist of recommended objects. Technical fields are hidden unless they are required by the schema or supplied by the selected example profile; the generic object forms are replaced by the current business step.
 - **Advanced**: add any schema-discovered object and edit user-facing fields without opening the raw JSON editor.
 - **Expert**: expose every field, including `id`, `kind`, references, and the canonical JSON editor.
 
@@ -100,7 +100,13 @@ does not rebuild or discard the canonical document.
 Profiles can expose a **Create prefilled workflow** action. It starts a complete
 example document whose Guided fields already have editable values, making it
 possible to inspect the workflow and validate it immediately before replacing
-the illustrative metadata with experimental values.
+the illustrative metadata with experimental values. Additional profile values
+are displayed for review, and saving is blocked until the example values have
+been reviewed.
+
+The Guided view starts with the 2D DIC profile when no previously selected
+profile is available. The Generic profile remains available when a free-form
+document is preferable.
 
 In Guided mode, validation uses short corrective messages such as “Add the
 required field” or “Choose one of”. Advanced and Expert modes keep the original
@@ -130,9 +136,14 @@ Profile relationships are pre-filled in Guided mode when the referenced objects
 already exist. An explicit empty selection is preserved, so optional dependencies
 remain under the user's control. The available prefilled profiles cover camera
 acquisition, tabular measurements, mechanical tests, torsion tests, fatigue tests
-with overload, X-ray tomography with DVC, in-situ tensile tests, and the 2D DIC
-workflow. The Generic profile remains available for free-form schema-driven
-construction.
+with overload, X-ray tomography with DVC, in-situ tensile tests, 2D DIC, and
+stereo-DIC workflows. The Stereo-DIC profile uses `settings/stereorig` to
+associate two cameras with one stereo rig, then links the left and right image
+datasets to stereo-DIC processing. The Generic profile remains available for
+free-form schema-driven construction.
+
+The stereo-rig association identifies which cameras belong to the same rig;
+it does not by itself encode a timing or lighting-synchronization protocol.
 
 Profiles also describe data dependencies explicitly. When a Guided item is
 created, the editor links the corresponding identifiers instead of leaving the

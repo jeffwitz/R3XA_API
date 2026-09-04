@@ -9,7 +9,12 @@ from r3xa_api.validate import validate
 
 
 def _prefilled_profile_document(profile: dict) -> dict:
-    payload = {"settings": [], "data_sources": [], "data_sets": []}
+    payload = {
+        "version": build_schema_catalog()["schema_version"],
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
     steps = {step["id"]: step for step in profile["steps"]}
     items = {}
     for step in profile["steps"]:
@@ -178,6 +183,7 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
         "fatigue_with_overload",
         "tomography",
         "in_situ_tensile",
+        "stereo_dic",
     }
     assert catalog["profiles"]["dic_2d"]["steps"][-2]["kind"] == "data_sources/dic_measurement"
     assert catalog["profiles"]["dic_2d"]["steps"][0]["questions"][0]["field"] == "title"
@@ -280,6 +286,18 @@ def test_prefilled_dic_profile_builds_a_valid_dependency_chain() -> None:
                 ("camera_id", "images_id"),
                 ("images_id", "dic_id"),
                 ("dic_id", "displacement_fields_id"),
+            },
+        ),
+        (
+            "stereo_dic",
+            {
+                ("stereo_rig_id", "camera_left_id"),
+                ("stereo_rig_id", "camera_right_id"),
+                ("camera_left_id", "left_images_id"),
+                ("camera_right_id", "right_images_id"),
+                ("left_images_id", "stereo_dic_source_id"),
+                ("right_images_id", "stereo_dic_source_id"),
+                ("stereo_dic_source_id", "displacement_fields_id"),
             },
         ),
     ],

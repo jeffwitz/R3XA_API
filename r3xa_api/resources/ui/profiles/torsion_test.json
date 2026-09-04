@@ -23,7 +23,6 @@
       "defaults": {
         "title": "Torsion test",
         "description": "Prefilled example of a torsion test with torque, angle, and camera metadata.",
-        "version": "2024.7.1",
         "authors": "R3XA Team",
         "date": "2026-09-01"
       },

@@ -18,7 +18,6 @@
       "defaults": {
         "title": "Camera image acquisition",
         "description": "Prefilled example with a camera and an image sequence.",
-        "version": "2024.7.1",
         "authors": "R3XA Team",
         "date": "2026-09-01"
       },

@@ -421,6 +421,28 @@ body[data-editor-mode="expert"] .guided-panel {
   padding: 0.6rem 0.8rem 0.2rem;
 }
 
+.template-review-heading,
+.template-review-help {
+  grid-column: 1 / -1;
+}
+
+.template-review-heading {
+  margin-top: 0.5rem;
+  color: #9a6700;
+}
+
+.data-set-file-field {
+  padding: 0.6rem;
+  border: 1px solid #d8dee4;
+  border-radius: 0.4rem;
+  background: #f8fafc;
+}
+
+.data-set-file-field > strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
 .guided-step.is-complete {
   border-color: #63a86b;
   background: #f1fbf2;

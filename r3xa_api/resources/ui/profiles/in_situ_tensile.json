@@ -24,7 +24,6 @@
       "defaults": {
         "title": "In-situ tensile test",
         "description": "Prefilled example combining tensile loading, camera acquisition, and 2D DIC measurement.",
-        "version": "2024.7.1",
         "authors": "R3XA Team",
         "date": "2026-09-01"
       },

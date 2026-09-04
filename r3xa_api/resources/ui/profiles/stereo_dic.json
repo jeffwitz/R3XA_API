@@ -1,0 +1,229 @@
+{
+  "id": "stereo_dic",
+  "title": "Stereo-DIC with a stereo rig",
+  "description": "A prefilled stereo-DIC workflow associating two cameras with one stereo rig, linking their image sequences to stereo-DIC processing, and exporting a final displacement-field file.",
+  "recommended_kinds": [
+    "settings/specimen",
+    "settings/stereorig",
+    "data_sources/camera",
+    "data_sources/dic_measurement",
+    "data_sets/list",
+    "data_sets/file"
+  ],
+  "links": [
+    {"from_step": "camera_left", "to_step": "stereo_rig", "to_field": "associated_data_sources", "to_many": true},
+    {"from_step": "camera_right", "to_step": "stereo_rig", "to_field": "associated_data_sources", "to_many": true},
+    {"from_step": "camera_left", "to_step": "left_images", "to_field": "data_sources", "to_many": true},
+    {"from_step": "camera_right", "to_step": "right_images", "to_field": "data_sources", "to_many": true},
+    {"from_step": "left_images", "to_step": "stereo_dic_source", "to_field": "input_data_sets", "to_many": true},
+    {"from_step": "right_images", "to_step": "stereo_dic_source", "to_field": "input_data_sets", "to_many": true},
+    {"from_step": "stereo_dic_source", "to_step": "displacement_fields", "to_field": "data_sources", "to_many": true}
+  ],
+  "steps": [
+    {
+      "id": "experiment",
+      "title": "Experiment",
+      "section": "header",
+      "defaults": {
+        "title": "Stereo-DIC tensile test",
+        "description": "Prefilled example of a stereo-DIC experiment using two cameras mounted on one stereo rig.",
+        "authors": "R3XA Team",
+        "date": "2026-09-02"
+      },
+      "questions": [
+        {"field": "title", "title": "What is the name of the experiment?", "required": true},
+        {"field": "description", "title": "How would you describe the experiment?", "required": true},
+        {"field": "authors", "title": "Who performed the experiment?"},
+        {"field": "date", "title": "When was it performed?"}
+      ]
+    },
+    {
+      "id": "specimen",
+      "title": "Specimen",
+      "section": "settings",
+      "kind": "settings/specimen",
+      "defaults": {
+        "title": "Stereo-DIC tensile specimen",
+        "description": "Flat specimen prepared for a tensile test with a speckle pattern for stereo-DIC.",
+        "sizes": [
+          {"kind": "unit", "title": "gauge length", "value": 50.0, "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "width", "value": 12.5, "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "thickness", "value": 1.0, "unit": "mm", "scale": 1.0}
+        ],
+        "patterning_technique": "White paint with black speckles"
+      },
+      "questions": [
+        {"field": "title", "title": "What specimen was tested?", "required": true},
+        {"field": "description", "title": "Describe the specimen.", "required": true},
+        {"field": "sizes", "title": "What are the specimen dimensions?"},
+        {"field": "patterning_technique", "title": "How was the specimen patterned?"}
+      ]
+    },
+    {
+      "id": "stereo_rig",
+      "title": "Stereo rig",
+      "section": "settings",
+      "kind": "settings/stereorig",
+      "defaults": {
+        "title": "StereoRig",
+        "description": "Two cameras mounted on the same stereo rig for 3D surface measurement.",
+        "stereo_angle": {"kind": "unit", "title": "stereo angle", "value": 25.0, "unit": "deg", "scale": 1.0},
+        "calibration_target_type": "Checkerboard",
+        "calibration_target_size": [
+          {"kind": "unit", "title": "width", "value": 200.0, "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "height", "value": 150.0, "unit": "mm", "scale": 1.0}
+        ]
+      },
+      "questions": [
+        {"field": "title", "title": "How should the stereo rig be named?", "required": true},
+        {"field": "description", "title": "Describe the stereo rig.", "required": true},
+        {"field": "stereo_angle", "title": "What is the angle between the camera axes?", "required": true},
+        {"field": "calibration_target_type", "title": "Which calibration target was used?"},
+        {"field": "calibration_target_size", "title": "What is the calibration target size?"}
+      ]
+    },
+    {
+      "id": "camera_left",
+      "title": "Left camera",
+      "section": "data_sources",
+      "kind": "data_sources/camera",
+      "defaults": {
+        "title": "Camera 0",
+        "description": "Left camera of the stereo rig recording the specimen.",
+        "output_components": 1,
+        "output_dimension": "surface",
+        "output_units": [{"kind": "unit", "title": "graylevel", "unit": "gl", "scale": 1.0}],
+        "manufacturer": "Not specified",
+        "model": "Not specified",
+        "image_size": [
+          {"kind": "unit", "title": "width", "value": 2448, "unit": "px", "scale": 1.0},
+          {"kind": "unit", "title": "height", "value": 2048, "unit": "px", "scale": 1.0}
+        ]
+      },
+      "questions": [
+        {"field": "title", "title": "How should the left camera be named?", "required": true},
+        {"field": "description", "title": "Describe the left camera.", "required": true},
+        {"field": "manufacturer", "title": "Who manufactured the left camera?"},
+        {"field": "model", "title": "What is the left camera model?"},
+        {"field": "image_size", "title": "What is the left-camera image resolution?", "required": true}
+      ]
+    },
+    {
+      "id": "camera_right",
+      "title": "Right camera",
+      "section": "data_sources",
+      "kind": "data_sources/camera",
+      "defaults": {
+        "title": "Camera 1",
+        "description": "Right camera of the stereo rig recording the specimen.",
+        "output_components": 1,
+        "output_dimension": "surface",
+        "output_units": [{"kind": "unit", "title": "graylevel", "unit": "gl", "scale": 1.0}],
+        "manufacturer": "Not specified",
+        "model": "Not specified",
+        "image_size": [
+          {"kind": "unit", "title": "width", "value": 2448, "unit": "px", "scale": 1.0},
+          {"kind": "unit", "title": "height", "value": 2048, "unit": "px", "scale": 1.0}
+        ]
+      },
+      "questions": [
+        {"field": "title", "title": "How should the right camera be named?", "required": true},
+        {"field": "description", "title": "Describe the right camera.", "required": true},
+        {"field": "manufacturer", "title": "Who manufactured the right camera?"},
+        {"field": "model", "title": "What is the right camera model?"},
+        {"field": "image_size", "title": "What is the right-camera image resolution?", "required": true}
+      ]
+    },
+    {
+      "id": "left_images",
+      "title": "Left images",
+      "section": "data_sets",
+      "kind": "data_sets/list",
+      "defaults": {
+        "title": "Left camera images",
+        "description": "Image sequence recorded by the left camera.",
+        "path": "images/left/",
+        "file_type": "image/tiff",
+        "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
+        "timestamps": [0.0],
+        "data": ["left/image_0000.tif"]
+      },
+      "questions": [
+        {"field": "title", "title": "How should the left image data be named?", "required": true},
+        {"field": "description", "title": "Describe the left image sequence.", "required": true},
+        {"field": "path", "title": "Where are the left images stored?"},
+        {"field": "file_type", "title": "What type of left image files are they?", "required": true}
+      ]
+    },
+    {
+      "id": "right_images",
+      "title": "Right images",
+      "section": "data_sets",
+      "kind": "data_sets/list",
+      "defaults": {
+        "title": "Right camera images",
+        "description": "Image sequence recorded by the right camera.",
+        "path": "images/right/",
+        "file_type": "image/tiff",
+        "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
+        "timestamps": [0.0],
+        "data": ["right/image_0000.tif"]
+      },
+      "questions": [
+        {"field": "title", "title": "How should the right image data be named?", "required": true},
+        {"field": "description", "title": "Describe the right image sequence.", "required": true},
+        {"field": "path", "title": "Where are the right images stored?"},
+        {"field": "file_type", "title": "What type of right image files are they?", "required": true}
+      ]
+    },
+    {
+      "id": "stereo_dic_source",
+      "title": "Stereo-DIC processing",
+      "section": "data_sources",
+      "kind": "data_sources/dic_measurement",
+      "defaults": {
+        "title": "Stereo DIC",
+        "description": "Stereo digital image correlation processing applied to the left and right image sequences.",
+        "output_components": 3,
+        "output_dimension": "surface",
+        "output_units": [
+          {"kind": "unit", "title": "x displacement", "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "y displacement", "unit": "mm", "scale": 1.0},
+          {"kind": "unit", "title": "z displacement", "unit": "mm", "scale": 1.0}
+        ],
+        "manufacturer": "Not specified",
+        "model": "Not specified",
+        "matching_criterion": "ZNSSD"
+      },
+      "questions": [
+        {"field": "title", "title": "What stereo-DIC processing was used?", "required": true},
+        {"field": "description", "title": "Describe the stereo-DIC processing.", "required": true},
+        {"field": "output_components", "title": "How many displacement components are produced?", "required": true},
+        {"field": "output_dimension", "title": "What is the output dimension?", "required": true},
+        {"field": "output_units", "title": "Which units describe the displacement?", "required": true},
+        {"field": "manufacturer", "title": "Which software was used?"},
+        {"field": "model", "title": "What is the software version?"},
+        {"field": "matching_criterion", "title": "Which matching criterion was used?"}
+      ]
+    },
+    {
+      "id": "displacement_fields",
+      "title": "DIC displacement fields",
+      "section": "data_sets",
+      "kind": "data_sets/file",
+      "defaults": {
+        "title": "Stereo-DIC displacement fields",
+        "description": "Final 3D displacement-field file calculated from the stereo camera images by stereo-DIC.",
+        "folder": "stereo_dic/",
+        "time_reference": 0.0,
+        "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
+        "data": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
+      },
+      "questions": [
+        {"field": "title", "title": "How should the final displacement file be named?", "required": true},
+        {"field": "description", "title": "Describe the final displacement fields.", "required": true},
+        {"field": "folder", "title": "Where are the stereo-DIC results stored?"}
+      ]
+    }
+  ]
+}

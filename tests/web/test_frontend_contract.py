@@ -16,15 +16,20 @@ def test_editor_is_catalog_driven() -> None:
     assert "pre-filled when possible" in source
     assert "createPrefilledWorkflow" in source
     assert "applyStepDefaults" in source
+    assert "pendingTemplateReview" in source
+    assert "requireTemplateReview" in source
+    assert "validateDocumentForSave" in source
+    assert "guidedFieldPath" in source
+    assert "Validation unavailable" in source
     assert "guidedStepItemsStorageKey" in source
     assert "selectGuidedStepItem" in source
-    assert "if (candidates.length !== 1) return null;" in source
+    assert "const expectedTitle = step.defaults?.title;" in source
     assert "guided-item-picker" in source
     assert "reference-checklist" in source
     assert "check every upstream object" in source
     assert "selectedIds.add" in source
-    assert 'localStorage.removeItem("r3xaDraftLast")' in source
-    assert 'key.startsWith("r3xaGuidedStepItems:")' in source
+    assert 'localStorage.removeItem("r3xaDraft")' not in source
+    assert 'localStorage.removeItem("r3xaDraftLast")' not in source
     assert "return (payload[step.section] || []).find" not in source
     assert "isReferenceMeta" in source
     assert "meta.items?.ref" in source
@@ -35,11 +40,14 @@ def test_editor_is_catalog_driven() -> None:
     assert "Object.entries(schemaCatalog.sections[step.section]?.kinds || {})" in source
     assert "focusValidationTarget" in source
     assert "renderValidationReport" in source
+    assert "renderDataSetFileField" in source
     template = (root / "web" / "templates" / "edit.html").read_text(encoding="utf-8")
     stylesheet = (root / "web" / "static" / "style.css").read_text(encoding="utf-8")
     schema_script = (root / "web" / "static" / "schema.js").read_text(encoding="utf-8")
     assert 'data-editor-mode="guided"' in template
     assert 'id="guided-prefill"' in template
+    assert 'id="guided-review"' in template
+    assert "Mark template values as reviewed" in template
     assert "Create prefilled workflow" in template
     assert '/static/app.js?v={{ app_start }}' in template
     assert '/static/style.css?v={{ app_start }}' in template
@@ -49,6 +57,8 @@ def test_editor_is_catalog_driven() -> None:
     assert 'body[data-editor-mode="advanced"] .expert-panel' in stylesheet
     assert ".guided-item-picker" in stylesheet
     assert ".reference-checklist" in stylesheet
+    assert ".template-review-heading" in stylesheet
+    assert ".data-set-file-field" in stylesheet
     assert 'localStorage.removeItem("r3xaDraftLast")' in schema_script
     assert 'key.startsWith("r3xaGuidedStepItems:")' in schema_script
     assert "const templates =" not in source

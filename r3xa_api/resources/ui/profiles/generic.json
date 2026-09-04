@@ -1,10 +1,20 @@
 {
   "id": "generic",
   "title": "Generic R3XA document",
-  "description": "Create a document by choosing the objects that describe your experiment.",
+  "description": "Create a document by choosing the objects that describe your experiment. Use Advanced mode when you need to edit several objects freely.",
   "recommended_kinds": [],
   "steps": [
-    {"id": "document", "title": "Document information", "section": "header"},
+    {
+      "id": "document",
+      "title": "Document information",
+      "section": "header",
+      "questions": [
+        {"field": "title", "title": "What is the name of the experiment?", "required": true},
+        {"field": "description", "title": "How would you describe the experiment?", "required": true},
+        {"field": "authors", "title": "Who performed the experiment?"},
+        {"field": "date", "title": "When was it performed?"}
+      ]
+    },
     {"id": "settings", "title": "Experimental settings", "section": "settings"},
     {"id": "data_sources", "title": "Data sources", "section": "data_sources"},
     {"id": "data_sets", "title": "Data sets", "section": "data_sets"}

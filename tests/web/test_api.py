@@ -76,6 +76,7 @@ async def test_api_profiles() -> None:
         "fatigue_with_overload",
         "tomography",
         "in_situ_tensile",
+        "stereo_dic",
     }
 
 

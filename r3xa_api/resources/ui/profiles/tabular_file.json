@@ -18,7 +18,6 @@
       "defaults": {
         "title": "Tabular measurement",
         "description": "Prefilled example with a generic measurement source and a CSV file.",
-        "version": "2024.7.1",
         "authors": "R3XA Team",
         "date": "2026-09-01"
       },

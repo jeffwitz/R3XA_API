@@ -24,7 +24,6 @@
       "defaults": {
         "title": "Tensile test with 2D DIC",
         "description": "Prefilled example of a tensile experiment measured with a visible camera and a testing machine.",
-        "version": "2024.7.1",
         "authors": "R3XA Team",
         "date": "2026-09-01"
       },
