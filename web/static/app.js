@@ -23,17 +23,19 @@ const guidedPreviousEl = document.getElementById("guided-previous");
 const guidedNextEl = document.getElementById("guided-next");
 const guidedProgressEl = document.getElementById("guided-progress");
 const guidedPrefillEl = document.getElementById("guided-prefill");
-const guidedReviewEl = document.getElementById("guided-review");
 const modeButtons = document.querySelectorAll("[data-editor-mode]");
+const launchParams = new URLSearchParams(window.location.search);
+const t = (key, fallback, values) => window.R3XAI18N?.t(key, fallback, values) || fallback;
 
 let schemaCatalog = null;
 let uiCatalog = null;
 let editorMode = localStorage.getItem("r3xaEditorMode") || "guided";
-let selectedProfile = localStorage.getItem("r3xaProfile") || "dic_2d";
+let selectedProfile = launchParams.get("profile") || localStorage.getItem("r3xaProfile") || "generic";
 let guidedStepIndex = Number(localStorage.getItem("r3xaGuidedStep")) || 0;
 let guidedStepItems = {};
 let pendingTemplateReview = new Set();
 let syncing = false;
+let prefillRequested = launchParams.get("prefill") === "1";
 
 const guidedStepItemsStorageKey = () => `r3xaGuidedStepItems:${selectedProfile}`;
 
@@ -50,7 +52,7 @@ const saveGuidedStepItems = () => {
   localStorage.setItem(guidedStepItemsStorageKey(), JSON.stringify(guidedStepItems));
 };
 
-const pendingTemplateReviewStorageKey = () => "r3xaPendingTemplateReview";
+const pendingTemplateReviewStorageKey = () => `r3xaPendingTemplateReview:${selectedProfile}`;
 
 const loadPendingTemplateReview = () => {
   try {
@@ -65,38 +67,53 @@ const savePendingTemplateReview = () => {
   localStorage.setItem(pendingTemplateReviewStorageKey(), JSON.stringify([...pendingTemplateReview]));
 };
 
+const clearAllTemplateReviews = () => {
+  Object.keys(localStorage)
+    .filter((key) => key.startsWith("r3xaPendingTemplateReview:"))
+    .forEach((key) => localStorage.removeItem(key));
+  pendingTemplateReview = new Set();
+};
+
 pendingTemplateReview = loadPendingTemplateReview();
 
-const guidedTemplateFieldKey = (step, field) => `${step.id}.${field}`;
+const guidedTemplateFieldKey = (step, target, field) => `${step.id}:${target?.id || "header"}:${field}`;
 
-const clearTemplateReviewField = (step, field) => {
-  pendingTemplateReview.delete(guidedTemplateFieldKey(step, field));
+const clearTemplateReviewField = (step, target, field) => {
+  const key = guidedTemplateFieldKey(step, target, field);
+  pendingTemplateReview.delete(key);
+  savePendingTemplateReview();
+  document.querySelectorAll("[data-template-review-key]").forEach((control) => {
+    if (control.dataset.templateReviewKey === key) control.remove();
+  });
+};
+
+const templateDefaultFields = (step) => Object.keys(step.defaults || {})
+  .filter((field) => !["id", "kind", "version"].includes(field));
+
+const markStepDefaultsForReview = (step, target) => {
+  templateDefaultFields(step).forEach((field) => {
+    pendingTemplateReview.add(guidedTemplateFieldKey(step, target, field));
+  });
   savePendingTemplateReview();
 };
 
-const markProfileDefaultsForReview = (profile) => {
+const markProfileDefaultsForReview = (profile, payload) => {
   pendingTemplateReview = new Set();
   (profile?.steps || []).forEach((step) => {
-    Object.keys(step.defaults || {})
-      .filter((field) => !["id", "kind", "version"].includes(field))
-      .forEach((field) => pendingTemplateReview.add(guidedTemplateFieldKey(step, field)));
+    const target = step.section === "header" ? payload : profileStepItem(step, payload);
+    if (target) markStepDefaultsForReview(step, target);
   });
   savePendingTemplateReview();
 };
 
 const templateReviewComplete = () => pendingTemplateReview.size === 0;
 
-const refreshTemplateReviewControl = () => {
-  if (!guidedReviewEl) return;
-  guidedReviewEl.hidden = templateReviewComplete();
-  guidedReviewEl.textContent = templateReviewComplete()
-    ? "Template values reviewed"
-    : `Mark ${pendingTemplateReview.size} template value(s) as reviewed`;
-};
+const templateFieldNeedsReview = (step, target, field) =>
+  pendingTemplateReview.has(guidedTemplateFieldKey(step, target, field));
 
 const requireTemplateReview = () => {
   if (templateReviewComplete()) return true;
-  outputEl.textContent = `Review the ${pendingTemplateReview.size} listed template value(s) in Guided mode before saving.`;
+  outputEl.textContent = t("guided.review_before_save", "Review the {count} listed template value(s) in Guided mode before saving.", {count: pendingTemplateReview.size});
   return false;
 };
 
@@ -164,9 +181,9 @@ const updateEditorMode = () => {
     button.setAttribute("aria-selected", button.dataset.editorMode === editorMode ? "true" : "false");
   });
   const help = {
-    guided: "Start from an experience profile. Common fields are shown first.",
-    advanced: "Edit all user-facing fields while keeping technical identifiers hidden.",
-    expert: "Inspect every field and edit the canonical JSON directly when needed.",
+    guided: t("editor.mode_guided_help", "Start from an experience profile. Common fields are shown first."),
+    advanced: t("editor.mode_advanced_help", "Edit all user-facing fields while keeping technical identifiers hidden."),
+    expert: t("editor.mode_expert_help", "Inspect every field and edit the canonical JSON directly when needed."),
   };
   if (modeHelpEl) modeHelpEl.textContent = help[editorMode];
   if (profileSelectEl) profileSelectEl.disabled = editorMode !== "guided";
@@ -182,11 +199,11 @@ const populateProfiles = () => {
   Object.entries(uiCatalog.profiles || {}).forEach(([profileId, profile]) => {
     const option = document.createElement("option");
     option.value = profileId;
-    option.textContent = profile.title || profileId;
+    option.textContent = t(`profile.${profileId}.title`, profile.title || profileId);
     option.title = profile.description || "";
     profileSelectEl.appendChild(option);
   });
-  if (!uiCatalog.profiles?.[selectedProfile]) selectedProfile = uiCatalog.profiles?.dic_2d ? "dic_2d" : "generic";
+  if (!uiCatalog.profiles?.[selectedProfile]) selectedProfile = "generic";
   profileSelectEl.value = selectedProfile;
 };
 
@@ -209,17 +226,66 @@ const profileStepItem = (step, payload) => {
     const remembered = candidates.find((item) => item.id === rememberedId);
     if (remembered) return remembered;
   }
-  if (candidates.length !== 1) {
-    const expectedTitle = step.defaults?.title;
-    const titleMatch = expectedTitle && candidates.filter((item) => item.title === expectedTitle);
-    if (titleMatch?.length === 1) {
-      selectGuidedStepItem(step.id, titleMatch[0].id);
-      return titleMatch[0];
-    }
-    return null;
-  }
+  if (candidates.length !== 1) return null;
   selectGuidedStepItem(step.id, candidates[0].id);
   return candidates[0];
+};
+
+const referenceIds = (value) => Array.isArray(value) ? value : value ? [value] : [];
+
+const restoreGuidedStepItems = (profile, payload) => {
+  if (!profile || !payload) return;
+  const steps = profile.steps || [];
+  let changed = false;
+  const assign = (step, item) => {
+    if (guidedStepItems[step.id] === item.id) return;
+    guidedStepItems[step.id] = item.id;
+    changed = true;
+  };
+  const candidatesFor = (step) => (payload[step.section] || [])
+    .filter((item) => item.kind === step.kind);
+
+  steps.filter((step) => step.kind).forEach((step) => {
+    const candidates = candidatesFor(step);
+    const remembered = candidates.find((item) => item.id === guidedStepItems[step.id]);
+    if (remembered) return;
+    if (candidates.length === 1) assign(step, candidates[0]);
+  });
+
+  for (let pass = 0; pass < steps.length; pass += 1) {
+    let resolvedOnPass = false;
+    steps.filter((step) => step.kind && !guidedStepItems[step.id]).forEach((step) => {
+      const matches = candidatesFor(step).filter((candidate) => {
+        const inbound = (profile.links || []).some((link) => {
+          if (link.to_step !== step.id) return false;
+          const sourceId = guidedStepItems[link.from_step];
+          return sourceId && referenceIds(candidate[link.to_field]).includes(sourceId);
+        });
+        const outbound = (profile.links || []).some((link) => {
+          if (link.from_step !== step.id) return false;
+          const targetStep = steps.find((entry) => entry.id === link.to_step);
+          const targetId = targetStep && guidedStepItems[targetStep.id];
+          const target = targetStep && candidatesFor(targetStep).find((item) => item.id === targetId);
+          return target && referenceIds(target[link.to_field]).includes(candidate.id);
+        });
+        return inbound || outbound;
+      });
+      if (matches.length === 1) {
+        assign(step, matches[0]);
+        resolvedOnPass = true;
+      }
+    });
+    if (!resolvedOnPass) break;
+  }
+
+  steps.filter((step) => step.kind && !guidedStepItems[step.id]).forEach((step) => {
+    const expectedTitle = step.defaults?.title;
+    const matches = expectedTitle
+      ? candidatesFor(step).filter((item) => item.title === expectedTitle)
+      : [];
+    if (matches.length === 1) assign(step, matches[0]);
+  });
+  if (changed) saveGuidedStepItems();
 };
 
 const stepProperties = (step) => step.section === "header"
@@ -278,7 +344,8 @@ const appendGuidedItem = (step, selectedKind = step.kind) => {
   applyStepDefaults(step, item, payload);
   payload[step.section].push(item);
   selectGuidedStepItem(step.id, item.id);
-  applyProfileLinks(profile, payload, {overwrite: true});
+  markStepDefaultsForReview(step, item);
+  applyProfileLinks(profile, payload);
   inputEl.value = JSON.stringify(payload, null, 2);
   saveDraft();
   syncFormFromJson();
@@ -295,10 +362,11 @@ const createPrefilledWorkflow = () => {
   if (!profile || !profileHasPrefilledWorkflow(profile)) return;
   const current = readPayload();
   const hasItems = ["settings", "data_sources", "data_sets"].some((section) => current?.[section]?.length);
-  if (hasItems && !window.confirm("Replace the current document with the prefilled workflow?")) return;
+  if (hasItems && !window.confirm(t("guided.replace_prefilled", "Replace the current document with the prefilled workflow?"))) return;
 
   const payload = cloneJsonValue(defaultPayload);
   guidedStepItems = {};
+  clearAllTemplateReviews();
   profile.steps.forEach((step) => {
     if (step.section === "header") {
       applyStepDefaults(step, payload, payload);
@@ -315,7 +383,7 @@ const createPrefilledWorkflow = () => {
   });
   payload.version = schemaCatalog?.schema_version || payload.version;
   applyProfileLinks(profile, payload, {overwrite: true});
-  markProfileDefaultsForReview(profile);
+  markProfileDefaultsForReview(profile, payload);
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
   inputEl.value = JSON.stringify(payload, null, 2);
@@ -384,12 +452,33 @@ const conditionMatches = (condition, payload) => {
   return true;
 };
 
+const appendTemplateReviewControl = (rendered, step, target, field) => {
+  if (!templateFieldNeedsReview(step, target, field)) return;
+  const wrapper = rendered?.classList?.contains("form-row")
+    ? rendered
+    : rendered?.closest?.(".form-row");
+  if (!wrapper) return;
+  const key = guidedTemplateFieldKey(step, target, field);
+  const acknowledgement = document.createElement("label");
+  acknowledgement.className = "template-review-control";
+  acknowledgement.dataset.templateReviewKey = key;
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.addEventListener("change", () => {
+    if (checkbox.checked) clearTemplateReviewField(step, target, field);
+  });
+  const text = document.createElement("span");
+  text.textContent = t("guided.confirm_template", "I confirm this value for this experiment.");
+  acknowledgement.append(checkbox, text);
+  wrapper.appendChild(acknowledgement);
+};
+
 const renderGuidedCollectionItems = (step, payload, container) => {
   const items = payload[step.section] || [];
   if (!items.length) {
     const help = document.createElement("small");
     help.className = "field-description";
-    help.textContent = "Add an object above to start describing this part of the experiment.";
+    help.textContent = t("guided.add_object_help", "Add an object above to start describing this part of the experiment.");
     container.appendChild(help);
     return;
   }
@@ -398,12 +487,12 @@ const renderGuidedCollectionItems = (step, payload, container) => {
     const card = document.createElement("div");
     card.className = "array-item";
     const heading = document.createElement("strong");
-    heading.textContent = `${item.title || item.kind || "Object"} #${itemIndex + 1}`;
+    heading.textContent = `${item.title || item.kind || t("guided.object", "Object")} #${itemIndex + 1}`;
     card.appendChild(heading);
     if (!meta) {
       const missing = document.createElement("small");
       missing.className = "field-description";
-      missing.textContent = `No schema catalogue entry is available for ${item.kind || "this object"}.`;
+      missing.textContent = t("guided.unknown_object", "No schema catalogue entry is available for {object}.", {object: item.kind || t("guided.object", "this object")});
       card.appendChild(missing);
       container.appendChild(card);
       return;
@@ -458,7 +547,7 @@ const renderGuidedQuestions = (step, payload, container) => {
       title: question.title || sourceMeta.title,
       description: question.description || sourceMeta.description,
     };
-    renderField(
+    const rendered = renderField(
       container,
       question.field,
       meta,
@@ -469,7 +558,7 @@ const renderGuidedQuestions = (step, payload, container) => {
         const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
         if (!currentTarget) return;
         setObjectField(currentTarget, question.field, value, required);
-        clearTemplateReviewField(step, question.field);
+        clearTemplateReviewField(step, currentTarget, question.field);
         inputEl.value = JSON.stringify(currentPayload, null, 2);
         saveDraft();
         refreshGuidedNavigation();
@@ -483,6 +572,7 @@ const renderGuidedQuestions = (step, payload, container) => {
         path: guidedFieldPath(step, payload, target, question.field),
       }
     );
+    appendTemplateReviewControl(rendered, step, target, question.field);
   });
   if (!step.kind) {
     renderGuidedCollectionItems(step, payload, container);
@@ -497,16 +587,16 @@ const renderGuidedQuestions = (step, payload, container) => {
   if (relationshipEntries.length) {
     const heading = document.createElement("strong");
     heading.className = "relationship-heading";
-    heading.textContent = "Optional relationships (pre-filled when possible)";
+    heading.textContent = t("guided.relationships", "Optional relationships (pre-filled when possible)");
     container.appendChild(heading);
     const help = document.createElement("small");
     help.className = "field-description relationship-help";
-    help.textContent = "Select existing data sources or data sets. Leave empty when there is no dependency.";
+    help.textContent = t("guided.relationship_help", "Select existing data sources or data sets. Leave empty when there is no dependency.");
     container.appendChild(help);
   }
   relationshipEntries.forEach(([key, meta]) => {
     if (questionFields.has(key) || !isReferenceMeta(meta)) return;
-    renderField(
+    const rendered = renderField(
       container,
       key,
       meta,
@@ -517,7 +607,7 @@ const renderGuidedQuestions = (step, payload, container) => {
         const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
         if (!currentTarget) return;
         setObjectField(currentTarget, key, value, false);
-        clearTemplateReviewField(step, key);
+        clearTemplateReviewField(step, currentTarget, key);
         inputEl.value = JSON.stringify(currentPayload, null, 2);
         saveDraft();
         refreshGuidedNavigation();
@@ -531,6 +621,7 @@ const renderGuidedQuestions = (step, payload, container) => {
         path: guidedFieldPath(step, payload, target, key),
       }
     );
+    appendTemplateReviewControl(rendered, step, target, key);
   });
 
   const templateFields = Object.keys(step.defaults || {}).filter((key) =>
@@ -542,14 +633,14 @@ const renderGuidedQuestions = (step, payload, container) => {
   if (templateFields.length) {
     const heading = document.createElement("strong");
     heading.className = "template-review-heading";
-    heading.textContent = "Additional template values (review before saving)";
+    heading.textContent = t("guided.template_values", "Additional template values (review before saving)");
     container.appendChild(heading);
     const help = document.createElement("small");
     help.className = "field-description template-review-help";
-    help.textContent = "These values come from the example profile. Check that paths, files, dimensions, and experimental parameters match your experiment.";
+    help.textContent = t("guided.template_help", "These values come from the example profile. Check that paths, files, dimensions, and experimental parameters match your experiment.");
     container.appendChild(help);
     templateFields.forEach((key) => {
-      renderField(
+      const rendered = renderField(
         container,
         key,
         properties[key],
@@ -560,7 +651,7 @@ const renderGuidedQuestions = (step, payload, container) => {
           const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
           if (!currentTarget) return;
           setObjectField(currentTarget, key, value, false);
-          clearTemplateReviewField(step, key);
+          clearTemplateReviewField(step, currentTarget, key);
           inputEl.value = JSON.stringify(currentPayload, null, 2);
           saveDraft();
           refreshGuidedNavigation();
@@ -574,6 +665,7 @@ const renderGuidedQuestions = (step, payload, container) => {
           path: guidedFieldPath(step, payload, target, key),
         }
       );
+      appendTemplateReviewControl(rendered, step, target, key);
     });
   }
 };
@@ -582,13 +674,12 @@ const renderGuidedSteps = () => {
   if (!guidedStepsEl || !uiCatalog || !schemaCatalog) return;
   const profile = uiCatalog.profiles?.[selectedProfile];
   const steps = profile?.steps || [];
-  refreshTemplateReviewControl();
   if (guidedPrefillEl) guidedPrefillEl.hidden = !profileHasPrefilledWorkflow(profile);
   guidedStepIndex = Math.min(Math.max(guidedStepIndex, 0), Math.max(steps.length - 1, 0));
   guidedStepsEl.innerHTML = "";
   guidedStepsEl.className = "guided-steps";
   const payload = readPayload() || {};
-  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? `Step ${guidedStepIndex + 1} of ${steps.length}` : "";
+  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? t("guided.step_progress", "Step {current} of {total}", {current: guidedStepIndex + 1, total: steps.length}) : "";
   if (guidedPreviousEl) guidedPreviousEl.disabled = guidedStepIndex === 0;
   if (guidedNextEl) guidedNextEl.disabled = !steps.length || guidedStepIndex === steps.length - 1 || !stepCanAdvance(steps[guidedStepIndex], payload);
   steps.forEach((step, index) => {
@@ -616,9 +707,13 @@ const renderGuidedSteps = () => {
         picker.setAttribute("aria-label", `Select ${step.title || step.id}`);
         const activeItem = profileStepItem(step, payload);
         if (!activeItem) {
+          const help = document.createElement("small");
+          help.className = "guided-role-help";
+          help.textContent = t("guided.choose_role", "Several items match this kind. Choose the item that represents {step}.", {step: step.title || step.id});
+          block.appendChild(help);
           const placeholder = document.createElement("option");
           placeholder.value = "";
-          placeholder.textContent = "Choose an existing item…";
+          placeholder.textContent = t("guided.choose_existing", "Choose an existing item…");
           picker.appendChild(placeholder);
         }
         candidates.forEach((item) => {
@@ -648,7 +743,7 @@ const renderGuidedSteps = () => {
         const addButton = document.createElement("button");
         addButton.type = "button";
         addButton.className = "ghost";
-        addButton.textContent = `Add ${meta.title || kind}`;
+        addButton.textContent = t("guided.add", "Add {item}", {item: meta.title || kind});
         addButton.addEventListener("click", (event) => event.stopPropagation());
         addButton.addEventListener("click", () => appendGuidedItem(step, kind));
         row.appendChild(addButton);
@@ -658,10 +753,10 @@ const renderGuidedSteps = () => {
     if (incomingLinks.length) {
       const dependency = document.createElement("small");
       dependency.className = "guided-dependency";
-      dependency.textContent = `Uses: ${incomingLinks.map((link) => {
+      dependency.textContent = t("guided.uses", "Uses: {items}", {items: incomingLinks.map((link) => {
         const sourceStep = steps.find((candidate) => candidate.id === link.from_step);
         return sourceStep?.title || link.from_step;
-      }).join(", ")}`;
+      }).join(", ")});
       block.appendChild(dependency);
     }
     block.appendChild(row);
@@ -679,8 +774,7 @@ const refreshGuidedNavigation = () => {
   const currentStep = steps[guidedStepIndex];
   if (guidedPreviousEl) guidedPreviousEl.disabled = guidedStepIndex === 0;
   if (guidedNextEl) guidedNextEl.disabled = !steps.length || guidedStepIndex === steps.length - 1 || !stepCanAdvance(currentStep, payload);
-  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? `Step ${guidedStepIndex + 1} of ${steps.length}` : "";
-  refreshTemplateReviewControl();
+  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? t("guided.step_progress", "Step {current} of {total}", {current: guidedStepIndex + 1, total: steps.length}) : "";
   guidedStepsEl?.querySelectorAll(".guided-step").forEach((row, index) => {
     const complete = stepIsComplete(steps[index], payload);
     row.classList.toggle("is-complete", complete);
@@ -776,9 +870,9 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
   const labels = {
-    data_sources: "Related data sources",
-    input_data_sets: "Input data sets",
-    associated_data_sources: "Associated data sources",
+    data_sources: t("field.related_data_sources", "Related data sources"),
+    input_data_sets: t("field.input_data_sets", "Input data sets"),
+    associated_data_sources: t("field.associated_data_sources", "Associated data sources"),
   };
   label.textContent = `${labels[key] || meta.title || key}${options.required ? " *" : ""}`;
   const fieldId = options.id || `field-${key}`;
@@ -802,7 +896,7 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
     if (!choices.size) {
       const empty = document.createElement("small");
       empty.className = "field-description";
-      empty.textContent = "No compatible objects have been created yet.";
+      empty.textContent = t("field.no_compatible_objects", "No compatible objects have been created yet.");
       checklist.appendChild(empty);
     }
     choices.forEach((title, id) => {
@@ -827,7 +921,7 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
       const clearButton = document.createElement("button");
       clearButton.type = "button";
       clearButton.className = "ghost reference-clear";
-      clearButton.textContent = "Clear selection";
+      clearButton.textContent = t("field.clear_selection", "Clear selection");
       clearButton.addEventListener("click", () => {
         selectedIds.clear();
         checklist.querySelectorAll("input[type=checkbox]").forEach((checkbox) => {
@@ -844,7 +938,7 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
     if (!currentIds.length) {
       const blank = document.createElement("option");
       blank.value = "";
-      blank.textContent = "Select an object…";
+      blank.textContent = t("field.select_object", "Select an object…");
       control.appendChild(blank);
     }
     choices.forEach((title, id) => {
@@ -861,8 +955,8 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
   const help = document.createElement("small");
   help.className = "field-description";
   help.textContent = meta.type === "array"
-    ? "Optional: check every upstream object this item depends on. Selections are preserved."
-    : "Optional: select an existing item from this document.";
+    ? t("field.optional_upstream", "Optional: check every upstream object this item depends on. Selections are preserved.")
+    : t("field.optional_reference", "Optional: select an existing item from this document.");
   wrapper.appendChild(help);
   if (meta.description) {
     const description = document.createElement("small");
@@ -942,7 +1036,7 @@ const renderUnitArrayField = (container, key, meta, value, onChange, options) =>
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "ghost";
-    removeButton.textContent = "Remove";
+    removeButton.textContent = t("field.remove", "Remove");
     removeButton.addEventListener("click", () => {
       values = values.filter((_, itemIndex) => itemIndex !== index);
       onChange(values);
@@ -955,7 +1049,7 @@ const renderUnitArrayField = (container, key, meta, value, onChange, options) =>
   const addButton = document.createElement("button");
   addButton.type = "button";
   addButton.className = "ghost";
-  addButton.textContent = "Add unit";
+  addButton.textContent = t("field.add_unit", "Add unit");
   addButton.addEventListener("click", () => {
     values = [...values, {kind: "unit", unit: ""}];
     onChange(values);
@@ -996,14 +1090,14 @@ const renderObjectArrayField = (container, key, meta, value, onChange, options) 
         control.setCustomValidity("");
         onChange(values);
       } catch {
-        control.setCustomValidity("Enter valid JSON");
+        control.setCustomValidity(t("field.invalid_json", "Enter valid JSON"));
       }
     });
     row.appendChild(control);
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "ghost";
-    removeButton.textContent = "Remove";
+    removeButton.textContent = t("field.remove", "Remove");
     removeButton.addEventListener("click", () => {
       values = values.filter((_, itemIndex) => itemIndex !== index);
       onChange(values);
@@ -1016,7 +1110,7 @@ const renderObjectArrayField = (container, key, meta, value, onChange, options) 
   const addButton = document.createElement("button");
   addButton.type = "button";
   addButton.className = "ghost";
-  addButton.textContent = "Add object";
+  addButton.textContent = t("field.add_object", "Add object");
   addButton.addEventListener("click", () => {
     values = [...values, {}];
     onChange(values);
@@ -1076,6 +1170,59 @@ const renderDataSetFileField = (container, key, meta, value, onChange, options) 
   return wrapper;
 };
 
+const naturalFileOrder = (left, right) => left.localeCompare(right, undefined, {
+  numeric: true,
+  sensitivity: "base",
+});
+
+const renderDataSetListField = (container, key, meta, value, onChange, options) => {
+  const wrapper = document.createElement("div");
+  wrapper.className = "form-row data-set-list-field";
+  wrapper.dataset.fieldLevel = fieldLevel(key);
+  if (options.path) wrapper.dataset.jsonPath = options.path;
+  if (options.id) wrapper.id = options.id;
+  const label = document.createElement("label");
+  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  wrapper.appendChild(label);
+  const picker = document.createElement("input");
+  picker.type = "file";
+  picker.multiple = true;
+  picker.setAttribute("webkitdirectory", "");
+  picker.setAttribute("directory", "");
+  picker.addEventListener("change", () => {
+    const selected = Array.from(picker.files || []).map((file) => file.webkitRelativePath || file.name);
+    const root = selected[0]?.split("/")[0];
+    const paths = selected
+      .map((path) => root && selected.every((entry) => entry.startsWith(`${root}/`)) ? path.slice(root.length + 1) : path)
+      .sort(naturalFileOrder);
+    onChange(paths);
+    options.refresh?.();
+  });
+  wrapper.appendChild(picker);
+  const summary = document.createElement("small");
+  summary.className = "field-description";
+  const count = Array.isArray(value) ? value.length : 0;
+  summary.textContent = count
+    ? t("files.replace_list", "{count} file(s) listed. Select the data folder again to replace the list.", {count})
+    : t("files.select_folder", "Select the folder containing the image or measurement files. Files are sorted naturally.");
+  wrapper.appendChild(summary);
+  if (Array.isArray(value) && value.length) {
+    const preview = document.createElement("small");
+    preview.className = "field-description data-set-list-preview";
+    const visible = value.slice(0, 5);
+    preview.textContent = `${visible.join(", ")}${value.length > visible.length ? t("files.more", ", and {count} more", {count: value.length - visible.length}) : ""}`;
+    wrapper.appendChild(preview);
+  }
+  if (meta.description) {
+    const description = document.createElement("small");
+    description.className = "field-description";
+    description.textContent = meta.description;
+    wrapper.appendChild(description);
+  }
+  container.appendChild(wrapper);
+  return wrapper;
+};
+
 const renderField = (container, key, meta, value, onChange, options = {}) => {
   if (!isFieldVisible(key, options.required, options.forceVisible, meta)) return null;
   if (isUnitMeta(meta)) return renderUnitField(container, key, meta, value, onChange, options);
@@ -1093,6 +1240,9 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
   }
   if (meta.type === "array" && (meta.items?.ref?.endsWith("data_set_id") || meta.items?.ref?.endsWith("data_source_id"))) {
     return renderReferenceField(container, key, meta, value, onChange, options);
+  }
+  if (key === "data" && meta.type === "array" && meta.items?.type === "string" && options.path?.startsWith("data_sets/")) {
+    return renderDataSetListField(container, key, meta, value, onChange, options);
   }
   const wrapper = document.createElement("div");
   wrapper.className = "form-row";
@@ -1113,7 +1263,7 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
     control = document.createElement("select");
     const blank = document.createElement("option");
     blank.value = "";
-    blank.textContent = "Select…";
+    blank.textContent = t("field.select", "Select…");
     control.appendChild(blank);
     meta.enum.forEach((choice) => {
       const option = document.createElement("option");
@@ -1140,7 +1290,7 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
     control = document.createElement("input");
     control.type = "text";
     control.value = Array.isArray(value) ? value.join(", ") : "";
-    control.placeholder = "Comma-separated values";
+    control.placeholder = t("field.comma_separated", "Comma-separated values");
   } else if (complex) {
     control = document.createElement("textarea");
     control.value = JSON.stringify(value ?? defaultForField(key, meta), null, 2);
@@ -1168,7 +1318,7 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
         onChange(JSON.parse(control.value));
         control.setCustomValidity("");
       } catch {
-        control.setCustomValidity("Enter valid JSON");
+        control.setCustomValidity(t("field.invalid_json", "Enter valid JSON"));
       }
       return;
     }
@@ -1252,7 +1402,7 @@ const validateItem = async (section, item, index) => {
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     if (report.valid) {
-      outputEl.textContent = `${itemTitle}: Valid ✅`;
+      outputEl.textContent = `${itemTitle}: ${t("validation.valid", "Valid ✅")}`;
       return;
     }
     const lines = [`${itemTitle}: Invalid ❌`, ""];
@@ -1261,7 +1411,7 @@ const validateItem = async (section, item, index) => {
     }
     outputEl.textContent = lines.join("\n");
   } catch (error) {
-    outputEl.textContent = `Validation unavailable: ${error.message}`;
+    outputEl.textContent = t("validation.unavailable", "Validation unavailable: {message}", {message: error.message});
   }
 };
 
@@ -1294,11 +1444,11 @@ const focusValidationTarget = (path) => {
 const renderValidationReport = (report) => {
   outputEl.innerHTML = "";
   if (report.valid) {
-    outputEl.textContent = "Valid ✅";
+    outputEl.textContent = t("validation.valid", "Valid ✅");
     return;
   }
   const heading = document.createElement("strong");
-  heading.textContent = "Invalid ❌";
+  heading.textContent = t("validation.invalid", "Invalid ❌");
   outputEl.appendChild(heading);
   const list = document.createElement("ul");
   list.className = "validation-list";
@@ -1331,7 +1481,7 @@ const buildArrayEditor = (container, sectionName) => {
   Object.entries(section.kinds || {}).forEach(([kind, meta]) => {
     if (!isKindVisible(kind)) return;
     const addButton = document.createElement("button");
-    addButton.textContent = `Add ${meta.title || kind}`;
+    addButton.textContent = t("guided.add", "Add {item}", {item: meta.title || kind});
     addButton.className = "ghost";
     addButton.type = "button";
     addButton.addEventListener("click", () => appendItem(sectionName, kind));
@@ -1355,7 +1505,7 @@ const buildArrayEditor = (container, sectionName) => {
     const actionsRow = document.createElement("div");
     actionsRow.className = "actions";
     const removeButton = document.createElement("button");
-    removeButton.textContent = "Remove";
+    removeButton.textContent = t("field.remove", "Remove");
     removeButton.className = "ghost";
     removeButton.type = "button";
     removeButton.addEventListener("click", () => {
@@ -1366,7 +1516,7 @@ const buildArrayEditor = (container, sectionName) => {
       syncFormFromJson();
     });
     const validateButton = document.createElement("button");
-    validateButton.textContent = "Validate item";
+    validateButton.textContent = t("registry.validate", "Validate item");
     validateButton.className = "ghost";
     validateButton.type = "button";
     validateButton.addEventListener("click", () => validateItem(sectionName, readPayload()?.[sectionName]?.[index] || item, index));
@@ -1381,7 +1531,7 @@ const buildArrayEditor = (container, sectionName) => {
     if (!meta) {
       const unknown = document.createElement("p");
       unknown.className = "muted";
-      unknown.textContent = `No schema catalogue entry is available for ${item.kind || "this item"}.`;
+      unknown.textContent = t("guided.unknown_object", "No schema catalogue entry is available for {object}.", {object: item.kind || t("guided.object", "this item")});
       form.appendChild(unknown);
     } else {
       const required = new Set(meta.required || []);
@@ -1416,11 +1566,11 @@ const buildArrayEditor = (container, sectionName) => {
         const relationshipPanel = document.createElement("div");
         relationshipPanel.className = "relationship-panel";
         const heading = document.createElement("strong");
-        heading.textContent = "Optional relationships (pre-filled when possible)";
+        heading.textContent = t("guided.relationships", "Optional relationships (pre-filled when possible)");
         relationshipPanel.appendChild(heading);
         const help = document.createElement("small");
         help.className = "field-description";
-        help.textContent = "Select existing data sources or data sets. Leave empty when there is no dependency.";
+        help.textContent = t("guided.relationship_help", "Select existing data sources or data sets. Leave empty when there is no dependency.");
         relationshipPanel.appendChild(help);
         relationshipEntries.forEach(([key, propertyMeta]) => renderItemField(key, propertyMeta, relationshipPanel));
         form.appendChild(relationshipPanel);
@@ -1439,6 +1589,7 @@ const syncFormFromJson = () => {
   syncing = true;
   const payload = readPayload();
   if (payload) {
+    restoreGuidedStepItems(uiCatalog?.profiles?.[selectedProfile], payload);
     syncHeaderControls(payload);
     buildArrayEditor(settingsEl, "settings");
     buildArrayEditor(dataSourcesEl, "data_sources");
@@ -1458,12 +1609,17 @@ const renderSummary = async () => {
     if (!schemaResponse.ok || !uiResponse.ok) throw new Error("Unable to load editor metadata");
     schemaCatalog = await schemaResponse.json();
     uiCatalog = await uiResponse.json();
+    window.R3XAI18N?.installCatalog(uiCatalog);
     populateProfiles();
+    pendingTemplateReview = loadPendingTemplateReview();
     updateEditorMode();
     const sections = Object.entries(schemaCatalog.sections || {})
       .map(([name, section]) => `${name}: ${Object.keys(section.kinds || {}).length || "header"}`)
       .join(" · ");
-    summaryEl.textContent = `Schema catalogue version: ${schemaCatalog.schema_version || "unknown"}\n${sections}`;
+    summaryEl.textContent = t("editor.catalogue_summary", "Schema catalogue version: {version}\n{sections}", {
+      version: schemaCatalog.schema_version || "unknown",
+      sections,
+    });
     const payload = readPayload();
     if (payload && !payload.version && schemaCatalog.schema_version) {
       payload.version = schemaCatalog.schema_version;
@@ -1471,9 +1627,14 @@ const renderSummary = async () => {
       saveDraft();
     }
     buildHeaderForm(schemaCatalog.sections?.header?.properties || {});
-    syncFormFromJson();
+    if (prefillRequested) {
+      prefillRequested = false;
+      createPrefilledWorkflow();
+    } else {
+      syncFormFromJson();
+    }
   } catch {
-    summaryEl.textContent = "Failed to load schema catalogue.";
+    summaryEl.textContent = t("editor.catalogue_unavailable", "Failed to load schema catalogue.");
   }
 };
 
@@ -1483,8 +1644,7 @@ const reset = () => {
   inputEl.value = JSON.stringify(payload, null, 2);
   guidedStepItems = {};
   saveGuidedStepItems();
-  pendingTemplateReview = new Set();
-  savePendingTemplateReview();
+  clearAllTemplateReviews();
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
   outputEl.textContent = "";
@@ -1496,7 +1656,7 @@ const validate = async () => {
   outputEl.textContent = "";
   const payload = readPayload();
   if (!payload) {
-    outputEl.textContent = "Parse error: invalid JSON";
+    outputEl.textContent = t("validation.parse_error", "Parse error: invalid JSON");
     return;
   }
 
@@ -1510,7 +1670,7 @@ const validate = async () => {
     const report = await response.json();
     renderValidationReport(report);
   } catch (error) {
-    outputEl.textContent = `Validation unavailable: ${error.message}`;
+    outputEl.textContent = t("validation.unavailable", "Validation unavailable: {message}", {message: error.message});
   }
 };
 
@@ -1529,7 +1689,7 @@ const validateDocumentForSave = async (payload) => {
     }
     return true;
   } catch (error) {
-    outputEl.textContent = `Validation unavailable: ${error.message}`;
+    outputEl.textContent = t("validation.unavailable", "Validation unavailable: {message}", {message: error.message});
     return false;
   }
 };
@@ -1537,7 +1697,7 @@ const validateDocumentForSave = async (payload) => {
 const downloadJson = () => {
   if (!requireTemplateReview()) return;
   if (!readPayload()) {
-    outputEl.textContent = "Parse error: invalid JSON";
+    outputEl.textContent = t("validation.parse_error", "Parse error: invalid JSON");
     return;
   }
   const blob = new Blob([inputEl.value], { type: "application/json" });
@@ -1555,7 +1715,7 @@ const saveWithDialog = async () => {
   if (!requireTemplateReview()) return;
   const payload = readPayload();
   if (!payload) {
-    outputEl.textContent = "Parse error: invalid JSON";
+    outputEl.textContent = t("validation.parse_error", "Parse error: invalid JSON");
     return;
   }
   if (!await validateDocumentForSave(payload)) return;
@@ -1584,14 +1744,13 @@ const loadJsonFile = (file) => {
     try {
       JSON.parse(reader.result);
     } catch (error) {
-      outputEl.textContent = `Parse error: ${error.message}`;
+      outputEl.textContent = t("validation.parse_error_detail", "Parse error: {message}", {message: error.message});
       return;
     }
     inputEl.value = reader.result;
     guidedStepItems = {};
     saveGuidedStepItems();
-    pendingTemplateReview = new Set();
-    savePendingTemplateReview();
+    clearAllTemplateReviews();
     saveDraft();
     syncFormFromJson();
   };
@@ -1632,13 +1791,6 @@ if (profileSelectEl) {
     syncFormFromJson();
   });
 }
-if (guidedReviewEl) {
-  guidedReviewEl.addEventListener("click", () => {
-    pendingTemplateReview = new Set();
-    savePendingTemplateReview();
-    renderGuidedSteps();
-  });
-}
 if (guidedPreviousEl) {
   guidedPreviousEl.addEventListener("click", () => {
     guidedStepIndex = Math.max(guidedStepIndex - 1, 0);
@@ -1655,6 +1807,10 @@ if (guidedNextEl) {
   });
 }
 if (guidedPrefillEl) guidedPrefillEl.addEventListener("click", createPrefilledWorkflow);
+document.addEventListener("r3xa-language-changed", () => {
+  populateProfiles();
+  if (schemaCatalog) syncFormFromJson();
+});
 inputEl.addEventListener("input", () => {
   saveDraft();
   syncFormFromJson();

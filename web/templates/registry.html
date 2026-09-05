@@ -24,23 +24,24 @@
         </div>
       </div>
       <nav class="nav">
-        <a href="/">Home</a>
-        <a href="/edit">Editor</a>
-        <a href="/schema">Schema viewer</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/edit" data-i18n="nav.editor">Editor</a>
+        <a href="/schema" data-i18n="nav.schema">Schema viewer</a>
+        <label class="language-control"><span data-i18n="language.label">Language</span><select data-language-select><option value="en">English</option><option value="fr">Français</option></select></label>
       </nav>
     </header>
 
     <main>
       <section class="hero compact">
-        <h1>Registry Item Editor</h1>
-        <p>Load, edit, validate, and save a single registry JSON item locally.</p>
+        <h1 data-i18n="registry.title">Registry Item Editor</h1>
+        <p data-i18n="registry.subtitle">An advanced tool for maintaining one registry JSON item.</p>
       </section>
 
       <section class="panel">
         <h2>Validation target</h2>
         <p class="muted">Set the kind explicitly to validate against a specific schema definition.</p>
         <div class="form-row">
-          <label for="registry-kind">Kind override (optional)</label>
+          <label for="registry-kind" data-i18n="registry.kind">Kind override (optional)</label>
           <input id="registry-kind" type="text" placeholder="e.g. data_sources/camera" />
         </div>
       </section>
@@ -49,21 +50,22 @@
         <h2>Registry JSON item</h2>
         <p class="muted">The JSON should contain one item object (setting, data source, or data set).</p>
         <div class="actions">
-          <button id="registry-save-btn" class="ghost" type="button">Save JSON</button>
+          <button id="registry-save-btn" class="ghost" type="button" data-i18n="registry.save">Save JSON</button>
           <label class="file-btn ghost">
-            Load JSON
+            <span data-i18n="registry.load">Load JSON</span>
             <input id="registry-load-input" type="file" accept=".json,application/json" />
           </label>
         </div>
         <textarea id="registry-json-input" spellcheck="false"></textarea>
         <div class="actions">
-          <button id="registry-validate-btn" type="button">Validate item</button>
-          <button id="registry-reset-btn" class="ghost" type="button">Reset</button>
+          <button id="registry-validate-btn" type="button" data-i18n="registry.validate">Validate item</button>
+          <button id="registry-reset-btn" class="ghost" type="button" data-i18n="registry.reset">Reset</button>
         </div>
         <pre id="registry-validation-output"></pre>
       </section>
     </main>
 
+    <script src="/static/i18n.js?v={{ app_start }}"></script>
     <script src="/static/registry.js?v={{ app_start }}"></script>
   </body>
 </html>

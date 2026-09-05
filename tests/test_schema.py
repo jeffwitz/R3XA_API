@@ -1,7 +1,11 @@
 import json
 from pathlib import Path
 
+import pytest
+from jsonschema.exceptions import ValidationError
+
 from r3xa_api.schema import load_schema, schema_version
+from r3xa_api.validate import validate
 
 
 def test_load_schema_returns_equal_but_distinct_objects() -> None:
@@ -30,3 +34,23 @@ def test_schema_version_returns_none_when_external_schema_has_no_const(tmp_path:
     )
 
     assert schema_version(str(schema_path)) is None
+
+
+def test_required_document_metadata_cannot_be_empty() -> None:
+    schema = load_schema()
+    for field in ("title", "description", "authors"):
+        assert schema["properties"][field]["minLength"] == 1
+
+    with pytest.raises(ValidationError):
+        validate(
+            {
+                "title": "",
+                "description": "",
+                "authors": "",
+                "date": "2026-09-05",
+                "version": schema_version(),
+                "settings": [],
+                "data_sources": [],
+                "data_sets": [],
+            }
+        )

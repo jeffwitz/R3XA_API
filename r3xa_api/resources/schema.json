@@ -7,6 +7,7 @@
       "title": "Title",
       "description": "Title of the data sets.",
       "type": "string",
+      "minLength": 1,
       "example": [
         "DICComposite2.0",
         "My awesome data sets"
@@ -15,7 +16,8 @@
     "description": {
       "title": "Description",
       "description": "Description of the data sets.",
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "version": {
       "title": "Version",
@@ -26,7 +28,8 @@
     "authors": {
       "title": "Author",
       "description": "Names, ORCID, IDHAL...",
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "date": {
       "title": "Date",

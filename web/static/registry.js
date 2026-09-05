@@ -20,7 +20,6 @@ const ensureServerStart = () => {
   const stored = localStorage.getItem("r3xaRegistryAppStart");
   if (stored !== appStart) {
     localStorage.setItem("r3xaRegistryAppStart", appStart);
-    localStorage.removeItem("r3xaRegistryDraft");
   }
 };
 
@@ -60,22 +59,27 @@ const validateItem = async () => {
     payload.kind = kind;
   }
 
-  const response = await fetch("/api/registry/validate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const report = await response.json();
-  if (report.valid) {
-    outputEl.textContent = "Valid registry item ✅";
-    saveDraft();
-    return;
+  try {
+    const response = await fetch("/api/registry/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
+    const report = await response.json();
+    if (report.valid) {
+      outputEl.textContent = "Valid registry item ✅";
+      saveDraft();
+      return;
+    }
+    const lines = ["Invalid registry item ❌", ""];
+    for (const error of report.errors || []) {
+      lines.push(`- ${error}`);
+    }
+    outputEl.textContent = lines.join("\n");
+  } catch (error) {
+    outputEl.textContent = `Validation unavailable: ${error.message}`;
   }
-  const lines = ["Invalid registry item ❌", ""];
-  for (const error of report.errors || []) {
-    lines.push(`- ${error}`);
-  }
-  outputEl.textContent = lines.join("\n");
 };
 
 const downloadJson = () => {

@@ -94,6 +94,50 @@ h1 {
   margin-top: 1rem;
 }
 
+.language-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.language-control select {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem;
+}
+
+.profile-cards,
+.advanced-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.8rem;
+}
+
+.profile-card,
+.tool-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid #c9d9e8;
+  border-radius: 8px;
+  color: var(--text);
+  background: #f8fbfe;
+  text-decoration: none;
+}
+
+.profile-card:hover,
+.tool-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(31, 111, 235, 0.12);
+}
+
+.profile-card small,
+.tool-card span {
+  color: var(--muted);
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -256,6 +300,13 @@ button.ghost,
   border-radius: 6px;
   background: white;
   color: var(--text);
+}
+
+.guided-role-help {
+  display: block;
+  margin: 0.35rem 0 0.1rem;
+  color: #7a4f00;
+  font-size: 0.85rem;
 }
 
 .reference-checklist {
@@ -431,6 +482,19 @@ body[data-editor-mode="expert"] .guided-panel {
   color: #9a6700;
 }
 
+.template-review-control {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+  color: #7a4f00;
+  font-size: 0.85rem;
+}
+
+.template-review-control input {
+  width: auto;
+}
+
 .data-set-file-field {
   padding: 0.6rem;
   border: 1px solid #d8dee4;
@@ -441,6 +505,17 @@ body[data-editor-mode="expert"] .guided-panel {
 .data-set-file-field > strong {
   display: block;
   margin-bottom: 0.4rem;
+}
+
+.data-set-list-field {
+  padding: 0.6rem;
+  border: 1px solid #d8dee4;
+  border-radius: 0.4rem;
+  background: #f8fafc;
+}
+
+.data-set-list-preview {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .guided-step.is-complete {

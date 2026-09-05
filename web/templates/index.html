@@ -3,64 +3,52 @@
   <head>
     <meta charset="utf-8" />
     <title>R3XA Web</title>
-    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/style.css?v={{ app_start }}" />
   </head>
-  <body>
+  <body data-app-start="{{ app_start }}">
     <header class="topbar">
       <div class="brand">
-        <img
-          src="/static/photomeca-logo.png"
-          alt="Photomeca"
-          onerror="this.style.display='none'"
-        />
-        <img
-          src="/static/r3xa-logo.png"
-          alt="R3XA"
-          onerror="this.style.display='none'"
-        />
+        <img src="/static/photomeca-logo.png" alt="Photomeca" onerror="this.style.display='none'" />
+        <img src="/static/r3xa-logo.png" alt="R3XA" onerror="this.style.display='none'" />
         <div>
           <div class="brand-title">Photomeca · R3XA</div>
-          <div class="brand-sub">Web Editor & Validator</div>
+          <div class="brand-sub">Web Editor &amp; Validator</div>
         </div>
       </div>
       <nav class="nav">
-        <a href="/edit">Editor</a>
-        <a href="/registry">Registry editor</a>
-        <a href="/schema">Schema viewer</a>
+        <a href="/edit" data-i18n="nav.editor">Editor</a>
+        <a href="/schema" data-i18n="nav.schema">Schema viewer</a>
+        <label class="language-control"><span data-i18n="language.label">Language</span><select data-language-select><option value="en">English</option><option value="fr">Français</option></select></label>
       </nav>
     </header>
 
     <main>
       <section class="hero">
-        <h1>R3XA Web</h1>
-        <p>A lightweight tool to create, validate, and visualize R3XA JSON files.</p>
-        <div class="hero-actions">
-          <a class="btn" href="/edit">Editor</a>
-          <a class="btn ghost" href="/registry">Registry editor</a>
-          <a class="btn ghost" href="/schema">Viewer & Graph</a>
+        <h1 data-i18n="home.title">Describe your experiment</h1>
+        <p data-i18n="home.subtitle">Start from the experiment you know. R3XA structure stays available when you need it.</p>
+      </section>
+
+      <section class="panel">
+        <h2 data-i18n="home.guided">Start a guided workflow</h2>
+        <p class="muted" data-i18n="home.profile_help">Choose the experimental situation closest to your work. You can edit every value afterwards.</p>
+        <div id="profile-cards" class="profile-cards" aria-live="polite"></div>
+      </section>
+
+      <section class="panel advanced-tools">
+        <h2 data-i18n="home.advanced">Advanced tools</h2>
+        <div class="advanced-tool-grid">
+          <a class="tool-card" href="/registry">
+            <strong data-i18n="home.registry">Registry item editor</strong>
+            <span data-i18n="home.registry_description">For maintainers and experienced users who edit one registry item.</span>
+          </a>
+          <a class="tool-card" href="/schema">
+            <strong data-i18n="home.schema">Explore schema and graph</strong>
+            <span data-i18n="home.schema_description">Inspect the R3XA schema or generate a graph from your current draft.</span>
+          </a>
         </div>
       </section>
-
-      <section class="panel">
-        <h2>What you can do</h2>
-        <ul>
-          <li><strong>Edit</strong> an R3XA JSON (header, settings, data_sources, data_sets).</li>
-          <li><strong>Validate</strong> a file and get a clear error report.</li>
-          <li><strong>Load / save</strong> a local JSON file.</li>
-          <li><strong>Work on registry items</strong> with item-level validation.</li>
-          <li><strong>Inspect</strong> the schema and generate an SVG graph.</li>
-        </ul>
-      </section>
-
-      <section class="panel">
-        <h2>Where to go</h2>
-        <ul>
-          <li><a href="/edit"><strong>/edit</strong></a> to create and validate a file.</li>
-          <li><a href="/registry"><strong>/registry</strong></a> to load/save and validate registry items.</li>
-          <li><a href="/schema"><strong>/schema</strong></a> to explore the schema and generate a graph.</li>
-        </ul>
-        <p class="muted">Use the links in the top‑right navigation to switch pages.</p>
-      </section>
     </main>
+    <script src="/static/i18n.js?v={{ app_start }}"></script>
+    <script src="/static/home.js?v={{ app_start }}"></script>
   </body>
 </html>

@@ -4,7 +4,7 @@ import pytest
 
 from r3xa_api.webcore import build_schema_catalog, build_schema_summary, build_ui_catalog
 from r3xa_api.webcore._graph_core import build_graph_model
-from r3xa_api.webcore.ui_catalog import _validate_profile_links, _validate_profile_questions
+from r3xa_api.webcore.ui_catalog import _validate_messages, _validate_profile_links, _validate_profile_questions
 from r3xa_api.validate import validate
 
 
@@ -173,6 +173,7 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
 
     assert catalog["schema_version"] == "2024.7.1"
     assert catalog["default"]["fields"]["kind"]["level"] == "expert"
+    assert catalog["messages"]["languages"]["fr"]["editor.title"] == "Éditeur R3XA"
     assert set(catalog["profiles"]) == {
         "generic",
         "mechanical_test",
@@ -199,6 +200,19 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
         ("images", "dic", "input_data_sets"),
         ("dic", "displacement_fields", "data_sources"),
     }
+
+
+def test_ui_messages_require_complete_string_translations() -> None:
+    catalog = build_ui_catalog()
+    _validate_messages(catalog["messages"])
+
+    with pytest.raises(ValueError, match="match default-language keys"):
+        _validate_messages(
+            {
+                "default_language": "en",
+                "languages": {"en": {"title": "Title"}, "fr": {}},
+            }
+        )
 
 
 def test_prefilled_dic_profile_builds_a_valid_dependency_chain() -> None:

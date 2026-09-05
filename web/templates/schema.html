@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>R3XA Schema</title>
-    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/style.css?v={{ app_start }}" />
     <link rel="stylesheet" href="/static/vendor/json-viewer-js/json-viewer.css?v={{ app_start }}" />
   </head>
   <body data-app-start="{{ app_start }}">
@@ -25,15 +25,16 @@
         </div>
       </div>
       <nav class="nav">
-        <a href="/">Home</a>
-        <a href="/edit">Editor</a>
-        <a href="/registry">Registry editor</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/edit" data-i18n="nav.editor">Editor</a>
+        <a href="/registry" data-i18n="nav.registry">Registry editor</a>
+        <label class="language-control"><span data-i18n="language.label">Language</span><select data-language-select><option value="en">English</option><option value="fr">Français</option></select></label>
       </nav>
     </header>
 
     <main>
       <section class="hero compact">
-        <h1>Schema Viewer</h1>
+        <h1 data-i18n="schema.title">Schema viewer</h1>
         <p>Browse the summarized R3XA JSON schema.</p>
       </section>
 
@@ -73,6 +74,7 @@
       </section>
     </main>
     <script src="/static/vendor/json-viewer-js/json-viewer.global.js?v={{ app_start }}"></script>
+    <script src="/static/i18n.js?v={{ app_start }}"></script>
     <script src="/static/schema.js?v={{ app_start }}"></script>
   </body>
 </html>

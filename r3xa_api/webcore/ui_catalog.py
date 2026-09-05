@@ -23,6 +23,29 @@ def _profile_kinds(schema_catalog: Dict[str, Any]) -> set[str]:
     return kinds
 
 
+def _validate_messages(messages: Dict[str, Any]) -> None:
+    default_language = messages.get("default_language")
+    languages = messages.get("languages")
+    if not isinstance(default_language, str) or not default_language:
+        raise ValueError("UI messages must define a non-empty default_language")
+    if not isinstance(languages, dict) or not languages:
+        raise ValueError("UI messages must define a non-empty languages object")
+    default_messages = languages.get(default_language)
+    if not isinstance(default_messages, dict) or not all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in default_messages.items()
+    ):
+        raise ValueError("UI default-language messages must be a string mapping")
+    expected_keys = set(default_messages)
+    for language, translated_messages in languages.items():
+        if not isinstance(language, str) or not isinstance(translated_messages, dict):
+            raise ValueError("UI languages must map language codes to message objects")
+        if set(translated_messages) != expected_keys:
+            raise ValueError(f"UI messages for {language} must match default-language keys")
+        if not all(isinstance(value, str) for value in translated_messages.values()):
+            raise ValueError(f"UI messages for {language} must contain only strings")
+
+
 def _profile_references(profile: Dict[str, Any]) -> set[str]:
     recommended = profile.get("recommended_kinds", [])
     if not isinstance(recommended, list) or not all(
@@ -174,9 +197,13 @@ def build_ui_catalog(
                 raise ValueError(f"Profile {entry.name} must define a non-empty id")
             profiles[profile_id] = profile
 
+    messages = _load_json_resource("ui/messages.json")
+    _validate_messages(messages)
+
     return {
         "version": 1,
         "schema_version": schema_catalog.get("schema_version"),
         "default": _load_json_resource("ui/default.json"),
+        "messages": messages,
         "profiles": profiles,
     }

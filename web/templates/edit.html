@@ -24,47 +24,47 @@
         </div>
       </div>
       <nav class="nav">
-        <a href="/">Home</a>
-        <a href="/registry">Registry editor</a>
-        <a href="/schema">Schema viewer</a>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/registry" data-i18n="nav.registry">Registry editor</a>
+        <a href="/schema" data-i18n="nav.schema">Schema viewer</a>
+        <label class="language-control"><span data-i18n="language.label">Language</span><select data-language-select><option value="en">English</option><option value="fr">Français</option></select></label>
       </nav>
     </header>
 
     <main>
       <section class="hero compact">
-        <h1>R3XA Editor</h1>
-        <p>Edit and validate a single R3XA JSON instance.</p>
+        <h1 data-i18n="editor.title">R3XA Editor</h1>
+        <p data-i18n="editor.subtitle">Create, review, and validate one R3XA experiment.</p>
       </section>
 
       <section class="panel">
-        <h2>Schema</h2>
+        <h2 data-i18n="editor.schema">Schema</h2>
         <div id="schema-summary">Loading schema catalogue…</div>
       </section>
 
       <section class="panel editor-controls">
         <div class="mode-tabs" role="tablist" aria-label="Editor mode">
-          <button class="mode-tab" data-editor-mode="guided" type="button">Guided</button>
-          <button class="mode-tab" data-editor-mode="advanced" type="button">Advanced</button>
-          <button class="mode-tab" data-editor-mode="expert" type="button">Expert</button>
+          <button class="mode-tab" data-editor-mode="guided" type="button" data-i18n="editor.guided">Guided</button>
+          <button class="mode-tab" data-editor-mode="advanced" type="button" data-i18n="editor.advanced">Advanced</button>
+          <button class="mode-tab" data-editor-mode="expert" type="button" data-i18n="editor.expert">Expert</button>
         </div>
         <label class="profile-control" for="profile-select">
-          Experience profile
+          <span data-i18n="editor.profile">Experience profile</span>
           <select id="profile-select"></select>
         </label>
         <p id="mode-help" class="muted"></p>
       </section>
 
       <section class="panel guided-panel">
-        <h2>Guided checklist</h2>
+        <h2 data-i18n="editor.checklist">Guided checklist</h2>
         <p class="muted">Follow the profile steps. This view edits the same canonical JSON document as the other modes.</p>
         <div class="actions">
-          <button id="guided-prefill" class="ghost" type="button" hidden>Create prefilled workflow</button>
-          <button id="guided-review" class="ghost" type="button" hidden>Mark template values as reviewed</button>
+          <button id="guided-prefill" class="ghost" type="button" hidden data-i18n="editor.prefill">Create prefilled workflow</button>
         </div>
         <div class="guided-navigation">
-          <button id="guided-previous" class="ghost" type="button">Previous</button>
+          <button id="guided-previous" class="ghost" type="button" data-i18n="common.previous">Previous</button>
           <span id="guided-progress" class="muted"></span>
-          <button id="guided-next" type="button">Next</button>
+          <button id="guided-next" type="button" data-i18n="common.next">Next</button>
         </div>
         <div id="guided-steps"></div>
       </section>
@@ -94,18 +94,18 @@
       </section>
 
       <section class="panel document-actions">
-        <h2>Document</h2>
+        <h2 data-i18n="editor.document">Document</h2>
         <p class="muted">Save, load, or validate the same document from any editor mode.</p>
         <div class="actions">
-          <button id="save-json-btn" class="ghost" type="button">Save JSON</button>
+          <button id="save-json-btn" class="ghost" type="button" data-i18n="editor.save">Save JSON</button>
           <label class="file-btn ghost">
-            Load JSON
+            <span data-i18n="editor.load">Load JSON</span>
             <input id="load-json-input" type="file" accept=".json,application/json" />
           </label>
         </div>
         <div class="actions">
-          <button id="validate-btn">Validate</button>
-          <button id="reset-btn" class="ghost">Reset</button>
+          <button id="validate-btn" data-i18n="editor.validate">Validate</button>
+          <button id="reset-btn" class="ghost" data-i18n="editor.reset">Reset</button>
         </div>
         <pre id="validation-output"></pre>
       </section>
@@ -116,6 +116,7 @@
         <textarea id="json-input" spellcheck="false"></textarea>
       </section>
     </main>
+    <script src="/static/i18n.js?v={{ app_start }}"></script>
     <script src="/static/app.js?v={{ app_start }}"></script>
   </body>
 </html>

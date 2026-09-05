@@ -68,12 +68,13 @@ dot -V
 ## What you can do
 
 - **Editor** (`/edit`)
+  - Start from the home-page choice of experimental workflows.
   - Edit a JSON draft (header + settings + data_sources + data_sets).
   - Use Guided, Advanced, or Expert presentation modes.
   - Choose an experience profile in Guided mode.
   - Validate the JSON (inline report).
   - Save/load JSON to/from disk.
-  - Draft state is stored locally (browser storage).
+  - Draft state is stored locally (browser storage) and survives a WebUI server restart.
 - **Registry editor** (`/registry`)
   - Load, edit, validate, and save a single registry item JSON.
   - Optional kind override for strict item-level validation.
@@ -101,12 +102,13 @@ Profiles can expose a **Create prefilled workflow** action. It starts a complete
 example document whose Guided fields already have editable values, making it
 possible to inspect the workflow and validate it immediately before replacing
 the illustrative metadata with experimental values. Additional profile values
-are displayed for review, and saving is blocked until the example values have
-been reviewed.
+are displayed for review. Each inherited value must be individually confirmed
+or edited before saving is allowed; adding a Guided item one at a time follows
+the same rule.
 
-The Guided view starts with the 2D DIC profile when no previously selected
-profile is available. The Generic profile remains available when a free-form
-document is preferable.
+The home page is the normal entry point: it presents the available experiment
+profiles before creating a document. Opening `/edit` directly starts with the
+Generic profile, so no experimental technique is assumed.
 
 In Guided mode, validation uses short corrective messages such as “Add the
 required field” or “Choose one of”. Advanced and Expert modes keep the original
@@ -132,9 +134,19 @@ The Generic profile also exposes every schema-discovered kind in each collection
 step. It is therefore possible to start in Guided mode without first knowing
 which specialized R3XA object to choose.
 
-Profile relationships are pre-filled in Guided mode when the referenced objects
-already exist. An explicit empty selection is preserved, so optional dependencies
-remain under the user's control. The available prefilled profiles cover camera
+For `data_sets/list`, the Guided editor offers a folder picker. It reads the
+selected filenames from the browser, sorts them naturally (`image_2` before
+`image_10`), and replaces the dataset file list. This avoids manually entering
+long image sequences.
+
+The interface provides an English/French language switch. Presentation labels
+are supplied by `resources/ui/messages.json`; schema validity and profile data
+remain independent from translations.
+
+Profile relationships are pre-filled when a Guided object is first created, but
+an explicit selection or an explicit empty selection is preserved when later
+objects are added. Optional dependencies therefore remain under the user's
+control. The available prefilled profiles cover camera
 acquisition, tabular measurements, mechanical tests, torsion tests, fatigue tests
 with overload, X-ray tomography with DVC, in-situ tensile tests, 2D DIC, and
 stereo-DIC workflows. The Stereo-DIC profile uses `settings/stereorig` to
@@ -180,6 +192,10 @@ keep business wording in the profile. Profile questions reference schema fields
 but may replace their technical label with a user-facing question. The loader
 checks these kind, section, field, and step references when the API starts. Do
 not duplicate validation rules or create a second document model in JavaScript.
+
+Browser workflows are covered by Playwright tests in `tests/web/test_browser.py`.
+Run `python -m pytest -q tests/web/test_browser.py` with Chromium available, or
+set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 
 ## Links
 

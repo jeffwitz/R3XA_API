@@ -1015,15 +1015,21 @@ class R3XADocument(BaseModel):
         ...,
         description='Title of the data sets.',
         examples=[['DICComposite2.0', 'My awesome data sets']],
+        min_length=1,
         title='Title',
     )
     description: str = Field(
-        ..., description='Description of the data sets.', title='Description'
+        ...,
+        description='Description of the data sets.',
+        min_length=1,
+        title='Description',
     )
     version: Literal['2024.7.1'] = Field(
         ..., description='Version of the schema used.', title='Version'
     )
-    authors: str = Field(..., description='Names, ORCID, IDHAL...', title='Author')
+    authors: str = Field(
+        ..., description='Names, ORCID, IDHAL...', min_length=1, title='Author'
+    )
     date: str = Field(
         ...,
         description='Global date of the experiment (YYYY-MM-DD).',

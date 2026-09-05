@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [1.6.0.dev0] - 2026-04-04
+- Web UI: harden Guided template review with per-field confirmation, profile-scoped state, dependency-based role recovery, persistent drafts, folder import for file sequences, profile-first home page, French/English interface labels, and browser workflow tests.
+- Schema: synchronize non-empty top-level `title`, `description`, and `authors` constraints from `R3XA_SPEC`.
 - Start the next development cycle after the `1.5.0` release.
 - Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.4`).
 - Tests: make `tests/test_dev_cli.py` hermetic by simulating a project-local `.venv` instead of depending on the contributor's real environment.
