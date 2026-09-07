@@ -8,7 +8,9 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import ConfigDict, Field, RootModel
+
+from r3xa_api.model_base import R3XAModel
 
 
 class Settings(RootModel[Any]):
@@ -34,7 +36,7 @@ class OutputDimension(Enum):
     volume = 'volume'
 
 
-class DataSetFile(BaseModel):
+class DataSetFile(R3XAModel):
     filename: str
     file_type: Optional[str] = Field(
         None, description='MIME type of the file.', title='MIME'
@@ -42,7 +44,7 @@ class DataSetFile(BaseModel):
     delimiter: Optional[str] = ';'
     data_range: Optional[str] = None
     kind: Literal['data_set_file'] = Field(
-        ...,
+        'data_set_file',
         description='Only required for specs implementation purposes',
         title='Kind of object',
     )
@@ -60,7 +62,7 @@ class Uint(RootModel[int]):
     root: int = Field(..., description='Unsigned int', ge=0, title='uint')
 
 
-class Unit(BaseModel):
+class Unit(R3XAModel):
     title: Optional[str] = Field(None, description='Title of the unit.', title='Title')
     value: Optional[float] = Field(None, description='Numerical value.', title='Value')
     unit: str = Field(..., description='Sign of the unit.', title='Unit')
@@ -68,19 +70,19 @@ class Unit(BaseModel):
         None, description='Factor with respect to the standard system', title='Scale'
     )
     kind: Literal['unit'] = Field(
-        ...,
+        'unit',
         description='Only required for specs implementation purposes',
         title='Kind of object',
     )
 
 
-class File(BaseModel):
+class File(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data set.', title='ID')
     kind: Literal['data_sets/file'] = Field(
-        ...,
+        'data_sets/file',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -112,13 +114,13 @@ class File(BaseModel):
     )
 
 
-class Generic(BaseModel):
+class Generic(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data set.', title='ID')
     kind: Literal['data_sets/generic'] = Field(
-        ...,
+        'data_sets/generic',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -133,13 +135,13 @@ class Generic(BaseModel):
     )
 
 
-class List(BaseModel):
+class List(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data set.', title='ID')
     kind: Literal['data_sets/list'] = Field(
-        ...,
+        'data_sets/list',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -170,13 +172,13 @@ class List(BaseModel):
     data: list[str] = Field(..., description='List of the data files.', title='Data')
 
 
-class Camera(BaseModel):
+class Camera(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/camera'] = Field(
-        ...,
+        'data_sources/camera',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -249,13 +251,13 @@ class Camera(BaseModel):
     )
 
 
-class DicMeasurement(BaseModel):
+class DicMeasurement(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/dic_measurement'] = Field(
-        ...,
+        'data_sources/dic_measurement',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -338,13 +340,13 @@ class DicMeasurement(BaseModel):
     )
 
 
-class GenericModel(BaseModel):
+class GenericModel(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source', title='ID')
     kind: Literal['data_sources/generic'] = Field(
-        ...,
+        'data_sources/generic',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -386,13 +388,13 @@ class GenericModel(BaseModel):
     )
 
 
-class Identification(BaseModel):
+class Identification(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/identification'] = Field(
-        ...,
+        'data_sources/identification',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -439,13 +441,13 @@ class Identification(BaseModel):
     )
 
 
-class Infrared(BaseModel):
+class Infrared(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/infrared'] = Field(
-        ...,
+        'data_sources/infrared',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -535,13 +537,13 @@ class Infrared(BaseModel):
     )
 
 
-class LoadCell(BaseModel):
+class LoadCell(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/load_cell'] = Field(
-        ...,
+        'data_sources/load_cell',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -585,13 +587,13 @@ class LoadCell(BaseModel):
     )
 
 
-class MechanicalAnalysis(BaseModel):
+class MechanicalAnalysis(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/mechanical_analysis'] = Field(
-        ...,
+        'data_sources/mechanical_analysis',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -632,13 +634,13 @@ class MechanicalAnalysis(BaseModel):
     )
 
 
-class PointTemperature(BaseModel):
+class PointTemperature(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/point_temperature'] = Field(
-        ...,
+        'data_sources/point_temperature',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -684,13 +686,13 @@ class PointTemperature(BaseModel):
     )
 
 
-class StrainComputation(BaseModel):
+class StrainComputation(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/strain_computation'] = Field(
-        ...,
+        'data_sources/strain_computation',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -741,13 +743,13 @@ class StrainComputation(BaseModel):
     )
 
 
-class StrainGauge(BaseModel):
+class StrainGauge(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/strain_gauge'] = Field(
-        ...,
+        'data_sources/strain_gauge',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -784,13 +786,13 @@ class StrainGauge(BaseModel):
     )
 
 
-class Tomograph(BaseModel):
+class Tomograph(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the data source.', title='ID')
     kind: Literal['data_sources/tomograph'] = Field(
-        ...,
+        'data_sources/tomograph',
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
@@ -881,13 +883,13 @@ class Tomograph(BaseModel):
     )
 
 
-class GenericModel1(BaseModel):
+class GenericModel1(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the setting.', title='ID')
     kind: Literal['settings/generic'] = Field(
-        ...,
+        'settings/generic',
         description='Only required for specs implementation purposes.',
         title='Kind of object',
     )
@@ -907,13 +909,13 @@ class GenericModel1(BaseModel):
     )
 
 
-class Specimen(BaseModel):
+class Specimen(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the setting.', title='ID')
     kind: Literal['settings/specimen'] = Field(
-        ...,
+        'settings/specimen',
         description='Only required for specs implementation purposes.',
         title='Kind of object',
     )
@@ -937,13 +939,13 @@ class Specimen(BaseModel):
     )
 
 
-class Stereorig(BaseModel):
+class Stereorig(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the setting.', title='ID')
     kind: Literal['settings/stereorig'] = Field(
-        ...,
+        'settings/stereorig',
         description='Only required for specs implementation purposes.',
         title='Kind of object',
     )
@@ -967,13 +969,13 @@ class Stereorig(BaseModel):
     )
 
 
-class TestingMachine(BaseModel):
+class TestingMachine(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     id: str = Field(..., description='ID of the setting.', title='ID')
     kind: Literal['settings/testing_machine'] = Field(
-        ...,
+        'settings/testing_machine',
         description='Only required for specs implementation purposes.',
         title='Kind of object',
     )
@@ -1007,7 +1009,7 @@ class TestingMachine(BaseModel):
     )
 
 
-class R3XADocument(BaseModel):
+class R3XADocument(R3XAModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -1025,7 +1027,7 @@ class R3XADocument(BaseModel):
         title='Description',
     )
     version: Literal['2024.7.1'] = Field(
-        ..., description='Version of the schema used.', title='Version'
+        '2024.7.1', description='Version of the schema used.', title='Version'
     )
     authors: str = Field(
         ..., description='Names, ORCID, IDHAL...', min_length=1, title='Author'
@@ -1084,22 +1086,50 @@ class R3XADocument(BaseModel):
 # --- stable typed aliases (auto-generated) ---
 CameraSource = Camera
 GenericSource = GenericModel
+InfraredSource = Infrared
+TomographSource = Tomograph
+LoadCellSource = LoadCell
+StrainGaugeSource = StrainGauge
+PointTemperatureSource = PointTemperature
+DicMeasurementSource = DicMeasurement
+MechanicalAnalysisSource = MechanicalAnalysis
+IdentificationSource = Identification
+StrainComputationSource = StrainComputation
 SpecimenSetting = Specimen
 GenericSetting = GenericModel1
+TestingMachineSetting = TestingMachine
+StereorigSetting = Stereorig
+ListDataSet = List
+FileDataSet = File
+GenericDataSet = Generic
 ImageSetList = List
 ImageSetFile = File
-GenericDataSet = Generic
 
 __all__ = [
+    'R3XAModel',
     'Unit',
     'DataSetFile',
+    'OutputDimension',
+    'R3XADocument',
     'CameraSource',
     'GenericSource',
+    'InfraredSource',
+    'TomographSource',
+    'LoadCellSource',
+    'StrainGaugeSource',
+    'PointTemperatureSource',
+    'DicMeasurementSource',
+    'MechanicalAnalysisSource',
+    'IdentificationSource',
+    'StrainComputationSource',
     'SpecimenSetting',
     'GenericSetting',
+    'TestingMachineSetting',
+    'StereorigSetting',
+    'ListDataSet',
+    'FileDataSet',
+    'GenericDataSet',
     'ImageSetList',
     'ImageSetFile',
-    'GenericDataSet',
-    'R3XADocument',
 ]
 # --- end stable typed aliases ---

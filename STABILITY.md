@@ -58,3 +58,23 @@ For `1.x`, the project guarantees:
 - stable naming pattern: `add_<kind>_setting/source/data_set`
 
 The internal implementation may change in a future major version.
+
+## Optional typed models
+
+When the `typed` extra is installed, schema-generated models are available through
+`r3xa_api.models`. The stable public model names and the common helpers are part
+of the optional typed API:
+
+- `to_dict()` / `to_json()`
+- `from_dict()` / `load()`
+- `validate()` / `save()`
+- `required_fields()` / `optional_fields()`
+- `summary()` / `print()`
+
+Document models additionally expose `add_setting()`, `add_data_source()`,
+`add_data_set()`, `find()`, `link_output()`, `link_input()`, and
+`validate_integrity()`.
+
+The generated file must not be edited manually. Its implementation may be
+regenerated from the schema during the `1.x` series, while these stable names
+and behaviors remain the compatibility surface.

@@ -87,10 +87,13 @@ def cmd_generate_models(_: argparse.Namespace) -> None:
         "--field-constraints",
         "--output-model-type",
         "pydantic_v2.BaseModel",
+        "--base-class",
+        "r3xa_api.model_base.R3XAModel",
         "--class-name",
         "R3XADocument",
         "--disable-timestamp",
         "--no-use-union-operator",
+        "--use-one-literal-as-default",
     )
     _run(python, "scripts/postprocess_models.py")
 
@@ -244,10 +247,13 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
                 "--field-constraints",
                 "--output-model-type",
                 "pydantic_v2.BaseModel",
+                "--base-class",
+                "r3xa_api.model_base.R3XAModel",
                 "--class-name",
                 "R3XADocument",
                 "--disable-timestamp",
                 "--no-use-union-operator",
+                "--use-one-literal-as-default",
             ),
             (python, "scripts/postprocess_models.py"),
             (python, "scripts/generate_core_stub.py"),

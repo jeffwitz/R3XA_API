@@ -53,6 +53,47 @@ Generated file:
 
 `from_model(...)` converts a Pydantic model into a plain dict compatible with `R3XAFile`.
 
+## Ergonomic model helpers
+
+Generated models inherit common helpers from `R3XAModel`. Specialized classes know their
+schema `kind`, and item identifiers are generated when they are not provided explicitly.
+The generated `version` field also defaults to the packaged schema version.
+
+```python
+from r3xa_api import models
+
+camera = models.CameraSource(
+    title="CCD Camera",
+    output_components=1,
+    output_dimension="surface",
+    output_units=[models.Unit(unit="graylevel")],
+    image_size=[
+        models.Unit(unit="px", value=1392),
+        models.Unit(unit="px", value=1040),
+    ],
+)
+
+camera.validate()
+camera.print()
+camera.save("camera.json")
+loaded_camera = models.CameraSource.load("camera.json")
+```
+
+The following helpers are available on generated models:
+
+- `to_dict()` and `to_json()` for JSON-compatible representations
+- `from_dict()` and `load()` for typed reconstruction
+- `validate()` for validation against the canonical R3XA schema
+- `save()` for validated JSON serialization
+- `required_fields()`, `optional_fields()`, and `field_descriptions()` for discovery
+- `summary()` and `print()` for readable inspection in a notebook or terminal
+- `add_setting()`, `add_data_source()`, and `add_data_set()` for document assembly
+- `find()`, `link_output()`, and `link_input()` for explicit document relationships
+- `integrity_errors()` and `validate_integrity()` for reference checks
+
+Object validation checks one item. Validation of references between settings, data
+sources, and data sets belongs to the complete typed `R3XADocument`.
+
 ## `dic_pipeline` in typed mode
 
 This follows the same logic as {glsrc}`examples/python/complex_dic_pipeline.py`, but creates typed objects first.

@@ -230,13 +230,11 @@ Models are generated from the JSON schema and keep the dict-based API unchanged:
 from r3xa_api import R3XAFile, from_model, models
 
 camera = models.CameraSource(
-    id="cam_01",
-    kind="data_sources/camera",
     title="CCD Camera",
     output_components=1,
     output_dimension="surface",
-    output_units=[models.Unit(kind="unit", unit="gl")],
-    image_size=[models.Unit(kind="unit", unit="px")],
+    output_units=[models.Unit(unit="gl")],
+    image_size=[models.Unit(unit="px")],
 )
 
 r3xa = R3XAFile(title="...", description="...", authors="...", date="2026-02-19")

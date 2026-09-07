@@ -46,6 +46,38 @@ This command:
 - regenerates `r3xa_api/models.py`
 - regenerates `r3xa_api/core.pyi`
 - regenerates `docs/specification.md`
+
+### Schema-driven typed models
+
+The typed models follow the same source-of-truth rule as the rest of the SDK:
+
+```text
+R3XA_SPEC/schema-full.json
+        ↓
+R3XA_API/r3xa_api/resources/schema.json
+        ↓
+datamodel-code-generator
+        ↓
+r3xa_api/models.py
+        ↓
+scripts/postprocess_models.py
+```
+
+`datamodel-code-generator` is an external generator configured to emit Pydantic
+v2 models. Pydantic provides runtime validation and serialization; it is not the
+tool that generates the models from JSON Schema. The generated classes inherit
+the shared `R3XAModel` behavior from {glsrc}`r3xa_api/model_base.py`.
+
+Never edit {glsrc}`r3xa_api/models.py` by hand. After a schema change, update the
+source schema in `R3XA_SPEC`, propagate it to the API repository, then run:
+
+```bash
+python scripts/dev.py generate-models
+```
+
+The command regenerates the classes and stable public aliases. Tests in
+{glsrc}`tests/test_models.py` cover the ergonomic behavior and ensure that the
+generated classes remain usable.
 - builds the Sphinx HTML documentation
 
 Use it when you want a ready-to-work contributor environment without running
