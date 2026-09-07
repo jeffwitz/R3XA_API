@@ -1792,7 +1792,7 @@
           "time_reference": {
             "title": "Time reference",
             "description": "Time serving as a reference to the whole data set.",
-            "type": "number"
+            "$ref": "#/$defs/types/unit"
           },
           "keywords": {
             "title": "Keywords",

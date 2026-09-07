@@ -1,33 +1,25 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep  1 11:06:57 2026
+
+@author: passieux
+"""
+
 from __future__ import annotations
 
-import json
-import inspect
-import random
-import string
-from functools import lru_cache
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any
 
-from .schema import load_schema, schema_version
-from .typed import from_model
-from .validate import validate
+import jsonschema
 
+from .registry import load_item, save_item
+from .schema import load_schema
 
-def _random_id(n: int = 24) -> str:
-    """Generate a lowercase identifier suitable for JSON object ids."""
+from .schemaplot import Case, generate_block_diagram
 
-    chars = string.ascii_lowercase
-    return "".join(random.choice(chars) for _ in range(n))
-
-
-def new_item(kind: str, **fields: Any) -> Dict[str, Any]:
-    """Create a schema item with default `id` and `kind` if missing."""
-
-    item = dict(fields)
-    item.setdefault("id", _random_id())
-    item.setdefault("kind", kind)
-    return item
-
+from .new_setting import *
+from .new_datasource import *
+from .new_dataset import *
 
 def unit(
     title: Optional[str] = None,
@@ -53,7 +45,6 @@ def unit(
     payload.update(extra)
     return payload
 
-
 def data_set_file(filename: str, delimiter: Optional[str] = None, data_range: Optional[str] = None, **extra: Any) -> Dict[str, Any]:
     """Build a `data_set_file` payload for `timestamps` or `data` fields."""
 
@@ -70,295 +61,553 @@ def data_set_file(filename: str, delimiter: Optional[str] = None, data_range: Op
     payload.update(extra)
     return payload
 
-
-def _ensure_data_set_file(value: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
-    """Normalize string path or dict into a `data_set_file` payload."""
-
-    if isinstance(value, dict):
-        return value
-    return data_set_file(filename=value)
-
-
-_GUIDED_SECTION_SUFFIX = {
-    "settings": "setting",
-    "data_sources": "source",
-    "data_sets": "data_set",
-}
-_GUIDED_ALIAS_TARGETS = {
-    "add_image_set_list": "add_list_data_set",
-    "add_image_set_file": "add_file_data_set",
-}
-
-
-@lru_cache(maxsize=1)
-def _guided_kind_specs() -> Dict[str, Dict[str, Any]]:
-    """Return schema-derived helper metadata for every supported kind."""
-
-    schema = load_schema()
-    specs: Dict[str, Dict[str, Any]] = {}
-    for section, suffix in _GUIDED_SECTION_SUFFIX.items():
-        section_defs = schema.get("$defs", {}).get(section, {})
-        for kind_name, item_schema in section_defs.items():
-            kind = f"{section}/{kind_name}"
-            properties = item_schema.get("properties", {})
-            required = tuple(
-                field
-                for field in item_schema.get("required", [])
-                if field not in {"id", "kind"}
-            )
-            array_fields = tuple(
-                field_name
-                for field_name, field_schema in properties.items()
-                if field_schema.get("type") == "array"
-            )
-            specs[kind] = {
-                "required": required,
-                "array_fields": array_fields,
-                "helper_name": f"add_{kind_name}_{suffix}",
-            }
-    return specs
-
-
-def _guided_item_spec(kind: str) -> Dict[str, Any]:
-    """Return schema-derived metadata for a specific kind."""
-
-    try:
-        return _guided_kind_specs()[kind]
-    except KeyError as exc:
-        raise ValueError(f"Unsupported guided helper kind: {kind}") from exc
-
-
-def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., Dict[str, Any]]:
-    """Create a guided helper with explicit required parameters for one kind."""
-
-    params = ["self"] + [f"{field}: Any" for field in required_fields] + ["**extra: Any"]
-    header = ", ".join(params)
-    field_lines = "\n".join(
-        f"    fields[{field!r}] = {field}" for field in required_fields
-    ) or "    fields = {}"
-    if required_fields:
-        field_lines = "    fields: Dict[str, Any] = {}\n" + field_lines
-
-    source = (
-        f"def {method_name}({header}) -> Dict[str, Any]:\n"
-        f"    \"\"\"Add a `{kind}` item.\"\"\"\n"
-        f"{field_lines}\n"
-        "    fields.update(extra)\n"
-        f"    return self._add_guided_item({kind!r}, fields)\n"
-    )
-    namespace: Dict[str, Any] = {"Any": Any, "Dict": Dict}
-    exec(source, namespace)
-    helper = namespace[method_name]
-    helper.__qualname__ = f"R3XAFile.{method_name}"
-    helper.__doc__ = (
-        f"Add a `{kind}` item.\n\n"
-        f"Required fields: {', '.join(required_fields) if required_fields else '(none)'}.\n"
-        "Optional schema fields can be passed through `**extra`."
-    )
-    return helper
-
-
-def _make_guided_alias(alias_name: str, target_name: str) -> Callable[..., Dict[str, Any]]:
-    """Create a backward-compatible guided helper alias."""
-
-    def alias(self: "R3XAFile", *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        return getattr(self, target_name)(*args, **kwargs)
-
-    alias.__name__ = alias_name
-    alias.__qualname__ = f"R3XAFile.{alias_name}"
-    alias.__doc__ = f"Alias for `{target_name}`."
-    alias.__signature__ = inspect.signature(getattr(R3XAFile, target_name))
-    return alias
-
-
-class _ModelAwareList(list):
-    """List that accepts dicts and typed models exposing `model_dump`."""
-
-    def __init__(self, values: Iterable[Any] = ()) -> None:
-        super().__init__()
-        self.extend(values)
-
-    @staticmethod
-    def _normalize(value: Any) -> Dict[str, Any]:
-        return from_model(value)
-
-    def append(self, value: Any) -> None:
-        super().append(self._normalize(value))
-
-    def extend(self, values: Iterable[Any]) -> None:
-        super().extend(self._normalize(value) for value in values)
-
-    def insert(self, index: int, value: Any) -> None:
-        super().insert(index, self._normalize(value))
-
-    def __setitem__(self, index: Any, value: Any) -> None:
-        if isinstance(index, slice):
-            super().__setitem__(index, [self._normalize(item) for item in value])
-            return
-        super().__setitem__(index, self._normalize(value))
-
-
 class R3XAFile:
-    """Mutable builder for an R3XA JSON document."""
+    """
+    R3XA experiment description.
 
-    def __init__(self, version: Optional[str] = None, **header: Any):
-        """Initialize an R3XA document with optional header overrides."""
+    Attributes
+    ----------
+    title : str
+        Title of the data sets. Required.
+    description : str
+        Description of the data sets. Required.
+    version : str
+        Version of the schema used. Required.
+    authors : str
+        Names, ORCID, IDHAL... Required.
+    date : str
+        Global date of the experiment (YYYY-MM-DD). Required.
+    repository : str, optional
+        URL to the repository where the dataset is stored.
+    documentation : str, optional
+        URI to the documentation (pdf).
+    license : str, optional
+        Public domain, CC-BY, ...
+    settings : list[Setting]
+        Experimental parameters and setups.
+    data_sources : list[DataSource]
+        Procedures or systems that generate data sets.
+    data_sets : list[Dataset]
+        Measured or generated data.
+    """
 
-        self.header: Dict[str, Any] = dict(header)
-        self.header.setdefault("version", version or schema_version())
-        self.settings: List[Dict[str, Any]] = _ModelAwareList()
-        self.data_sources: List[Dict[str, Any]] = _ModelAwareList()
-        self.data_sets: List[Dict[str, Any]] = _ModelAwareList()
+    _required_fields = {
+        "title",
+        "description",
+        "version",
+        "authors",
+        "date",
+    }
 
-    @classmethod
-    def from_dict(cls, payload: Dict[str, Any]) -> "R3XAFile":
-        """Create a builder from an existing document payload."""
+    def __init__(
+        self,
+        title: str,
+        description: str,
+        authors: str,
+        date: str,
+        version: str | None = None,
+        repository: str | None = None,
+        documentation: str | None = None,
+        license: str | None = None,
+        settings: list[Setting] | None = None,
+        data_sources: list[DataSource] | None = None,
+        data_sets: list[Dataset] | None = None,
+    ) -> None:
+        """
+        Create an R3XA file.
 
-        version = payload.get("version")
-        header = {k: v for k, v in payload.items() if k not in {"version", "settings", "data_sources", "data_sets"}}
-        obj = cls(version=version, **header)
-        obj.settings = _ModelAwareList(payload.get("settings", []))
-        obj.data_sources = _ModelAwareList(payload.get("data_sources", []))
-        obj.data_sets = _ModelAwareList(payload.get("data_sets", []))
-        return obj
+        Parameters
+        ----------
+        title : str
+            Title of the data sets.
+        description : str
+            Description of the data sets.
+        authors : str
+            Names, ORCID, IDHAL...
+        date : str
+            Global date of the experiment (YYYY-MM-DD).
+        version : str, optional
+            Version of the schema used. If omitted, the current
+            schema version is used automatically.
+        repository : str, optional
+            URL to the repository where the dataset is stored.
+        documentation : str, optional
+            URI to the documentation.
+        license : str, optional
+            License information.
+        settings : list[Setting], optional
+            List of experimental settings.
+        data_sources : list[DataSource], optional
+            List of data sources.
+        data_sets : list[Dataset], optional
+            List of datasets.
+        """
 
-    @classmethod
-    def load(cls, path: str | Path) -> "R3XAFile":
-        """Load an R3XA JSON file from disk."""
+        self.title = title
+        self.description = description
+        self.authors = authors
+        self.date = date
 
-        return cls.loads(Path(path).read_text(encoding="utf-8"))
+        # The schema defines version as a constant.
+        # We therefore use the schema value automatically.
+        if version is None:
+            schema = load_schema()
+            version = schema["properties"]["version"]["const"]
 
-    @classmethod
-    def loads(cls, text: str) -> "R3XAFile":
-        """Load an R3XA document from a JSON string."""
+        self.version = version
 
-        payload = json.loads(text)
-        if not isinstance(payload, dict):
-            raise TypeError("R3XA document root must be a JSON object")
-        return cls.from_dict(payload)
+        # Optional header fields are deliberately kept as None.
+        self.repository = repository
+        self.documentation = documentation
+        self.license = license
 
-    def set_header(self, **fields: Any) -> "R3XAFile":
-        """Update top-level header fields in place."""
+        # Lists are initialized as empty lists rather than None.
+        self.settings = (
+            [] if settings is None else list(settings)
+        )
 
-        self.header.update(fields)
-        return self
+        self.data_sources = (
+            [] if data_sources is None else list(data_sources)
+        )
 
-    def _target_collection(self, kind: str) -> List[Dict[str, Any]]:
-        """Return the target top-level collection matching item kind."""
+        self.data_sets = (
+            [] if data_sets is None else list(data_sets)
+        )
 
-        section = kind.split("/", 1)[0]
-        if section == "settings":
-            return self.settings
-        if section == "data_sources":
-            return self.data_sources
-        if section == "data_sets":
-            return self.data_sets
-        raise ValueError("kind must start with settings/, data_sources/, or data_sets/")
+    # ==================================================================
+    # Conversion
+    # ==================================================================
 
-    def add_item(self, kind: str, **fields: Any) -> Dict[str, Any]:
-        """Append an item to the correct collection from its kind prefix."""
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Convert the complete R3XA object to a Python dictionary.
 
-        item = new_item(kind, **fields)
-        self._target_collection(kind).append(item)
-        return item
+        Optional header fields whose value is None are omitted from
+        the resulting dictionary.
 
-    def add_setting(self, kind: str, **fields: Any) -> Dict[str, Any]:
-        """Append a setting item and return it."""
+        Settings, data sources and datasets are converted using their
+        own to_dict() methods.
+        """
 
-        if not kind.startswith("settings/"):
-            raise ValueError("add_setting expects a kind starting with settings/")
-        return self.add_item(kind, **fields)
+        data: dict[str, Any] = {}
 
-    def add_data_source(self, kind: str, **fields: Any) -> Dict[str, Any]:
-        """Append a data source item and return it."""
+        # --------------------------------------------------------------
+        # Header
+        # --------------------------------------------------------------
 
-        if not kind.startswith("data_sources/"):
-            raise ValueError("add_data_source expects a kind starting with data_sources/")
-        return self.add_item(kind, **fields)
+        data["title"] = self.title
+        data["description"] = self.description
+        data["version"] = self.version
+        data["authors"] = self.authors
+        data["date"] = self.date
 
-    def add_data_set(self, kind: str, **fields: Any) -> Dict[str, Any]:
-        """Append a dataset item and return it."""
+        if self.repository is not None:
+            data["repository"] = self.repository
 
-        if not kind.startswith("data_sets/"):
-            raise ValueError("add_data_set expects a kind starting with data_sets/")
-        return self.add_item(kind, **fields)
+        if self.documentation is not None:
+            data["documentation"] = self.documentation
 
-    def _normalize_guided_fields(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize guided helper fields before delegating to low-level add methods."""
+        if self.license is not None:
+            data["license"] = self.license
 
-        normalized = dict(fields)
-        spec = _guided_item_spec(kind)
-        for field_name in spec["array_fields"]:
-            if field_name not in normalized or isinstance(normalized[field_name], list):
-                continue
-            value = normalized[field_name]
-            if isinstance(value, (str, bytes, dict)):
-                continue
-            normalized[field_name] = list(value)
+        # --------------------------------------------------------------
+        # Settings
+        # --------------------------------------------------------------
 
-        if kind == "data_sets/file":
-            normalized["timestamps"] = _ensure_data_set_file(normalized["timestamps"])
-            normalized["data"] = _ensure_data_set_file(normalized["data"])
+        if self.settings:
+            data["settings"] = [
+                setting.to_dict()
+                for setting in self.settings
+            ]
 
-        if kind == "data_sets/list":
-            time_reference = normalized["time_reference"]
-            if not isinstance(time_reference, dict) or time_reference.get("kind") != "unit":
-                raise ValueError("time_reference for data_sets/list must be a unit payload")
+        # --------------------------------------------------------------
+        # Data sources
+        # --------------------------------------------------------------
 
-        return normalized
+        if self.data_sources:
+            data["data_sources"] = [
+                source.to_dict()
+                for source in self.data_sources
+            ]
 
-    def _add_guided_item(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate required schema fields and append one guided item."""
+        # --------------------------------------------------------------
+        # Data sets
+        # --------------------------------------------------------------
 
-        spec = _guided_item_spec(kind)
-        missing_fields = [field for field in spec["required"] if field not in fields]
-        if missing_fields:
-            missing = ", ".join(missing_fields)
-            raise TypeError(f"{spec['helper_name']} missing required arguments: {missing}")
-        return self.add_item(kind, **self._normalize_guided_fields(kind, fields))
+        if self.data_sets:
+            data["data_sets"] = [
+                dataset.to_dict()
+                for dataset in self.data_sets
+            ]
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Return the complete JSON payload for this builder."""
+        return data
 
-        payload = dict(self.header)
-        payload["settings"] = self.settings
-        payload["data_sources"] = self.data_sources
-        payload["data_sets"] = self.data_sets
-        return payload
+    # ==================================================================
+    # Validation
+    # ==================================================================
 
     def validate(self) -> None:
-        """Validate current payload against the active schema."""
+        """
+        Validate the complete R3XA object against schema.json.
 
-        validate(self.to_dict())
+        Unlike registry.validate_item(), which validates an individual
+        registry object using its kind, this method validates the
+        complete R3XA document against the root schema.
+        """
 
-    def dump(self, indent: int = 4) -> str:
-        """Serialize payload as a JSON string."""
+        schema = load_schema()
 
-        return json.dumps(self.to_dict(), indent=indent)
+        validator = jsonschema.Draft202012Validator(schema)
 
-    def save(self, path: str | Path, indent: int = 4, validate: bool = True) -> Path:
-        """Validate optionally, then serialize payload as JSON to disk."""
+        errors = sorted(
+            validator.iter_errors(self.to_dict()),
+            key=jsonschema.exceptions.relevance,
+        )
+
+        if errors:
+            message = "\n".join(
+                f"- {error.message}"
+                for error in errors
+            )
+
+            raise jsonschema.exceptions.ValidationError(
+                message
+            )
+
+    # ==================================================================
+    # Save
+    # ==================================================================
+
+    def save(
+        self,
+        path: str | Path,
+        *,
+        validate: bool = True,
+    ) -> Path:
+        """
+        Save the complete R3XA document to a JSON file.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path
+            Destination JSON file.
+        validate : bool, optional
+            Validate the document before saving.
+        """
+
+        payload = self.to_dict()
 
         if validate:
             self.validate()
 
         path = Path(path)
-        path.write_text(self.dump(indent=indent) + "\n", encoding="utf-8")
-        return path
 
-
-def _install_guided_helpers() -> None:
-    """Attach schema-driven guided helper methods to `R3XAFile`."""
-
-    for kind, spec in _guided_kind_specs().items():
-        setattr(
-            R3XAFile,
-            spec["helper_name"],
-            _make_guided_helper(spec["helper_name"], kind, spec["required"]),
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
         )
 
-    for alias_name, target_name in _GUIDED_ALIAS_TARGETS.items():
-        setattr(R3XAFile, alias_name, _make_guided_alias(alias_name, target_name))
+        # We intentionally don't use registry.save_item() here because
+        # registry.save_item() is designed for registry entries and
+        # validates using a `kind`. The R3XA root document has no kind.
+        import json
 
+        path.write_text(
+            json.dumps(
+                payload,
+                indent=2,
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
-_install_guided_helpers()
+        return path
+
+    # ==================================================================
+    # Load
+    # ==================================================================
+
+    @classmethod
+    def load(
+        cls,
+        path: str | Path,
+        *,
+        validate: bool = True,
+    ) -> R3XA:
+        """
+        Load a complete R3XA document from a JSON file.
+
+        Parameters
+        ----------
+        path : str or pathlib.Path
+            JSON file to load.
+        validate : bool, optional
+            Validate the document after loading.
+        """
+
+        import json
+
+        path = Path(path)
+
+        payload = json.loads(
+            path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        if validate:
+            schema = load_schema()
+
+            validator = jsonschema.Draft202012Validator(
+                schema
+            )
+
+            errors = sorted(
+                validator.iter_errors(payload),
+                key=jsonschema.exceptions.relevance,
+            )
+
+            if errors:
+                message = "\n".join(
+                    f"- {error.message}"
+                    for error in errors
+                )
+
+                raise jsonschema.exceptions.ValidationError(
+                    message
+                )
+
+        return cls.from_dict(payload)
+
+    # ==================================================================
+    # From dictionary
+    # ==================================================================
+
+    @classmethod
+    def from_dict(
+        cls,
+        payload: dict[str, Any],
+    ) -> R3XA:
+        """
+        Create an R3XA object from a dictionary.
+
+        The `kind` field of each child object is used by the generated
+        classes to reconstruct the appropriate specialized class.
+        """
+
+        data = dict(payload)
+
+        settings_payloads = data.pop(
+            "settings",
+            [],
+        )
+
+        data_sources_payloads = data.pop(
+            "data_sources",
+            [],
+        )
+
+        data_sets_payloads = data.pop(
+            "data_sets",
+            [],
+        )
+
+        settings = [
+            Setting.from_dict(item)
+            for item in settings_payloads
+        ]
+
+        data_sources = [
+            DataSource.from_dict(item)
+            for item in data_sources_payloads
+        ]
+
+        data_sets = [
+            Dataset.from_dict(item)
+            for item in data_sets_payloads
+        ]
+
+        return cls(
+            **data,
+            settings=settings,
+            data_sources=data_sources,
+            data_sets=data_sets,
+        )
+
+    # ==================================================================
+    # Pretty plotting
+    # ==================================================================
+
+    # def plot(self, **kwargs):
+    #     cases = []
+    #     # for data in self.settings:
+    #     #     cases += [Case(data.id, data.title, [], "#c4894f")]
+    #     for data in self.settings:
+    #         if data.associated_data_sources is None:
+    #             cases += [Case(data.id, data.title, [], "#c4894f")]
+    #         else:
+    #             cases += [Case(data.id, data.title, data.associated_data_sources, "#c4894f")]
+    #     for data in self.data_sources:
+    #         if data.input_data_sets is not None:
+    #             cases += [Case(data.id, data.title,
+    #                       data.input_data_sets, "#bf0040")]
+    #         else:
+    #             cases += [Case(data.id, data.title, [], "#bf0040")]
+    #     for data in self.data_sets:
+    #         cases += [Case(data.id, data.title, data.data_sources,
+    #                   "#038181"), ]
+    #     generate_block_diagram(cases, **kwargs)
+    def plot(self, **kwargs):
+        cases = []
+
+        # Settings
+        # Les associated_data_sources sont des enfants,
+        # donc le setting n'a pas de parent à renseigner ici.
+        for data in self.settings:
+            cases.append(
+                Case(data.id, data.title, [], "#c4894f")
+            )
+
+        # Data sources
+        # Les parents sont les settings associés + les input_data_sets
+        for data in self.data_sources:
+            parents = []
+
+            # Ajouter les settings qui ont cette data_source comme enfant
+            for setting in self.settings:
+                if hasattr(setting, 'associated_data_sources'):
+                    if setting.associated_data_sources:
+                        if data.id in setting.associated_data_sources:
+                            parents.append(setting.id)
+
+            # Ajouter les data_sets parents
+            if data.input_data_sets:
+                parents.extend(data.input_data_sets)
+
+            cases.append(
+                Case(data.id, data.title, parents, "#bf0040")
+            )
+
+        # Data sets
+        for data in self.data_sets:
+            cases.append(
+                Case(data.id, data.title, data.data_sources, "#038181")
+            )
+        print(cases)
+        generate_block_diagram(cases, **kwargs)
+
+    # ==================================================================
+    # Pretty printing
+    # ==================================================================
+
+    @staticmethod
+    def _format_list_titles(
+        objects: list[Any],
+    ) -> str:
+        """
+        Return a compact representation containing only object titles.
+        """
+
+        titles = []
+
+        for obj in objects:
+            title = getattr(
+                obj,
+                "title",
+                None,
+            )
+
+            if title is None:
+                titles.append("None")
+            else:
+                titles.append(str(title))
+
+        return "[" + ", ".join(titles) + "]"
+
+    def _format_attributes(self) -> str:
+        """Format the R3XA header and child object lists."""
+
+        attributes = {
+            "title": self.title,
+            "description": self.description,
+            "version": self.version,
+            "authors": self.authors,
+            "date": self.date,
+            "repository": self.repository,
+            "documentation": self.documentation,
+            "license": self.license,
+        }
+
+        display_names = {
+            "title": "title*",
+            "description": "description",
+            "version": "version*",
+            "authors": "authors*",
+            "date": "date*",
+            "repository": "repository",
+            "documentation": "documentation",
+            "license": "license",
+        }
+
+        display_names["settings"] = "settings"
+        display_names["data_sources"] = "datasources"
+        display_names["data_sets"] = "datasets"
+
+        attributes["settings"] = (
+            self._format_list_titles(
+                self.settings
+            )
+        )
+
+        attributes["data_sources"] = (
+            self._format_list_titles(
+                self.data_sources
+            )
+        )
+
+        attributes["data_sets"] = (
+            self._format_list_titles(
+                self.data_sets
+            )
+        )
+
+        key_width = max(
+            len(name)
+            for name in display_names.values()
+        )
+
+        lines = [
+            "R3XA File",
+            "─" * max(
+                key_width + 20,
+                40,
+            ),
+        ]
+
+        for key, value in attributes.items():
+
+            display_name = display_names[key]
+
+            lines.append(
+                f"{display_name:<{key_width}} : {value}"
+            )
+
+        return "\n".join(lines)
+
+    def print(self) -> None:
+        """Print the R3XA file in a compact human-readable format."""
+
+        print(
+            self._format_attributes()
+        )
+
+    def __str__(self) -> str:
+        """Return a human-readable representation."""
+
+        return self._format_attributes()
+
+    def __repr__(self) -> str:
+        """Return a human-readable representation."""
+
+        return self._format_attributes()

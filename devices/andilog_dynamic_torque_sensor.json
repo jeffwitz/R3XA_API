@@ -1,0 +1,20 @@
+{
+  "id": "ibixulqipnnasgeasbqcmkly",
+  "title": "Dynamic Torque sensor",
+  "description": "Andilog Dynamic Torque sensor. \nCapacity 6Nm. \nResolution : 0,6 mNm",
+  "output_components": 1,
+  "output_dimension": "point",
+  "output_units": [
+    {
+      "kind": "unit",
+      "unit": "N.m",
+      "title": "torque",
+      "value": 0,
+      "scale": 1.0
+    }
+  ],
+  "manufacturer": "Andilog",
+  "model": "SPIP TT 6",
+  "documentation": "https://pdf.directindustry.com/pdf/andilog-technologies/andilog-force-torque-measurements/7999-34677.html",
+  "kind": "data_sources/generic"
+}

@@ -1,0 +1,114 @@
+{
+  "title": "R3XA tutorial 1",
+  "description": "Minimal example of a R3XA file",
+  "version": "2024.7.1",
+  "authors": "JC Passieux",
+  "date": "2026-04-02",
+  "documentation": "https://r3xa-spec.readthedocs.io/en/latest/specification.html",
+  "settings": [
+    {
+      "id": "jlmhmxueiryxhxodptzvygbu",
+      "title": "Spot light",
+      "description": "Spotlight MultiLed QX 100% indirect - GS Vitec SN : GS01224 and GS01225",
+      "documentation": "https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf",
+      "kind": "settings/generic"
+    },
+    {
+      "id": "pijuxnhimzolqyrjvbxokycx",
+      "title": "Sample",
+      "description": "Stainless Steel openhole plate",
+      "sizes": [
+        {
+          "kind": "unit",
+          "unit": "mm",
+          "title": "width",
+          "value": 30,
+          "scale": 1.0
+        },
+        {
+          "kind": "unit",
+          "unit": "mm",
+          "title": "length",
+          "value": 120,
+          "scale": 1.0
+        },
+        {
+          "kind": "unit",
+          "unit": "mm",
+          "title": "hole radius",
+          "value": 8,
+          "scale": 1.0
+        }
+      ],
+      "patterning_technique": "black and white spray paint",
+      "kind": "settings/specimen"
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "gxfrgfcsacoghfxbgkltjanp",
+      "title": "CCD Camera",
+      "description": "",
+      "output_components": 1,
+      "output_dimension": "surface",
+      "output_units": [
+        {
+          "kind": "unit",
+          "unit": "gl",
+          "title": "graylevel",
+          "value": 1.0,
+          "scale": 1.0
+        }
+      ],
+      "manufacturer": "Allied Vision Technologies (AVT)",
+      "model": "Dolphin F-145B",
+      "image_size": [
+        {
+          "kind": "unit",
+          "unit": "px",
+          "title": "width",
+          "value": 1392,
+          "scale": 1.0
+        },
+        {
+          "kind": "unit",
+          "unit": "px",
+          "title": "height",
+          "value": 1040,
+          "scale": 1.0
+        }
+      ],
+      "kind": "data_sources/camera"
+    }
+  ],
+  "data_sets": [
+    {
+      "id": "vmivvlvpquxwlopahwoxfgtx",
+      "title": "visible images",
+      "description": "my graylevel images",
+      "path": "images/",
+      "file_type": "image/tiff",
+      "data_sources": [
+        "gxfrgfcsacoghfxbgkltjanp"
+      ],
+      "time_reference": {
+        "kind": "unit",
+        "unit": "s",
+        "title": "time_reference",
+        "value": 0.0,
+        "scale": 1.0
+      },
+      "timestamps": [
+        1.0,
+        1.5,
+        2
+      ],
+      "data": [
+        "img_0000.tif",
+        "img_0001.tif",
+        "img_0002.tif"
+      ],
+      "kind": "data_sets/list"
+    }
+  ]
+}
