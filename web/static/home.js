@@ -7,11 +7,13 @@ const renderProfileCards = (catalog) => {
   Object.entries(catalog.profiles || {}).forEach(([profileId, profile]) => {
     const card = document.createElement("a");
     card.className = "profile-card";
-    card.href = `/edit?profile=${encodeURIComponent(profileId)}${profileId === "generic" ? "" : "&prefill=1"}`;
+    card.href = profileId === "generic"
+      ? "/edit?profile=generic&new=1"
+      : `/edit?profile=${encodeURIComponent(profileId)}&prefill=1`;
     const title = document.createElement("strong");
     title.textContent = t(`profile.${profileId}.title`, profile.title || profileId);
     const description = document.createElement("span");
-    description.textContent = profile.description || "";
+    description.textContent = t(`profile.${profileId}.description`, profile.description || "");
     const action = document.createElement("small");
     action.textContent = profileId === "generic"
       ? t("home.open_generic", "Open schema-driven editor")

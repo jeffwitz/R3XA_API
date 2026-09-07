@@ -84,6 +84,47 @@ def test_home_starts_from_experiment_profiles(page: Page) -> None:
     assert page.locator(".hero a[href='/registry']").count() == 0
 
 
+def test_generic_profile_is_explicitly_free_form(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/edit?profile=generic")
+    page.wait_for_selector("#guided-steps")
+    page.wait_for_function("document.querySelector('#guided-prefill')?.hidden === true")
+    button_state = page.locator("#guided-prefill").evaluate("element => ({hidden: element.hidden, display: getComputedStyle(element).display, profile: document.querySelector('#profile-select').value})")
+    assert button_state["hidden"], button_state
+    assert "free-form" in page.locator("#mode-help").inner_text()
+    assert page.locator(".guided-step-block").count() == 4
+
+
+def test_generic_home_entry_starts_a_new_empty_document(page: Page, web_server: str) -> None:
+    page.goto(web_server)
+    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Old draft', description: 'Old', authors: 'Old', date: '2026-01-01', version: '2024.7.1', settings: [{id: 'old', kind: 'settings/generic'}], data_sources: [], data_sets: []}))")
+    page.goto(f"{web_server}/edit?profile=generic&new=1")
+    page.wait_for_function(
+        """() => {
+          const payload = JSON.parse(document.querySelector('#json-input').value || '{}');
+          return payload.title === '' && payload.settings?.length === 0;
+        }"""
+    )
+    payload = _payload(page)
+    assert payload["title"] == ""
+    assert payload["settings"] == []
+    assert payload["data_sources"] == []
+    assert payload["data_sets"] == []
+
+
+def test_switching_to_generic_discards_existing_items_after_confirmation(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
+    page.wait_for_selector(".template-review-control")
+    page.once("dialog", lambda dialog: dialog.accept())
+    page.locator("#profile-select").select_option("generic")
+    page.wait_for_function(
+        "() => JSON.parse(document.querySelector('#json-input').value || '{}').data_sources?.length === 0"
+    )
+    payload = _payload(page)
+    assert payload["settings"] == []
+    assert payload["data_sources"] == []
+    assert payload["data_sets"] == []
+
+
 def test_language_switch_translates_the_home_page(page: Page) -> None:
     page.wait_for_selector(".profile-card")
     page.locator("[data-language-select]").select_option("fr")

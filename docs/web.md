@@ -130,9 +130,18 @@ the current step's explicitly required profile questions are completed; a
 kind-specific step also requires its object to exist. Full JSON Schema validation
 remains the final authority.
 
-The Generic profile also exposes every schema-discovered kind in each collection
-step. It is therefore possible to start in Guided mode without first knowing
-which specialized R3XA object to choose.
+The Generic profile is intentionally not a prefilled experiment. It is the
+schema-driven fallback for an experiment that does not match an available
+profile, for an expert starting from an empty document, or for a document that
+needs a combination of objects not covered by a profile. It asks for the
+document metadata and exposes every schema-discovered kind in each collection
+step. The **Create prefilled workflow** action is hidden for this profile because
+there are no example values to insert.
+
+Opening the Custom profile from the home page starts a new empty document. If it
+is selected from a populated experimental workflow, the editor asks for
+confirmation before discarding the existing settings, sources, and data sets.
+Switching between experimental profiles does not discard the current document.
 
 For `data_sets/list`, the Guided editor offers a folder picker. It reads the
 selected filenames from the browser, sorts them naturally (`image_2` before

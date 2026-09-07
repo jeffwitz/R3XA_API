@@ -36,6 +36,7 @@ let guidedStepItems = {};
 let pendingTemplateReview = new Set();
 let syncing = false;
 let prefillRequested = launchParams.get("prefill") === "1";
+let newDocumentRequested = launchParams.get("new") === "1";
 
 const guidedStepItemsStorageKey = () => `r3xaGuidedStepItems:${selectedProfile}`;
 
@@ -185,7 +186,11 @@ const updateEditorMode = () => {
     advanced: t("editor.mode_advanced_help", "Edit all user-facing fields while keeping technical identifiers hidden."),
     expert: t("editor.mode_expert_help", "Inspect every field and edit the canonical JSON directly when needed."),
   };
-  if (modeHelpEl) modeHelpEl.textContent = help[editorMode];
+  if (modeHelpEl) {
+    modeHelpEl.textContent = editorMode === "guided" && selectedProfile === "generic"
+      ? t("editor.generic_help", "This is a free-form schema-driven workflow. Add the settings, data sources, and data sets that describe your experiment; no example values are inserted.")
+      : help[editorMode];
+  }
   if (profileSelectEl) profileSelectEl.disabled = editorMode !== "guided";
   if (schemaCatalog) {
     buildHeaderForm(schemaCatalog.sections?.header?.properties || {});
@@ -200,7 +205,7 @@ const populateProfiles = () => {
     const option = document.createElement("option");
     option.value = profileId;
     option.textContent = t(`profile.${profileId}.title`, profile.title || profileId);
-    option.title = profile.description || "";
+    option.title = t(`profile.${profileId}.description`, profile.description || "");
     profileSelectEl.appendChild(option);
   });
   if (!uiCatalog.profiles?.[selectedProfile]) selectedProfile = "generic";
@@ -1627,7 +1632,10 @@ const renderSummary = async () => {
       saveDraft();
     }
     buildHeaderForm(schemaCatalog.sections?.header?.properties || {});
-    if (prefillRequested) {
+    if (newDocumentRequested) {
+      newDocumentRequested = false;
+      reset();
+    } else if (prefillRequested) {
       prefillRequested = false;
       createPrefilledWorkflow();
     } else {
@@ -1782,13 +1790,27 @@ modeButtons.forEach((button) => {
 });
 if (profileSelectEl) {
   profileSelectEl.addEventListener("change", () => {
-    selectedProfile = profileSelectEl.value;
+    const nextProfile = profileSelectEl.value;
+    const current = readPayload();
+    const hasItems = ["settings", "data_sources", "data_sets"].some((section) => current?.[section]?.length);
+    if (nextProfile === "generic" && selectedProfile !== "generic" && hasItems) {
+      const accepted = window.confirm(t(
+        "guided.discard_for_generic",
+        "Start a new empty custom document and discard the current experiment data?",
+      ));
+      if (!accepted) {
+        profileSelectEl.value = selectedProfile;
+        return;
+      }
+    }
+    selectedProfile = nextProfile;
     guidedStepIndex = 0;
     guidedStepItems = loadGuidedStepItems();
     pendingTemplateReview = loadPendingTemplateReview();
     localStorage.setItem("r3xaProfile", selectedProfile);
     localStorage.setItem("r3xaGuidedStep", "0");
-    syncFormFromJson();
+    if (selectedProfile === "generic" && hasItems) reset();
+    else syncFormFromJson();
   });
 }
 if (guidedPreviousEl) {
