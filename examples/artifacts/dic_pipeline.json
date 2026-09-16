@@ -2,10 +2,12 @@
     "title": "Open-hole tensile test with DIC",
     "description": "Camera acquisition + DIC processing pipeline",
     "authors": [
-        "R3XA API"
+        {
+            "name": "R3XA API"
+        }
     ],
     "date": "2024-10-30",
-    "version": "2026.9.8",
+    "version": "2026.9.16",
     "settings": [
         {
             "title": "Openhole sample",
@@ -27,7 +29,7 @@
                 }
             ],
             "patterning_technique": "white background with black spray paint",
-            "id": "mkllsvkmwjodavfgrpzrgvay",
+            "id": "wskypnsnfgkvksliuwavwdjb",
             "kind": "settings/specimen"
         }
     ],
@@ -78,7 +80,7 @@
                 "value": 0.5,
                 "scale": 1.0
             },
-            "id": "ndtsuemqoswuvcuysmtvblmk",
+            "id": "kemwhgtxpksciwsbmskcyihv",
             "kind": "data_sources/camera"
         },
         {
@@ -105,9 +107,9 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "uckwhuagiizyuhikaqdfppeo"
+                "utgaowtwdtcjriqzummacljc"
             ],
-            "id": "tqhvocoqzlgwwlzionhydxvn",
+            "id": "frlzerexihnfykfoveppkcnw",
             "kind": "data_sources/generic"
         }
     ],
@@ -115,7 +117,7 @@
         {
             "title": "graylevel images",
             "parent_data_sources": [
-                "ndtsuemqoswuvcuysmtvblmk"
+                "kemwhgtxpksciwsbmskcyihv"
             ],
             "timestamps": [
                 0.0,
@@ -141,13 +143,13 @@
                 "value": 0.0,
                 "scale": 1.0
             },
-            "id": "uckwhuagiizyuhikaqdfppeo",
+            "id": "utgaowtwdtcjriqzummacljc",
             "kind": "data_sets/list"
         },
         {
             "title": "DIC displacement fields",
             "parent_data_sources": [
-                "tqhvocoqzlgwwlzionhydxvn"
+                "frlzerexihnfykfoveppkcnw"
             ],
             "timestamps": [
                 0.0,
@@ -173,7 +175,7 @@
                 "value": 0.0,
                 "scale": 1.0
             },
-            "id": "oxaeffiixuicvvdrjwozhold",
+            "id": "gtozkgqpgujvgfggtiocdoju",
             "kind": "data_sets/list"
         }
     ]

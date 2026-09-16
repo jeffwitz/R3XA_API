@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- **Breaking, schema `2026.9.16`**: `authors` is an array of `{name, affiliation, orcid}` objects and `author_orcids` is removed. The former parallel array could not express "one ORCID per author" in the schema, so the invariant lived in a Python check and any other consumer accepted a mismatched document. It is now structural, and an affiliation became representable.
+- Added the `author(name, affiliation=None, orcid=None)` helper, and `r3xa.author(...)` on the MATLAB side.
+- `integrity_errors()` no longer carries the author/ORCID length check: the schema enforces it.
 - Items returned by `R3XAFile` are now `R3XAItem` objects instead of bare dictionaries: they print, validate, save, load, and introspect their schema fields on their own. `R3XAItem` subclasses `dict`, so existing code treating items as dictionaries is unaffected.
 - `R3XAFile` gains `summary()`/`print()` for the header and item titles, and `plot()` to render the item graph through the Graphviz, PyVis or NetworkX backends.
 - Graph rendering accepts a `palette` argument, applied identically by every backend: `"default"`, or `"document"` for J-C. Passieux's ochre/crimson/teal scheme.

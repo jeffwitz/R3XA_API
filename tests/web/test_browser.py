@@ -96,7 +96,7 @@ def test_generic_profile_is_explicitly_free_form(page: Page, web_server: str) ->
 
 def test_generic_home_entry_starts_a_new_empty_document(page: Page, web_server: str) -> None:
     page.goto(web_server)
-    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Old draft', description: 'Old', authors: ['Old'], date: '2026-01-01', version: '2026.9.8', settings: [{id: 'old', kind: 'settings/generic'}], data_sources: [], data_sets: []}))")
+    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Old draft', description: 'Old', authors: ['Old'], date: '2026-01-01', version: '2026.9.16', settings: [{id: 'old', kind: 'settings/generic'}], data_sources: [], data_sets: []}))")
     page.goto(f"{web_server}/edit?profile=generic&new=1")
     page.wait_for_function(
         """() => {
@@ -216,7 +216,7 @@ def test_adding_a_guided_item_does_not_overwrite_a_manual_relationship(page: Pag
 
 
 def test_schema_page_keeps_existing_draft(page: Page, web_server: str) -> None:
-    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Draft', description: 'Kept', authors: ['Tester'], date: '2026-09-05', version: '2026.9.8', settings: [], data_sources: [], data_sets: []}))")
+    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Draft', description: 'Kept', authors: ['Tester'], date: '2026-09-05', version: '2026.9.16', settings: [], data_sources: [], data_sets: []}))")
     page.goto(f"{web_server}/schema")
     page.wait_for_timeout(150)
     assert page.evaluate("localStorage.getItem('r3xaDraft')") is not None

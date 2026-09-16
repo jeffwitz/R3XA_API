@@ -48,7 +48,7 @@ from r3xa_api import R3XAFile, unit
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2024-10-30",
 )
 
@@ -150,7 +150,7 @@ camera = camera_base.merge(
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC (registry)",
     description="Camera acquisition + DIC processing pipeline (registry-based)",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2024-10-30",
 )
 
@@ -270,7 +270,7 @@ This example writes:
 - `examples/artifacts/qi_hu_from_json_literal.json`
 
 The current graph baseline is stored in `examples/artifacts/baseline_qi/` and
-is generated from the current `2026.9.8` document. It is a visual
+is generated from the current `2026.9.16` document. It is a visual
 non-regression fixture, not a compatibility reference for an older schema.
 
 ## DIC pipeline graph (from scratch example)

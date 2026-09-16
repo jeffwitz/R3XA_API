@@ -8,7 +8,12 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "measurement", "to_step": "measurement_file", "to_field": "parent_data_sources", "to_many": true}
+    {
+      "from_step": "measurement",
+      "to_step": "measurement_file",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    }
   ],
   "steps": [
     {
@@ -18,14 +23,32 @@
       "defaults": {
         "title": "Tabular measurement",
         "description": "Prefilled example with a generic measurement source and a CSV file.",
-        "authors": ["R3XA Team"],
+        "authors": [
+          {
+            "name": "R3XA Team"
+          }
+        ],
         "date": "2026-09-01"
       },
       "questions": [
-        {"field": "title", "title": "What is the name of the experiment?", "required": true},
-        {"field": "description", "title": "How would you describe it?", "required": true},
-        {"field": "authors", "title": "Who performed it?"},
-        {"field": "date", "title": "When was it performed?"}
+        {
+          "field": "title",
+          "title": "What is the name of the experiment?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "How would you describe it?",
+          "required": true
+        },
+        {
+          "field": "authors",
+          "title": "Who performed it?"
+        },
+        {
+          "field": "date",
+          "title": "When was it performed?"
+        }
       ]
     },
     {
@@ -38,8 +61,16 @@
         "description": "Electromechanical tensile machine."
       },
       "questions": [
-        {"field": "title", "title": "What setting produced the measurement?", "required": true},
-        {"field": "description", "title": "Describe the setting.", "required": true}
+        {
+          "field": "title",
+          "title": "What setting produced the measurement?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the setting.",
+          "required": true
+        }
       ]
     },
     {
@@ -52,16 +83,43 @@
         "description": "Force measurement.",
         "output_components": 1,
         "output_dimension": "point",
-        "output_units": [{"kind": "unit", "title": "force", "unit": "N", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "force",
+            "unit": "N",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Instron",
         "model": "5800"
       },
       "questions": [
-        {"field": "title", "title": "Which source produced the values?", "required": true},
-        {"field": "description", "title": "Describe the measurement.", "required": true},
-        {"field": "output_units", "title": "Which units are measured?", "required": true},
-        {"field": "manufacturer", "title": "Who manufactured the source?", "required": true},
-        {"field": "model", "title": "What is its model?", "required": true}
+        {
+          "field": "title",
+          "title": "Which source produced the values?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the measurement.",
+          "required": true
+        },
+        {
+          "field": "output_units",
+          "title": "Which units are measured?",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the source?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is its model?",
+          "required": true
+        }
       ]
     },
     {
@@ -73,13 +131,34 @@
         "title": "Force time series",
         "description": "Force versus time stored in a CSV file.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "values": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv", "delimiter": ","}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "timestamps.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "force.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the data file be named?", "required": true},
-        {"field": "description", "title": "Describe the data file.", "required": true},
-        {"field": "path", "title": "Where is the CSV file stored?"}
+        {
+          "field": "title",
+          "title": "How should the data file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the data file.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the CSV file stored?"
+        }
       ]
     }
   ]

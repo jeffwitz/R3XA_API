@@ -10,10 +10,30 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "torque_source", "to_step": "rotation_torque", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "angle_source", "to_step": "rotation_angle", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "angle_source", "to_step": "torsion_angle", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "torque_source", "to_step": "torsion_torque", "to_field": "parent_data_sources", "to_many": true}
+    {
+      "from_step": "torque_source",
+      "to_step": "rotation_torque",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "angle_source",
+      "to_step": "rotation_angle",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "angle_source",
+      "to_step": "torsion_angle",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "torque_source",
+      "to_step": "torsion_torque",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    }
   ],
   "steps": [
     {
@@ -23,14 +43,32 @@
       "defaults": {
         "title": "Torsion test",
         "description": "Prefilled example of a torsion test with torque, angle, and camera metadata.",
-        "authors": ["R3XA Team"],
+        "authors": [
+          {
+            "name": "R3XA Team"
+          }
+        ],
         "date": "2026-09-01"
       },
       "questions": [
-        {"field": "title", "title": "What is the name of the test?", "required": true},
-        {"field": "description", "title": "How would you describe the test?", "required": true},
-        {"field": "authors", "title": "Who performed the test?"},
-        {"field": "date", "title": "When was the test performed?"}
+        {
+          "field": "title",
+          "title": "What is the name of the test?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "How would you describe the test?",
+          "required": true
+        },
+        {
+          "field": "authors",
+          "title": "Who performed the test?"
+        },
+        {
+          "field": "date",
+          "title": "When was the test performed?"
+        }
       ]
     },
     {
@@ -42,16 +80,41 @@
         "title": "Torsion apparatus",
         "description": "Torsion test stand with torque and angle measurement.",
         "sizes": [
-          {"kind": "unit", "title": "angle", "unit": "deg", "scale": 1.0},
-          {"kind": "unit", "title": "torque", "unit": "N*m", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "angle",
+            "unit": "deg",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "torque",
+            "unit": "N*m",
+            "scale": 1.0
+          }
         ],
         "patterning_technique": "Matte black and white spray paint"
       },
       "questions": [
-        {"field": "title", "title": "What apparatus was used?", "required": true},
-        {"field": "description", "title": "Describe the apparatus.", "required": true},
-        {"field": "sizes", "title": "Which quantities are measured?", "required": true},
-        {"field": "patterning_technique", "title": "How was the specimen or apparatus prepared?"}
+        {
+          "field": "title",
+          "title": "What apparatus was used?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the apparatus.",
+          "required": true
+        },
+        {
+          "field": "sizes",
+          "title": "Which quantities are measured?",
+          "required": true
+        },
+        {
+          "field": "patterning_technique",
+          "title": "How was the specimen or apparatus prepared?"
+        }
       ]
     },
     {
@@ -63,14 +126,38 @@
         "title": "Glue stick",
         "description": "Cylindrical specimen used for the torsion test.",
         "sizes": [
-          {"kind": "unit", "title": "diameter", "value": 0.7, "unit": "cm", "scale": 1.0},
-          {"kind": "unit", "title": "length", "value": 15.0, "unit": "cm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "diameter",
+            "value": 0.7,
+            "unit": "cm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "length",
+            "value": 15.0,
+            "unit": "cm",
+            "scale": 1.0
+          }
         ]
       },
       "questions": [
-        {"field": "title", "title": "What specimen was tested?", "required": true},
-        {"field": "description", "title": "Describe the specimen.", "required": true},
-        {"field": "sizes", "title": "What are the specimen dimensions?", "required": true}
+        {
+          "field": "title",
+          "title": "What specimen was tested?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the specimen.",
+          "required": true
+        },
+        {
+          "field": "sizes",
+          "title": "What are the specimen dimensions?",
+          "required": true
+        }
       ]
     },
     {
@@ -83,8 +170,16 @@
         "description": "Vic circles calibration grid, 12 by 9, with 5 mm spacing."
       },
       "questions": [
-        {"field": "title", "title": "What calibration setting was used?", "required": true},
-        {"field": "description", "title": "Describe the calibration setting.", "required": true}
+        {
+          "field": "title",
+          "title": "What calibration setting was used?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the calibration setting.",
+          "required": true
+        }
       ]
     },
     {
@@ -97,8 +192,16 @@
         "description": "Two indirect spotlights used during image acquisition."
       },
       "questions": [
-        {"field": "title", "title": "What lighting was used?", "required": true},
-        {"field": "description", "title": "Describe the lighting.", "required": true}
+        {
+          "field": "title",
+          "title": "What lighting was used?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the lighting.",
+          "required": true
+        }
       ]
     },
     {
@@ -111,16 +214,43 @@
         "description": "Torque sensor measuring the applied torque.",
         "output_components": 1,
         "output_dimension": "point",
-        "output_units": [{"kind": "unit", "title": "torque", "unit": "N*m", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "torque",
+            "unit": "N*m",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Andilog",
         "model": "SPIP TT 6"
       },
       "questions": [
-        {"field": "title", "title": "Which sensor measured torque?", "required": true},
-        {"field": "description", "title": "Describe the torque measurement.", "required": true},
-        {"field": "output_units", "title": "Which torque units were used?", "required": true},
-        {"field": "manufacturer", "title": "Who manufactured the sensor?", "required": true},
-        {"field": "model", "title": "What is its model?", "required": true}
+        {
+          "field": "title",
+          "title": "Which sensor measured torque?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the torque measurement.",
+          "required": true
+        },
+        {
+          "field": "output_units",
+          "title": "Which torque units were used?",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the sensor?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is its model?",
+          "required": true
+        }
       ]
     },
     {
@@ -133,16 +263,43 @@
         "description": "Sensor measuring the rotation angle during the test.",
         "output_components": 1,
         "output_dimension": "point",
-        "output_units": [{"kind": "unit", "title": "angle", "unit": "deg", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "angle",
+            "unit": "deg",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Andilog",
         "model": "Twist torsion test"
       },
       "questions": [
-        {"field": "title", "title": "Which sensor measured angle?", "required": true},
-        {"field": "description", "title": "Describe the angle measurement.", "required": true},
-        {"field": "output_units", "title": "Which angle units were used?", "required": true},
-        {"field": "manufacturer", "title": "Who manufactured the sensor?", "required": true},
-        {"field": "model", "title": "What is its model?", "required": true}
+        {
+          "field": "title",
+          "title": "Which sensor measured angle?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the angle measurement.",
+          "required": true
+        },
+        {
+          "field": "output_units",
+          "title": "Which angle units were used?",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the sensor?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is its model?",
+          "required": true
+        }
       ]
     },
     {
@@ -155,20 +312,56 @@
         "description": "Camera observing the specimen during the torsion test.",
         "output_components": 1,
         "output_dimension": "surface",
-        "output_units": [{"kind": "unit", "title": "graylevel", "unit": "gl", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "graylevel",
+            "unit": "gl",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Flir",
         "model": "Grasshopper3 GS3-U3-51S5M",
         "image_size": [
-          {"kind": "unit", "title": "width", "value": 2048, "unit": "px", "scale": 1.0},
-          {"kind": "unit", "title": "height", "value": 2048, "unit": "px", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "width",
+            "value": 2048,
+            "unit": "px",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "height",
+            "value": 2048,
+            "unit": "px",
+            "scale": 1.0
+          }
         ]
       },
       "questions": [
-        {"field": "title", "title": "Which camera observed the test?", "required": true},
-        {"field": "description", "title": "Describe the camera."},
-        {"field": "manufacturer", "title": "Who manufactured the camera?"},
-        {"field": "model", "title": "What is the camera model?"},
-        {"field": "image_size", "title": "What is the image resolution?", "required": true}
+        {
+          "field": "title",
+          "title": "Which camera observed the test?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the camera."
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the camera?"
+        },
+        {
+          "field": "model",
+          "title": "What is the camera model?"
+        },
+        {
+          "field": "image_size",
+          "title": "What is the image resolution?",
+          "required": true
+        }
       ]
     },
     {
@@ -180,13 +373,34 @@
         "title": "Rotation torque",
         "description": "Torque measured before torsion.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"},
-        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_rotation.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_rotation.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the rotation torque file be named?", "required": true},
-        {"field": "description", "title": "Describe the rotation torque data.", "required": true},
-        {"field": "path", "title": "Where is the file stored?"}
+        {
+          "field": "title",
+          "title": "How should the rotation torque file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the rotation torque data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the file stored?"
+        }
       ]
     },
     {
@@ -198,13 +412,34 @@
         "title": "Rotation angle",
         "description": "Angle measured before torsion.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"},
-        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_rotation.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_rotation.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the rotation angle file be named?", "required": true},
-        {"field": "description", "title": "Describe the rotation angle data.", "required": true},
-        {"field": "path", "title": "Where is the file stored?"}
+        {
+          "field": "title",
+          "title": "How should the rotation angle file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the rotation angle data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the file stored?"
+        }
       ]
     },
     {
@@ -216,13 +451,34 @@
         "title": "Torsion angle",
         "description": "Angle measured during torsion.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"},
-        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_torsion.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_torsion.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the torsion angle file be named?", "required": true},
-        {"field": "description", "title": "Describe the torsion angle data.", "required": true},
-        {"field": "path", "title": "Where is the file stored?"}
+        {
+          "field": "title",
+          "title": "How should the torsion angle file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the torsion angle data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the file stored?"
+        }
       ]
     },
     {
@@ -234,13 +490,34 @@
         "title": "Torsion torque",
         "description": "Torque measured during torsion.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"},
-        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_torsion.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "resultats_angle_couple_torsion.csv",
+          "file_type": "text/csv",
+          "delimiter": ";"
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the torsion torque file be named?", "required": true},
-        {"field": "description", "title": "Describe the torsion torque data.", "required": true},
-        {"field": "path", "title": "Where is the file stored?"}
+        {
+          "field": "title",
+          "title": "How should the torsion torque file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the torsion torque data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the file stored?"
+        }
       ]
     }
   ]

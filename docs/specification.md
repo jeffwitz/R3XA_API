@@ -5,7 +5,7 @@
 
 # R3XA Specification
 
-> Version : `2026.9.8`
+> Version : `2026.9.16`
 
 Yet another metadata file format whose goal is to provide a data representation scheme compatible with the variety of data types encountered in experimental and computational photomechanics, and to provide a convenient framework for software coupling and data fusion.
 
@@ -24,9 +24,8 @@ Yet another metadata file format whose goal is to provide a data representation 
 |---|---|---|---|
 | `title` | string | ✅ | Title of the data sets. |
 | `description` | string | ✅ | Description of the data sets. |
-| `version` | "2026.9.8" (fixed) | ✅ | Version of the schema used. |
-| `authors` | array[string] | ✅ | Names of the authors. |
-| `author_orcids` | array \| null |  | ORCIDs parallel to authors; use null when an author has no ORCID. |
+| `version` | "2026.9.16" (fixed) | ✅ | Version of the schema used. |
+| `authors` | array[Author] | ✅ | Authors of the experiment or analysis. |
 | `date` | string | ✅ | Global date of the experiment (YYYY-MM-DD). |
 | `repository` | string |  | URL to the repository where the dataset is stored. |
 | `documentation` | string |  | URI to the documentation (pdf) |
@@ -484,3 +483,13 @@ Unsigned int
 | Property | Value |
 |---|---|
 | `type` | integer |
+
+### Author
+
+One author of the experiment or analysis.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | ✅ | Full name of the author. |
+| `affiliation` | string |  | Institution the author belongs to. |
+| `orcid` | string |  | ORCID identifier of the author. |

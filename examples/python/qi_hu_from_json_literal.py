@@ -5,10 +5,10 @@ import argparse
 import hashlib
 from pathlib import Path
 
-from r3xa_api import R3XAFile
+from r3xa_api import author, R3XAFile
 
 SOURCE_PATH = 'examples/artifacts/qi_hu_from_scratch.json'
-SOURCE_SHA256 = '5b4ff3f2281c41edb50e85e112cadc7a4caa214f518dcc2bb12b9c2ed19b63c4'
+SOURCE_SHA256 = '7cad502428c358c636e2302a0a7a0d7f7fd1256c9f87e705662114655f792b1a'
 DEFAULT_OUTPUT = 'examples/artifacts/qi_hu_from_json_literal.json'
 
 parser = argparse.ArgumentParser(
@@ -22,10 +22,10 @@ output_path = Path(args.output)
 output_path.parent.mkdir(parents=True, exist_ok=True)
 
 r3xa = R3XAFile(
-    version='2026.9.8',
+    version='2026.9.16',
     title='IR Lagrangian thermography - Qi Hu',
     description='Qi Hu experimental pipeline (IR + visible imaging, processing, DIC-like steps)',
-    authors=['J-F. Witz', 'Q. Hu'],
+    authors=[{"name": "J-F. Witz"}, {"name": "Q. Hu"}],
     date='2024-10-30',
     repository='https://example.org/qi-hu',
     documentation='https://theses.hal.science/tel-04993338',

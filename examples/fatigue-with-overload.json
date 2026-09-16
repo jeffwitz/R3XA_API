@@ -1,6 +1,10 @@
 {
-  "version": "2026.9.8",
-  "authors": ["G Bahaj Filali"],
+  "version": "2026.9.16",
+  "authors": [
+    {
+      "name": "G Bahaj Filali"
+    }
+  ],
   "title": "Fatigue test with overload",
   "description": "Fatigue test with overload on SENT specimen made of Al-7%Si cast alloy",
   "date": "2023-06-01",

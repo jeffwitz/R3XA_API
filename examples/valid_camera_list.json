@@ -1,8 +1,12 @@
 {
-  "version": "2026.9.8",
+  "version": "2026.9.16",
   "title": "Camera Image Example",
   "description": "Example with camera and image list",
-  "authors": ["R3XA API"],
+  "authors": [
+    {
+      "name": "R3XA API"
+    }
+  ],
   "date": "2024-10-30",
   "settings": [
     {

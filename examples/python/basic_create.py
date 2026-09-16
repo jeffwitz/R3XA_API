@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from r3xa_api import R3XAFile, unit
+from r3xa_api import author, R3XAFile, unit
 
 # Anchored on this file so the example writes to examples/artifacts/ whatever
 # the working directory, instead of dropping a file in the repository root.
@@ -9,7 +9,7 @@ ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts"
 r3xa = R3XAFile(
     title="Hello World",
     description="Minimal R3XA file",
-    authors=["JC Passieux"],
+    authors=[{"name": "JC Passieux"}],
     date="2024-10-30",
 )
 

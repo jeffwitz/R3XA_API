@@ -11,11 +11,36 @@
     "data_sets/generic"
   ],
   "links": [
-    {"from_step": "camera", "to_step": "images", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "images", "to_step": "fe_dic", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "load_sensor", "to_step": "load_data", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "sif_extractor", "to_step": "sif_data", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "fe_dic", "to_step": "displacement", "to_field": "parent_data_sources", "to_many": true}
+    {
+      "from_step": "camera",
+      "to_step": "images",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "images",
+      "to_step": "fe_dic",
+      "to_field": "input_data_sets",
+      "to_many": true
+    },
+    {
+      "from_step": "load_sensor",
+      "to_step": "load_data",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "sif_extractor",
+      "to_step": "sif_data",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "fe_dic",
+      "to_step": "displacement",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    }
   ],
   "steps": [
     {
@@ -25,14 +50,32 @@
       "defaults": {
         "title": "Fatigue test with overload",
         "description": "Prefilled example with camera images, machine measurements, SIF extraction, and FE-DIC.",
-        "authors": ["R3XA Team"],
+        "authors": [
+          {
+            "name": "R3XA Team"
+          }
+        ],
         "date": "2026-09-01"
       },
       "questions": [
-        {"field": "title", "title": "What is the name of the experiment?", "required": true},
-        {"field": "description", "title": "How would you describe the experiment?", "required": true},
-        {"field": "authors", "title": "Who performed the experiment?"},
-        {"field": "date", "title": "When was it performed?"}
+        {
+          "field": "title",
+          "title": "What is the name of the experiment?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "How would you describe the experiment?",
+          "required": true
+        },
+        {
+          "field": "authors",
+          "title": "Who performed the experiment?"
+        },
+        {
+          "field": "date",
+          "title": "When was it performed?"
+        }
       ]
     },
     {
@@ -43,14 +86,37 @@
       "defaults": {
         "title": "SENT specimen",
         "description": "Single-edge notched tensile specimen used for the fatigue test.",
-        "sizes": [{"kind": "unit", "title": "width", "value": 30.0, "unit": "mm", "scale": 1.0}],
+        "sizes": [
+          {
+            "kind": "unit",
+            "title": "width",
+            "value": 30.0,
+            "unit": "mm",
+            "scale": 1.0
+          }
+        ],
         "patterning_technique": "White paint with black speckles"
       },
       "questions": [
-        {"field": "title", "title": "What specimen was tested?", "required": true},
-        {"field": "description", "title": "Describe the specimen.", "required": true},
-        {"field": "sizes", "title": "What are the specimen dimensions?", "required": true},
-        {"field": "patterning_technique", "title": "How was the specimen patterned?"}
+        {
+          "field": "title",
+          "title": "What specimen was tested?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the specimen.",
+          "required": true
+        },
+        {
+          "field": "sizes",
+          "title": "What are the specimen dimensions?",
+          "required": true
+        },
+        {
+          "field": "patterning_technique",
+          "title": "How was the specimen patterned?"
+        }
       ]
     },
     {
@@ -63,20 +129,56 @@
         "description": "Camera recording images during the fatigue test.",
         "output_components": 1,
         "output_dimension": "surface",
-        "output_units": [{"kind": "unit", "title": "graylevel", "unit": "gl", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "graylevel",
+            "unit": "gl",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Vieworks",
         "model": "High-speed camera",
         "image_size": [
-          {"kind": "unit", "title": "width", "value": 2048, "unit": "px", "scale": 1.0},
-          {"kind": "unit", "title": "height", "value": 2048, "unit": "px", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "width",
+            "value": 2048,
+            "unit": "px",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "height",
+            "value": 2048,
+            "unit": "px",
+            "scale": 1.0
+          }
         ]
       },
       "questions": [
-        {"field": "title", "title": "Which camera recorded the images?", "required": true},
-        {"field": "description", "title": "Describe the camera."},
-        {"field": "manufacturer", "title": "Who manufactured the camera?"},
-        {"field": "model", "title": "What is the camera model?"},
-        {"field": "image_size", "title": "What is the image resolution?", "required": true}
+        {
+          "field": "title",
+          "title": "Which camera recorded the images?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the camera."
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the camera?"
+        },
+        {
+          "field": "model",
+          "title": "What is the camera model?"
+        },
+        {
+          "field": "image_size",
+          "title": "What is the image resolution?",
+          "required": true
+        }
       ]
     },
     {
@@ -89,16 +191,43 @@
         "description": "Force measurement from the fatigue testing machine.",
         "output_components": 1,
         "output_dimension": "point",
-        "output_units": [{"kind": "unit", "title": "force", "unit": "N", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "force",
+            "unit": "N",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Not specified",
         "model": "Not specified"
       },
       "questions": [
-        {"field": "title", "title": "Which source measured the load?", "required": true},
-        {"field": "description", "title": "Describe the load measurement.", "required": true},
-        {"field": "output_units", "title": "Which load units were used?", "required": true},
-        {"field": "manufacturer", "title": "Who manufactured the source?", "required": true},
-        {"field": "model", "title": "What is its model?", "required": true}
+        {
+          "field": "title",
+          "title": "Which source measured the load?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the load measurement.",
+          "required": true
+        },
+        {
+          "field": "output_units",
+          "title": "Which load units were used?",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the source?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is its model?",
+          "required": true
+        }
       ]
     },
     {
@@ -111,16 +240,43 @@
         "description": "Software extracting stress-intensity-factor information from the test data.",
         "output_components": 1,
         "output_dimension": "curve",
-        "output_units": [{"kind": "unit", "title": "stress intensity factor", "unit": "MPa*m^0.5", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "stress intensity factor",
+            "unit": "MPa*m^0.5",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Not specified",
         "model": "Not specified"
       },
       "questions": [
-        {"field": "title", "title": "Which software extracted the SIF?", "required": true},
-        {"field": "description", "title": "Describe the SIF extraction.", "required": true},
-        {"field": "output_units", "title": "Which SIF units were used?", "required": true},
-        {"field": "manufacturer", "title": "Who developed the software?", "required": true},
-        {"field": "model", "title": "What is its version?", "required": true}
+        {
+          "field": "title",
+          "title": "Which software extracted the SIF?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the SIF extraction.",
+          "required": true
+        },
+        {
+          "field": "output_units",
+          "title": "Which SIF units were used?",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who developed the software?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is its version?",
+          "required": true
+        }
       ]
     },
     {
@@ -134,18 +290,48 @@
         "output_components": 2,
         "output_dimension": "surface",
         "output_units": [
-          {"kind": "unit", "title": "horizontal displacement", "unit": "mm", "scale": 1.0},
-          {"kind": "unit", "title": "vertical displacement", "unit": "mm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "horizontal displacement",
+            "unit": "mm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "vertical displacement",
+            "unit": "mm",
+            "scale": 1.0
+          }
         ],
         "manufacturer": "Not specified",
         "model": "Not specified"
       },
       "questions": [
-        {"field": "title", "title": "Which process produced the displacement field?", "required": true},
-        {"field": "description", "title": "Describe the FE-DIC processing.", "required": true},
-        {"field": "output_units", "title": "Which displacement units were used?", "required": true},
-        {"field": "manufacturer", "title": "Who developed the process?", "required": true},
-        {"field": "model", "title": "What is its version?", "required": true}
+        {
+          "field": "title",
+          "title": "Which process produced the displacement field?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the FE-DIC processing.",
+          "required": true
+        },
+        {
+          "field": "output_units",
+          "title": "Which displacement units were used?",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who developed the process?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is its version?",
+          "required": true
+        }
       ]
     },
     {
@@ -158,15 +344,40 @@
         "description": "Image sequence recorded during the overload test.",
         "path": "images/",
         "data_type": "image/tiff",
-        "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
-        "timestamps": [0.0],
-        "values": ["ovl1_0000.tif"]
+        "time_reference": {
+          "kind": "unit",
+          "title": "reference time",
+          "value": 0.0,
+          "unit": "s",
+          "scale": 1.0
+        },
+        "timestamps": [
+          0.0
+        ],
+        "values": [
+          "ovl1_0000.tif"
+        ]
       },
       "questions": [
-        {"field": "title", "title": "How should the image data be named?", "required": true},
-        {"field": "description", "title": "Describe the image sequence.", "required": true},
-        {"field": "path", "title": "Where are the images stored?"},
-        {"field": "data_type", "title": "What type of image files are they?", "required": true}
+        {
+          "field": "title",
+          "title": "How should the image data be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the image sequence.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where are the images stored?"
+        },
+        {
+          "field": "data_type",
+          "title": "What type of image files are they?",
+          "required": true
+        }
       ]
     },
     {
@@ -178,13 +389,34 @@
         "title": "Load data",
         "description": "Final file containing the load measured during the overload.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "load.csv", "file_type": "text/csv", "delimiter": ","},
-        "values": {"kind": "data_set_file", "filename": "load.csv", "file_type": "text/csv", "delimiter": ","}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "load.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "load.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the load file be named?", "required": true},
-        {"field": "description", "title": "Describe the load data.", "required": true},
-        {"field": "path", "title": "Where is the file stored?"}
+        {
+          "field": "title",
+          "title": "How should the load file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the load data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the file stored?"
+        }
       ]
     },
     {
@@ -196,13 +428,34 @@
         "title": "SIF data",
         "description": "Final file containing the stress-intensity-factor results for the overload.",
         "path": "data/",
-        "timestamps": {"kind": "data_set_file", "filename": "sif.csv", "file_type": "text/csv", "delimiter": ","},
-        "values": {"kind": "data_set_file", "filename": "sif.csv", "file_type": "text/csv", "delimiter": ","}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "sif.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "sif.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the SIF file be named?", "required": true},
-        {"field": "description", "title": "Describe the SIF data.", "required": true},
-        {"field": "path", "title": "Where is the file stored?"}
+        {
+          "field": "title",
+          "title": "How should the SIF file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the SIF data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the file stored?"
+        }
       ]
     },
     {
@@ -217,10 +470,26 @@
         "path": "data/displacement_amplitude.csv"
       },
       "questions": [
-        {"field": "title", "title": "How should the displacement result be named?", "required": true},
-        {"field": "description", "title": "Describe the displacement result.", "required": true},
-        {"field": "data_type", "title": "What type of result file is it?", "required": true},
-        {"field": "path", "title": "Where is the result stored?", "required": true}
+        {
+          "field": "title",
+          "title": "How should the displacement result be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the displacement result.",
+          "required": true
+        },
+        {
+          "field": "data_type",
+          "title": "What type of result file is it?",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the result stored?",
+          "required": true
+        }
       ]
     }
   ]

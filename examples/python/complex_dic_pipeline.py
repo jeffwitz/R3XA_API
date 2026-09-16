@@ -1,10 +1,10 @@
-from r3xa_api import R3XAFile, unit
+from r3xa_api import author, R3XAFile, unit
 
 # Header
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2024-10-30",
 )
 

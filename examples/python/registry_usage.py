@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from r3xa_api import R3XAFile, Registry
+from r3xa_api import author, R3XAFile, Registry
 
 # Anchored on this file so the example runs from any working directory.
 ROOT = Path(__file__).resolve().parents[2]
@@ -19,7 +19,7 @@ specimen = registry.load_validated("settings/specimen/openhole_sample")
 r3xa = R3XAFile(
     title="Experiment with registry items",
     description="Using registry items to build an R3XA file",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2024-10-30",
 )
 

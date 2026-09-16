@@ -2,14 +2,18 @@
     "title": "IR Lagrangian thermography - Qi Hu",
     "description": "Qi Hu experimental pipeline (IR + visible imaging, processing, DIC-like steps)",
     "authors": [
-        "J-F. Witz",
-        "Q. Hu"
+        {
+            "name": "J-F. Witz"
+        },
+        {
+            "name": "Q. Hu"
+        }
     ],
     "date": "2024-10-30",
     "repository": "https://example.org/qi-hu",
     "documentation": "https://theses.hal.science/tel-04993338",
     "license": "GPL-2.0-or-later",
-    "version": "2026.9.8",
+    "version": "2026.9.16",
     "settings": [
         {
             "id": "sample",
@@ -2709,14 +2713,20 @@
                 "filename": "1_serie_2450N/Traction_1.csv",
                 "delimiter": ",",
                 "col": 0,
-                "rows": [1, 183799]
+                "rows": [
+                    1,
+                    183799
+                ]
             },
             "values": {
                 "kind": "data_set_file",
                 "filename": "Traction_1.csv",
                 "delimiter": ",",
                 "col": 1,
-                "rows": [1, 183799]
+                "rows": [
+                    1,
+                    183799
+                ]
             },
             "kind": "data_sets/file"
         },

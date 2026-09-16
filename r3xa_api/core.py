@@ -209,6 +209,29 @@ def unit(
     return payload
 
 
+def author(
+    name: str,
+    affiliation: Optional[str] = None,
+    orcid: Optional[str] = None,
+    **extra: Any,
+) -> Dict[str, Any]:
+    """Build an author payload compatible with the R3XA schema.
+
+    Since schema 2026.9.16 an author carries its own ORCID, instead of being a
+    bare name paired with a parallel `author_orcids` array.
+    """
+
+    if not name:
+        raise TypeError("author requires a non-empty `name`")
+    payload: Dict[str, Any] = {"name": name}
+    if affiliation is not None:
+        payload["affiliation"] = affiliation
+    if orcid is not None:
+        payload["orcid"] = orcid
+    payload.update(extra)
+    return payload
+
+
 def data_set_file(
     filename: str,
     file_type: Optional[str] = None,

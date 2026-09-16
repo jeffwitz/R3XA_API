@@ -2,10 +2,12 @@
     "title": "Open-hole tensile test with DIC (registry)",
     "description": "Camera acquisition + DIC processing pipeline (registry-based)",
     "authors": [
-        "R3XA API"
+        {
+            "name": "R3XA API"
+        }
     ],
     "date": "2024-10-30",
-    "version": "2026.9.8",
+    "version": "2026.9.16",
     "settings": [
         {
             "id": "set_spec_exp01",
@@ -107,7 +109,7 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "ynjavxvhotaibrykouenfodk"
+                "fqdupbqcsvlhitpzeqfegfvf"
             ]
         }
     ],
@@ -141,7 +143,7 @@
                 "value": 0.0,
                 "scale": 1.0
             },
-            "id": "ynjavxvhotaibrykouenfodk",
+            "id": "fqdupbqcsvlhitpzeqfegfvf",
             "kind": "data_sets/list"
         },
         {
@@ -173,7 +175,7 @@
                 "value": 0.0,
                 "scale": 1.0
             },
-            "id": "zklbghcjivbknwmlhgawttny",
+            "id": "ekinjnscfhqwxhxsrwhahyjq",
             "kind": "data_sets/list"
         }
     ]

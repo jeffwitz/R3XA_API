@@ -104,7 +104,7 @@ from r3xa_api import R3XAFile, from_model, models
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline (typed)",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2026-02-19",
 )
 

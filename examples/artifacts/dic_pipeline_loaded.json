@@ -1,9 +1,13 @@
 {
     "title": "Open-hole tensile test with DIC (loaded example)",
     "description": "Camera acquisition + DIC processing pipeline",
-    "authors": ["R3XA API"],
+    "authors": [
+        {
+            "name": "R3XA API"
+        }
+    ],
     "date": "2024-10-30",
-    "version": "2026.9.8",
+    "version": "2026.9.16",
     "repository": "https://example.org/r3xa-api/demo",
     "settings": [
         {
@@ -12,72 +16,72 @@
             "sizes": [
                 {
                     "kind": "unit",
+                    "unit": "mm",
                     "title": "width",
                     "value": 30.0,
-                    "unit": "mm",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "mm",
                     "title": "thickness",
                     "value": 2.0,
-                    "unit": "mm",
                     "scale": 1.0
                 }
             ],
             "patterning_technique": "white background with black spray paint",
-            "id": "wkllxzxbsdtkczqcjyedwcrf",
+            "id": "ljaqolfptdkadpooacxftwsx",
             "kind": "settings/specimen"
         }
     ],
     "data_sources": [
         {
             "title": "CCD Camera",
-            "description": "Encoding: 8-bit",
             "output_components": 1,
             "output_dimension": "surface",
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "gl",
                     "title": "graylevel",
                     "value": 1.0,
-                    "unit": "gl",
                     "scale": 1.0
                 }
             ],
+            "description": "Encoding: 8-bit",
             "manufacturer": "Allied Vision Technologies (AVT)",
             "model": "Dolphin F-145B",
             "image_size": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "width",
                     "value": 1392,
-                    "unit": "px",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "height",
                     "value": 1040,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
             "focal_length": {
                 "kind": "unit",
+                "unit": "mm",
                 "title": "focal_length",
                 "value": 25.0,
-                "unit": "mm",
                 "scale": 1.0
             },
             "standoff_distance": {
                 "kind": "unit",
+                "unit": "m",
                 "title": "standoff",
                 "value": 0.5,
-                "unit": "m",
                 "scale": 1.0
             },
-            "id": "gpwojlubbxomeyrlimsmtaoq",
+            "id": "pawmjptdxevjiaeaqnariode",
             "kind": "data_sources/camera"
         },
         {
@@ -88,44 +92,34 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "mm",
                     "title": "ux",
                     "value": 1.0,
-                    "unit": "mm",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "mm",
                     "title": "uy",
                     "value": 1.0,
-                    "unit": "mm",
                     "scale": 1.0
                 }
             ],
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "yzqbcxrpkpmgokzvybbaoaie"
+                "vcfbaefholrusyteyjqkyeas"
             ],
-            "id": "epjeqxqznutkbdhstnvlzstv",
+            "id": "yxspufgqtadfstagwnxzgazh",
             "kind": "data_sources/generic"
         }
     ],
     "data_sets": [
         {
             "title": "graylevel images",
-            "description": "raw images from CCD camera",
-            "path": "images/",
-            "data_type": "image/tiff",
             "parent_data_sources": [
-                "gpwojlubbxomeyrlimsmtaoq"
+                "pawmjptdxevjiaeaqnariode"
             ],
-            "time_reference": {
-                "kind": "unit",
-                "title": "time_reference",
-                "value": 0.0,
-                "unit": "s",
-                "scale": 1.0
-            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -140,24 +134,24 @@
                 "img_0003.tif",
                 "img_0004.tif"
             ],
-            "id": "yzqbcxrpkpmgokzvybbaoaie",
+            "description": "raw images from CCD camera",
+            "path": "images/",
+            "data_type": "image/tiff",
+            "time_reference": {
+                "kind": "unit",
+                "unit": "s",
+                "title": "time_reference",
+                "value": 0.0,
+                "scale": 1.0
+            },
+            "id": "vcfbaefholrusyteyjqkyeas",
             "kind": "data_sets/list"
         },
         {
             "title": "DIC displacement fields",
-            "description": "ux, uy per frame",
-            "path": "dic/",
-            "data_type": "text/csv",
             "parent_data_sources": [
-                "epjeqxqznutkbdhstnvlzstv"
+                "yxspufgqtadfstagwnxzgazh"
             ],
-            "time_reference": {
-                "kind": "unit",
-                "title": "time_reference",
-                "value": 0.0,
-                "unit": "s",
-                "scale": 1.0
-            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -172,7 +166,17 @@
                 "dic_0003.csv",
                 "dic_0004.csv"
             ],
-            "id": "dseyyjnjhhassfgktihvuzga",
+            "description": "ux, uy per frame",
+            "path": "dic/",
+            "data_type": "text/csv",
+            "time_reference": {
+                "kind": "unit",
+                "unit": "s",
+                "title": "time_reference",
+                "value": 0.0,
+                "scale": 1.0
+            },
+            "id": "zogpiuvvuqahiundofpyssva",
             "kind": "data_sets/list"
         }
     ]

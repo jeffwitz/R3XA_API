@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from r3xa_api import R3XAFile, models, typed_available
+from r3xa_api import author, R3XAFile, models, typed_available
 
 if not typed_available or models is None:
     raise RuntimeError('Typed models are not available. Install with: pip install -e ".[typed]"')
@@ -8,7 +8,7 @@ if not typed_available or models is None:
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline (typed)",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2026-03-01",
 )
 

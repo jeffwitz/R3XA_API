@@ -1,8 +1,12 @@
 {
-  "version": "2026.9.8",
+  "version": "2026.9.16",
   "title": "Tabular File Example",
   "description": "Example with tabular time series",
-  "authors": ["R3XA API"],
+  "authors": [
+    {
+      "name": "R3XA API"
+    }
+  ],
   "date": "2024-10-30",
   "settings": [
     {
@@ -40,7 +44,9 @@
       "title": "Force time series",
       "description": "Force vs time",
       "path": "data/",
-      "parent_data_sources": ["ds_generic_01"],
+      "parent_data_sources": [
+        "ds_generic_01"
+      ],
       "timestamps": {
         "kind": "data_set_file",
         "filename": "timestamps.csv",

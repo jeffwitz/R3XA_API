@@ -18,7 +18,7 @@ def test_data_set_file_accepts_column_and_row_selection() -> None:
     r3xa = R3XAFile(
         title="Tabular file with range",
         description="Use column and row selectors for tabular data",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-03-01",
     )
 
@@ -72,7 +72,7 @@ def test_generic_data_source_accepts_uncertainty() -> None:
     r3xa = R3XAFile(
         title="Generic source uncertainty",
         description="Generic data source with explicit uncertainty",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-04-03",
     )
 
@@ -96,7 +96,7 @@ def test_generic_setting_accepts_lowercase_documentation() -> None:
     r3xa = R3XAFile(
         title="Generic setting documentation",
         description="Lowercase documentation field",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-04-03",
     )
 
@@ -113,7 +113,7 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
     r3xa = R3XAFile(
         title="Typed-like model compatibility",
         description="Accept model_dump objects in R3XAFile lists",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-03-01",
     )
 
@@ -166,7 +166,7 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
 
 
 def test_add_item_routes_to_expected_collection() -> None:
-    r3xa = R3XAFile(title="Routing", description="Kind routing", authors=["R3XA API"], date="2026-03-01")
+    r3xa = R3XAFile(title="Routing", description="Kind routing", authors=[{"name": "R3XA API"}], date="2026-03-01")
 
     setting = r3xa.add_item("settings/generic", title="S", description="Setting")
     source = r3xa.add_item(
@@ -195,13 +195,13 @@ def test_add_item_routes_to_expected_collection() -> None:
 
 
 def test_add_setting_rejects_wrong_kind_prefix() -> None:
-    r3xa = R3XAFile(title="Kinds", description="Kinds", authors=["R3XA API"], date="2026-03-01")
+    r3xa = R3XAFile(title="Kinds", description="Kinds", authors=[{"name": "R3XA API"}], date="2026-03-01")
     with pytest.raises(ValueError):
         r3xa.add_setting("data_sources/generic", title="bad", description="bad")
 
 
 def test_add_item_rejects_unknown_kind_prefix() -> None:
-    r3xa = R3XAFile(title="Kinds", description="Kinds", authors=["R3XA API"], date="2026-03-01")
+    r3xa = R3XAFile(title="Kinds", description="Kinds", authors=[{"name": "R3XA API"}], date="2026-03-01")
     with pytest.raises(ValueError):
         r3xa.add_item("unknown/item", title="bad", description="bad")
 
@@ -210,7 +210,7 @@ def test_r3xafile_dump_save_and_load_roundtrip(tmp_path) -> None:
     r3xa = R3XAFile(
         title="Roundtrip",
         description="Roundtrip test",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-03-01",
     )
     source = r3xa.add_data_source(
@@ -275,7 +275,7 @@ def test_new_guided_helpers_validate_against_schema() -> None:
     r3xa = R3XAFile(
         title="Guided helper coverage",
         description="Exercise helpers generated from schema kinds",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-04-03",
     )
 
@@ -309,7 +309,7 @@ def _document_with_items() -> R3XAFile:
     document = R3XAFile(
         title="Torsion test",
         description="A short document",
-        authors=["J.-C. Passieux"],
+        authors=[{"name": "J.-C. Passieux"}],
         date="2026-09-07",
     )
     document.add_specimen_setting(
@@ -341,7 +341,7 @@ def test_document_summary_lists_header_and_item_titles() -> None:
 
 
 def test_document_summary_shares_value_formatting_with_models() -> None:
-    document = R3XAFile(title="t", description="d", authors=["a"], date="2026-01-01")
+    document = R3XAFile(title="t", description="d", authors=[{"name": "a"}], date="2026-01-01")
     document.header["license"] = unit(title="w", value=1392, unit="px")
 
     # The unit collapses exactly as it does in a model's summary().
@@ -436,7 +436,7 @@ def test_added_items_are_objects_not_bare_dicts() -> None:
     document = R3XAFile(
         title="R3XA tutorial 1",
         description="Minimal example of a R3XA file",
-        authors=["JC Passieux"],
+        authors=[{"name": "JC Passieux"}],
         date="2026-04-02",
     )
 

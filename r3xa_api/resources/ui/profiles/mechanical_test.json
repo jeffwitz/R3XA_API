@@ -8,7 +8,12 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "machine", "to_step": "machine_data", "to_field": "parent_data_sources", "to_many": true}
+    {
+      "from_step": "machine",
+      "to_step": "machine_data",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    }
   ],
   "steps": [
     {
@@ -18,14 +23,32 @@
       "defaults": {
         "title": "Tensile mechanical test",
         "description": "Prefilled example of a tensile test with force and displacement recorded by one testing machine.",
-        "authors": ["R3XA Team"],
+        "authors": [
+          {
+            "name": "R3XA Team"
+          }
+        ],
         "date": "2026-09-01"
       },
       "questions": [
-        {"field": "title", "title": "What is the name of the test?", "required": true},
-        {"field": "description", "title": "How would you describe the test?", "required": true},
-        {"field": "authors", "title": "Who performed the test?"},
-        {"field": "date", "title": "When was the test performed?"}
+        {
+          "field": "title",
+          "title": "What is the name of the test?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "How would you describe the test?",
+          "required": true
+        },
+        {
+          "field": "authors",
+          "title": "Who performed the test?"
+        },
+        {
+          "field": "date",
+          "title": "When was the test performed?"
+        }
       ]
     },
     {
@@ -37,17 +60,49 @@
         "title": "Tensile specimen",
         "description": "Flat specimen prepared for a tensile test.",
         "sizes": [
-          {"kind": "unit", "title": "gauge length", "value": 50.0, "unit": "mm", "scale": 1.0},
-          {"kind": "unit", "title": "width", "value": 12.5, "unit": "mm", "scale": 1.0},
-          {"kind": "unit", "title": "thickness", "value": 1.0, "unit": "mm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "gauge length",
+            "value": 50.0,
+            "unit": "mm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "width",
+            "value": 12.5,
+            "unit": "mm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "thickness",
+            "value": 1.0,
+            "unit": "mm",
+            "scale": 1.0
+          }
         ],
         "patterning_technique": "Not specified"
       },
       "questions": [
-        {"field": "title", "title": "What specimen was tested?", "required": true},
-        {"field": "description", "title": "Describe the specimen.", "required": true},
-        {"field": "sizes", "title": "What are the specimen dimensions?"},
-        {"field": "patterning_technique", "title": "How was the specimen prepared?"}
+        {
+          "field": "title",
+          "title": "What specimen was tested?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the specimen.",
+          "required": true
+        },
+        {
+          "field": "sizes",
+          "title": "What are the specimen dimensions?"
+        },
+        {
+          "field": "patterning_technique",
+          "title": "How was the specimen prepared?"
+        }
       ]
     },
     {
@@ -61,17 +116,43 @@
         "output_components": 2,
         "output_dimension": "curve",
         "output_units": [
-          {"kind": "unit", "title": "force", "unit": "N", "scale": 1.0},
-          {"kind": "unit", "title": "displacement", "unit": "mm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "force",
+            "unit": "N",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "displacement",
+            "unit": "mm",
+            "scale": 1.0
+          }
         ],
         "manufacturer": "Instron",
         "model": "5800"
       },
       "questions": [
-        {"field": "title", "title": "Which machine recorded the measurements?", "required": true},
-        {"field": "description", "title": "Describe the measured channels.", "required": true},
-        {"field": "manufacturer", "title": "Who manufactured the machine?", "required": true},
-        {"field": "model", "title": "What is the machine model?", "required": true}
+        {
+          "field": "title",
+          "title": "Which machine recorded the measurements?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the measured channels.",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the machine?",
+          "required": true
+        },
+        {
+          "field": "model",
+          "title": "What is the machine model?",
+          "required": true
+        }
       ]
     },
     {
@@ -83,13 +164,34 @@
         "title": "Machine force and displacement data",
         "description": "Final CSV file containing the force and displacement channels recorded during the tensile test.",
         "path": "machine/",
-        "timestamps": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","},
-        "values": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "test_machine.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "test_machine.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the machine file be named?", "required": true},
-        {"field": "description", "title": "Describe the machine data.", "required": true},
-        {"field": "path", "title": "Where is the machine file stored?"}
+        {
+          "field": "title",
+          "title": "How should the machine file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the machine data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the machine file stored?"
+        }
       ]
     }
   ]

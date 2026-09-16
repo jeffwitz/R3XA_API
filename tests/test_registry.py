@@ -110,7 +110,7 @@ def test_registry_item_can_be_appended_to_r3xafile() -> None:
     r3xa = R3XAFile(
         title="Registry item append",
         description="Append RegistryItem directly to a file",
-        authors=["R3XA API"],
+        authors=[{"name": "R3XA API"}],
         date="2026-04-03",
     )
     r3xa.data_sources.append(camera)

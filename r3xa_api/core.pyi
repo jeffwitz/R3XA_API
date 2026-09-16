@@ -21,6 +21,13 @@ class R3XAItem(Dict[str, Any]):
     def load(cls, path: str | Path) -> R3XAItem: ...
     def save(self, path: str | Path, *, validate: bool = ..., indent: int = ...) -> Path: ...
 
+def author(
+    name: str,
+    affiliation: Optional[str] = ...,
+    orcid: Optional[str] = ...,
+    **extra: Any,
+) -> Dict[str, Any]: ...
+
 def new_item(kind: str, **fields: Any) -> Dict[str, Any]: ...
 
 def unit(

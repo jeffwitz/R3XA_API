@@ -40,14 +40,14 @@ def test_required_document_metadata_cannot_be_empty() -> None:
     schema = load_schema()
     for field in ("title", "description"):
         assert schema["properties"][field]["minLength"] == 1
-    assert schema["properties"]["authors"]["items"]["minLength"] == 1
+    assert schema["$defs"]["types"]["author"]["properties"]["name"]["minLength"] == 1
 
     with pytest.raises(ValidationError):
         validate(
             {
                 "title": "",
                 "description": "",
-                "authors": [""],
+                "authors": [{"name": ""}],
                 "date": "2026-09-05",
                 "version": schema_version(),
                 "settings": [],
@@ -76,7 +76,7 @@ def test_validate_rejects_broken_document_references() -> None:
     payload = {
         "title": "Integrity test",
         "description": "Test semantic document validation",
-        "authors": ["Tester"],
+        "authors": [{"name": "Tester"}],
         "date": "2026-09-05",
         "version": schema_version(),
         "settings": [],
@@ -97,12 +97,11 @@ def test_validate_rejects_broken_document_references() -> None:
         validate(payload)
 
 
-def test_validate_rejects_invalid_date_and_author_orcid_count() -> None:
+def test_validate_rejects_an_impossible_calendar_date() -> None:
     payload = {
         "title": "Integrity test",
         "description": "Test semantic document validation",
-        "authors": ["Tester", "Another tester"],
-        "author_orcids": [None],
+        "authors": [{"name": "Tester"}, {"name": "Another tester"}],
         "date": "2026-02-31",
         "version": schema_version(),
         "settings": [],
@@ -110,6 +109,32 @@ def test_validate_rejects_invalid_date_and_author_orcid_count() -> None:
         "data_sets": [],
     }
 
-    with pytest.raises(ValidationError, match="author_orcids") as error:
+    with pytest.raises(ValidationError) as error:
         validate(payload)
     assert "real calendar date" in str(error.value)
+
+
+def test_author_orcids_is_gone_and_orcids_belong_to_their_author() -> None:
+    base = {
+        "title": "Authorship",
+        "description": "ORCIDs are carried by the author object",
+        "authors": [
+            {"name": "Tester", "orcid": "https://orcid.org/0000-0002-1825-0097"},
+            {"name": "Another tester", "affiliation": "Univ. Lille"},
+        ],
+        "date": "2026-02-28",
+        "version": schema_version(),
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    validate(base)
+
+    # The parallel array is no longer part of the document at all, so the
+    # mismatch it allowed cannot be expressed: the schema rejects it outright
+    # rather than relying on a hand-written length check.
+    with pytest.raises(ValidationError, match="author_orcids"):
+        validate({**base, "author_orcids": [None]})
+
+    with pytest.raises(ValidationError):
+        validate({**base, "authors": ["Tester", "Another tester"]})

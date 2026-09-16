@@ -79,7 +79,7 @@ from r3xa_api import R3XAFile, unit
 r3xa = R3XAFile(
     title="Hello World",
     description="Minimal R3XA file",
-    authors=["JC Passieux"],
+    authors=[{"name": "JC Passieux"}],
     date="2024-10-30",
 )
 
@@ -240,7 +240,7 @@ camera = models.CameraSource(
     image_size=[models.Unit(unit="px")],
 )
 
-r3xa = R3XAFile(title="...", description="...", authors=["..."], date="2026-02-19")
+r3xa = R3XAFile(title="...", description="...", authors=[{"name": "..."}], date="2026-02-19")
 r3xa.data_sources.append(from_model(camera))
 r3xa.validate()
 ```

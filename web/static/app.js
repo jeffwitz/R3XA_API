@@ -1,3 +1,13 @@
+// Since schema 2026.9.16 an author is an object {name, affiliation?, orcid?}
+// rather than a bare string, and the document requires at least one.
+function normalizeAuthors(value) {
+  const entries = Array.isArray(value) ? value : value ? [value] : [];
+  const authors = entries
+    .map((entry) => (entry && typeof entry === "object" ? entry : { name: String(entry) }))
+    .filter((entry) => entry.name);
+  return authors.length ? authors : [{ name: "temp" }];
+}
+
 const defaultPayload = {
   title: "",
   description: "",
@@ -1401,7 +1411,7 @@ const validateItem = async (section, item, index) => {
     title: payload.title || "temp",
     description: payload.description || "temp",
     version: payload.version || schemaCatalog.schema_version,
-    authors: Array.isArray(payload.authors) ? payload.authors : [payload.authors || "temp"],
+    authors: normalizeAuthors(payload.authors),
     date: payload.date || "2024-01-01",
     settings: [],
     data_sources: [],

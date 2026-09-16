@@ -68,10 +68,9 @@ def integrity_errors(instance: Mapping[str, Any]) -> list[str]:
                             f"{item_path}/attached_data_sources/{reference_index}: "
                             f"unknown data source reference {reference!r}"
                         )
-    authors = instance.get("authors")
-    author_orcids = instance.get("author_orcids")
-    if isinstance(authors, list) and isinstance(author_orcids, list) and len(authors) != len(author_orcids):
-        errors.append("author_orcids: must have one entry for each author")
+    # The "one ORCID per author" check that used to live here is gone: since
+    # schema 2026.9.16 an author carries its own ORCID, so the schema enforces
+    # the relationship for every consumer, not just for this implementation.
 
     experiment_date = instance.get("date")
     if isinstance(experiment_date, str):

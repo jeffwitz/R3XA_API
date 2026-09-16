@@ -13,14 +13,6 @@ from pydantic import ConfigDict, Field, RootModel
 from r3xa_api.model_base import R3XAModel
 
 
-class Author(RootModel[str]):
-    root: str = Field(..., min_length=1)
-
-
-class AuthorOrcids(RootModel[str]):
-    root: str = Field(..., min_length=1)
-
-
 class Settings(RootModel[Any]):
     root: Any
 
@@ -42,6 +34,24 @@ class OutputDimension(Enum):
     curve = 'curve'
     surface = 'surface'
     volume = 'volume'
+
+
+class Author(R3XAModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    name: str = Field(
+        ..., description='Full name of the author.', min_length=1, title='Name'
+    )
+    affiliation: Optional[str] = Field(
+        None,
+        description='Institution the author belongs to.',
+        min_length=1,
+        title='Affiliation',
+    )
+    orcid: Optional[str] = Field(
+        None, description='ORCID identifier of the author.', min_length=1, title='ORCID'
+    )
 
 
 class Col(RootModel[int]):
@@ -1094,17 +1104,14 @@ class R3XADocument(R3XAModel):
         min_length=1,
         title='Description',
     )
-    version: Literal['2026.9.8'] = Field(
-        '2026.9.8', description='Version of the schema used.', title='Version'
+    version: Literal['2026.9.16'] = Field(
+        '2026.9.16', description='Version of the schema used.', title='Version'
     )
     authors: list[Author] = Field(
-        ..., description='Names of the authors.', min_length=1, title='Author'
-    )
-    author_orcids: Optional[list[Optional[AuthorOrcids]]] = Field(
-        None,
-        description='ORCIDs parallel to authors; use null when an author has no ORCID.',
+        ...,
+        description='Authors of the experiment or analysis.',
         min_length=1,
-        title='Author ORCID',
+        title='Authors',
     )
     date: str = Field(
         ...,

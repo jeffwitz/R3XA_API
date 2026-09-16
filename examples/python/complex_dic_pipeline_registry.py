@@ -1,4 +1,4 @@
-from r3xa_api import R3XAFile, Registry, unit
+from r3xa_api import author, R3XAFile, Registry, unit
 
 registry = Registry("registry")
 
@@ -20,7 +20,7 @@ camera = camera_base.merge(
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC (registry)",
     description="Camera acquisition + DIC processing pipeline (registry-based)",
-    authors=["R3XA API"],
+    authors=[{"name": "R3XA API"}],
     date="2024-10-30",
 )
 

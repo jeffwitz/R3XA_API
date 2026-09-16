@@ -9,7 +9,7 @@ This page documents the public API intended for library users.
 For most user code, keep imports at the SDK level:
 
 ```python
-from r3xa_api import R3XAFile, R3XAItem, Registry, RegistryItem, new_item, unit, validate
+from r3xa_api import R3XAFile, R3XAItem, Registry, RegistryItem, author, new_item, unit, validate
 ```
 
 When the `typed` extra is installed, the generated model classes are exported from the package
@@ -198,7 +198,7 @@ Schema introspection, to discover which fields may still be filled in.
 ```python
 from r3xa_api import R3XAFile, unit
 
-document = R3XAFile(title="Tutorial", description="Minimal file", authors=["JC Passieux"], date="2026-04-02")
+document = R3XAFile(title="Tutorial", description="Minimal file", authors=[{"name": "JC Passieux"}], date="2026-04-02")
 specimen = document.add_specimen_setting(
     title="Openhole sample",
     description="Glass-epoxy specimen",
@@ -209,6 +209,26 @@ print(specimen.optional_fields())
 ```
 
 ## Helper functions
+
+### `author(...)`
+```python
+author(name: str, affiliation: str | None = None, orcid: str | None = None, **extra) -> dict
+```
+Build a schema‑compliant author object. Only `name` is required.
+
+```python
+from r3xa_api import R3XAFile, author
+
+document = R3XAFile(
+    title="Torsion test",
+    description="…",
+    authors=[author("J-F. Witz", orcid="https://orcid.org/0000-0002-1825-0097"), author("Q. Hu")],
+    date="2026-09-16",
+)
+```
+
+Since schema `2026.9.16` an author carries its own ORCID; the former parallel `author_orcids`
+array is gone.
 
 ### `unit(...)`
 ```python

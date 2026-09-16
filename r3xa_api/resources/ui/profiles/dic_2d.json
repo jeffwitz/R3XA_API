@@ -11,10 +11,30 @@
     "data_sets/list"
   ],
   "links": [
-    {"from_step": "machine", "to_step": "machine_data", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "camera", "to_step": "images", "to_field": "parent_data_sources", "to_many": true},
-    {"from_step": "images", "to_step": "dic", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "dic", "to_step": "displacement_fields", "to_field": "parent_data_sources", "to_many": true}
+    {
+      "from_step": "machine",
+      "to_step": "machine_data",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "camera",
+      "to_step": "images",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    },
+    {
+      "from_step": "images",
+      "to_step": "dic",
+      "to_field": "input_data_sets",
+      "to_many": true
+    },
+    {
+      "from_step": "dic",
+      "to_step": "displacement_fields",
+      "to_field": "parent_data_sources",
+      "to_many": true
+    }
   ],
   "steps": [
     {
@@ -24,13 +44,27 @@
       "defaults": {
         "title": "Tensile test with 2D DIC",
         "description": "Prefilled example of a tensile experiment measured with a visible camera and a testing machine.",
-        "authors": ["R3XA Team"],
+        "authors": [
+          {
+            "name": "R3XA Team"
+          }
+        ],
         "date": "2026-09-01"
       },
       "questions": [
-        {"field": "title", "title": "What is the name of the experiment?", "required": true},
-        {"field": "authors", "title": "Who performed the experiment?"},
-        {"field": "date", "title": "When was the experiment performed?"}
+        {
+          "field": "title",
+          "title": "What is the name of the experiment?",
+          "required": true
+        },
+        {
+          "field": "authors",
+          "title": "Who performed the experiment?"
+        },
+        {
+          "field": "date",
+          "title": "When was the experiment performed?"
+        }
       ]
     },
     {
@@ -42,17 +76,49 @@
         "title": "Tensile specimen",
         "description": "Flat specimen prepared for a tensile test with a speckle pattern for 2D DIC.",
         "sizes": [
-          {"kind": "unit", "title": "gauge length", "value": 50.0, "unit": "mm", "scale": 1.0},
-          {"kind": "unit", "title": "width", "value": 12.5, "unit": "mm", "scale": 1.0},
-          {"kind": "unit", "title": "thickness", "value": 1.0, "unit": "mm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "gauge length",
+            "value": 50.0,
+            "unit": "mm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "width",
+            "value": 12.5,
+            "unit": "mm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "thickness",
+            "value": 1.0,
+            "unit": "mm",
+            "scale": 1.0
+          }
         ],
         "patterning_technique": "White paint with black speckles"
       },
       "questions": [
-        {"field": "title", "title": "What specimen was tested?", "required": true},
-        {"field": "description", "title": "Describe the specimen.", "required": true},
-        {"field": "sizes", "title": "What are the specimen dimensions?"},
-        {"field": "patterning_technique", "title": "How was the specimen patterned?"}
+        {
+          "field": "title",
+          "title": "What specimen was tested?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the specimen.",
+          "required": true
+        },
+        {
+          "field": "sizes",
+          "title": "What are the specimen dimensions?"
+        },
+        {
+          "field": "patterning_technique",
+          "title": "How was the specimen patterned?"
+        }
       ]
     },
     {
@@ -66,17 +132,41 @@
         "output_components": 2,
         "output_dimension": "curve",
         "output_units": [
-          {"kind": "unit", "title": "force", "unit": "N", "scale": 1.0},
-          {"kind": "unit", "title": "displacement", "unit": "mm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "force",
+            "unit": "N",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "displacement",
+            "unit": "mm",
+            "scale": 1.0
+          }
         ],
         "manufacturer": "Not specified",
         "model": "Not specified"
       },
       "questions": [
-        {"field": "title", "title": "What machine was used?", "required": true},
-        {"field": "description", "title": "Describe the machine and the measured channels.", "required": true},
-        {"field": "manufacturer", "title": "Who manufactured the machine?"},
-        {"field": "model", "title": "What is the machine model?"}
+        {
+          "field": "title",
+          "title": "What machine was used?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the machine and the measured channels.",
+          "required": true
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the machine?"
+        },
+        {
+          "field": "model",
+          "title": "What is the machine model?"
+        }
       ]
     },
     {
@@ -88,13 +178,34 @@
         "title": "Machine force and displacement data",
         "description": "CSV file containing the force and displacement channels recorded during the tensile test.",
         "path": "machine/",
-        "timestamps": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","},
-        "values": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "test_machine.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "test_machine.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the machine data be named?", "required": true},
-        {"field": "description", "title": "Describe the machine data.", "required": true},
-        {"field": "path", "title": "Where is the CSV file stored?"}
+        {
+          "field": "title",
+          "title": "How should the machine data be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the machine data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the CSV file stored?"
+        }
       ]
     },
     {
@@ -107,20 +218,55 @@
         "description": "Camera recording the specimen during the tensile test.",
         "output_components": 1,
         "output_dimension": "surface",
-        "output_units": [{"kind": "unit", "title": "grey level", "unit": "gl", "scale": 1.0}],
+        "output_units": [
+          {
+            "kind": "unit",
+            "title": "grey level",
+            "unit": "gl",
+            "scale": 1.0
+          }
+        ],
         "manufacturer": "Not specified",
         "model": "Not specified",
         "image_size": [
-          {"kind": "unit", "title": "width", "value": 2448, "unit": "px", "scale": 1.0},
-          {"kind": "unit", "title": "height", "value": 2048, "unit": "px", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "width",
+            "value": 2448,
+            "unit": "px",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "height",
+            "value": 2048,
+            "unit": "px",
+            "scale": 1.0
+          }
         ]
       },
       "questions": [
-        {"field": "title", "title": "Which camera recorded the images?", "required": true},
-        {"field": "description", "title": "Describe the camera."},
-        {"field": "manufacturer", "title": "Who manufactured the camera?"},
-        {"field": "model", "title": "What is the camera model?"},
-        {"field": "image_size", "title": "What is the image resolution?"}
+        {
+          "field": "title",
+          "title": "Which camera recorded the images?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the camera."
+        },
+        {
+          "field": "manufacturer",
+          "title": "Who manufactured the camera?"
+        },
+        {
+          "field": "model",
+          "title": "What is the camera model?"
+        },
+        {
+          "field": "image_size",
+          "title": "What is the image resolution?"
+        }
       ]
     },
     {
@@ -133,14 +279,35 @@
         "description": "Image sequence recorded by the visible camera.",
         "path": "images/",
         "data_type": "image/tiff",
-        "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
-        "timestamps": [0.0],
-        "values": ["image_0000.tif"]
+        "time_reference": {
+          "kind": "unit",
+          "title": "reference time",
+          "value": 0.0,
+          "unit": "s",
+          "scale": 1.0
+        },
+        "timestamps": [
+          0.0
+        ],
+        "values": [
+          "image_0000.tif"
+        ]
       },
       "questions": [
-        {"field": "title", "title": "How should the image data be named?", "required": true},
-        {"field": "description", "title": "Describe the image data.", "required": true},
-        {"field": "path", "title": "Where are the image files stored?"}
+        {
+          "field": "title",
+          "title": "How should the image data be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the image data.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where are the image files stored?"
+        }
       ]
     },
     {
@@ -154,19 +321,45 @@
         "output_components": 2,
         "output_dimension": "surface",
         "output_units": [
-          {"kind": "unit", "title": "horizontal displacement", "unit": "mm", "scale": 1.0},
-          {"kind": "unit", "title": "vertical displacement", "unit": "mm", "scale": 1.0}
+          {
+            "kind": "unit",
+            "title": "horizontal displacement",
+            "unit": "mm",
+            "scale": 1.0
+          },
+          {
+            "kind": "unit",
+            "title": "vertical displacement",
+            "unit": "mm",
+            "scale": 1.0
+          }
         ],
         "manufacturer": "Not specified",
         "model": "Not specified",
         "matching_criterion": "ZNSSD"
       },
       "questions": [
-        {"field": "title", "title": "What DIC results are available?", "required": true},
-        {"field": "description", "title": "Describe the DIC processing."},
-        {"field": "manufacturer", "title": "Which DIC software was used?"},
-        {"field": "model", "title": "What is the software version?"},
-        {"field": "matching_criterion", "title": "Which matching criterion was used?"}
+        {
+          "field": "title",
+          "title": "What DIC results are available?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the DIC processing."
+        },
+        {
+          "field": "manufacturer",
+          "title": "Which DIC software was used?"
+        },
+        {
+          "field": "model",
+          "title": "What is the software version?"
+        },
+        {
+          "field": "matching_criterion",
+          "title": "Which matching criterion was used?"
+        }
       ]
     },
     {
@@ -178,13 +371,33 @@
         "title": "2D DIC displacement fields",
         "description": "Final displacement-field file calculated from the camera images by 2D DIC.",
         "path": "dic/",
-        "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "values": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
+        "timestamps": {
+          "kind": "data_set_file",
+          "filename": "timestamps.csv",
+          "file_type": "text/csv",
+          "delimiter": ","
+        },
+        "values": {
+          "kind": "data_set_file",
+          "filename": "displacement_fields.h5",
+          "file_type": "application/x-hdf5"
+        }
       },
       "questions": [
-        {"field": "title", "title": "How should the 2D DIC displacement file be named?", "required": true},
-        {"field": "description", "title": "Describe the displacement fields.", "required": true},
-        {"field": "path", "title": "Where is the 2D DIC file stored?"}
+        {
+          "field": "title",
+          "title": "How should the 2D DIC displacement file be named?",
+          "required": true
+        },
+        {
+          "field": "description",
+          "title": "Describe the displacement fields.",
+          "required": true
+        },
+        {
+          "field": "path",
+          "title": "Where is the 2D DIC file stored?"
+        }
       ]
     }
   ]

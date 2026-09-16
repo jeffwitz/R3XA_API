@@ -43,7 +43,7 @@ def _prefilled_profile_document(profile: dict) -> dict:
 
 def test_schema_summary_sections() -> None:
     summary = build_schema_summary()
-    assert summary["schema_version"] == "2026.9.8"
+    assert summary["schema_version"] == "2026.9.16"
     assert set(summary["sections"].keys()) == {
         "header",
         "settings",
@@ -55,7 +55,7 @@ def test_schema_summary_sections() -> None:
 def test_schema_catalog_contains_all_resolved_kinds() -> None:
     catalog = build_schema_catalog()
 
-    assert catalog["schema_version"] == "2026.9.8"
+    assert catalog["schema_version"] == "2026.9.16"
     assert set(catalog["sections"]["settings"]["kinds"]) == {
         "settings/generic",
         "settings/specimen",
@@ -175,7 +175,7 @@ def test_schema_catalog_discovers_kinds_from_all_of_items() -> None:
 def test_ui_catalog_profiles_reference_schema_kinds() -> None:
     catalog = build_ui_catalog()
 
-    assert catalog["schema_version"] == "2026.9.8"
+    assert catalog["schema_version"] == "2026.9.16"
     assert catalog["default"]["fields"]["kind"]["level"] == "expert"
     assert catalog["messages"]["languages"]["fr"]["editor.title"] == "Éditeur R3XA"
     assert set(catalog["profiles"]) == {

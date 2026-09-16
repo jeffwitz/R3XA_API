@@ -1,4 +1,4 @@
-from r3xa_api import R3XAFile, data_set_file, schema_version, unit, validate
+from r3xa_api import author, R3XAFile, data_set_file, schema_version, unit, validate
 
 
 def ir_timestamps() -> list[float]:
@@ -101,7 +101,7 @@ r3xa = R3XAFile(
     version=schema_version(),
     title="IR Lagrangian thermography - Qi Hu",
     description="Qi Hu experimental pipeline (IR + visible imaging, processing, DIC-like steps)",
-    authors=["J-F. Witz", "Q. Hu"],
+    authors=[{"name": "J-F. Witz"}, {"name": "Q. Hu"}],
     date="2024-10-30",
     repository="https://example.org/qi-hu",
     documentation="https://theses.hal.science/tel-04993338",

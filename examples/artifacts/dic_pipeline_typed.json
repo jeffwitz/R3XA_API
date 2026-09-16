@@ -1,9 +1,13 @@
 {
     "title": "Open-hole tensile test with DIC",
     "description": "Camera acquisition + DIC processing pipeline (typed)",
-    "authors": ["R3XA API"],
+    "authors": [
+        {
+            "name": "R3XA API"
+        }
+    ],
     "date": "2026-03-01",
-    "version": "2026.9.8",
+    "version": "2026.9.16",
     "settings": [
         {
             "id": "set_specimen_01",
@@ -106,13 +110,6 @@
             "parent_data_sources": [
                 "ds_camera_01"
             ],
-            "time_reference": {
-                "title": "time_reference",
-                "value": 0.0,
-                "unit": "s",
-                "scale": 1.0,
-                "kind": "unit"
-            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -138,13 +135,6 @@
             "parent_data_sources": [
                 "src_dic_01"
             ],
-            "time_reference": {
-                "title": "time_reference",
-                "value": 0.0,
-                "unit": "s",
-                "scale": 1.0,
-                "kind": "unit"
-            },
             "timestamps": [
                 0.0,
                 0.5,

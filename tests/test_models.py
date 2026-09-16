@@ -142,7 +142,7 @@ def test_generated_models_fill_schema_constants():
     document = models.R3XADocument(
         title="Typed document",
         description="Pydantic model",
-        authors=["R3XA Team"],
+        authors=[{"name": "R3XA Team"}],
         date="2026-09-07",
     )
     unit = models.Unit(unit="mm", value=2.0)
@@ -169,7 +169,7 @@ def test_typed_document_adds_and_links_items():
     document = models.R3XADocument(
         title="Typed linked document",
         description="Typed document with an acquisition relationship",
-        authors=["R3XA Team"],
+        authors=[{"name": "R3XA Team"}],
         date="2026-09-07",
     )
 
@@ -197,7 +197,7 @@ def test_typed_document_links_inputs_and_reports_dangling_references():
     document = models.R3XADocument(
         title="Typed input document",
         description="Typed document with an input relationship",
-        authors=["R3XA Team"],
+        authors=[{"name": "R3XA Team"}],
         date="2026-09-07",
     )
     document.add_data_source(camera)
@@ -219,7 +219,7 @@ def test_typed_document_rejects_duplicate_ids():
     document = models.R3XADocument(
         title="Duplicate ID document",
         description="Typed document with duplicate IDs",
-        authors=["R3XA Team"],
+        authors=[{"name": "R3XA Team"}],
         date="2026-09-07",
     )
     document.add_data_source(camera)
@@ -268,7 +268,7 @@ def test_from_model_roundtrip():
         "title": "Typed model roundtrip",
         "description": "Roundtrip from typed model to dict",
         "version": schema_version(),
-        "authors": ["R3XA Team"],
+        "authors": [{"name": "R3XA Team"}],
         "date": "2026-02-19",
         "settings": [],
         "data_sources": [from_model(camera)],
@@ -282,7 +282,7 @@ def test_r3xafile_accepts_typed_model_direct_append():
     r3xa = R3XAFile(
         title="Typed append",
         description="R3XAFile accepts typed models in lists",
-        authors=["R3XA Team"],
+        authors=[{"name": "R3XA Team"}],
         date="2026-03-01",
     )
     r3xa.data_sources.append(camera)
@@ -294,7 +294,7 @@ def test_r3xa_document_valid():
         title="Typed document",
         description="Pydantic model",
         version=schema_version(),
-        authors=["R3XA Team"],
+        authors=[{"name": "R3XA Team"}],
         date="2026-02-19",
         settings=[],
         data_sources=[],
