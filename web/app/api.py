@@ -1,5 +1,5 @@
 from json import JSONDecodeError
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Request, Response, HTTPException, Query
 from jsonschema.exceptions import ValidationError
@@ -47,7 +47,7 @@ async def validate_registry_item(request: Request) -> Dict[str, Any]:
 async def graph_svg(
     request: Request,
     show_description: bool = Query(default=True),
-    palette: str | None = Query(default=None),
+    palette: Optional[str] = Query(default=None),
 ) -> Response:
     payload = await _read_json(request)
     if not isinstance(payload, dict):
