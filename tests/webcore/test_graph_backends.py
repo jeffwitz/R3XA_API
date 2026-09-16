@@ -80,6 +80,26 @@ def test_render_pyvis_html_generates_network_page(case_name: str, filename: str,
     assert "mynetwork" in html
 
 
+def test_pyvis_settings_use_anisotropic_custom_hexagons(tmp_path: Path) -> None:
+    payload = _load_example_payload("qi_hu_from_scratch.json")
+    html_path = render_pyvis_html(payload, tmp_path / "graph_qi_document")
+    html = html_path.read_text(encoding="utf-8")
+
+    nodes_match = re.search(r"nodes = new vis\.DataSet\((\[[\s\S]*?\])\);", html)
+    assert nodes_match is not None
+    nodes = json.loads(nodes_match.group(1))
+    settings = [node for node in nodes if node["id"] in {"sample", "settings_Instron_tensile_test"}]
+
+    assert len(settings) == 2
+    assert all(node["shape"] == "custom" for node in settings)
+    assert all(node["r3xaWidth"] != node["r3xaHeight"] for node in settings)
+    assert abs(settings[0]["x"] - settings[1]["x"]) >= (
+        settings[0]["r3xaWidth"] + settings[1]["r3xaWidth"]
+    ) * 0.5
+    assert '"ctxRenderer": r3xaHexagonRenderer' in html
+    assert "function r3xaHexagonRenderer" in html
+
+
 @pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
 def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, filename: str, tmp_path: Path) -> None:
     payload = _load_example_payload(filename)

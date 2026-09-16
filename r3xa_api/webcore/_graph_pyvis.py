@@ -22,6 +22,7 @@ PYVIS_OPTIONS = {
         "font": {"size": 16, "face": "Arial"},
         "margin": 14,
         "widthConstraint": {"maximum": 420},
+        "ctxRenderer": "__R3XA_HEXAGON_RENDERER__",
     },
     "physics": {"enabled": False},
     "edges": {
@@ -34,6 +35,103 @@ PYVIS_OPTIONS = {
         "zoomView": True,
     },
 }
+
+
+PYVIS_CUSTOM_HEXAGON_SCRIPT = """
+function r3xaHexagonRenderer({ctx, id, x, y, state, style, label}) {
+    const node = nodes.get(id) || {};
+    const width = Number(node.r3xaWidth) || 220;
+    const height = Number(node.r3xaHeight) || 80;
+    const halfWidth = width * 0.5;
+    const halfHeight = height * 0.5;
+    const inset = Math.min(halfHeight * 0.5 * 2.0, width * 0.22);
+    const vertices = [
+        [x - halfWidth, y],
+        [x - halfWidth + inset, y + halfHeight],
+        [x + halfWidth - inset, y + halfHeight],
+        [x + halfWidth, y],
+        [x + halfWidth - inset, y - halfHeight],
+        [x - halfWidth + inset, y - halfHeight],
+    ];
+    const color = style.color || {};
+    const colors = typeof color === "object" ? color : {};
+    const defaultColor = typeof color === "string" ? color : "#e8f1fb";
+    const baseBackground = colors.background || defaultColor;
+    const baseBorder = colors.border || defaultColor;
+    const selectedColors = typeof colors.highlight === "string"
+        ? {background: colors.highlight, border: colors.highlight}
+        : colors.highlight || {};
+    const hoverColors = typeof colors.hover === "string"
+        ? {background: colors.hover, border: colors.hover}
+        : colors.hover || {};
+    const fillColor = state.selected
+        ? selectedColors.background || baseBackground
+        : state.hover
+          ? hoverColors.background || baseBackground
+          : baseBackground;
+    const borderColor = state.selected
+        ? selectedColors.border || baseBorder || fillColor
+        : state.hover
+          ? hoverColors.border || baseBorder || fillColor
+          : baseBorder || fillColor;
+    const font = style.font || {};
+    const lines = String(label || "").split("\\n");
+
+    function drawNode() {
+        ctx.beginPath();
+        ctx.moveTo(vertices[0][0], vertices[0][1]);
+        for (let index = 1; index < vertices.length; index += 1) {
+            ctx.lineTo(vertices[index][0], vertices[index][1]);
+        }
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = state.selected
+            ? style.borderWidthSelected || style.borderWidth || 1
+            : style.borderWidth || 1;
+        ctx.stroke();
+
+        ctx.fillStyle = font.color || "#ffffff";
+        ctx.font = `${font.size || 16}px ${font.face || "Arial"}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const lineHeight = (font.size || 16) * 1.2;
+        const firstLineY = y - (lines.length - 1) * lineHeight * 0.5;
+        lines.forEach((line, index) => {
+            ctx.fillText(line, x, firstLineY + index * lineHeight);
+        });
+    }
+
+    return {
+        drawNode,
+        nodeDimensions: {width, height},
+    };
+}
+""".strip()
+
+
+def _patch_pyvis_custom_shapes(html: str) -> str:
+    """Install the JavaScript renderer used for anisotropic settings."""
+
+    marker = json.dumps("__R3XA_HEXAGON_RENDERER__")
+    options_marker = f'"ctxRenderer": {marker}'
+    if options_marker not in html:
+        raise RuntimeError("PyVis options do not contain the custom hexagon marker.")
+
+    patched = html.replace(
+        options_marker,
+        '"ctxRenderer": r3xaHexagonRenderer',
+        1,
+    )
+    options_declaration = "                  var options = "
+    if options_declaration not in patched:
+        raise RuntimeError("PyVis HTML does not contain its options declaration.")
+    return patched.replace(
+        options_declaration,
+        f"                  {PYVIS_CUSTOM_HEXAGON_SCRIPT}\n\n{options_declaration}",
+        1,
+    )
 
 
 def render_pyvis_html(
@@ -81,6 +179,14 @@ def render_pyvis_html(
     edge_pairs = [(edge.src, edge.dst) for edge in model.edge_records]
     label_widths = {node_id: estimate_label_width(label) for node_id, label in node_labels.items()}
     label_heights = {node_id: estimate_label_height(label) for node_id, label in node_labels.items()}
+    setting_ids = {
+        setting.get("id")
+        for setting in data.get("settings", [])
+        if setting.get("id")
+    }
+    for setting_id in setting_ids:
+        label_widths[setting_id] = label_widths.get(setting_id, 220.0) + 28.0
+        label_heights[setting_id] = label_heights.get(setting_id, 64.0) + 28.0
     graphviz_layout = compute_graphviz_positions(
         node_ids=model.node_ids,
         edges=edge_pairs,
@@ -111,7 +217,14 @@ def render_pyvis_html(
         setting_id = setting.get("id")
         if not setting_id:
             continue
-        style = styles["settings"]["root"]
+        style = dict(styles["settings"]["root"])
+        style.update(
+            {
+                "shape": "custom",
+                "r3xaWidth": label_widths.get(setting_id, 220.0),
+                "r3xaHeight": label_heights.get(setting_id, 64.0),
+            }
+        )
         label = node_labels.get(setting_id, "")
         x_coord, y_coord = positions.get(setting_id, (0.0, 0.0))
         net.add_node(setting_id, label=label, x=x_coord, y=y_coord, physics=False, **style)
@@ -142,4 +255,8 @@ def render_pyvis_html(
     out_html = Path(output_path).with_suffix(".html")
     out_html.parent.mkdir(parents=True, exist_ok=True)
     net.write_html(str(out_html))
+    out_html.write_text(
+        _patch_pyvis_custom_shapes(out_html.read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
     return out_html
