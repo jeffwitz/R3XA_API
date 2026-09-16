@@ -28,6 +28,26 @@ test:
     reports:
       junit: pytest.xml
 
+schema-sync:
+  stage: quality
+  image: python:3.12-slim
+  variables:
+    R3XA_SPEC_URL: "https://gitlab.com/photomechanics/R3XA_SPEC.git"
+    R3XA_SPEC_REF: "main"
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends git ca-certificates
+    - python -m pip install --upgrade pip
+    - python -m pip install "pytest>=8.0"
+  script:
+    # The packaged schema is a copy of the one published by R3XA_SPEC. Compare
+    # against a fresh clone so a divergence fails here instead of surfacing as a
+    # validation error downstream.
+    - git clone --depth 1 --branch "$R3XA_SPEC_REF" "$R3XA_SPEC_URL" /tmp/R3XA_SPEC
+    # Guard against the test skipping itself if the clone were ever incomplete.
+    - test -f /tmp/R3XA_SPEC/schema.json
+    - R3XA_SPEC_PATH=/tmp/R3XA_SPEC python -m pytest -q tests/test_schema_sync.py
+
 docs:
   stage: quality
   image: python:3.12-slim

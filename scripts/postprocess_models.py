@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 MODELS_PATH = Path("r3xa_api/models.py")
@@ -86,17 +87,18 @@ def _alias_block(available: set[str]) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
-    if not MODELS_PATH.exists():
-        raise FileNotFoundError(f"Missing generated file: {MODELS_PATH}")
+def main(models_path: Path | str | None = None) -> None:
+    path = Path(models_path) if models_path is not None else MODELS_PATH
+    if not path.exists():
+        raise FileNotFoundError(f"Missing generated file: {path}")
 
-    body = _strip_codegen_header(MODELS_PATH.read_text(encoding="utf-8"))
+    body = _strip_codegen_header(path.read_text(encoding="utf-8"))
     body = _remove_existing_alias_block(body)
     available = _class_names(body)
     alias_block = _alias_block(available)
 
-    MODELS_PATH.write_text(HEADER + "\n" + body + alias_block, encoding="utf-8")
+    path.write_text(HEADER + "\n" + body + alias_block, encoding="utf-8")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) > 1 else None)

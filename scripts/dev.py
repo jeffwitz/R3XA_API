@@ -10,6 +10,41 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FULL_DEV_EXTRAS = ".[dev,docs,typed,web,notebook,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
+SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
+MODELS_OUTPUT = "r3xa_api/models.py"
+
+
+def model_codegen_command(python: str, output: str = MODELS_OUTPUT) -> tuple[str, ...]:
+    """Return the datamodel-code-generator invocation that builds the typed models.
+
+    `tests/test_models_sync.py` reuses this so the sync check cannot drift from
+    the command developers actually run.
+    """
+
+    return (
+        python,
+        "-m",
+        "datamodel_code_generator",
+        "--input",
+        SCHEMA_RESOURCE,
+        "--input-file-type",
+        "jsonschema",
+        "--output",
+        output,
+        "--use-standard-collections",
+        "--target-python-version",
+        "3.10",
+        "--field-constraints",
+        "--output-model-type",
+        "pydantic_v2.BaseModel",
+        "--base-class",
+        "r3xa_api.model_base.R3XAModel",
+        "--class-name",
+        "R3XADocument",
+        "--disable-timestamp",
+        "--no-use-union-operator",
+        "--use-one-literal-as-default",
+    )
 
 
 def _ensure_graphviz() -> Path:
@@ -71,30 +106,7 @@ def cmd_build_docs(args: argparse.Namespace) -> None:
 
 def cmd_generate_models(_: argparse.Namespace) -> None:
     python = project_python()
-    _run(
-        python,
-        "-m",
-        "datamodel_code_generator",
-        "--input",
-        "r3xa_api/resources/schema.json",
-        "--input-file-type",
-        "jsonschema",
-        "--output",
-        "r3xa_api/models.py",
-        "--use-standard-collections",
-        "--target-python-version",
-        "3.10",
-        "--field-constraints",
-        "--output-model-type",
-        "pydantic_v2.BaseModel",
-        "--base-class",
-        "r3xa_api.model_base.R3XAModel",
-        "--class-name",
-        "R3XADocument",
-        "--disable-timestamp",
-        "--no-use-union-operator",
-        "--use-one-literal-as-default",
-    )
+    _run(*model_codegen_command(python))
     _run(python, "scripts/postprocess_models.py")
 
 
@@ -231,30 +243,7 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
 
     steps.extend(
         [
-            (
-                python,
-                "-m",
-                "datamodel_code_generator",
-                "--input",
-                "r3xa_api/resources/schema.json",
-                "--input-file-type",
-                "jsonschema",
-                "--output",
-                "r3xa_api/models.py",
-                "--use-standard-collections",
-                "--target-python-version",
-                "3.10",
-                "--field-constraints",
-                "--output-model-type",
-                "pydantic_v2.BaseModel",
-                "--base-class",
-                "r3xa_api.model_base.R3XAModel",
-                "--class-name",
-                "R3XADocument",
-                "--disable-timestamp",
-                "--no-use-union-operator",
-                "--use-one-literal-as-default",
-            ),
+            model_codegen_command(python),
             (python, "scripts/postprocess_models.py"),
             (python, "scripts/generate_core_stub.py"),
         ]
