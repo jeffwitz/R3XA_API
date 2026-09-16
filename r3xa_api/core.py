@@ -28,10 +28,25 @@ def format_number(value: Any) -> str:
     return str(value)
 
 
+def _format_data_set_file(value: Mapping[str, Any]) -> str:
+    """Render a data-set file selector without repeating its technical metadata."""
+
+    filename = str(value["filename"])
+    selector = []
+    if "col" in value:
+        selector.append(format_json_value(value["col"]))
+        selector.append("x")
+    if "rows" in value:
+        selector.append(format_json_value(value["rows"]))
+    suffix = " " + " ".join(selector) if selector else ""
+    return "{" + filename + (":" + suffix if suffix else "") + "}"
+
+
 def format_json_value(value: Any) -> str:
     """Render a JSON-compatible value the way it reads to a user.
 
     Units collapse to `1392 px` and lists of them to `[1392 px, 1040 px]`.
+    Data-set file selectors collapse to `{file.csv: 1 x [1, 5]}`.
     The typed models reuse this so document-level and item-level `print()`
     agree on the same conventions; it stays free of any pydantic dependency
     because `R3XAFile` works on plain dictionaries.
@@ -42,6 +57,8 @@ def format_json_value(value: Any) -> str:
     if isinstance(value, bool):
         return str(value)
     if isinstance(value, Mapping):
+        if value.get("kind") == "data_set_file" and "filename" in value:
+            return _format_data_set_file(value)
         if value.get("kind") == "unit" and "value" in value and "unit" in value:
             return f"{format_number(value['value'])} {value['unit']}"
         inner = ", ".join(f"{key}: {format_json_value(item)}" for key, item in value.items())

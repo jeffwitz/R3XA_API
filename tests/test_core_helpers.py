@@ -4,6 +4,7 @@ import pytest
 import json
 
 from r3xa_api import R3XAFile, R3XAItem, data_set_file, load_schema, unit, validate
+from r3xa_api.core import format_json_value
 
 
 class _FakeTypedModel:
@@ -56,6 +57,18 @@ def test_data_set_file_accepts_column_and_row_selection() -> None:
 def test_data_set_file_rejects_string_rows() -> None:
     with pytest.raises(TypeError):
         data_set_file(filename="timestamps.csv", rows="0:100")  # type: ignore[arg-type]
+
+
+def test_data_set_file_print_format_is_compact() -> None:
+    payload = data_set_file(
+        filename="example_files/tutorial3_file.csv",
+        file_type="text/csv",
+        delimiter=";",
+        col=1,
+        rows=[1, 5],
+    )
+
+    assert format_json_value(payload) == "{example_files/tutorial3_file.csv: 1 x [1, 5]}"
 
 
 def test_unit_accepts_minimal_schema_payload() -> None:
