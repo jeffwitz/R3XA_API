@@ -44,12 +44,22 @@ async def validate_registry_item(request: Request) -> Dict[str, Any]:
 
 
 @router.post("/graph")
-async def graph_svg(request: Request, show_description: bool = Query(default=True)) -> Response:
+async def graph_svg(
+    request: Request,
+    show_description: bool = Query(default=True),
+    palette: str | None = Query(default=None),
+) -> Response:
     payload = await _read_json(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
     try:
-        svg_bytes = generate_svg(payload, include_description=show_description)
+        svg_bytes = generate_svg(
+            payload,
+            include_description=show_description,
+            palette=palette,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return Response(content=svg_bytes, media_type="image/svg+xml")

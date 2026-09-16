@@ -7,6 +7,7 @@ const saveGraphBtn = document.getElementById("save-graph-btn");
 const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const exportStandaloneBtn = document.getElementById("export-standalone-btn");
 const graphDescriptionToggle = document.getElementById("graph-show-description");
+const graphPaletteSelect = document.getElementById("graph-palette");
 
 let cachedSummary = null;
 
@@ -101,7 +102,12 @@ const renderGraph = async () => {
   try {
     const payload = JSON.parse(stored);
     const showDescription = graphDescriptionToggle ? graphDescriptionToggle.checked : true;
-    const response = await fetch(`/api/graph?show_description=${showDescription ? "true" : "false"}`, {
+    const palette = graphPaletteSelect ? graphPaletteSelect.value : "document";
+    const query = new URLSearchParams({
+      show_description: showDescription ? "true" : "false",
+      palette,
+    });
+    const response = await fetch(`/api/graph?${query.toString()}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -326,6 +332,7 @@ const bindEvents = () => {
     if (viewSelect.value === "draft") renderDraft();
     else renderSummary();
   });
+  graphPaletteSelect?.addEventListener("change", renderGraph);
   document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
   saveGraphBtn?.addEventListener("click", saveGraph);
   fullscreenGraphBtn?.addEventListener("click", openFullscreenGraph);

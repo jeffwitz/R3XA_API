@@ -422,7 +422,7 @@ def _document_with_every_section() -> R3XAFile:
 
 def test_document_palette_is_the_default(tmp_path) -> None:
     pytest.importorskip("graphviz")
-    from r3xa_api.webcore._graph_core import DEFAULT_PALETTE, PALETTES
+    from r3xa_api.webcore._graph_core import DEFAULT_PALETTE, PALETTES, STYLES
 
     assert DEFAULT_PALETTE == "document"
     document = _document_with_every_section()
@@ -438,6 +438,7 @@ def test_document_palette_is_the_default(tmp_path) -> None:
     # does not silently invalidate the test.
     assert ochre in implicit and ochre in explicit
     assert blue in classic and ochre not in classic
+    assert PALETTES["classic"] == STYLES
 
 
 def test_document_palette_is_solid_with_white_text(tmp_path) -> None:
@@ -447,9 +448,25 @@ def test_document_palette_is_solid_with_white_text(tmp_path) -> None:
         if section == "edges":
             continue
         for name, style in variants.items():
-            # No contrasting outline, and text legible on the fill.
-            assert style["color"] == style["fillcolor"], f"{section}/{name}"
             assert style["fontcolor"] == "#ffffff", f"{section}/{name}"
+
+    document = PALETTES["document"]
+    assert (
+        document["data_sources"]["initial"]["fillcolor"]
+        == document["data_sources"]["intermediate"]["fillcolor"]
+    )
+    assert (
+        document["data_sources"]["initial"]["color"]
+        != document["data_sources"]["initial"]["fillcolor"]
+    )
+    assert (
+        document["data_sets"]["final"]["fillcolor"]
+        == document["data_sets"]["intermediate"]["fillcolor"]
+    )
+    assert (
+        document["data_sets"]["final"]["color"]
+        != document["data_sets"]["final"]["fillcolor"]
+    )
 
 
 def test_palette_font_colour_reaches_pyvis(tmp_path) -> None:

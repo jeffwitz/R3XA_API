@@ -184,9 +184,14 @@ async def test_registry_page_available() -> None:
 async def test_api_graph_svg_can_hide_descriptions(monkeypatch: pytest.MonkeyPatch) -> None:
     svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
 
-    def _fake_generate_svg(payload: dict, include_description: bool = True) -> bytes:
+    def _fake_generate_svg(
+        payload: dict,
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> bytes:
         assert isinstance(payload, dict)
         assert include_description is False
+        assert palette is None
         return svg_payload
 
     monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
@@ -205,8 +210,13 @@ async def test_api_graph_svg_can_hide_descriptions(monkeypatch: pytest.MonkeyPat
 async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
     svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
 
-    def _fake_generate_svg(payload: dict, include_description: bool = True) -> bytes:
+    def _fake_generate_svg(
+        payload: dict,
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> bytes:
         assert isinstance(payload, dict)
+        assert palette is None
         return svg_payload
 
     monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
@@ -222,8 +232,57 @@ async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.anyio
+async def test_api_graph_svg_passes_palette(monkeypatch: pytest.MonkeyPatch) -> None:
+    svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
+
+    def _fake_generate_svg(
+        payload: dict,
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> bytes:
+        assert isinstance(payload, dict)
+        assert include_description is True
+        assert palette == "classic"
+        return svg_payload
+
+    monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph?palette=classic", json=_load_example())
+
+    assert response.status_code == 200
+    assert response.content == svg_payload
+
+
+@pytest.mark.anyio
+async def test_api_graph_svg_rejects_unknown_palette(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _fake_generate_svg(
+        payload: dict,
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> bytes:
+        raise ValueError("Unknown palette 'unknown'. Available: classic, document")
+
+    monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph?palette=unknown", json=_load_example())
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Unknown palette 'unknown'. Available: classic, document"
+
+
+@pytest.mark.anyio
 async def test_api_graph_svg_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _fake_generate_svg(payload: dict, include_description: bool = True) -> bytes:
+    def _fake_generate_svg(
+        payload: dict,
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> bytes:
         raise RuntimeError("Graph feature not available (graphviz not installed).")
 
     monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)

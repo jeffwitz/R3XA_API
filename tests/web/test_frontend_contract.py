@@ -27,3 +27,8 @@ def test_frontend_assets_are_wired() -> None:
     assert ".template-review-control" in stylesheet
     assert ".data-set-list-field" in stylesheet
     assert "renderDataSetListField" in source
+    schema_template = (root / "web" / "templates" / "schema.html").read_text(encoding="utf-8")
+    schema_source = (root / "web" / "static" / "schema.js").read_text(encoding="utf-8")
+    assert 'id="graph-palette"' in schema_template
+    assert "palette," in schema_source
+    assert "URLSearchParams" in schema_source

@@ -147,12 +147,12 @@ backends. Two are available, `"document"` being the default:
 
 | `palette` | Settings | Data sources | Data sets | Look |
 |---|---|---|---|---|
-| `"document"` (default) | ochre `#9a6636` | crimson `#bf0040` | teal `#038181` | solid fills, white text, no outline |
+| `"document"` (default) | ochre `#9a6636` | crimson `#bf0040` | teal `#038181` | solid fills, white text; darker outlines for initial/final nodes |
 | `"classic"` | blue | green / blue | grey / salmon | light fills with a contrasting outline |
 
 `"document"` is J-C. Passieux's scheme for figures going into a printed document. The hue marks
-the section and the shade marks the position in the chain: a data source nothing feeds, and a data
-set nothing consumes, are drawn one shade deeper.
+the section. Initial data sources and final data sets keep the same crimson or teal fill as the
+other nodes in their section, and are distinguished by a noticeably darker outline.
 
 The settings fill is a darkened ochre rather than the original `#c4894f`: white text on that
 colour reaches a contrast ratio of only 2.98, below the 4.5 WCAG AA threshold. `#9a6636` keeps the

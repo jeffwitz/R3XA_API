@@ -61,10 +61,17 @@
         <h2>Graph (SVG)</h2>
         <p class="muted">Generate a Graphviz SVG from the current draft.</p>
         <div class="actions">
-          <button id="generate-graph-btn" type="button" onclick="window.renderGraph && window.renderGraph()">Generate SVG</button>
+          <button id="generate-graph-btn" type="button">Generate SVG</button>
           <label class="schema-toggle">
             <input id="graph-show-description" type="checkbox" checked />
             Show descriptions
+          </label>
+          <label class="schema-toggle" for="graph-palette">
+            Palette:
+            <select id="graph-palette">
+              <option value="document" selected>Document (recommended)</option>
+              <option value="classic">Classic (legacy)</option>
+            </select>
           </label>
           <button id="export-standalone-btn" class="ghost" type="button">Export standalone HTML</button>
           <button id="fullscreen-graph-btn" class="ghost" type="button" style="display:none;">Fullscreen</button>

@@ -222,6 +222,39 @@ def test_schema_page_keeps_existing_draft(page: Page, web_server: str) -> None:
     assert page.evaluate("localStorage.getItem('r3xaDraft')") is not None
 
 
+def test_graph_palette_selector_is_sent_to_api(page: Page, web_server: str) -> None:
+    payload = {
+        "title": "Palette test",
+        "description": "Graph palette test",
+        "authors": ["Tester"],
+        "date": "2026-09-05",
+        "version": "2026.9.17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+    page.goto(f"{web_server}/schema")
+    page.wait_for_selector("#graph-palette")
+    graph_urls = []
+
+    def fulfill_graph(route) -> None:
+        graph_urls.append(route.request.url)
+        route.fulfill(
+            status=200,
+            content_type="image/svg+xml",
+            body='<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>',
+        )
+
+    page.route("**/api/graph**", fulfill_graph)
+    page.locator("#graph-palette").select_option("classic")
+    page.wait_for_selector("#graph-container svg")
+
+    assert len(graph_urls) == 1
+    assert "palette=classic" in graph_urls[0]
+    assert "show_description=true" in graph_urls[0]
+
+
 def test_reloaded_renamed_items_are_recovered_from_dependencies(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
     page.wait_for_selector("#json-input", state="attached")

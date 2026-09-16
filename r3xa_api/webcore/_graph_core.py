@@ -58,25 +58,31 @@ STYLES = {
 
 
 # J-C. Passieux's document palette, and the default: solid fills with white
-# text, no visible outline. Hue marks the section, shade marks the position in
-# the chain, since there is no border left to carry that.
+# text. Hue marks the section; darker outlines distinguish initial sources and
+# final data sets without changing their palette fill colour.
 #
 # The settings fill is a darkened ochre rather than his #c4894f: white text on
 # that original gives a 2.98 contrast ratio, well under the 4.5 WCAG AA
 # threshold. #9a6636 keeps the hue and reaches 4.85, so the whole palette can
 # stay white-on-colour instead of switching text colour per section.
 _OCHRE, _CRIMSON, _TEAL = "#9a6636", "#bf0040", "#038181"
-_CRIMSON_DEEP, _TEAL_DEEP = "#8c002f", "#026060"
+_CRIMSON_DEEP, _TEAL_DEEP = "#5c001f", "#004545"
 _WHITE = "#ffffff"
 
 
-def _solid(shape: str, fill: str, penwidth: str = "1") -> Dict[str, Any]:
-    """A filled node with no contrasting outline and white text."""
+def _solid(
+    shape: str,
+    fill: str,
+    *,
+    border: str | None = None,
+    penwidth: str = "1",
+) -> Dict[str, Any]:
+    """A filled node with an optional contrasting outline and white text."""
 
     return {
         "shape": shape,
         "fillcolor": fill,
-        "color": fill,
+        "color": border or fill,
         "fontcolor": _WHITE,
         "style": "filled",
         "penwidth": penwidth,
@@ -86,14 +92,12 @@ def _solid(shape: str, fill: str, penwidth: str = "1") -> Dict[str, Any]:
 DOCUMENT_STYLES = {
     "settings": {"root": _solid("hexagon", _OCHRE)},
     "data_sources": {
-        # An initial source - one nothing feeds - is the deeper shade.
-        "initial": _solid("ellipse", _CRIMSON_DEEP),
+        "initial": _solid("ellipse", _CRIMSON, border=_CRIMSON_DEEP, penwidth="4"),
         "intermediate": _solid("ellipse", _CRIMSON),
     },
     "data_sets": {
         "intermediate": _solid("box", _TEAL),
-        # A data set nothing consumes is a result: deeper shade again.
-        "final": _solid("box", _TEAL_DEEP),
+        "final": _solid("box", _TEAL, border=_TEAL_DEEP, penwidth="4"),
     },
     "edges": {
         "setting": {"color": _OCHRE, "style": "dashed"},

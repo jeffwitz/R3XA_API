@@ -83,6 +83,7 @@ dot -V
   - Inspect the schema summary or the current draft.
   - Generate an SVG graph from the current draft.
   - Optional: hide node descriptions and keep titles only.
+  - Choose the graph palette: **Document** (the R3XA document palette) or **Classic** (the legacy palette).
   - Export a fully inlined standalone HTML report (graph + JSON) shareable without server.
 
 ## Editor modes
@@ -220,4 +221,4 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 - `GET /api/schema/catalog` → resolved schema catalogue for the editor
 - `GET /api/ui` → presentation rules and experience profiles
 - `GET /api/profiles` → experience profiles only
-- `POST /api/graph` → SVG graph (Graphviz)
+- `POST /api/graph?show_description=true&palette=document` → SVG graph (Graphviz); `palette` accepts `document` (recommended) or `classic` (legacy).
