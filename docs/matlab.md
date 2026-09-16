@@ -131,9 +131,6 @@ existing signature would break current MATLAB scripts.
   - `add_file_data_set(...)`
   - `add_generic_data_set(...)`
   - `add_list_data_set(...)`
-- MATLAB aliases using the same canonical signature:
-  - `add_image_set_list(...)`
-  - `add_image_set_file(...)`
 - Core helper functions:
   - `r3xa.new_item`
   - `r3xa.unit`
@@ -141,17 +138,12 @@ existing signature would break current MATLAB scripts.
   - `r3xa.ensure_data_set_file`
 - `r3xa.schema_version` (reads `r3xa_api/resources/schema.json`)
 
-## Legacy aliases
+## Canonical data set helpers
 
-The canonical data set helper names now match the Python API:
+The data set helper names match the Python API:
 
 - `add_list_data_set(...)`
 - `add_file_data_set(...)`
-
-The historical image-set names remain available as aliases with the same signature:
-
-- `add_image_set_list(...)`
-- `add_image_set_file(...)`
 
 Use `path`, `data_type`, `description`, and other optional fields as trailing name/value arguments.
 

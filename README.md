@@ -112,7 +112,7 @@ camera = r3xa.add_camera_source(
     exposure=unit(title="exposure", value=2.0, unit="ms", scale=1.0),
 )
 
-images = r3xa.add_image_set_list(
+images = r3xa.add_list_data_set(
     title="graylevel images",
     description="images taken by the CCD camera",
     path="images/",
@@ -150,10 +150,6 @@ Examples:
 - `add_testing_machine_setting(...)`
 - `add_load_cell_source(...)`
 - `add_generic_data_set(...)`
-
-Legacy aliases remain available for datasets:
-- `add_image_set_list(...)`
-- `add_image_set_file(...)`
 
 ## Common workflows
 For most users, the public API now boils down to three entry points:

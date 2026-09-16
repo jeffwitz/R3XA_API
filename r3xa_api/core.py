@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import inspect
 import random
 import string
 from collections.abc import Mapping
@@ -336,10 +335,6 @@ _GUIDED_SECTION_SUFFIX = {
     "data_sources": "source",
     "data_sets": "data_set",
 }
-_GUIDED_ALIAS_TARGETS = {
-    "add_image_set_list": "add_list_data_set",
-    "add_image_set_file": "add_file_data_set",
-}
 
 
 @lru_cache(maxsize=1)
@@ -416,7 +411,7 @@ def build_guided_item(kind: str, fields: Dict[str, Any]) -> R3XAItem:
     return new_item(kind, **_normalize_guided_fields(kind, fields))
 
 
-def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., Dict[str, Any]]:
+def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., R3XAItem]:
     """Create a guided helper with explicit required parameters for one kind."""
 
     params = ["self"] + [f"{field}: Any" for field in required_fields] + ["**extra: Any"]
@@ -428,13 +423,13 @@ def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[s
         field_lines = "    fields: Dict[str, Any] = {}\n" + field_lines
 
     source = (
-        f"def {method_name}({header}) -> Dict[str, Any]:\n"
+        f"def {method_name}({header}) -> R3XAItem:\n"
         f"    \"\"\"Add a `{kind}` item.\"\"\"\n"
         f"{field_lines}\n"
         "    fields.update(extra)\n"
         f"    return self._add_guided_item({kind!r}, fields)\n"
     )
-    namespace: Dict[str, Any] = {"Any": Any, "Dict": Dict}
+    namespace: Dict[str, Any] = {"Any": Any, "Dict": Dict, "R3XAItem": R3XAItem}
     exec(source, namespace)
     helper = namespace[method_name]
     helper.__qualname__ = f"R3XAFile.{method_name}"
@@ -444,19 +439,6 @@ def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[s
         "Optional schema fields can be passed through `**extra`."
     )
     return helper
-
-
-def _make_guided_alias(alias_name: str, target_name: str) -> Callable[..., Dict[str, Any]]:
-    """Create a backward-compatible guided helper alias."""
-
-    def alias(self: "R3XAFile", *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        return getattr(self, target_name)(*args, **kwargs)
-
-    alias.__name__ = alias_name
-    alias.__qualname__ = f"R3XAFile.{alias_name}"
-    alias.__doc__ = f"Alias for `{target_name}`."
-    alias.__signature__ = inspect.signature(getattr(R3XAFile, target_name))
-    return alias
 
 
 class _ModelAwareList(list):
@@ -800,13 +782,5 @@ def _install_guided_helpers() -> None:
         builder_name = "new_" + spec["helper_name"][len("add_"):]
         globals()[builder_name] = _make_standalone_builder(builder_name, kind, spec["required"])
         GUIDED_BUILDERS[builder_name] = kind
-
-    for alias_name, target_name in _GUIDED_ALIAS_TARGETS.items():
-        setattr(R3XAFile, alias_name, _make_guided_alias(alias_name, target_name))
-        builder_alias = "new_" + alias_name[len("add_"):]
-        target_builder = "new_" + target_name[len("add_"):]
-        globals()[builder_alias] = globals()[target_builder]
-        GUIDED_BUILDERS[builder_alias] = GUIDED_BUILDERS[target_builder]
-
 
 _install_guided_helpers()

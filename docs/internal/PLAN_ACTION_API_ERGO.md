@@ -6,14 +6,14 @@ Ce document formalise les retours d'usage sur `R3XA_API` et fixe un ordre d'exec
 
 - L'API coeur est fonctionnelle, mais reste trop basse niveau pour un nouvel utilisateur.
 - `R3XAFile.save(...)` existe sans methode symetrique `load(...)`.
-- La couche guidee (`add_camera_source`, `add_image_set_list`, etc.) est utile, mais partielle et donc ambiguë.
+- La couche guidee (`add_camera_source`, `add_list_data_set`, etc.) est utile, mais partielle et donc ambiguë.
 - La partie `Registry` manque d'operations de decouverte (`list`, `iter`) et de primitives centrees "item".
 - `merge_item(...)` existe comme fonction libre, alors que l'utilisateur s'attend plutot a une operation attachee a l'objet ou au registre.
 - Le sujet `uncertainty` releve du schema et doit etre traite separement.
 
 ## Retour de JC integre
 
-- Si on garde des helpers guides (`add_camera_source`, `add_image_set_list`, etc.), ils doivent:
+- Si on garde des helpers guides (`add_camera_source`, `add_list_data_set`, etc.), ils doivent:
   - imposer les attributs `required` du schema;
   - exister de maniere coherente pour les autres `settings`, `data_sources` et `data_sets`.
 - `load` doit exister en miroir de `save`.

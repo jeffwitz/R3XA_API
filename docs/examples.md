@@ -83,7 +83,7 @@ num_frames = 5
 image_files = [f"img_{i:04d}.tif" for i in range(num_frames)]
 timestamps = [i * 0.5 for i in range(num_frames)]
 
-images = r3xa.add_image_set_list(
+images = r3xa.add_list_data_set(
     title="graylevel images",
     description="raw images from CCD camera",
     path="images/",
@@ -111,7 +111,7 @@ dic = r3xa.add_data_source(
 
 dic_files = [f"dic_{i:04d}.csv" for i in range(num_frames)]
 
-r3xa.add_image_set_list(
+r3xa.add_list_data_set(
     title="DIC displacement fields",
     description="ux, uy per frame",
     path="dic/",
@@ -162,7 +162,7 @@ num_frames = 5
 image_files = [f"img_{i:04d}.tif" for i in range(num_frames)]
 timestamps = [i * 0.5 for i in range(num_frames)]
 
-images = r3xa.add_image_set_list(
+images = r3xa.add_list_data_set(
     title="graylevel images",
     description="raw images from CCD camera",
     path="images/",
@@ -180,7 +180,7 @@ dic = pyxel_base.merge(
 r3xa.data_sources.append(dic)
 
 dic_files = [f"dic_{i:04d}.csv" for i in range(num_frames)]
-r3xa.add_image_set_list(
+r3xa.add_list_data_set(
     title="DIC displacement fields",
     description="ux, uy per frame",
     path="dic/",

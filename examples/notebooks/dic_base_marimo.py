@@ -125,10 +125,10 @@ def _():
     # Cell 4 — Full imports for payload construction, validation, and graph rendering.
     import json
 
-    from r3xa_api import R3XAFile, unit, validate
+    from r3xa_api import R3XAFile, author, unit, validate
     from r3xa_api.webcore.graph import generate_svg
 
-    return R3XAFile, generate_svg, json, unit, validate
+    return R3XAFile, author, generate_svg, json, unit, validate
 
 
 @app.cell
@@ -137,7 +137,7 @@ def _():
     # Edit these values directly, then re-run dependent cells.
     test_title = "Open-hole tensile test with DIC"
     test_description = "Camera acquisition + DIC processing pipeline"
-    authors = ["R3XA API"]
+    authors = [author("R3XA API")]
     date = "2024-10-30"
     num_frames = 5
     dt_seconds = 0.5
@@ -205,7 +205,7 @@ def _(
     image_files = [f"img_{index:04d}.tif" for index in range(num_frames)]
     timestamps = [round(index * dt_seconds, 6) for index in range(num_frames)]
 
-    images = r3xa.add_image_set_list(
+    images = r3xa.add_list_data_set(
         title="graylevel images",
         description="raw images from CCD camera",
         path=image_path,
@@ -232,7 +232,7 @@ def _(
     )
 
     dic_files = [f"dic_{index:04d}.csv" for index in range(num_frames)]
-    r3xa.add_image_set_list(
+    r3xa.add_list_data_set(
         title="DIC displacement fields",
         description="ux, uy per frame",
         path=dic_path,

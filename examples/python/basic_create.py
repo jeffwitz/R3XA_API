@@ -42,7 +42,7 @@ camera = r3xa.add_camera_source(
     exposure=unit(title="exposure", value=2.0, unit="ms", scale=1.0),
 )
 
-r3xa.add_image_set_list(
+r3xa.add_list_data_set(
     title="graylevel images",
     description="images taken by the CCD camera",
     path="images/",

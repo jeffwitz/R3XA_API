@@ -119,16 +119,6 @@ Complete guided helper inventory for the current schema:
   - `add_file_data_set(...)`
   - `add_generic_data_set(...)`
   - `add_list_data_set(...)`
-- Legacy aliases
-  - `add_image_set_list(...)`
-  - `add_image_set_file(...)`
-
-Backward-compatible aliases remain available:
-
-```python
-add_image_set_list(...) == add_list_data_set(...)
-add_image_set_file(...) == add_file_data_set(...)
-```
 
 ```python
 to_dict() -> dict

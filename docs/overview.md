@@ -183,7 +183,7 @@ camera = r3xa.add_camera_source(
     ],
 )
 
-r3xa.add_image_set_list(
+r3xa.add_list_data_set(
     title="graylevel images",
     description="images taken by the CCD camera",
     path="images/",

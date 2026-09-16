@@ -109,6 +109,26 @@ def test_generic_setting_accepts_lowercase_documentation() -> None:
     validate(r3xa.to_dict())
 
 
+def test_guided_helper_returns_the_stored_generic_setting() -> None:
+    document = R3XAFile(
+        title="Guided setting identity",
+        description="The guided helper and collection share one item",
+        authors=[{"name": "R3XA API"}],
+        date="2026-04-03",
+    )
+
+    light = document.add_generic_setting(
+        title="Spot light",
+        description="Spotlight MultiLed QX 100% indirect",
+        documentation="toto.pdf",
+    )
+    light_from_collection = document.settings[0]
+
+    assert isinstance(light, R3XAItem)
+    assert light is light_from_collection
+    assert light["id"] == light_from_collection["id"]
+
+
 def test_r3xafile_lists_accept_model_dump_objects() -> None:
     r3xa = R3XAFile(
         title="Typed-like model compatibility",
@@ -265,10 +285,10 @@ def test_guided_helpers_cover_all_schema_kinds() -> None:
         for section in suffixes
         for kind_name in schema["$defs"][section]
     }
-    expected.update({"add_image_set_list", "add_image_set_file"})
-
     missing = sorted(name for name in expected if not hasattr(R3XAFile, name))
     assert missing == []
+    assert not hasattr(R3XAFile, "add_image_set_list")
+    assert not hasattr(R3XAFile, "add_image_set_file")
 
 
 def test_new_guided_helpers_validate_against_schema() -> None:

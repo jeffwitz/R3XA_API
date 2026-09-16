@@ -32,7 +32,7 @@ num_frames = 5
 image_files = [f"img_{i:04d}.tif" for i in range(num_frames)]
 timestamps = [i * 0.5 for i in range(num_frames)]
 
-images = r3xa.add_image_set_list(
+images = r3xa.add_list_data_set(
     title="graylevel images",
     description="raw images from CCD camera",
     path="images/",
@@ -54,7 +54,7 @@ r3xa.data_sources.append(dic)
 # DIC result dataset (list of result files)
 dic_files = [f"dic_{i:04d}.csv" for i in range(num_frames)]
 
-r3xa.add_image_set_list(
+r3xa.add_list_data_set(
     title="DIC displacement fields",
     description="ux, uy per frame",
     path="dic/",

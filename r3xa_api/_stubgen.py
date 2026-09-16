@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Iterable
 
-from .core import _GUIDED_ALIAS_TARGETS, _guided_kind_specs
+from .core import _guided_kind_specs
 
 
 _CORE_STUB_PATH = Path(__file__).with_name("core.pyi")
@@ -36,10 +36,6 @@ def _helper_sort_key(item: tuple[str, dict[str, Any]]) -> tuple[int, str]:
 
 def render_core_stub() -> str:
     helper_specs = _guided_kind_specs()
-    helper_by_name = {
-        spec["helper_name"]: tuple(spec["required"]) for spec in helper_specs.values()
-    }
-
     lines: list[str] = [
         "from __future__ import annotations",
         "",
@@ -134,12 +130,6 @@ def render_core_stub() -> str:
             )
             current_section = section
         lines.extend(_indent(_render_method_stub(helper_name, required_fields)))
-        lines.append("")
-
-    lines.append("    # Legacy guided helper aliases")
-    for alias_name, target_name in _GUIDED_ALIAS_TARGETS.items():
-        target_required = helper_by_name[target_name]
-        lines.extend(_indent(_render_method_stub(alias_name, target_required)))
         lines.append("")
 
     lines.extend(

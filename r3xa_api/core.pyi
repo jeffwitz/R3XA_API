@@ -221,23 +221,6 @@ class R3XAFile:
         **extra: Any,
     ) -> R3XAItem: ...
 
-    # Legacy guided helper aliases
-    def add_image_set_list(
-        self,
-        title: Any,
-        timestamps: Any,
-        values: Any,
-        **extra: Any,
-    ) -> R3XAItem: ...
-
-    def add_image_set_file(
-        self,
-        title: Any,
-        timestamps: Any,
-        values: Any,
-        **extra: Any,
-    ) -> R3XAItem: ...
-
     def to_dict(self) -> Dict[str, Any]: ...
     def validate(self) -> None: ...
     def dump(self, indent: int = ...) -> str: ...
