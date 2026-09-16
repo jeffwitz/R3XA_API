@@ -43,7 +43,7 @@ def _prefilled_profile_document(profile: dict) -> dict:
 
 def test_schema_summary_sections() -> None:
     summary = build_schema_summary()
-    assert summary["schema_version"] == "2024.7.1"
+    assert summary["schema_version"] == "2026.9.8"
     assert set(summary["sections"].keys()) == {
         "header",
         "settings",
@@ -55,7 +55,7 @@ def test_schema_summary_sections() -> None:
 def test_schema_catalog_contains_all_resolved_kinds() -> None:
     catalog = build_schema_catalog()
 
-    assert catalog["schema_version"] == "2024.7.1"
+    assert catalog["schema_version"] == "2026.9.8"
     assert set(catalog["sections"]["settings"]["kinds"]) == {
         "settings/generic",
         "settings/specimen",
@@ -73,9 +73,13 @@ def test_schema_catalog_contains_all_resolved_kinds() -> None:
     assert camera["properties"]["output_components"]["type"] == "integer"
     assert camera["properties"]["input_data_sets"]["items"]["ref"] == "#/$defs/types/data_set_id"
     image_set = catalog["sections"]["data_sets"]["kinds"]["data_sets/list"]
-    assert image_set["properties"]["data_sources"]["items"]["ref"] == "#/$defs/types/data_source_id"
+    assert image_set["properties"]["parent_data_sources"]["items"]["ref"] == "#/$defs/types/data_source_id"
     assert camera["properties"]["image_size"]["items"]["properties"]["kind"]["const"] == "unit"
     assert camera["properties"]["image_size"]["items"]["ref"] == "#/$defs/types/unit"
+    data_set_file = catalog["sections"]["data_sets"]["kinds"]["data_sets/file"]["properties"]
+    rows = data_set_file["timestamps"]["properties"]["rows"]
+    assert rows["prefixItems"][0]["type"] == "integer"
+    assert rows["prefixItems"][1]["type"] == ["integer", "null"]
 
 
 def test_schema_catalog_resolves_combinators_and_refs() -> None:
@@ -171,7 +175,7 @@ def test_schema_catalog_discovers_kinds_from_all_of_items() -> None:
 def test_ui_catalog_profiles_reference_schema_kinds() -> None:
     catalog = build_ui_catalog()
 
-    assert catalog["schema_version"] == "2024.7.1"
+    assert catalog["schema_version"] == "2026.9.8"
     assert catalog["default"]["fields"]["kind"]["level"] == "expert"
     assert catalog["messages"]["languages"]["fr"]["editor.title"] == "Éditeur R3XA"
     assert set(catalog["profiles"]) == {
@@ -190,15 +194,15 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
     assert catalog["profiles"]["dic_2d"]["steps"][0]["questions"][0]["field"] == "title"
     assert catalog["profiles"]["dic_2d"]["steps"][0]["defaults"]["title"] == "Tensile test with 2D DIC"
     assert catalog["profiles"]["dic_2d"]["steps"][-1]["kind"] == "data_sets/file"
-    assert catalog["profiles"]["dic_2d"]["steps"][-1]["defaults"]["data"]["filename"] == "displacement_fields.h5"
+    assert catalog["profiles"]["dic_2d"]["steps"][-1]["defaults"]["values"]["filename"] == "displacement_fields.h5"
     assert {
         (link["from_step"], link["to_step"], link["to_field"])
         for link in catalog["profiles"]["dic_2d"]["links"]
     } == {
-        ("machine", "machine_data", "data_sources"),
-        ("camera", "images", "data_sources"),
+        ("machine", "machine_data", "parent_data_sources"),
+        ("camera", "images", "parent_data_sources"),
         ("images", "dic", "input_data_sets"),
-        ("dic", "displacement_fields", "data_sources"),
+        ("dic", "displacement_fields", "parent_data_sources"),
     }
 
 
@@ -230,10 +234,10 @@ def test_prefilled_dic_profile_builds_a_valid_dependency_chain() -> None:
 
     assert "input_data_sets" not in camera
     assert "input_data_sets" not in machine
-    assert machine_data["data_sources"] == ["machine_id"]
-    assert images["data_sources"] == ["camera_id"]
+    assert machine_data["parent_data_sources"] == ["machine_id"]
+    assert images["parent_data_sources"] == ["camera_id"]
     assert dic["input_data_sets"] == ["images_id"]
-    assert displacement_fields["data_sources"] == ["dic_id"]
+    assert displacement_fields["parent_data_sources"] == ["dic_id"]
     graph = build_graph_model(payload)
     assert "images_id" in graph.used_datasets
     assert "machine_data_id" not in graph.used_datasets

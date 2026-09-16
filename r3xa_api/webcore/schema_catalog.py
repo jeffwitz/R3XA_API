@@ -95,6 +95,12 @@ def _resolve_node(
         }
     if isinstance(resolved.get("items"), dict):
         resolved["items"] = _resolve_node(resolved["items"], root, child_stack)
+    if isinstance(resolved.get("prefixItems"), list):
+        resolved["prefixItems"] = [
+            _resolve_node(value, root, child_stack)
+            for value in resolved["prefixItems"]
+            if isinstance(value, dict)
+        ]
     for key in ("anyOf", "oneOf", "allOf"):
         if isinstance(resolved.get(key), list):
             resolved[key] = [
@@ -122,6 +128,12 @@ def _catalog_node(node: Dict[str, Any]) -> Dict[str, Any]:
         }
     if isinstance(node.get("items"), dict):
         catalog["items"] = _catalog_node(node["items"])
+    if isinstance(node.get("prefixItems"), list):
+        catalog["prefixItems"] = [
+            _catalog_node(value)
+            for value in node["prefixItems"]
+            if isinstance(value, dict)
+        ]
     for key in ("anyOf", "oneOf", "allOf"):
         if isinstance(node.get(key), list):
             catalog[key] = [_catalog_node(value) for value in node[key]]

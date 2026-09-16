@@ -182,7 +182,7 @@ class R3XAModel(BaseModel):
         source_id = self._value(source, "id")
         if not source_id:
             raise ValueError("The data source must have an id")
-        self._append_reference(data_set, "data_sources", source_id)
+        self._append_reference(data_set, "parent_data_sources", source_id)
         return self
 
     def link_input(self, source: Any, data_set: Any) -> "R3XAModel":
@@ -220,7 +220,7 @@ class R3XAModel(BaseModel):
         for section, item in self.iter_items():
             item_id = self._value(item, "id") or "<unknown>"
             if section == "data_sets":
-                for reference in self._value(item, "data_sources") or []:
+                for reference in self._value(item, "parent_data_sources") or []:
                     reference_id = self._reference_value(reference)
                     if reference_id not in source_ids:
                         errors.append(
@@ -236,7 +236,7 @@ class R3XAModel(BaseModel):
                             f"{reference_id!r}"
                         )
             if section == "settings":
-                for reference in self._value(item, "associated_data_sources") or []:
+                for reference in self._value(item, "attached_data_sources") or []:
                     reference_id = self._reference_value(reference)
                     if reference_id not in source_ids:
                         errors.append(

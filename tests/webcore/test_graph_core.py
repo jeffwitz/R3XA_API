@@ -8,7 +8,7 @@ def test_graph_model_includes_settings_as_root_nodes() -> None:
             {
                 "id": "machine",
                 "title": "Testing machine",
-                "associated_data_sources": ["machine_acquisition"],
+                "attached_data_sources": ["machine_acquisition"],
             },
         ],
         "data_sources": [
@@ -17,9 +17,9 @@ def test_graph_model_includes_settings_as_root_nodes() -> None:
             {"id": "dic", "title": "DIC", "input_data_sets": ["images"]},
         ],
         "data_sets": [
-            {"id": "machine_data", "title": "Machine data", "data_sources": ["machine_acquisition"]},
-            {"id": "images", "title": "Images", "data_sources": ["camera"]},
-            {"id": "displacements", "title": "Displacements", "data_sources": ["dic"]},
+            {"id": "machine_data", "title": "Machine data", "parent_data_sources": ["machine_acquisition"]},
+            {"id": "images", "title": "Images", "parent_data_sources": ["camera"]},
+            {"id": "displacements", "title": "Displacements", "parent_data_sources": ["dic"]},
         ],
     }
 

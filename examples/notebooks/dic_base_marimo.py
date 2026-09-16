@@ -137,7 +137,7 @@ def _():
     # Edit these values directly, then re-run dependent cells.
     test_title = "Open-hole tensile test with DIC"
     test_description = "Camera acquisition + DIC processing pipeline"
-    authors = "R3XA API"
+    authors = ["R3XA API"]
     date = "2024-10-30"
     num_frames = 5
     dt_seconds = 0.5
@@ -209,11 +209,11 @@ def _(
         title="graylevel images",
         description="raw images from CCD camera",
         path=image_path,
-        file_type="image/tiff",
-        data_sources=[camera["id"]],
+    data_type="image/tiff",
+    parent_data_sources=[camera["id"]],
         time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
         timestamps=timestamps,
-        data=image_files,
+        values=image_files,
     )
 
     dic_source = r3xa.add_data_source(
@@ -236,11 +236,11 @@ def _(
         title="DIC displacement fields",
         description="ux, uy per frame",
         path=dic_path,
-        file_type="text/csv",
-        data_sources=[dic_source["id"]],
+        data_type="text/csv",
+        parent_data_sources=[dic_source["id"]],
         time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
         timestamps=timestamps,
-        data=dic_files,
+        values=dic_files,
     )
 
     from_scratch_payload = r3xa.to_dict()

@@ -8,7 +8,7 @@
     "data_sets/list"
   ],
   "links": [
-    {"from_step": "camera", "to_step": "images", "to_field": "data_sources", "to_many": true}
+    {"from_step": "camera", "to_step": "images", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -18,7 +18,7 @@
       "defaults": {
         "title": "Camera image acquisition",
         "description": "Prefilled example with a camera and an image sequence.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -79,16 +79,16 @@
         "title": "Graylevel images",
         "description": "Image sequence recorded by the camera.",
         "path": "images/",
-        "file_type": "image/tiff",
+        "data_type": "image/tiff",
         "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
         "timestamps": [0.0, 1.0],
-        "data": ["img_0001.tif", "img_0002.tif"]
+        "values": ["img_0001.tif", "img_0002.tif"]
       },
       "questions": [
         {"field": "title", "title": "How should the image data be named?", "required": true},
         {"field": "description", "title": "Describe the image data.", "required": true},
         {"field": "path", "title": "Where are the image files stored?"},
-        {"field": "file_type", "title": "What type of image files are they?", "required": true}
+        {"field": "data_type", "title": "What type of image files are they?", "required": true}
       ]
     }
   ]

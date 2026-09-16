@@ -38,15 +38,16 @@ def test_schema_version_returns_none_when_external_schema_has_no_const(tmp_path:
 
 def test_required_document_metadata_cannot_be_empty() -> None:
     schema = load_schema()
-    for field in ("title", "description", "authors"):
+    for field in ("title", "description"):
         assert schema["properties"][field]["minLength"] == 1
+    assert schema["properties"]["authors"]["items"]["minLength"] == 1
 
     with pytest.raises(ValidationError):
         validate(
             {
                 "title": "",
                 "description": "",
-                "authors": "",
+                "authors": [""],
                 "date": "2026-09-05",
                 "version": schema_version(),
                 "settings": [],
@@ -54,3 +55,18 @@ def test_required_document_metadata_cannot_be_empty() -> None:
                 "data_sets": [],
             }
         )
+
+
+def test_validation_formats_non_reference_union_errors() -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "value": {
+                "oneOf": [{"type": "integer"}, {"type": "string"}],
+            }
+        },
+        "required": ["value"],
+    }
+
+    with pytest.raises(ValidationError, match="not valid under any"):
+        validate({"value": []}, schema)

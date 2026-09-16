@@ -6,8 +6,12 @@ from .schema import load_schema
 def _make_context_message(error: jsonschema.ValidationError, context_error: jsonschema.ValidationError) -> str:
     """Build a readable message for a nested anyOf/oneOf validation branch."""
 
-    i = list(context_error.relative_schema_path)[0]
-    return context_error.message + " of " + error.validator_value[i]["$ref"].replace("#/$defs/", "")
+    path = list(context_error.relative_schema_path)
+    branch = error.validator_value[path[0]] if path and isinstance(error.validator_value, list) else None
+    reference = branch.get("$ref") if isinstance(branch, dict) else None
+    if isinstance(reference, str):
+        return context_error.message + " of " + reference.replace("#/$defs/", "")
+    return context_error.message
 
 
 def validate(instance: Dict[str, Any], schema: Optional[Dict[str, Any]] = None) -> None:

@@ -11,10 +11,10 @@
     "data_sets/list"
   ],
   "links": [
-    {"from_step": "machine", "to_step": "machine_data", "to_field": "data_sources", "to_many": true},
-    {"from_step": "camera", "to_step": "images", "to_field": "data_sources", "to_many": true},
+    {"from_step": "machine", "to_step": "machine_data", "to_field": "parent_data_sources", "to_many": true},
+    {"from_step": "camera", "to_step": "images", "to_field": "parent_data_sources", "to_many": true},
     {"from_step": "images", "to_step": "dic", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "dic", "to_step": "displacement_fields", "to_field": "data_sources", "to_many": true}
+    {"from_step": "dic", "to_step": "displacement_fields", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -24,7 +24,7 @@
       "defaults": {
         "title": "Tensile test with 2D DIC",
         "description": "Prefilled example of a tensile experiment measured with a visible camera and a testing machine.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -87,15 +87,14 @@
       "defaults": {
         "title": "Machine force and displacement data",
         "description": "CSV file containing the force and displacement channels recorded during the tensile test.",
-        "folder": "machine/",
-        "time_reference": 0.0,
+        "path": "machine/",
         "timestamps": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
+        "values": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
       },
       "questions": [
         {"field": "title", "title": "How should the machine data be named?", "required": true},
         {"field": "description", "title": "Describe the machine data.", "required": true},
-        {"field": "folder", "title": "Where is the CSV file stored?"}
+        {"field": "path", "title": "Where is the CSV file stored?"}
       ]
     },
     {
@@ -133,10 +132,10 @@
         "title": "Raw camera images",
         "description": "Image sequence recorded by the visible camera.",
         "path": "images/",
-        "file_type": "image/tiff",
+        "data_type": "image/tiff",
         "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
         "timestamps": [0.0],
-        "data": ["image_0000.tif"]
+        "values": ["image_0000.tif"]
       },
       "questions": [
         {"field": "title", "title": "How should the image data be named?", "required": true},
@@ -178,15 +177,14 @@
       "defaults": {
         "title": "2D DIC displacement fields",
         "description": "Final displacement-field file calculated from the camera images by 2D DIC.",
-        "folder": "dic/",
-        "time_reference": 0.0,
+        "path": "dic/",
         "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
+        "values": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
       },
       "questions": [
         {"field": "title", "title": "How should the 2D DIC displacement file be named?", "required": true},
         {"field": "description", "title": "Describe the displacement fields.", "required": true},
-        {"field": "folder", "title": "Where is the 2D DIC file stored?"}
+        {"field": "path", "title": "Where is the 2D DIC file stored?"}
       ]
     }
   ]

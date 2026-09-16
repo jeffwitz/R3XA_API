@@ -130,7 +130,8 @@ def _kind_label(section_key: str, item_schema: dict[str, Any], default_name: str
 
 
 def _choices_label(property_schema: dict[str, Any], schema: dict[str, Any]) -> str:
-    options = property_schema.get("items", {}).get("anyOf", [])
+    items = property_schema.get("items", {})
+    options = items.get("oneOf", items.get("anyOf", [])) if isinstance(items, dict) else []
     labels: list[str] = []
     for option in options:
         ref = option.get("$ref")

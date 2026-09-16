@@ -8,7 +8,7 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "measurement", "to_step": "measurement_file", "to_field": "data_sources", "to_many": true}
+    {"from_step": "measurement", "to_step": "measurement_file", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -18,7 +18,7 @@
       "defaults": {
         "title": "Tabular measurement",
         "description": "Prefilled example with a generic measurement source and a CSV file.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -72,15 +72,14 @@
       "defaults": {
         "title": "Force time series",
         "description": "Force versus time stored in a CSV file.",
-        "folder": "data/",
-        "time_reference": 0.0,
+        "path": "data/",
         "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv", "delimiter": ","}
+        "values": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv", "delimiter": ","}
       },
       "questions": [
         {"field": "title", "title": "How should the data file be named?", "required": true},
         {"field": "description", "title": "Describe the data file.", "required": true},
-        {"field": "folder", "title": "Where is the CSV file stored?"}
+        {"field": "path", "title": "Where is the CSV file stored?"}
       ]
     }
   ]

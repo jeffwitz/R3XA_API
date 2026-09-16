@@ -10,10 +10,10 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "torque_source", "to_step": "rotation_torque", "to_field": "data_sources", "to_many": true},
-    {"from_step": "angle_source", "to_step": "rotation_angle", "to_field": "data_sources", "to_many": true},
-    {"from_step": "angle_source", "to_step": "torsion_angle", "to_field": "data_sources", "to_many": true},
-    {"from_step": "torque_source", "to_step": "torsion_torque", "to_field": "data_sources", "to_many": true}
+    {"from_step": "torque_source", "to_step": "rotation_torque", "to_field": "parent_data_sources", "to_many": true},
+    {"from_step": "angle_source", "to_step": "rotation_angle", "to_field": "parent_data_sources", "to_many": true},
+    {"from_step": "angle_source", "to_step": "torsion_angle", "to_field": "parent_data_sources", "to_many": true},
+    {"from_step": "torque_source", "to_step": "torsion_torque", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -23,7 +23,7 @@
       "defaults": {
         "title": "Torsion test",
         "description": "Prefilled example of a torsion test with torque, angle, and camera metadata.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -179,15 +179,14 @@
       "defaults": {
         "title": "Rotation torque",
         "description": "Torque measured before torsion.",
-        "folder": "data/",
-        "time_reference": 0.0,
+        "path": "data/",
         "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"},
-        "data": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"}
+        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"}
       },
       "questions": [
         {"field": "title", "title": "How should the rotation torque file be named?", "required": true},
         {"field": "description", "title": "Describe the rotation torque data.", "required": true},
-        {"field": "folder", "title": "Where is the file stored?"}
+        {"field": "path", "title": "Where is the file stored?"}
       ]
     },
     {
@@ -198,15 +197,14 @@
       "defaults": {
         "title": "Rotation angle",
         "description": "Angle measured before torsion.",
-        "folder": "data/",
-        "time_reference": 0.0,
+        "path": "data/",
         "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"},
-        "data": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"}
+        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_rotation.csv", "file_type": "text/csv", "delimiter": ";"}
       },
       "questions": [
         {"field": "title", "title": "How should the rotation angle file be named?", "required": true},
         {"field": "description", "title": "Describe the rotation angle data.", "required": true},
-        {"field": "folder", "title": "Where is the file stored?"}
+        {"field": "path", "title": "Where is the file stored?"}
       ]
     },
     {
@@ -217,15 +215,14 @@
       "defaults": {
         "title": "Torsion angle",
         "description": "Angle measured during torsion.",
-        "folder": "data/",
-        "time_reference": 0.0,
+        "path": "data/",
         "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"},
-        "data": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"}
+        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"}
       },
       "questions": [
         {"field": "title", "title": "How should the torsion angle file be named?", "required": true},
         {"field": "description", "title": "Describe the torsion angle data.", "required": true},
-        {"field": "folder", "title": "Where is the file stored?"}
+        {"field": "path", "title": "Where is the file stored?"}
       ]
     },
     {
@@ -236,15 +233,14 @@
       "defaults": {
         "title": "Torsion torque",
         "description": "Torque measured during torsion.",
-        "folder": "data/",
-        "time_reference": 0.0,
+        "path": "data/",
         "timestamps": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"},
-        "data": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"}
+        "values": {"kind": "data_set_file", "filename": "resultats_angle_couple_torsion.csv", "file_type": "text/csv", "delimiter": ";"}
       },
       "questions": [
         {"field": "title", "title": "How should the torsion torque file be named?", "required": true},
         {"field": "description", "title": "Describe the torsion torque data.", "required": true},
-        {"field": "folder", "title": "Where is the file stored?"}
+        {"field": "path", "title": "Where is the file stored?"}
       ]
     }
   ]

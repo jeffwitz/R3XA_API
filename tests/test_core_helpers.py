@@ -12,11 +12,11 @@ class _FakeTypedModel:
         return dict(self._payload)
 
 
-def test_data_set_file_accepts_string_range_and_validates() -> None:
+def test_data_set_file_accepts_column_and_row_selection() -> None:
     r3xa = R3XAFile(
         title="Tabular file with range",
-        description="Use data_range as spreadsheet-like string",
-        authors="R3XA API",
+        description="Use column and row selectors for tabular data",
+        authors=["R3XA API"],
         date="2026-03-01",
     )
 
@@ -31,28 +31,29 @@ def test_data_set_file_accepts_string_range_and_validates() -> None:
         model="5800",
     )
 
-    timestamps = data_set_file(filename="timestamps.csv", file_type="text/csv", data_range="A2:A100")
-    data = data_set_file(filename="force.csv", file_type="text/csv", data_range="B2:B100")
+    timestamps = data_set_file(filename="timestamps.csv", file_type="text/csv", col="time", rows=[0, 98])
+    values = data_set_file(filename="force.csv", file_type="text/csv", col=1, rows=[0, 98])
 
-    assert timestamps["data_range"] == "A2:A100"
-    assert data["data_range"] == "B2:B100"
+    assert timestamps["col"] == "time"
+    assert timestamps["rows"] == [0, 98]
+    assert values["col"] == 1
+    assert values["rows"] == [0, 98]
 
     r3xa.add_data_set(
         "data_sets/file",
         title="Force time series",
         description="Force vs time",
-        data_sources=[source["id"]],
-        time_reference=0.0,
+        parent_data_sources=[source["id"]],
         timestamps=timestamps,
-        data=data,
+        values=values,
     )
 
     validate(r3xa.to_dict())
 
 
-def test_data_set_file_rejects_non_string_range() -> None:
+def test_data_set_file_rejects_string_rows() -> None:
     with pytest.raises(TypeError):
-        data_set_file(filename="timestamps.csv", data_range=["A2:A100"])  # type: ignore[arg-type]
+        data_set_file(filename="timestamps.csv", rows="0:100")  # type: ignore[arg-type]
 
 
 def test_unit_accepts_minimal_schema_payload() -> None:
@@ -69,7 +70,7 @@ def test_generic_data_source_accepts_uncertainty() -> None:
     r3xa = R3XAFile(
         title="Generic source uncertainty",
         description="Generic data source with explicit uncertainty",
-        authors="R3XA API",
+        authors=["R3XA API"],
         date="2026-04-03",
     )
 
@@ -93,7 +94,7 @@ def test_generic_setting_accepts_lowercase_documentation() -> None:
     r3xa = R3XAFile(
         title="Generic setting documentation",
         description="Lowercase documentation field",
-        authors="R3XA API",
+        authors=["R3XA API"],
         date="2026-04-03",
     )
 
@@ -110,7 +111,7 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
     r3xa = R3XAFile(
         title="Typed-like model compatibility",
         description="Accept model_dump objects in R3XAFile lists",
-        authors="R3XA API",
+        authors=["R3XA API"],
         date="2026-03-01",
     )
 
@@ -148,10 +149,9 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
                 "kind": "data_sets/file",
                 "title": "Force over time",
                 "description": "Single-column force file",
-                "data_sources": [source_id],
-                "time_reference": 0.0,
-                "timestamps": data_set_file(filename="timestamps.csv", data_range="A2:A100"),
-                "data": data_set_file(filename="force.csv", data_range="B2:B100"),
+                "parent_data_sources": [source_id],
+                "timestamps": data_set_file(filename="timestamps.csv", col=0, rows=[0, 99]),
+                "values": data_set_file(filename="force.csv", col=1, rows=[0, 99]),
             }
         )
     )
@@ -164,7 +164,7 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
 
 
 def test_add_item_routes_to_expected_collection() -> None:
-    r3xa = R3XAFile(title="Routing", description="Kind routing", authors="R3XA API", date="2026-03-01")
+    r3xa = R3XAFile(title="Routing", description="Kind routing", authors=["R3XA API"], date="2026-03-01")
 
     setting = r3xa.add_item("settings/generic", title="S", description="Setting")
     source = r3xa.add_item(
@@ -181,10 +181,9 @@ def test_add_item_routes_to_expected_collection() -> None:
         "data_sets/file",
         title="D",
         description="Dataset",
-        data_sources=[source["id"]],
-        time_reference=0.0,
+        parent_data_sources=[source["id"]],
         timestamps=data_set_file(filename="t.csv"),
-        data=data_set_file(filename="d.csv"),
+        values=data_set_file(filename="d.csv"),
     )
 
     assert setting in r3xa.settings
@@ -194,13 +193,13 @@ def test_add_item_routes_to_expected_collection() -> None:
 
 
 def test_add_setting_rejects_wrong_kind_prefix() -> None:
-    r3xa = R3XAFile(title="Kinds", description="Kinds", authors="R3XA API", date="2026-03-01")
+    r3xa = R3XAFile(title="Kinds", description="Kinds", authors=["R3XA API"], date="2026-03-01")
     with pytest.raises(ValueError):
         r3xa.add_setting("data_sources/generic", title="bad", description="bad")
 
 
 def test_add_item_rejects_unknown_kind_prefix() -> None:
-    r3xa = R3XAFile(title="Kinds", description="Kinds", authors="R3XA API", date="2026-03-01")
+    r3xa = R3XAFile(title="Kinds", description="Kinds", authors=["R3XA API"], date="2026-03-01")
     with pytest.raises(ValueError):
         r3xa.add_item("unknown/item", title="bad", description="bad")
 
@@ -209,7 +208,7 @@ def test_r3xafile_dump_save_and_load_roundtrip(tmp_path) -> None:
     r3xa = R3XAFile(
         title="Roundtrip",
         description="Roundtrip test",
-        authors="R3XA API",
+        authors=["R3XA API"],
         date="2026-03-01",
     )
     source = r3xa.add_data_source(
@@ -226,10 +225,9 @@ def test_r3xafile_dump_save_and_load_roundtrip(tmp_path) -> None:
         "data_sets/file",
         title="Force",
         description="Force signal",
-        data_sources=[source["id"]],
-        time_reference=0.0,
+        parent_data_sources=[source["id"]],
         timestamps=data_set_file(filename="t.csv"),
-        data=data_set_file(filename="d.csv"),
+        values=data_set_file(filename="d.csv"),
     )
 
     dumped = r3xa.dump(indent=2)
@@ -275,7 +273,7 @@ def test_new_guided_helpers_validate_against_schema() -> None:
     r3xa = R3XAFile(
         title="Guided helper coverage",
         description="Exercise helpers generated from schema kinds",
-        authors="R3XA API",
+        authors=["R3XA API"],
         date="2026-04-03",
     )
 
@@ -297,8 +295,8 @@ def test_new_guided_helpers_validate_against_schema() -> None:
     r3xa.add_generic_data_set(
         title="Force archive",
         description="Generic archived force dataset",
-        data_sources=[source["id"]],
-        file_type="application/octet-stream",
+        parent_data_sources=[source["id"]],
+        data_type="application/octet-stream",
         path="force/",
     )
 

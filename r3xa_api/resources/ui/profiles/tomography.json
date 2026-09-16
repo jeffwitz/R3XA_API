@@ -11,11 +11,11 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "tomograph", "to_step": "projections", "to_field": "data_sources", "to_many": true},
+    {"from_step": "tomograph", "to_step": "projections", "to_field": "parent_data_sources", "to_many": true},
     {"from_step": "projections", "to_step": "reconstruction", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "reconstruction", "to_step": "volume", "to_field": "data_sources", "to_many": true},
+    {"from_step": "reconstruction", "to_step": "volume", "to_field": "parent_data_sources", "to_many": true},
     {"from_step": "volume", "to_step": "dvc", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "dvc", "to_step": "dvc_displacement", "to_field": "data_sources", "to_many": true}
+    {"from_step": "dvc", "to_step": "dvc_displacement", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -25,7 +25,7 @@
       "defaults": {
         "title": "X-ray tomography experiment",
         "description": "Prefilled example with X-ray projections, a reconstruction process, and a final volume file.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -87,16 +87,16 @@
         "title": "Raw X-ray projections",
         "description": "Radiographic projection sequence acquired by the tomograph.",
         "path": "tomography/projections/",
-        "file_type": "image/tiff",
+        "data_type": "image/tiff",
         "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
         "timestamps": [0.0],
-        "data": ["projection_0000.tif"]
+        "values": ["projection_0000.tif"]
       },
       "questions": [
         {"field": "title", "title": "How should the projection data be named?", "required": true},
         {"field": "description", "title": "Describe the projection sequence.", "required": true},
         {"field": "path", "title": "Where are the projections stored?"},
-        {"field": "file_type", "title": "What type of projection files are they?", "required": true}
+        {"field": "data_type", "title": "What type of projection files are they?", "required": true}
       ]
     },
     {
@@ -129,15 +129,14 @@
       "defaults": {
         "title": "Reconstructed volume",
         "description": "Final three-dimensional volume reconstructed from the X-ray projections.",
-        "folder": "tomography/",
-        "time_reference": 0.0,
+        "path": "tomography/",
         "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "reconstructed_volume.h5", "file_type": "application/x-hdf5"}
+        "values": {"kind": "data_set_file", "filename": "reconstructed_volume.h5", "file_type": "application/x-hdf5"}
       },
       "questions": [
         {"field": "title", "title": "How should the reconstructed volume be named?", "required": true},
         {"field": "description", "title": "Describe the reconstructed volume.", "required": true},
-        {"field": "folder", "title": "Where is the volume stored?"}
+        {"field": "path", "title": "Where is the volume stored?"}
       ]
     },
     {
@@ -178,15 +177,14 @@
       "defaults": {
         "title": "DVC displacement field",
         "description": "Final three-dimensional displacement field calculated from the reconstructed volumes.",
-        "folder": "tomography/dvc/",
-        "time_reference": 0.0,
+        "path": "tomography/dvc/",
         "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "dvc_displacement.h5", "file_type": "application/x-hdf5"}
+        "values": {"kind": "data_set_file", "filename": "dvc_displacement.h5", "file_type": "application/x-hdf5"}
       },
       "questions": [
         {"field": "title", "title": "How should the DVC result be named?", "required": true},
         {"field": "description", "title": "Describe the DVC displacement field.", "required": true},
-        {"field": "folder", "title": "Where is the DVC result stored?"}
+        {"field": "path", "title": "Where is the DVC result stored?"}
       ]
     }
   ]

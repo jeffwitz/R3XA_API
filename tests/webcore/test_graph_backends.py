@@ -108,9 +108,7 @@ def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, fil
         return 0
 
     def _source_count(dataset: dict) -> int:
-        value = dataset.get("data_sources")
-        if value is None and "data_source" in dataset:
-            value = dataset.get("data_source")
+        value = dataset.get("parent_data_sources")
         if not value:
             return 0
         if isinstance(value, list):
@@ -118,7 +116,7 @@ def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, fil
         return 1
 
     def _associated_source_count(setting: dict) -> int:
-        value = setting.get("associated_data_sources")
+        value = setting.get("attached_data_sources")
         if not value:
             return 0
         if isinstance(value, list):

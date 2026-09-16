@@ -94,11 +94,9 @@ def get_input_data_sets(source: Dict[str, Any]) -> Iterable[str]:
 
 
 def get_data_sources(dataset: Dict[str, Any]) -> Iterable[str]:
-    """Return source ids that feed a dataset, handling legacy singular key."""
+    """Return source ids that feed a dataset."""
 
-    value = dataset.get("data_sources")
-    if value is None and "data_source" in dataset:
-        value = dataset.get("data_source")
+    value = dataset.get("parent_data_sources")
     if not value:
         return []
     if isinstance(value, list):
@@ -107,9 +105,9 @@ def get_data_sources(dataset: Dict[str, Any]) -> Iterable[str]:
 
 
 def get_associated_data_sources(setting: Dict[str, Any]) -> Iterable[str]:
-    """Return data source ids declared as part of an experimental setting."""
+    """Return data source ids attached to an experimental setting."""
 
-    value = setting.get("associated_data_sources")
+    value = setting.get("attached_data_sources")
     if not value:
         return []
     if isinstance(value, list):

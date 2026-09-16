@@ -3,7 +3,7 @@ from r3xa_api import R3XAFile, unit
 r3xa = R3XAFile(
     title="Hello World",
     description="Minimal R3XA file",
-    authors="JC Passieux",
+    authors=["JC Passieux"],
     date="2024-10-30",
 )
 
@@ -40,11 +40,11 @@ r3xa.add_image_set_list(
     title="graylevel images",
     description="images taken by the CCD camera",
     path="images/",
-    file_type="image/tiff",
-    data_sources=[camera["id"]],
+    data_type="image/tiff",
+    parent_data_sources=[camera["id"]],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
-    data=["zoom-0050_1.tif", "zoom-0070_1.tif"],
+    values=["zoom-0050_1.tif", "zoom-0070_1.tif"],
 )
 
 r3xa.validate()

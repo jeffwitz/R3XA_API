@@ -13,6 +13,14 @@ from pydantic import ConfigDict, Field, RootModel
 from r3xa_api.model_base import R3XAModel
 
 
+class Author(RootModel[str]):
+    root: str = Field(..., min_length=1)
+
+
+class AuthorOrcids(RootModel[str]):
+    root: str = Field(..., min_length=1)
+
+
 class Settings(RootModel[Any]):
     root: Any
 
@@ -36,13 +44,50 @@ class OutputDimension(Enum):
     volume = 'volume'
 
 
+class Col(RootModel[int]):
+    root: int = Field(
+        ...,
+        description='Non-negative index (0-based) or non-empty name of the column containing the data.',
+        ge=0,
+        title='Column',
+    )
+
+
+class Col1(RootModel[str]):
+    root: str = Field(
+        ...,
+        description='Non-negative index (0-based) or non-empty name of the column containing the data.',
+        min_length=1,
+        title='Column',
+    )
+
+
+class Row(RootModel[int]):
+    root: int = Field(..., ge=0)
+
+
+class Row1(RootModel[Optional[int]]):
+    root: Optional[int] = Field(..., ge=0)
+
+
 class DataSetFile(R3XAModel):
     filename: str
     file_type: Optional[str] = Field(
-        None, description='MIME type of the file.', title='MIME'
+        None,
+        description='MIME type of the (CSV-like) file containing the data.',
+        title='MIME type',
     )
     delimiter: Optional[str] = ';'
-    data_range: Optional[str] = None
+    col: Optional[Union[Col, Col1]] = Field(
+        None,
+        description='Non-negative index (0-based) or non-empty name of the column containing the data.',
+        title='Column',
+    )
+    rows: Optional[tuple[Row, Optional[Row1]]] = Field(
+        None,
+        description='Range of rows containing the data, header excluded (0-based), expressed as [first_row, last_row]. Both bounds are inclusive; set last_row to null to read through the end of the file.',
+        title='Rows',
+    )
     kind: Literal['data_set_file'] = Field(
         'data_set_file',
         description='Only required for specs implementation purposes',
@@ -87,19 +132,26 @@ class File(R3XAModel):
         title='Kind of data source',
     )
     title: str = Field(..., description='Title of the data set.', title='Title')
-    description: str = Field(
-        ..., description='Description of the data set.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the data set.', title='Description'
     )
-    folder: Optional[str] = Field(
+    path: Optional[str] = Field(
         None,
-        description='Relative path to the folder containing the timestamps and data file(s).',
-        title='Folder',
+        description='Relative path to the folder containing the data file(s).',
+        title='Path',
     )
-    data_sources: list[DataSourceId] = Field(
-        ..., description='List of IDs of the data sources.', title='Data sources'
-    )
-    time_reference: float = Field(
+    parent_data_sources: list[DataSourceId] = Field(
         ...,
+        description='List of IDs of the data sources that generated the dataset.',
+        title='Parent data sources',
+    )
+    data_type: Optional[str] = Field(
+        None,
+        description="if the CSV contains numbers > data_type should be 'numbers', if it contains filenames > put the MIME type",
+        title='Data type',
+    )
+    time_reference: Optional[Unit] = Field(
+        None,
         description='Time serving as a reference to the whole data set.',
         title='Time reference',
     )
@@ -107,10 +159,14 @@ class File(R3XAModel):
         None, description='List of keywords.', title='Keywords'
     )
     timestamps: DataSetFile = Field(
-        ..., description='Path and range to the timestamps file', title='Timestamps'
+        ...,
+        description='filename (ex: CSV) + col and rows where to find the timestamps',
+        title='Timestamps',
     )
-    data: DataSetFile = Field(
-        ..., description='Path and range to the data file', title='Data'
+    values: DataSetFile = Field(
+        ...,
+        description='filename (ex: CSV) + col and rows where to find the files or values',
+        title='Data set file',
     )
 
 
@@ -125,13 +181,21 @@ class Generic(R3XAModel):
         title='Kind of data source',
     )
     title: str = Field(..., description='Title of the data set.', title='Title')
-    description: str = Field(
-        ..., description='Description of the data set.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the data set.', title='Description'
     )
-    file_type: str = Field(..., description='MIME type of the file.', title='MIME')
-    path: str = Field(..., description='Relative path to the data file.', title='Path')
-    data_sources: list[DataSourceId] = Field(
-        ..., description='List of IDs of the data sources.', title='Data sources'
+    data_type: Optional[str] = Field(
+        None, description='MIME type of the listed files.', title='MIME'
+    )
+    path: str = Field(
+        ...,
+        description='Relative path to the folder containing the data file(s).',
+        title='Path',
+    )
+    parent_data_sources: list[DataSourceId] = Field(
+        ...,
+        description='List of IDs of the data sources that generated the dataset.',
+        title='Parent data sources',
     )
 
 
@@ -146,20 +210,22 @@ class List(R3XAModel):
         title='Kind of data source',
     )
     title: str = Field(..., description='Title of the data set.', title='Title')
-    description: str = Field(
-        ..., description='Description of the data set.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the data set.', title='Description'
     )
     path: Optional[str] = Field(
         None, description='Relative path to the data folder.', title='Path'
     )
-    file_type: str = Field(
-        ..., description='MIME type of the data files.', title='MIME'
+    data_type: Optional[str] = Field(
+        None, description='MIME type of the listed data files.', title='MIME'
     )
-    data_sources: list[DataSourceId] = Field(
-        ..., description='List if IDs of the data sources.', title='Data sources'
-    )
-    time_reference: Unit = Field(
+    parent_data_sources: list[DataSourceId] = Field(
         ...,
+        description='List if IDs of the data sources that generated the dataset.',
+        title='Parent data sources',
+    )
+    time_reference: Optional[Unit] = Field(
+        None,
         description='Time serving as a reference to the whole data set.',
         title='Time reference',
     )
@@ -169,7 +235,9 @@ class List(R3XAModel):
     timestamps: list[float] = Field(
         ..., description='List of the timestamps.', title='Timestamps'
     )
-    data: list[str] = Field(..., description='List of the data files.', title='Data')
+    values: list[str] = Field(
+        ..., description='List of strings.', title='List of files'
+    )
 
 
 class Camera(R3XAModel):
@@ -209,8 +277,8 @@ class Camera(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
-    image_size: list[Unit] = Field(
-        ..., description='Size of the image length unit squared.', title='Image size'
+    image_size: Optional[list[Unit]] = Field(
+        None, description='Size of the image length unit squared.', title='Image size'
     )
     field_of_view: Optional[list[Unit]] = Field(
         None,
@@ -261,9 +329,7 @@ class DicMeasurement(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(
-        None, description='Name of the DIC measurement.', title='Title'
-    )
+    title: str = Field(..., description='Name of the DIC measurement.', title='Title')
     description: Optional[str] = Field(
         None, description='Description of the DIC measurement.', title='Description'
     )
@@ -311,8 +377,8 @@ class DicMeasurement(R3XAModel):
         description='Subpixel interpolation: linear, cubic spline',
         title='Interpolant',
     )
-    matching_criterion: str = Field(
-        ..., description='ZNSSD, ZNCC or other ...', title='Matching criterion'
+    matching_criterion: Optional[str] = Field(
+        None, description='ZNSSD, ZNCC or other ...', title='Matching criterion'
     )
     shape_function: Optional[str] = Field(
         None,
@@ -351,8 +417,8 @@ class GenericModel(R3XAModel):
         title='Kind of data source',
     )
     title: str = Field(..., description='Title of the data source.', title='Title')
-    description: str = Field(
-        ..., description='Description of the data source.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the data source.', title='Description'
     )
     input_data_sets: Optional[list[DataSetId]] = Field(
         None,
@@ -372,13 +438,13 @@ class GenericModel(R3XAModel):
     output_units: list[Unit] = Field(
         ..., description='Unit of the output data.', title='Output units'
     )
-    manufacturer: str = Field(
-        ...,
+    manufacturer: Optional[str] = Field(
+        None,
         description='Manufacturer, vendor or software editor.',
         title='Manufacturer',
     )
-    model: str = Field(
-        ..., description='Model of the source or software version.', title='Model'
+    model: Optional[str] = Field(
+        None, description='Model of the source or software version.', title='Model'
     )
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
@@ -398,9 +464,7 @@ class Identification(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(
-        None, description='Name of the inverse analysis.', title='Title'
-    )
+    title: str = Field(..., description='Name of the inverse analysis.', title='Title')
     description: Optional[str] = Field(
         None,
         description='Description of the identification method and parameters used.',
@@ -431,7 +495,7 @@ class Identification(R3XAModel):
     )
     parameters: Optional[list[Unit]] = Field(
         None,
-        description='constitutive, geometric, loading or numerical parameters ',
+        description='list of constitutive, geometric, loading or numerical parameters ',
         title='Parameters',
     )
     uncertainty: Optional[Unit] = Field(
@@ -478,8 +542,8 @@ class Infrared(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
-    image_size: list[Unit] = Field(
-        ..., description='Size of the image length unit squared.', title='Image size'
+    image_size: Optional[list[Unit]] = Field(
+        None, description='Size of the image length unit squared.', title='Image size'
     )
     field_of_view: Optional[list[Unit]] = Field(
         None,
@@ -517,8 +581,8 @@ class Infrared(R3XAModel):
         description='Standoff distance between the camera and the sample in length unit.',
         title='Standoff distance',
     )
-    bandwidth: list[Unit] = Field(
-        ..., description='Bandwidth [item0, item1]', title='Bandwidth'
+    bandwidth: Optional[list[Unit]] = Field(
+        None, description='Bandwidth [item0, item1]', title='Bandwidth'
     )
     emissivity: Optional[Unit] = Field(
         None, description='Emissivity', title='Emissivity'
@@ -547,7 +611,7 @@ class LoadCell(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(None, description='Load cell name', title='Title')
+    title: str = Field(..., description='Load cell name', title='Title')
     description: Optional[str] = Field(
         None, description='Description of the load cell', title='Description'
     )
@@ -579,8 +643,8 @@ class LoadCell(R3XAModel):
         description='(e.g. wheatstone, piezzo-electric, FSR).',
         title='Load cell type',
     )
-    capacity: Unit = Field(
-        ..., description='Capacity of the load cell / Force range.', title='Capacity'
+    capacity: Optional[Unit] = Field(
+        None, description='Capacity of the load cell / Force range.', title='Capacity'
     )
     uncertainty: Optional[Unit] = Field(
         None, description='Quantification of data uncertainty.', title='Uncertainty'
@@ -597,9 +661,7 @@ class MechanicalAnalysis(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(
-        None, description='Name of the data analysis.', title='Title'
-    )
+    title: str = Field(..., description='Name of the data analysis.', title='Title')
     description: Optional[str] = Field(
         None, description='Description of the mechanical model.', title='Description'
     )
@@ -619,14 +681,16 @@ class MechanicalAnalysis(R3XAModel):
     output_units: list[Unit] = Field(
         ..., description='examples: %, microdefs...', title='Output units'
     )
-    manufacturer: str = Field(..., description='Software name.', title='Manufacturer')
+    manufacturer: Optional[str] = Field(
+        None, description='Software name.', title='Manufacturer'
+    )
     model: Optional[str] = Field(None, description='Software version.', title='Model')
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
     parameters: Optional[list[Unit]] = Field(
         None,
-        description='constitutive, geometric, loading or numerical parameters ',
+        description='list of constitutive, geometric, loading or numerical parameters ',
         title='Parameters',
     )
     uncertainty: Optional[Unit] = Field(
@@ -644,7 +708,7 @@ class PointTemperature(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(None, description='Thermometer name', title='Title')
+    title: str = Field(..., description='Thermometer name', title='Title')
     description: Optional[str] = Field(
         None, description='Description of thermometer', title='Description'
     )
@@ -675,8 +739,8 @@ class PointTemperature(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
-    range: list[Unit] = Field(
-        ..., description='Temperature range [item0, item1]', title='Range'
+    range: Optional[list[Unit]] = Field(
+        None, description='Temperature range [item0, item1]', title='Range'
     )
     emissivity: Optional[Unit] = Field(
         None, description='Pyrometer emissivity', title='Emissivity'
@@ -696,9 +760,7 @@ class StrainComputation(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(
-        None, description='Name of the data analysis.', title='Title'
-    )
+    title: str = Field(..., description='Name of the data analysis.', title='Title')
     description: Optional[str] = Field(
         None,
         description='Additional description of the way strains are computed from displacements.',
@@ -727,8 +789,8 @@ class StrainComputation(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
-    virtual_strain_gauge_size: Unit = Field(
-        ..., description=' ', title='Virtual Strain Gauge size'
+    virtual_strain_gauge_size: Optional[Unit] = Field(
+        None, description=' ', title='Virtual Strain Gauge size'
     )
     displacement_filtering: Optional[str] = Field(
         None,
@@ -753,7 +815,7 @@ class StrainGauge(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(None, description='Strain gauge name', title='Title')
+    title: str = Field(..., description='Strain gauge name', title='Title')
     description: Optional[str] = Field(
         None, description='Description of the load cell', title='Description'
     )
@@ -780,7 +842,9 @@ class StrainGauge(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
-    length: Unit = Field(..., description='Gauge or measuring length', title='Length')
+    length: Optional[Unit] = Field(
+        None, description='Gauge or measuring length', title='Length'
+    )
     uncertainty: Optional[Unit] = Field(
         None, description='Uncertainty or resolution of strain.', title='Uncertainty'
     )
@@ -796,9 +860,7 @@ class Tomograph(R3XAModel):
         description='Only required for specs implementation purposes.',
         title='Kind of data source',
     )
-    title: Optional[str] = Field(
-        None, description='Title of the tomograph.', title='Title'
-    )
+    title: str = Field(..., description='Title of the tomograph.', title='Title')
     description: Optional[str] = Field(
         None, description='Description of the tomograph.', title='Description'
     )
@@ -831,8 +893,8 @@ class Tomograph(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='Documentation filename, path or URL', title='Documentation'
     )
-    image_size: list[Unit] = Field(
-        ..., description='Size of the image pixels.', title='Image size'
+    image_size: Optional[list[Unit]] = Field(
+        None, description='Size of the image pixels.', title='Image size'
     )
     field_of_view: Optional[list[Unit]] = Field(
         None,
@@ -844,7 +906,9 @@ class Tomograph(R3XAModel):
         description='Scale of the image in pixels per length unit.',
         title='Image scale',
     )
-    source: str = Field(..., description='Source characteristics.', title='Source')
+    source: Optional[str] = Field(
+        None, description='Source characteristics.', title='Source'
+    )
     voltage: Optional[Unit] = Field(None, description='Used voltage.', title='Voltage')
     current: Optional[Unit] = Field(
         None, description='electric current.', title='Current'
@@ -894,18 +958,18 @@ class GenericModel1(R3XAModel):
         title='Kind of object',
     )
     title: str = Field(..., description='Title of the setting.', title='Title')
-    description: str = Field(
-        ..., description='Description of the setting.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the setting.', title='Description'
     )
     documentation: Optional[str] = Field(
         None,
         description='Path to external documentation/information',
         title='Documentation',
     )
-    associated_data_sources: Optional[list[DataSourceId]] = Field(
+    attached_data_sources: Optional[list[DataSourceId]] = Field(
         None,
-        description='List of datasources linked to this setting',
-        title='Associated Data Sources',
+        description='List of data sources equipping this device',
+        title='Data Sources attached to the setting',
     )
 
 
@@ -920,13 +984,15 @@ class Specimen(R3XAModel):
         title='Kind of object',
     )
     title: str = Field(..., description='Title of the specimen.', title='Title')
-    description: str = Field(
-        ..., description='Description of the specimen.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the specimen.', title='Description'
     )
     cad: Optional[str] = Field(
         None, description='Path to the design of the specimen.', title='CAD'
     )
-    sizes: list[Unit] = Field(..., description='Sizes of the specimen.', title='Sizes')
+    sizes: Optional[list[Unit]] = Field(
+        None, description='Sizes of the specimen.', title='Sizes'
+    )
     patterning_technique: Optional[str] = Field(
         None,
         description='Patterning technique used on the specimen.',
@@ -950,11 +1016,11 @@ class Stereorig(R3XAModel):
         title='Kind of object',
     )
     title: str = Field(..., description='Title of the stereo rig.', title='Title')
-    description: str = Field(
-        ..., description='Description of the stereo rig.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the stereo rig.', title='Description'
     )
-    stereo_angle: Unit = Field(
-        ..., description='Stereo angle between the camera axes.', title='Stereo Angle'
+    stereo_angle: Optional[Unit] = Field(
+        None, description='Stereo angle between the camera axes.', title='Stereo Angle'
     )
     calibration_target_type: Optional[str] = Field(
         None, description='Type of calibration board.', title='Calibration Target type'
@@ -964,8 +1030,10 @@ class Stereorig(R3XAModel):
         description='Parameters of the calibration board.',
         title='Calibration Target size',
     )
-    associated_data_sources: Optional[list[DataSourceId]] = Field(
-        None, description='List of cameras of the rig', title='Associated Data Sources'
+    attached_data_sources: Optional[list[DataSourceId]] = Field(
+        None,
+        description='List of data sources equipping this stereo rig',
+        title='Data Sources attached to the setting',
     )
 
 
@@ -980,11 +1048,11 @@ class TestingMachine(R3XAModel):
         title='Kind of object',
     )
     title: str = Field(..., description='Title of the testing machine.', title='Title')
-    description: str = Field(
-        ..., description='Description of the testing machine.', title='Description'
+    description: Optional[str] = Field(
+        None, description='Description of the testing machine.', title='Description'
     )
-    type: str = Field(
-        ...,
+    type: Optional[str] = Field(
+        None,
         description='e.g. compression, tensile, torsion, fatigue...',
         title='Type of machine',
     )
@@ -999,13 +1067,13 @@ class TestingMachine(R3XAModel):
     documentation: Optional[str] = Field(
         None, description='filename', title='Documentation'
     )
-    capacity: Optional[Uint] = Field(
+    capacity: Optional[Unit] = Field(
         None, description='load capacity', title='Capacity'
     )
-    associated_data_sources: Optional[list[DataSourceId]] = Field(
+    attached_data_sources: Optional[list[DataSourceId]] = Field(
         None,
-        description='List of associated sources (extensometers, load cells)',
-        title='Associated Data Sources',
+        description='List of data sources (extensometers, load cells) equipping this device',
+        title='Data Sources attached to the setting',
     )
 
 
@@ -1026,11 +1094,17 @@ class R3XADocument(R3XAModel):
         min_length=1,
         title='Description',
     )
-    version: Literal['2024.7.1'] = Field(
-        '2024.7.1', description='Version of the schema used.', title='Version'
+    version: Literal['2026.9.8'] = Field(
+        '2026.9.8', description='Version of the schema used.', title='Version'
     )
-    authors: str = Field(
-        ..., description='Names, ORCID, IDHAL...', min_length=1, title='Author'
+    authors: list[Author] = Field(
+        ..., description='Names of the authors.', min_length=1, title='Author'
+    )
+    author_orcids: Optional[list[Optional[AuthorOrcids]]] = Field(
+        None,
+        description='ORCIDs parallel to authors; use null when an author has no ORCID.',
+        min_length=1,
+        title='Author ORCID',
     )
     date: str = Field(
         ...,

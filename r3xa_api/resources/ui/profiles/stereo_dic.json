@@ -11,13 +11,13 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "camera_left", "to_step": "stereo_rig", "to_field": "associated_data_sources", "to_many": true},
-    {"from_step": "camera_right", "to_step": "stereo_rig", "to_field": "associated_data_sources", "to_many": true},
-    {"from_step": "camera_left", "to_step": "left_images", "to_field": "data_sources", "to_many": true},
-    {"from_step": "camera_right", "to_step": "right_images", "to_field": "data_sources", "to_many": true},
+    {"from_step": "camera_left", "to_step": "stereo_rig", "to_field": "attached_data_sources", "to_many": true},
+    {"from_step": "camera_right", "to_step": "stereo_rig", "to_field": "attached_data_sources", "to_many": true},
+    {"from_step": "camera_left", "to_step": "left_images", "to_field": "parent_data_sources", "to_many": true},
+    {"from_step": "camera_right", "to_step": "right_images", "to_field": "parent_data_sources", "to_many": true},
     {"from_step": "left_images", "to_step": "stereo_dic_source", "to_field": "input_data_sets", "to_many": true},
     {"from_step": "right_images", "to_step": "stereo_dic_source", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "stereo_dic_source", "to_step": "displacement_fields", "to_field": "data_sources", "to_many": true}
+    {"from_step": "stereo_dic_source", "to_step": "displacement_fields", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -27,7 +27,7 @@
       "defaults": {
         "title": "Stereo-DIC tensile test",
         "description": "Prefilled example of a stereo-DIC experiment using two cameras mounted on one stereo rig.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-02"
       },
       "questions": [
@@ -143,16 +143,16 @@
         "title": "Left camera images",
         "description": "Image sequence recorded by the left camera.",
         "path": "images/left/",
-        "file_type": "image/tiff",
+        "data_type": "image/tiff",
         "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
         "timestamps": [0.0],
-        "data": ["left/image_0000.tif"]
+        "values": ["left/image_0000.tif"]
       },
       "questions": [
         {"field": "title", "title": "How should the left image data be named?", "required": true},
         {"field": "description", "title": "Describe the left image sequence.", "required": true},
         {"field": "path", "title": "Where are the left images stored?"},
-        {"field": "file_type", "title": "What type of left image files are they?", "required": true}
+        {"field": "data_type", "title": "What type of left image files are they?", "required": true}
       ]
     },
     {
@@ -164,16 +164,16 @@
         "title": "Right camera images",
         "description": "Image sequence recorded by the right camera.",
         "path": "images/right/",
-        "file_type": "image/tiff",
+        "data_type": "image/tiff",
         "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
         "timestamps": [0.0],
-        "data": ["right/image_0000.tif"]
+        "values": ["right/image_0000.tif"]
       },
       "questions": [
         {"field": "title", "title": "How should the right image data be named?", "required": true},
         {"field": "description", "title": "Describe the right image sequence.", "required": true},
         {"field": "path", "title": "Where are the right images stored?"},
-        {"field": "file_type", "title": "What type of right image files are they?", "required": true}
+        {"field": "data_type", "title": "What type of right image files are they?", "required": true}
       ]
     },
     {
@@ -214,15 +214,14 @@
       "defaults": {
         "title": "Stereo-DIC displacement fields",
         "description": "Final 3D displacement-field file calculated from the stereo camera images by stereo-DIC.",
-        "folder": "stereo_dic/",
-        "time_reference": 0.0,
+        "path": "stereo_dic/",
         "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
+        "values": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
       },
       "questions": [
         {"field": "title", "title": "How should the final displacement file be named?", "required": true},
         {"field": "description", "title": "Describe the final displacement fields.", "required": true},
-        {"field": "folder", "title": "Where are the stereo-DIC results stored?"}
+        {"field": "path", "title": "Where are the stereo-DIC results stored?"}
       ]
     }
   ]

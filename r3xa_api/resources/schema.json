@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "title": "R3XA: Remember, Reuse and Replicate eXperiments and Analyses",
   "description": "Yet another metadata file format whose goal is to provide a data representation scheme compatible with the variety of data types encountered in experimental and computational photomechanics, and to provide a convenient framework for software coupling and data fusion.",
@@ -23,13 +24,37 @@
       "title": "Version",
       "description": "Version of the schema used.",
       "type": "string",
-      "const": "2024.7.1"
+      "const": "2026.9.8"
     },
     "authors": {
       "title": "Author",
-      "description": "Names, ORCID, IDHAL...",
-      "type": "string",
-      "minLength": 1
+      "description": "Names of the authors.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "author_orcids": {
+      "title": "Author ORCID",
+      "description": "ORCIDs parallel to authors; use null when an author has no ORCID.",
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "minItems": 1
     },
     "date": {
       "title": "Date",
@@ -57,7 +82,7 @@
       "description": "Experimental parameters should be the specimen, patterning technique and machines used (light, testing rig, environmental chamber...). Describe the experimental techniques/apparatus and devices used / light / environment chamber...",
       "type": "array",
       "items": {
-        "anyOf": [
+        "oneOf": [
           {
             "$ref": "#/$defs/settings/generic"
           },
@@ -78,7 +103,7 @@
       "description": "A data source is a procedure or a system that generates a data set. If it is a sensor then its parameters must be specified. If it is an analysis, its parameters are specified along with the input parameters. It also indicates the dimension, the number of components and the unit of the output data.",
       "type": "array",
       "items": {
-        "anyOf": [
+        "oneOf": [
           {
             "$ref": "#/$defs/data_sources/generic"
           },
@@ -120,7 +145,7 @@
       "description": "A data set gives the organisation of the measured or generated data and time resolution.",
       "type": "array",
       "items": {
-        "anyOf": [
+        "oneOf": [
           {
             "$ref": "#/$defs/data_sets/generic"
           },
@@ -175,9 +200,9 @@
             "description": "Path to external documentation/information",
             "type": "string"
           },
-          "associated_data_sources": {
-            "title": "Associated Data Sources",
-            "description": "List of datasources linked to this setting",
+          "attached_data_sources": {
+            "title": "Data Sources attached to the setting",
+            "description": "List of data sources equipping this device",
             "type": "array",
             "items": {
               "$ref": "#/$defs/types/data_source_id"
@@ -187,8 +212,7 @@
         "required": [
           "id",
           "kind",
-          "title",
-          "description"
+          "title"
         ],
         "additionalProperties": false
       },
@@ -245,9 +269,7 @@
         "required": [
           "id",
           "kind",
-          "title",
-          "description",
-          "sizes"
+          "title"
         ],
         "additionalProperties": false
       },
@@ -295,9 +317,9 @@
               "$ref": "#/$defs/types/unit"
             }
           },
-          "associated_data_sources": {
-            "title": "Associated Data Sources",
-            "description": "List of cameras of the rig",
+          "attached_data_sources": {
+            "title": "Data Sources attached to the setting",
+            "description": "List of data sources equipping this stereo rig",
             "type": "array",
             "items": {
               "$ref": "#/$defs/types/data_source_id"
@@ -307,9 +329,7 @@
         "required": [
           "id",
           "kind",
-          "title",
-          "description",
-          "stereo_angle"
+          "title"
         ],
         "additionalProperties": false
       },
@@ -362,11 +382,11 @@
           "capacity": {
             "title": "Capacity",
             "description": "load capacity",
-            "$ref": "#/$defs/types/uint"
+            "$ref": "#/$defs/types/unit"
           },
-          "associated_data_sources": {
-            "title": "Associated Data Sources",
-            "description": "List of associated sources (extensometers, load cells)",
+          "attached_data_sources": {
+            "title": "Data Sources attached to the setting",
+            "description": "List of data sources (extensometers, load cells) equipping this device",
             "type": "array",
             "items": {
               "$ref": "#/$defs/types/data_source_id"
@@ -376,9 +396,7 @@
         "required": [
           "id",
           "kind",
-          "title",
-          "description",
-          "type"
+          "title"
         ],
         "additionalProperties": false
       }
@@ -467,12 +485,9 @@
           "id",
           "kind",
           "title",
-          "description",
           "output_components",
           "output_dimension",
-          "output_units",
-          "manufacturer",
-          "model"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -612,8 +627,7 @@
           "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "image_size"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -781,9 +795,7 @@
           "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "image_size",
-          "bandwidth"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -950,11 +962,10 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "image_size",
-          "source"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -1050,10 +1061,10 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "capacity"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -1144,10 +1155,10 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "length"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -1246,16 +1257,16 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "range"
+          "output_units"
         ],
         "additionalProperties": false
       },
       "dic_measurement": {
-        "title": "Digital Image Correlation measurement",
-        "description": "DIC, DVC, Stereo DIC",
+        "title": "full displacement field measurement",
+        "description": "subset/global DIC, DVC, Stereo, optical flow",
         "type": "object",
         "properties": {
           "id": {
@@ -1393,10 +1404,10 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "matching_criterion"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -1475,7 +1486,8 @@
           },
           "parameters": {
             "title": "Parameters",
-            "description": "constitutive, geometric, loading or numerical parameters ",
+            "description": "list of constitutive, geometric, loading or numerical parameters ",
+            "type": "array",
             "items": {
               "$ref": "#/$defs/types/unit"
             }
@@ -1489,10 +1501,10 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "manufacturer"
+          "output_units"
         ],
         "additionalProperties": false
       },
@@ -1571,7 +1583,8 @@
           },
           "parameters": {
             "title": "Parameters",
-            "description": "constitutive, geometric, loading or numerical parameters ",
+            "description": "list of constitutive, geometric, loading or numerical parameters ",
+            "type": "array",
             "items": {
               "$ref": "#/$defs/types/unit"
             }
@@ -1585,6 +1598,7 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
           "output_units"
@@ -1688,10 +1702,10 @@
         "required": [
           "id",
           "kind",
+          "title",
           "output_components",
           "output_dimension",
-          "output_units",
-          "virtual_strain_gauge_size"
+          "output_units"
         ],
         "additionalProperties": false
       }
@@ -1723,19 +1737,19 @@
             "description": "Description of the data set.",
             "type": "string"
           },
-          "file_type": {
+          "data_type": {
             "title": "MIME",
-            "description": "MIME type of the file.",
+            "description": "MIME type of the listed files.",
             "type": "string"
           },
           "path": {
             "title": "Path",
             "type": "string",
-            "description": "Relative path to the data file."
+            "description": "Relative path to the folder containing the data file(s)."
           },
-          "data_sources": {
-            "title": "Data sources",
-            "description": "List of IDs of the data sources.",
+          "parent_data_sources": {
+            "title": "Parent data sources",
+            "description": "List of IDs of the data sources that generated the dataset.",
             "type": "array",
             "items": {
               "$ref": "#/$defs/types/data_source_id"
@@ -1746,16 +1760,14 @@
           "id",
           "kind",
           "title",
-          "description",
-          "data_sources",
-          "file_type",
+          "parent_data_sources",
           "path"
         ],
         "additionalProperties": false
       },
       "file": {
         "title": "Data set (single file)",
-        "description": "When all the timestamps and data is stored in a single tablular like file (like csv or txt). If the timestamps and data are in two separate files they should be in the same folder.",
+        "description": "When all the timestamps and data (number or filenames) is stored in a single spreadsheet like file (like csv or txt). If the timestamps and data are in two separate files they should be in the same folder.",
         "type": "object",
         "properties": {
           "id": {
@@ -1779,23 +1791,28 @@
             "description": "Description of the data set.",
             "type": "string"
           },
-          "folder": {
-            "title": "Folder",
+          "path": {
+            "title": "Path",
             "type": "string",
-            "description": "Relative path to the folder containing the timestamps and data file(s)."
+            "description": "Relative path to the folder containing the data file(s)."
           },
-          "data_sources": {
-            "title": "Data sources",
-            "description": "List of IDs of the data sources.",
+          "parent_data_sources": {
+            "title": "Parent data sources",
+            "description": "List of IDs of the data sources that generated the dataset.",
             "type": "array",
             "items": {
               "$ref": "#/$defs/types/data_source_id"
             }
           },
+          "data_type": {
+            "title": "Data type",
+            "description": "if the CSV contains numbers > data_type should be 'numbers', if it contains filenames > put the MIME type",
+            "type": "string"
+          },
           "time_reference": {
             "title": "Time reference",
             "description": "Time serving as a reference to the whole data set.",
-            "type": "number"
+            "$ref": "#/$defs/types/unit"
           },
           "keywords": {
             "title": "Keywords",
@@ -1807,12 +1824,12 @@
           },
           "timestamps": {
             "title": "Timestamps",
-            "description": "Path and range to the timestamps file",
+            "description": "filename (ex: CSV) + col and rows where to find the timestamps",
             "$ref": "#/$defs/types/data_set_file"
           },
-          "data": {
-            "title": "Data",
-            "description": "Path and range to the data file",
+          "values": {
+            "title": "Data set file",
+            "description": "filename (ex: CSV) + col and rows where to find the files or values",
             "$ref": "#/$defs/types/data_set_file"
           }
         },
@@ -1820,11 +1837,9 @@
           "id",
           "kind",
           "title",
-          "description",
-          "data_sources",
-          "time_reference",
+          "parent_data_sources",
           "timestamps",
-          "data"
+          "values"
         ],
         "additionalProperties": false
       },
@@ -1859,14 +1874,14 @@
             "type": "string",
             "description": "Relative path to the data folder."
           },
-          "file_type": {
+          "data_type": {
             "title": "MIME",
-            "description": "MIME type of the data files.",
+            "description": "MIME type of the listed data files.",
             "type": "string"
           },
-          "data_sources": {
-            "title": "Data sources",
-            "description": "List if IDs of the data sources.",
+          "parent_data_sources": {
+            "title": "Parent data sources",
+            "description": "List if IDs of the data sources that generated the dataset.",
             "type": "array",
             "items": {
               "$ref": "#/$defs/types/data_source_id"
@@ -1893,9 +1908,9 @@
               "type": "number"
             }
           },
-          "data": {
-            "title": "Data",
-            "description": "List of the data files.",
+          "values": {
+            "title": "List of files",
+            "description": "List of strings.",
             "type": "array",
             "items": {
               "type": "string"
@@ -1906,12 +1921,9 @@
           "id",
           "kind",
           "title",
-          "description",
-          "file_type",
-          "data_sources",
-          "time_reference",
+          "parent_data_sources",
           "timestamps",
-          "data"
+          "values"
         ],
         "additionalProperties": false
       }
@@ -1936,16 +1948,47 @@
             "type": "string"
           },
           "file_type": {
-            "title": "MIME",
-            "description": "MIME type of the file.",
+            "title": "MIME type",
+            "description": "MIME type of the (CSV-like) file containing the data.",
             "type": "string"
           },
           "delimiter": {
             "type": "string",
             "default": ";"
           },
-          "data_range": {
-            "type": "string"
+          "col": {
+            "title": "Column",
+            "description": "Non-negative index (0-based) or non-empty name of the column containing the data.",
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          },
+          "rows": {
+            "title": "Rows",
+            "description": "Range of rows containing the data, header excluded (0-based), expressed as [first_row, last_row]. Both bounds are inclusive; set last_row to null to read through the end of the file.",
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
           },
           "kind": {
             "title": "Kind of object",

@@ -18,8 +18,10 @@ def unit(
 
 def data_set_file(
     filename: str,
+    file_type: Optional[str] = ...,
     delimiter: Optional[str] = ...,
-    data_range: Optional[str] = ...,
+    col: Optional[int | str] = ...,
+    rows: Optional[list[int | None]] = ...,
     **extra: Any,
 ) -> Dict[str, Any]: ...
 
@@ -51,31 +53,24 @@ class R3XAFile:
     def add_generic_setting(
         self,
         title: Any,
-        description: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_specimen_setting(
         self,
         title: Any,
-        description: Any,
-        sizes: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_stereorig_setting(
         self,
         title: Any,
-        description: Any,
-        stereo_angle: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_testing_machine_setting(
         self,
         title: Any,
-        description: Any,
-        type: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
@@ -86,33 +81,30 @@ class R3XAFile:
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        image_size: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_dic_measurement_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        matching_criterion: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_generic_source(
         self,
         title: Any,
-        description: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        manufacturer: Any,
-        model: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_identification_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
@@ -125,63 +117,60 @@ class R3XAFile:
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        image_size: Any,
-        bandwidth: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_load_cell_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        capacity: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_mechanical_analysis_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        manufacturer: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_point_temperature_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        range: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_strain_computation_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        virtual_strain_gauge_size: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_strain_gauge_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        length: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_tomograph_source(
         self,
+        title: Any,
         output_components: Any,
         output_dimension: Any,
         output_units: Any,
-        image_size: Any,
-        source: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
@@ -189,20 +178,16 @@ class R3XAFile:
     def add_file_data_set(
         self,
         title: Any,
-        description: Any,
-        data_sources: Any,
-        time_reference: Any,
+        parent_data_sources: Any,
         timestamps: Any,
-        data: Any,
+        values: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_generic_data_set(
         self,
         title: Any,
-        description: Any,
-        data_sources: Any,
-        file_type: Any,
+        parent_data_sources: Any,
         path: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
@@ -210,12 +195,9 @@ class R3XAFile:
     def add_list_data_set(
         self,
         title: Any,
-        description: Any,
-        file_type: Any,
-        data_sources: Any,
-        time_reference: Any,
+        parent_data_sources: Any,
         timestamps: Any,
-        data: Any,
+        values: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
@@ -223,23 +205,18 @@ class R3XAFile:
     def add_image_set_list(
         self,
         title: Any,
-        description: Any,
-        file_type: Any,
-        data_sources: Any,
-        time_reference: Any,
+        parent_data_sources: Any,
         timestamps: Any,
-        data: Any,
+        values: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 
     def add_image_set_file(
         self,
         title: Any,
-        description: Any,
-        data_sources: Any,
-        time_reference: Any,
+        parent_data_sources: Any,
         timestamps: Any,
-        data: Any,
+        values: Any,
         **extra: Any,
     ) -> Dict[str, Any]: ...
 

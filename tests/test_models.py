@@ -101,7 +101,7 @@ def test_generated_models_fill_schema_constants():
     document = models.R3XADocument(
         title="Typed document",
         description="Pydantic model",
-        authors="R3XA Team",
+        authors=["R3XA Team"],
         date="2026-09-07",
     )
     unit = models.Unit(unit="mm", value=2.0)
@@ -120,16 +120,15 @@ def test_typed_document_adds_and_links_items():
     images = models.ListDataSet(
         title="Camera images",
         description="Images recorded during the test",
-        file_type="image/tiff",
-        data_sources=[],
-        time_reference=models.Unit(unit="s"),
+        data_type="image/tiff",
+        parent_data_sources=[],
         timestamps=[0.0],
-        data=["image_0000.tif"],
+        values=["image_0000.tif"],
     )
     document = models.R3XADocument(
         title="Typed linked document",
         description="Typed document with an acquisition relationship",
-        authors="R3XA Team",
+        authors=["R3XA Team"],
         date="2026-09-07",
     )
 
@@ -139,7 +138,7 @@ def test_typed_document_adds_and_links_items():
 
     assert document.find(camera.id) is camera
     assert document.find(images.id) is images
-    assert [reference.root for reference in images.data_sources] == [camera.id]
+    assert [reference.root for reference in images.parent_data_sources] == [camera.id]
     assert document.integrity_errors() == []
     document.validate_integrity().validate()
 
@@ -149,16 +148,15 @@ def test_typed_document_links_inputs_and_reports_dangling_references():
     images = models.ListDataSet(
         title="Camera images",
         description="Images recorded during the test",
-        file_type="image/tiff",
-        data_sources=[],
-        time_reference=models.Unit(unit="s"),
+        data_type="image/tiff",
+        parent_data_sources=[],
         timestamps=[0.0],
-        data=["image_0000.tif"],
+        values=["image_0000.tif"],
     )
     document = models.R3XADocument(
         title="Typed input document",
         description="Typed document with an input relationship",
-        authors="R3XA Team",
+        authors=["R3XA Team"],
         date="2026-09-07",
     )
     document.add_data_source(camera)
@@ -168,7 +166,7 @@ def test_typed_document_links_inputs_and_reports_dangling_references():
     assert [reference.root for reference in camera.input_data_sets] == [images.id]
     assert document.integrity_errors() == []
 
-    images.data_sources = [*images.data_sources, "missing-source"]
+    images.parent_data_sources = [*images.parent_data_sources, "missing-source"]
     errors = document.integrity_errors()
     assert any("missing-source" in error for error in errors)
     with pytest.raises(ValueError, match="missing-source"):
@@ -180,7 +178,7 @@ def test_typed_document_rejects_duplicate_ids():
     document = models.R3XADocument(
         title="Duplicate ID document",
         description="Typed document with duplicate IDs",
-        authors="R3XA Team",
+        authors=["R3XA Team"],
         date="2026-09-07",
     )
     document.add_data_source(camera)
@@ -229,7 +227,7 @@ def test_from_model_roundtrip():
         "title": "Typed model roundtrip",
         "description": "Roundtrip from typed model to dict",
         "version": schema_version(),
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-02-19",
         "settings": [],
         "data_sources": [from_model(camera)],
@@ -243,7 +241,7 @@ def test_r3xafile_accepts_typed_model_direct_append():
     r3xa = R3XAFile(
         title="Typed append",
         description="R3XAFile accepts typed models in lists",
-        authors="R3XA Team",
+        authors=["R3XA Team"],
         date="2026-03-01",
     )
     r3xa.data_sources.append(camera)
@@ -255,7 +253,7 @@ def test_r3xa_document_valid():
         title="Typed document",
         description="Pydantic model",
         version=schema_version(),
-        authors="R3XA Team",
+        authors=["R3XA Team"],
         date="2026-02-19",
         settings=[],
         data_sources=[],

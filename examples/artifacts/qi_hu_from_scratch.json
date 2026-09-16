@@ -1,12 +1,15 @@
 {
     "title": "IR Lagrangian thermography - Qi Hu",
     "description": "Qi Hu experimental pipeline (IR + visible imaging, processing, DIC-like steps)",
-    "authors": "J-F. Witz, Q. Hu",
+    "authors": [
+        "J-F. Witz",
+        "Q. Hu"
+    ],
     "date": "2024-10-30",
     "repository": "https://example.org/qi-hu",
     "documentation": "https://theses.hal.science/tel-04993338",
     "license": "GPL-2.0-or-later",
-    "version": "2024.7.1",
+    "version": "2026.9.8",
     "settings": [
         {
             "id": "sample",
@@ -31,9 +34,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "gl",
                     "title": "gl",
                     "value": 1.0,
-                    "unit": "gl",
                     "scale": 1.0
                 }
             ],
@@ -42,24 +45,24 @@
             "image_size": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "width",
                     "value": 640,
-                    "unit": "px",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "height",
                     "value": 512,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
             "image_scale": {
                 "kind": "unit",
+                "unit": "\u00b5m/px",
                 "title": "image_scale",
                 "value": 15,
-                "unit": "\u00b5m/px",
                 "scale": 1.0
             },
             "lens": "FLIR G1",
@@ -74,9 +77,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "gl",
                     "title": "gl",
                     "value": 1.0,
-                    "unit": "gl",
                     "scale": 1.0
                 }
             ],
@@ -85,16 +88,16 @@
             "image_size": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "width",
                     "value": 5400,
-                    "unit": "px",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "height",
                     "value": 4400,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
@@ -110,9 +113,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "N",
                     "title": "N",
                     "value": 1.0,
-                    "unit": "N",
                     "scale": 1.0
                 }
             ],
@@ -129,9 +132,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "N",
                     "title": "N",
                     "value": 1.0,
-                    "unit": "N",
                     "scale": 1.0
                 }
             ],
@@ -152,9 +155,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "\u00b0C",
                     "title": "\u00b0C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
                     "scale": 1.0
                 }
             ],
@@ -175,9 +178,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "px",
                     "value": 1.0,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
@@ -197,9 +200,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "\u00b0C",
                     "title": "\u00b0C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
                     "scale": 1.0
                 }
             ],
@@ -220,16 +223,16 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "\u00b0C",
                     "title": "\u00b0C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "%",
                     "title": "%",
                     "value": 1.0,
-                    "unit": "%",
                     "scale": 1.0
                 }
             ],
@@ -249,15 +252,15 @@
             "title": "IR raws images",
             "description": "Raw images from the FLIR InfraRed Camera",
             "path": "original images IR/",
-            "file_type": "image/tiff",
-            "data_sources": [
+            "data_type": "image/tiff",
+            "parent_data_sources": [
                 "camera_IR"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -525,7 +528,7 @@
                 12.264729,
                 12.2730762
             ],
-            "data": [
+            "values": [
                 "original images IR/Rec-1_serie_2450N-000001-001_02_06_49_467_2068.tif",
                 "original images IR/Rec-1_serie_2450N-000001-001_02_06_49_467_2069.tif",
                 "original images IR/Rec-1_serie_2450N-000001-001_02_06_49_467_2070.tif",
@@ -797,19 +800,19 @@
             "title": "calibration tables",
             "description": "tables of Black body calibrations",
             "path": "./",
-            "file_type": "image/tiff",
-            "data_sources": [
+            "data_type": "image/tiff",
+            "parent_data_sources": [
                 "camera_IR"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [],
-            "data": [
+            "values": [
                 "./calibration IR camera/5/Rec-5-000001-001_03_51_56_079_1.tif",
                 "./calibration IR camera/5/Rec-5-000001-001_03_51_56_079_2.tif",
                 "./calibration IR camera/5/Rec-5-000001-001_03_51_56_079_3.tif",
@@ -2610,15 +2613,15 @@
             "title": "DIC fields",
             "description": "Visible DIC fields",
             "path": "./",
-            "file_type": "application/x-netcdf",
-            "data_sources": [
+            "data_type": "application/x-netcdf",
+            "parent_data_sources": [
                 "dic"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -2687,7 +2690,7 @@
                 12.236564,
                 12.271212
             ],
-            "data": [
+            "values": [
                 "node.nc",
                 "modes.nc"
             ],
@@ -2697,22 +2700,29 @@
             "id": "load_cell_data",
             "title": "Load cell data",
             "description": "Load cell data",
-            "folder": "./1_serie_2450N/",
-            "data_sources": [
+            "path": "./1_serie_2450N/",
+            "parent_data_sources": [
                 "load_cell"
             ],
-            "time_reference": 0.0,
             "timestamps": {
                 "kind": "data_set_file",
                 "filename": "1_serie_2450N/Traction_1.csv",
                 "delimiter": ",",
-                "data_range": "1:0:183799:1"
+                "col": 0,
+                "rows": [
+                    1,
+                    183799
+                ]
             },
-            "data": {
+            "values": {
                 "kind": "data_set_file",
                 "filename": "Traction_1.csv",
                 "delimiter": ",",
-                "data_range": "1:1:183799:1"
+                "col": 1,
+                "rows": [
+                    1,
+                    183799
+                ]
             },
             "kind": "data_sets/file"
         },
@@ -2721,15 +2731,15 @@
             "title": "Visible images",
             "description": "visible images from Ximea camera",
             "path": "original visible images/",
-            "file_type": "image/tiff",
-            "data_sources": [
+            "data_type": "image/tiff",
+            "parent_data_sources": [
                 "camera_visible"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -2798,7 +2808,7 @@
                 12.236564,
                 12.271212
             ],
-            "data": [
+            "values": [
                 "original visible images/000294.tif",
                 "original visible images/000295.tif",
                 "original visible images/000296.tif",
@@ -2872,15 +2882,15 @@
             "title": "Load cell data interpolated on visible timeline data",
             "description": "load cell data interpolated on visible timeline data",
             "path": "./thermomechanical results/",
-            "file_type": "application/octet-stream",
-            "data_sources": [
+            "data_type": "application/octet-stream",
+            "parent_data_sources": [
                 "load_cell_visible_timeline"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -2949,7 +2959,7 @@
                 12.236564,
                 12.271212
             ],
-            "data": [
+            "values": [
                 "F_macro.npy"
             ],
             "kind": "data_sets/list"
@@ -2959,19 +2969,19 @@
             "title": "Eulerian Temperature fields",
             "description": "Eulerian Temperature fields",
             "path": "./",
-            "file_type": "application/octet-stream",
-            "data_sources": [
+            "data_type": "application/octet-stream",
+            "parent_data_sources": [
                 "calibration_IR"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [],
-            "data": [
+            "values": [
                 "traction_temperature_field_ir_configuration/0.npy",
                 "traction_temperature_field_ir_configuration/1.npy",
                 "traction_temperature_field_ir_configuration/2.npy",
@@ -3243,15 +3253,15 @@
             "title": "Lagrangian Temperature Field",
             "description": "Eulerian thermography registered\nafter rescaling IR images and following on visibe reference frame\nand with the DIC field to be lagrangian",
             "path": "./",
-            "file_type": "application/octet-stream",
-            "data_sources": [
+            "data_type": "application/octet-stream",
+            "parent_data_sources": [
                 "lagrangian_thermography"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -3320,7 +3330,7 @@
                 12.236564,
                 12.271212
             ],
-            "data": [
+            "values": [
                 "thermomechanical results/temperature_field_ccd_configuration_ROI/T_0.npy",
                 "thermomechanical results/temperature_field_ccd_configuration_ROI/T_1.npy",
                 "thermomechanical results/temperature_field_ccd_configuration_ROI/T_2.npy",
@@ -3393,15 +3403,15 @@
             "title": "Final results :\nLagrangian energy balance fields",
             "description": "Energy balance fields",
             "path": "./",
-            "file_type": "application/octet-stream",
-            "data_sources": [
+            "data_type": "application/octet-stream",
+            "parent_data_sources": [
                 "energy_balance"
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -3470,7 +3480,7 @@
                 12.236564,
                 12.271212
             ],
-            "data": [
+            "values": [
                 "./traction_temperature_field_ir_configuration/0.npy",
                 "./traction_temperature_field_ir_configuration/1.npy",
                 "./traction_temperature_field_ir_configuration/2.npy",

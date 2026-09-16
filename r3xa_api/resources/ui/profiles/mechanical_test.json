@@ -8,7 +8,7 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "machine", "to_step": "machine_data", "to_field": "data_sources", "to_many": true}
+    {"from_step": "machine", "to_step": "machine_data", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -18,7 +18,7 @@
       "defaults": {
         "title": "Tensile mechanical test",
         "description": "Prefilled example of a tensile test with force and displacement recorded by one testing machine.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -82,15 +82,14 @@
       "defaults": {
         "title": "Machine force and displacement data",
         "description": "Final CSV file containing the force and displacement channels recorded during the tensile test.",
-        "folder": "machine/",
-        "time_reference": 0.0,
+        "path": "machine/",
         "timestamps": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
+        "values": {"kind": "data_set_file", "filename": "test_machine.csv", "file_type": "text/csv", "delimiter": ","}
       },
       "questions": [
         {"field": "title", "title": "How should the machine file be named?", "required": true},
         {"field": "description", "title": "Describe the machine data.", "required": true},
-        {"field": "folder", "title": "Where is the machine file stored?"}
+        {"field": "path", "title": "Where is the machine file stored?"}
       ]
     }
   ]

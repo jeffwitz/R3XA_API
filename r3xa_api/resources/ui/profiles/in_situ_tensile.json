@@ -11,10 +11,10 @@
     "data_sets/file"
   ],
   "links": [
-    {"from_step": "machine", "to_step": "machine_data", "to_field": "data_sources", "to_many": true},
-    {"from_step": "camera", "to_step": "images", "to_field": "data_sources", "to_many": true},
+    {"from_step": "machine", "to_step": "machine_data", "to_field": "parent_data_sources", "to_many": true},
+    {"from_step": "camera", "to_step": "images", "to_field": "parent_data_sources", "to_many": true},
     {"from_step": "images", "to_step": "dic", "to_field": "input_data_sets", "to_many": true},
-    {"from_step": "dic", "to_step": "displacement_fields", "to_field": "data_sources", "to_many": true}
+    {"from_step": "dic", "to_step": "displacement_fields", "to_field": "parent_data_sources", "to_many": true}
   ],
   "steps": [
     {
@@ -24,7 +24,7 @@
       "defaults": {
         "title": "In-situ tensile test",
         "description": "Prefilled example combining tensile loading, camera acquisition, and 2D DIC measurement.",
-        "authors": "R3XA Team",
+        "authors": ["R3XA Team"],
         "date": "2026-09-01"
       },
       "questions": [
@@ -114,15 +114,14 @@
       "defaults": {
         "title": "Force and displacement data",
         "description": "Final CSV file containing force and displacement recorded during tensile loading.",
-        "folder": "machine/",
-        "time_reference": 0.0,
+        "path": "machine/",
         "timestamps": {"kind": "data_set_file", "filename": "machine.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "machine.csv", "file_type": "text/csv", "delimiter": ","}
+        "values": {"kind": "data_set_file", "filename": "machine.csv", "file_type": "text/csv", "delimiter": ","}
       },
       "questions": [
         {"field": "title", "title": "How should the machine data be named?", "required": true},
         {"field": "description", "title": "Describe the machine data.", "required": true},
-        {"field": "folder", "title": "Where is the machine file stored?"}
+        {"field": "path", "title": "Where is the machine file stored?"}
       ]
     },
     {
@@ -134,16 +133,16 @@
         "title": "In-situ camera images",
         "description": "Image sequence recorded during tensile loading.",
         "path": "images/",
-        "file_type": "image/tiff",
+        "data_type": "image/tiff",
         "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
         "timestamps": [0.0],
-        "data": ["image_0000.tif"]
+        "values": ["image_0000.tif"]
       },
       "questions": [
         {"field": "title", "title": "How should the camera images be named?", "required": true},
         {"field": "description", "title": "Describe the image sequence.", "required": true},
         {"field": "path", "title": "Where are the images stored?"},
-        {"field": "file_type", "title": "What type of image files are they?", "required": true}
+        {"field": "data_type", "title": "What type of image files are they?", "required": true}
       ]
     },
     {
@@ -183,15 +182,14 @@
       "defaults": {
         "title": "In-situ DIC displacement fields",
         "description": "Final displacement-field file calculated from the in-situ camera images.",
-        "folder": "dic/",
-        "time_reference": 0.0,
+        "path": "dic/",
         "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "delimiter": ","},
-        "data": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
+        "values": {"kind": "data_set_file", "filename": "displacement_fields.h5", "file_type": "application/x-hdf5"}
       },
       "questions": [
         {"field": "title", "title": "How should the DIC result be named?", "required": true},
         {"field": "description", "title": "Describe the DIC displacement fields.", "required": true},
-        {"field": "folder", "title": "Where are the DIC results stored?"}
+        {"field": "path", "title": "Where are the DIC results stored?"}
       ]
     }
   ]
