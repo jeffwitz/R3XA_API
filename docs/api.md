@@ -9,7 +9,14 @@ This page documents the public API intended for library users.
 For most user code, keep imports at the SDK level:
 
 ```python
-from r3xa_api import R3XAFile, Registry, RegistryItem, new_item, unit, validate
+from r3xa_api import R3XAFile, R3XAItem, Registry, RegistryItem, new_item, unit, validate
+```
+
+When the `typed` extra is installed, the generated model classes are exported from the package
+as well, so they need not be reached through `r3xa_api.models`:
+
+```python
+from r3xa_api import CameraSource, SpecimenSetting, FileDataSet, R3XADocument
 ```
 
 Use the advanced compatibility helpers only when you really need the lower-level registry functions:
@@ -61,11 +68,12 @@ set_header(**fields) -> R3XAFile
 Update header fields.
 
 ```python
-add_setting(kind: str, **fields) -> dict
-add_data_source(kind: str, **fields) -> dict
-add_data_set(kind: str, **fields) -> dict
+add_setting(kind: str, **fields) -> R3XAItem
+add_data_source(kind: str, **fields) -> R3XAItem
+add_data_set(kind: str, **fields) -> R3XAItem
 ```
-Low‑level methods for any schema kind.
+Low‑level methods for any schema kind. They return the `R3XAItem` stored in the collection,
+so mutating the returned item updates the document.
 
 ```python
 add_<kind>_setting(...)
@@ -78,14 +86,14 @@ fields as explicit parameters and accept optional schema fields through `**extra
 Examples:
 
 ```python
-add_generic_setting(title, description, **extra) -> dict
-add_specimen_setting(title, description, sizes, **extra) -> dict
-add_testing_machine_setting(title, description, type, **extra) -> dict
-add_camera_source(title, output_components, output_dimension, output_units, image_size, **extra) -> dict
-add_load_cell_source(output_components, output_dimension, output_units, capacity, **extra) -> dict
-add_generic_data_set(title, parent_data_sources, path, **extra) -> dict
-add_list_data_set(title, parent_data_sources, timestamps, values, **extra) -> dict
-add_file_data_set(title, parent_data_sources, timestamps, values, **extra) -> dict
+add_generic_setting(title, description, **extra) -> R3XAItem
+add_specimen_setting(title, description, sizes, **extra) -> R3XAItem
+add_testing_machine_setting(title, description, type, **extra) -> R3XAItem
+add_camera_source(title, output_components, output_dimension, output_units, image_size, **extra) -> R3XAItem
+add_load_cell_source(output_components, output_dimension, output_units, capacity, **extra) -> R3XAItem
+add_generic_data_set(title, parent_data_sources, path, **extra) -> R3XAItem
+add_list_data_set(title, parent_data_sources, timestamps, values, **extra) -> R3XAItem
+add_file_data_set(title, parent_data_sources, timestamps, values, **extra) -> R3XAItem
 ```
 
 Complete guided helper inventory for the current schema:
@@ -130,6 +138,20 @@ save(path: str | Path, indent: int = 4, validate: bool = True) -> Path
 ```
 Serialize, validate, and write to disk.
 
+```python
+summary() -> str
+print() -> None
+```
+Readable listing of the header followed by each collection's item titles. Field order and the
+`*` required markers come from the schema. `print(document)` prints the same listing.
+
+```python
+plot(path: str | Path, *, backend: str = "graphviz", palette: str | None = None, include_description: bool = True) -> Path
+```
+Render the item graph and return the file written. `backend` is `"graphviz"` (SVG),
+`"pyvis"` (interactive HTML) or `"matplotlib"` (PNG); each requires its optional extra.
+`palette` is `"default"` or `"document"` and applies identically to every backend.
+
 Typical edit cycle:
 
 ```python
@@ -138,6 +160,52 @@ from r3xa_api import R3XAFile
 r3xa = R3XAFile.load("experiment.json")
 r3xa.set_header(title="Updated title")
 r3xa.save("experiment_updated.json")
+```
+
+### `R3XAItem`
+An item held by an `R3XAFile` collection: a setting, a data source, or a data set.
+
+`R3XAItem` is a `dict` subclass, so `item["title"]`, `isinstance(item, dict)`, `json.dumps(item)`
+and comparison with a plain dictionary all behave as they always have. It adds the ergonomics
+without requiring the `typed` extra.
+
+```python
+summary() -> str
+print() -> None
+```
+List every field the schema defines for the item's kind — including fields the item does not
+carry — with `*` on required ones and units collapsed to `30 mm`. `print(item)` prints the same
+listing; `repr(item)` stays the compact dictionary form so a whole collection remains readable.
+
+```python
+validate(schema: dict | None = None) -> R3XAItem
+save(path: str | Path, *, validate: bool = True, indent: int = 2) -> Path
+R3XAItem.load(path: str | Path) -> R3XAItem
+to_dict() -> dict
+```
+Validate against the item's own schema kind, or write and read one item independently of the
+document that contains it.
+
+```python
+kind -> str | None
+required_fields() -> list[str]
+optional_fields() -> list[str]
+missing_fields() -> list[str]
+field_descriptions() -> dict[str, str]
+```
+Schema introspection, to discover which fields may still be filled in.
+
+```python
+from r3xa_api import R3XAFile, unit
+
+document = R3XAFile(title="Tutorial", description="Minimal file", authors=["JC Passieux"], date="2026-04-02")
+specimen = document.add_specimen_setting(
+    title="Openhole sample",
+    description="Glass-epoxy specimen",
+    sizes=[unit(title="width", value=30.0, unit="mm")],
+)
+specimen.print()
+print(specimen.optional_fields())
 ```
 
 ## Helper functions

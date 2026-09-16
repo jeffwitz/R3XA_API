@@ -1,7 +1,13 @@
 import json
+from pathlib import Path
+
 from r3xa_api import R3XAFile, Registry
 
-registry = Registry("registry")
+# Anchored on this file so the example runs from any working directory.
+ROOT = Path(__file__).resolve().parents[2]
+ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts"
+
+registry = Registry(ROOT / "registry")
 
 camera_base = registry.get_item("data_sources/camera/avt_dolphin_f145b")
 
@@ -32,6 +38,6 @@ image_dataset = image_template.merge(
 r3xa.data_sets.append(image_dataset)
 
 r3xa.validate()
-r3xa.save("registry_example.json")
+r3xa.save(ARTIFACTS / "registry_example.json")
 
 print(json.dumps(r3xa.to_dict(), indent=2))

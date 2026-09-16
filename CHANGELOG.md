@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+- Items returned by `R3XAFile` are now `R3XAItem` objects instead of bare dictionaries: they print, validate, save, load, and introspect their schema fields on their own. `R3XAItem` subclasses `dict`, so existing code treating items as dictionaries is unaffected.
+- `R3XAFile` gains `summary()`/`print()` for the header and item titles, and `plot()` to render the item graph through the Graphviz, PyVis or NetworkX backends.
+- Graph rendering accepts a `palette` argument, applied identically by every backend: `"default"`, or `"document"` for J-C. Passieux's ochre/crimson/teal scheme.
+- `print(document)` and `print(item)` now show the same listing as `.print()`; `repr()` stays compact so collections remain readable.
+- Generated model classes carry a docstring built from the schema (field type, description, required flag, permitted values) and are exported from `r3xa_api` directly when the `typed` extra is installed.
+- `print()` renders values the way they read: units collapse to `1392 px`, constrained scalars and enumerations no longer leak their internal representation.
+- Tests: guard the vendored schema against drift from `R3XA_SPEC`, and check that `r3xa_api/models.py` still matches the schema it is generated from.
+- CI: add a `schema-sync` job that compares the packaged schema against a fresh `R3XA_SPEC` clone.
+
 ## [2.0.0rc1] - 2026-09-16
 - Release candidate for the breaking R3XA schema/API line based on schema `2026.9.8`.
 - Breaking schema alignment: authors are arrays, dataset provenance uses `parent_data_sources`, settings use `attached_data_sources`, dataset payloads use `data_type` and `values`, and file ranges use `col`/`rows`.

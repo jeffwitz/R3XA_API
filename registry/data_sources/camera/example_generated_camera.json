@@ -7,9 +7,9 @@
   "output_units": [
     {
       "kind": "unit",
+      "unit": "gl",
       "title": "graylevel",
       "value": 1.0,
-      "unit": "gl",
       "scale": 1.0
     }
   ],
@@ -18,24 +18,24 @@
   "image_size": [
     {
       "kind": "unit",
+      "unit": "px",
       "title": "width",
       "value": 2048,
-      "unit": "px",
       "scale": 1.0
     },
     {
       "kind": "unit",
+      "unit": "px",
       "title": "height",
       "value": 1536,
-      "unit": "px",
       "scale": 1.0
     }
   ],
   "focal_length": {
     "kind": "unit",
+    "unit": "mm",
     "title": "focal_length",
     "value": 35.0,
-    "unit": "mm",
     "scale": 1.0
   },
   "kind": "data_sources/camera"

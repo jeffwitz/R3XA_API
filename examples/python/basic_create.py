@@ -1,4 +1,10 @@
+from pathlib import Path
+
 from r3xa_api import R3XAFile, unit
+
+# Anchored on this file so the example writes to examples/artifacts/ whatever
+# the working directory, instead of dropping a file in the repository root.
+ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts"
 
 r3xa = R3XAFile(
     title="Hello World",
@@ -49,4 +55,4 @@ r3xa.add_image_set_list(
 
 r3xa.validate()
 
-r3xa.save("hello-world.json")
+r3xa.save(ARTIFACTS / "hello-world.json")
