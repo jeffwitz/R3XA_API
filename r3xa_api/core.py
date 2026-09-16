@@ -470,7 +470,10 @@ class _ModelAwareList(list):
     def _normalize(self, value: Any) -> R3XAItem:
         # Already-wrapped items pass through unchanged, so the object returned
         # by `add_item` is the very one stored in the collection.
-        item = value if isinstance(value, R3XAItem) else R3XAItem(from_model(value))
+        if isinstance(value, R3XAItem):
+            item = value if value._document in (None, self.document) else R3XAItem(value.to_dict())
+        else:
+            item = R3XAItem(from_model(value))
         if self.document is not None:
             item._document = self.document
         return item
@@ -509,6 +512,12 @@ class R3XAFile:
         self.data_sources: List[R3XAItem] = _ModelAwareList(document=self)
         self.data_sets: List[R3XAItem] = _ModelAwareList(document=self)
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name in {"settings", "data_sources", "data_sets"}:
+            if not (isinstance(value, _ModelAwareList) and value.document is self):
+                value = _ModelAwareList(value, document=self)
+        object.__setattr__(self, name, value)
+
     @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "R3XAFile":
         """Create a builder from an existing document payload."""
@@ -542,7 +551,7 @@ class R3XAFile:
         self.header.update(fields)
         return self
 
-    def _target_collection(self, kind: str) -> List[Dict[str, Any]]:
+    def _target_collection(self, kind: str) -> List[R3XAItem]:
         """Return the target top-level collection matching item kind."""
 
         section = kind.split("/", 1)[0]
@@ -565,21 +574,21 @@ class R3XAFile:
         collection.append(new_item(kind, **fields))
         return collection[-1]
 
-    def add_setting(self, kind: str, **fields: Any) -> Dict[str, Any]:
+    def add_setting(self, kind: str, **fields: Any) -> R3XAItem:
         """Append a setting item and return it."""
 
         if not kind.startswith("settings/"):
             raise ValueError("add_setting expects a kind starting with settings/")
         return self.add_item(kind, **fields)
 
-    def add_data_source(self, kind: str, **fields: Any) -> Dict[str, Any]:
+    def add_data_source(self, kind: str, **fields: Any) -> R3XAItem:
         """Append a data source item and return it."""
 
         if not kind.startswith("data_sources/"):
             raise ValueError("add_data_source expects a kind starting with data_sources/")
         return self.add_item(kind, **fields)
 
-    def add_data_set(self, kind: str, **fields: Any) -> Dict[str, Any]:
+    def add_data_set(self, kind: str, **fields: Any) -> R3XAItem:
         """Append a dataset item and return it."""
 
         if not kind.startswith("data_sets/"):
@@ -619,7 +628,7 @@ class R3XAFile:
         return json.dumps(self.to_dict(), indent=indent)
 
     @staticmethod
-    def _item_titles(items: Iterable[Dict[str, Any]]) -> str:
+    def _item_titles(items: Iterable[R3XAItem]) -> str:
         """Return the titles of a collection, which is what identifies items on sight."""
 
         return "[" + ", ".join(str(item.get("title", "None")) for item in items) + "]"

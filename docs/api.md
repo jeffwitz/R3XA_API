@@ -248,7 +248,26 @@ specimen = document.add_specimen_setting(
 )
 specimen.print()
 print(specimen.optional_fields())
+
+camera = document.add_camera_source(
+    title="CCD Camera",
+    output_components=1,
+    output_dimension="surface",
+    output_units=[unit(unit="gl")],
+    image_size=[
+        unit(title="width", value=1392, unit="px"),
+        unit(title="height", value=1040, unit="px"),
+    ],
+)
+assert camera is document.data_sources[0]
+document.data_sources[0].print()
 ```
+
+The three document collections (`settings`, `data_sources`, and `data_sets`) are
+lists of `R3XAItem`, not bare dictionaries. Items added through helpers, loaded
+from JSON, or assigned from dictionaries therefore keep `print()`, `validate()`,
+and `save()` ergonomics while remaining dictionary-compatible. A standalone item
+can be loaded with `R3XAItem.load()`.
 
 ## Helper functions
 

@@ -71,7 +71,7 @@ def render_core_stub() -> str:
         "    **extra: Any,",
         ") -> Dict[str, Any]: ...",
         "",
-        "def new_item(kind: str, **fields: Any) -> Dict[str, Any]: ...",
+        "def new_item(kind: str, **fields: Any) -> R3XAItem: ...",
         "",
         "def unit(",
         "    title: Optional[str] = ...,",

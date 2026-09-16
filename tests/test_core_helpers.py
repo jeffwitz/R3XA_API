@@ -491,6 +491,33 @@ def test_items_stay_usable_as_plain_dictionaries(tmp_path) -> None:
     assert repr(setting).startswith("{")
 
 
+def test_collection_assignment_keeps_r3xa_item_ergonomics(capsys) -> None:
+    document = _document_with_items()
+    setting = dict(document.settings[0])
+    source = dict(document.data_sources[0])
+    dataset = {
+        "id": "dataset_01",
+        "kind": "data_sets/generic",
+        "title": "Force data",
+        "description": "Force data file",
+        "data_type": "text/csv",
+        "path": "force.csv",
+    }
+
+    document.settings = [setting]
+    document.data_sources = [source]
+    document.data_sets = [dataset]
+
+    for collection in (document.settings, document.data_sources, document.data_sets):
+        assert isinstance(collection[0], R3XAItem)
+        assert collection[0]._document is document
+
+    assert document.data_sources[0].validate() is document.data_sources[0]
+    document.data_sources[0].print()
+    assert "data_sources/camera" in capsys.readouterr().out
+    assert json.loads(document.dump())["data_sources"][0] == source
+
+
 def test_items_validate_save_and_reload_on_their_own(tmp_path) -> None:
     document = _document_with_items()
     camera = document.data_sources[0]
