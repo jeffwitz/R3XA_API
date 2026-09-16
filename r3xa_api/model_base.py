@@ -4,10 +4,12 @@ import json
 import secrets
 import string
 from collections.abc import Iterable
+import re
+from enum import Enum
 from pathlib import Path
-from typing import Any, ClassVar, Dict, Mapping, TypeVar
+from typing import Any, ClassVar, Dict, Mapping, TypeVar, Union, get_args, get_origin
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, RootModel
 
 
 ModelT = TypeVar("ModelT", bound="R3XAModel")
@@ -27,6 +29,89 @@ class R3XAModel(BaseModel):
         if "id" in self.__class__.model_fields and "id" not in data:
             data["id"] = _random_id()
         super().__init__(**data)
+
+    @classmethod
+    def __pydantic_init_subclass__(cls, **kwargs: Any) -> None:
+        # Runs once the model class is fully built, so `model_fields` is populated.
+        # The generated models carry no docstring of their own, which left
+        # `help(CameraSource)` empty even though the schema documents every field.
+        super().__pydantic_init_subclass__(**kwargs)
+        if not cls.__dict__.get("__doc__"):
+            cls.__doc__ = cls._build_docstring()
+
+    @staticmethod
+    def _annotation_name(annotation: Any) -> str:
+        """Return a readable type name for a field annotation.
+
+        `Optional[X]` unwraps to `X`: the docstring already marks the field as
+        optional, so repeating it in the type reads as noise.
+        """
+
+        if annotation is None:
+            return "Any"
+
+        if get_origin(annotation) is Union:
+            variants = [arg for arg in get_args(annotation) if arg is not type(None)]
+            if len(variants) == 1:
+                return R3XAModel._annotation_name(variants[0])
+            inner = ", ".join(R3XAModel._annotation_name(arg) for arg in variants)
+            return f"Union[{inner}]"
+
+        if isinstance(annotation, type):
+            return annotation.__name__
+
+        # Collapse dotted paths (r3xa_api.models.Unit -> Unit) in generic forms.
+        text = str(annotation).replace("typing.", "")
+        return re.sub(r"\b(?:[A-Za-z_]\w*\.)+([A-Za-z_]\w*)", r"\1", text)
+
+    @staticmethod
+    def _allowed_values(annotation: Any) -> list[str]:
+        """Return the permitted values when a field is backed by an enumeration."""
+
+        candidates = [annotation, *get_args(annotation)]
+        for candidate in candidates:
+            if isinstance(candidate, type) and issubclass(candidate, Enum):
+                return [str(member.value) for member in candidate]
+        return []
+
+    @classmethod
+    def _build_docstring(cls) -> str:
+        """Build a class docstring documenting every field from the schema."""
+
+        kind = cls.model_fields.get("kind")
+        heading = f"R3XA model ``{cls.__name__}``."
+        if kind is not None and isinstance(kind.default, str):
+            heading = f"R3XA item of kind ``{kind.default}``."
+
+        lines = [heading, "", "Attributes", "----------"]
+        for name, field in cls.model_fields.items():
+            is_kind = name == "kind" and isinstance(field.default, str)
+            type_name = "str" if is_kind else cls._annotation_name(field.annotation)
+            suffix = "" if field.is_required() or is_kind else ", optional"
+            lines.append(f"{name} : {type_name}{suffix}")
+
+            if field.description:
+                lines.append(f"    {field.description}")
+
+            if is_kind:
+                lines.append(
+                    f'    Automatically set to "{field.default}". '
+                    "Not a constructor parameter."
+                )
+            elif field.is_required():
+                if name == "id":
+                    lines.append(
+                        "    Required by the schema; a random id is generated "
+                        "when omitted."
+                    )
+                else:
+                    lines.append("    Required.")
+
+            allowed = cls._allowed_values(field.annotation)
+            if allowed and not is_kind:
+                lines.append(f"    Allowed values: [{', '.join(allowed)}].")
+            lines.append("")
+        return "\n".join(lines).rstrip() + "\n"
 
     @classmethod
     def required_fields(cls) -> list[str]:
@@ -314,6 +399,44 @@ class R3XAModel(BaseModel):
         )
         return destination
 
+    @staticmethod
+    def _format_number(value: Any) -> str:
+        """Render an integral float without its trailing zero: 1392.0 -> 1392."""
+
+        if isinstance(value, float) and value.is_integer():
+            return str(int(value))
+        return str(value)
+
+    @staticmethod
+    def _format_value(value: Any) -> str:
+        """Render a field value the way it reads to a user, not as a repr.
+
+        Units collapse to `1392 px` and lists of them to `[1392 px, 1040 px]`,
+        rather than exposing the underlying model representation.
+        """
+
+        fmt = R3XAModel._format_value
+
+        if value is None:
+            return "None"
+        if isinstance(value, Enum):
+            return str(value.value)
+        if isinstance(value, RootModel):
+            # Constrained scalars (Uint, DataSetId, ...) read as their payload.
+            return fmt(value.root)
+        if isinstance(value, BaseModel):
+            return fmt(value.model_dump(mode="json"))
+        if isinstance(value, Mapping):
+            if value.get("kind") == "unit" and "value" in value and "unit" in value:
+                return f"{R3XAModel._format_number(value['value'])} {value['unit']}"
+            inner = ", ".join(f"{key}: {fmt(item)}" for key, item in value.items())
+            return "{" + inner + "}"
+        if isinstance(value, (list, tuple)):
+            return "[" + ", ".join(fmt(item) for item in value) + "]"
+        if isinstance(value, bool):
+            return str(value)
+        return R3XAModel._format_number(value)
+
     def summary(self) -> str:
         """Return a readable listing of all model fields, including null values."""
 
@@ -321,7 +444,7 @@ class R3XAModel(BaseModel):
         required = set(self.required_fields())
         for name in type(self).model_fields:
             marker = "*" if name in required else " "
-            lines.append(f"{marker} {name}: {getattr(self, name, None)!r}")
+            lines.append(f"{marker} {name}: {self._format_value(getattr(self, name, None))}")
         return "\n".join(lines)
 
     def print(self) -> None:

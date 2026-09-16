@@ -97,6 +97,47 @@ def test_generated_model_common_helpers(tmp_path: Path):
     assert loaded.validate() is loaded
 
 
+def test_summary_renders_values_for_humans():
+    summary = _valid_camera().summary()
+
+    # Units collapse to `value unit`, both alone and inside a list.
+    assert "  image_size: [1392 px, 1040 px]" in summary
+    assert "* output_units: [1 gl]" in summary
+    # Constrained scalars and enums read as their payload, not their repr.
+    assert "* output_components: 1" in summary
+    assert "* output_dimension: surface" in summary
+    # Required fields stay marked, optional ones stay listed even when null.
+    assert "* title: CCD Camera" in summary
+    assert "  lens: None" in summary
+    assert "Unit(" not in summary
+    assert "root=" not in summary
+
+
+def test_generated_models_document_their_fields():
+    doc = models.CameraSource.__doc__
+
+    assert doc, "generated models must carry a docstring"
+    assert "data_sources/camera" in doc
+    # Every field is documented, with its schema description.
+    assert "title : str" in doc
+    assert "Title of the camera." in doc
+    assert "Required." in doc
+    # Optional fields are marked once, in the suffix - not as Optional[...].
+    assert "description : str, optional" in doc
+    assert "Optional[" not in doc
+    # Enumerations advertise what they accept.
+    assert "Allowed values: [point, curve, surface, volume]." in doc
+    # `kind` is set by the model rather than passed in.
+    assert 'Automatically set to "data_sources/camera".' in doc
+
+
+def test_explicit_docstrings_are_not_overwritten():
+    class Documented(models.R3XAModel):
+        """A hand-written docstring."""
+
+    assert Documented.__doc__ == "A hand-written docstring."
+
+
 def test_generated_models_fill_schema_constants():
     document = models.R3XADocument(
         title="Typed document",
