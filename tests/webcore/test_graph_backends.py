@@ -168,3 +168,82 @@ def test_render_pyvis_html_fallback_layout_without_graphviz(
     assert html_path.exists()
     assert "new vis.Network" in html
     assert "_route_helper_" not in html
+
+
+def test_hexagon_vertices_fill_the_requested_box():
+    from r3xa_api.webcore._graph_networkx import DEFAULT_LAYOUT_CONFIG, _hexagon_vertices
+
+    vertices = _hexagon_vertices(0.0, 0.0, 200.0, 60.0, DEFAULT_LAYOUT_CONFIG)
+    xs = [x for x, _ in vertices]
+    ys = [y for _, y in vertices]
+
+    assert len(vertices) == 6
+    # Matplotlib has no non-isotropic hexagon: RegularPolygon takes a single
+    # radius and BoxStyle offers none, so the corners are computed. They must
+    # span exactly the box asked for, not a regular hexagon inside it.
+    assert max(xs) - min(xs) == 200.0
+    assert max(ys) - min(ys) == 60.0
+    assert (max(xs) - min(xs)) != (max(ys) - min(ys))
+    # Flat top and bottom, a point at mid-height on each side.
+    assert sorted(ys).count(30.0) == 2 and sorted(ys).count(-30.0) == 2
+    assert ys.count(0.0) == 2
+
+
+def test_hexagon_inset_is_capped_on_narrow_nodes():
+    from r3xa_api.webcore._graph_networkx import DEFAULT_LAYOUT_CONFIG, _hexagon_vertices
+
+    # A tall, narrow node: a 45-degree slope would eat the whole width and
+    # collapse the shape into a diamond, so the inset is capped.
+    vertices = _hexagon_vertices(0.0, 0.0, 100.0, 400.0, DEFAULT_LAYOUT_CONFIG)
+    xs = sorted({round(x, 6) for x, _ in vertices})
+
+    assert len(xs) == 4, "the flat edges must survive"
+    inset = xs[1] - xs[0]
+    assert inset <= 100.0 * DEFAULT_LAYOUT_CONFIG.hexagon_max_inset_ratio + 1e-9
+
+
+def test_each_shape_gets_its_own_drawing_margins():
+    from r3xa_api.webcore._graph_networkx import DEFAULT_LAYOUT_CONFIG, _height_scale, _width_scale
+
+    config = DEFAULT_LAYOUT_CONFIG
+    # The angled ends eat horizontal room, so a hexagon needs the widest margin.
+    assert _width_scale("hexagon", config) > _width_scale("box", config)
+    assert _width_scale("box", config) > _width_scale("ellipse", config)
+    assert _height_scale("hexagon", config) == config.hexagon_draw_height_scale
+    # An unknown shape falls back to the box margins rather than failing.
+    assert _width_scale("diamond", config) == _width_scale("box", config)
+
+
+def test_settings_render_as_a_hexagon_patch(tmp_path, monkeypatch):
+    pytest.importorskip("networkx")
+    pytest.importorskip("matplotlib")
+    import matplotlib.patches as patches
+
+    from r3xa_api.webcore import _graph_networkx
+
+    # Both palettes ask for a hexagon, and the backend used to silently draw a
+    # box for anything that was not an ellipse.
+    from r3xa_api.webcore._graph_core import PALETTES
+
+    assert PALETTES["document"]["settings"]["root"]["shape"] == "hexagon"
+    assert PALETTES["classic"]["settings"]["root"]["shape"] == "hexagon"
+
+    polygons: list = []
+    real_polygon = patches.Polygon
+
+    def recording_polygon(xy, **kwargs):
+        polygons.append(list(xy))
+        return real_polygon(xy, **kwargs)
+
+    monkeypatch.setattr(patches, "Polygon", recording_polygon)
+
+    payload = {
+        "settings": [{"id": "stg-a", "kind": "settings/specimen", "title": "316L"}],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    path = _graph_networkx.render_networkx_matplotlib_file(payload, tmp_path / "graph")
+
+    assert path.exists()
+    assert len(polygons) == 1, "the setting must be drawn as a polygon, not a box"
+    assert len(polygons[0]) == 6, "six corners, not a regular polygon patch"

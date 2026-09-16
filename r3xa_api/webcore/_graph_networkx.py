@@ -26,8 +26,12 @@ class NetworkXLayoutConfig:
     node_height_fallback: float = 64.0
     ellipse_draw_width_scale: float = 1.08
     box_draw_width_scale: float = 1.18
+    hexagon_draw_width_scale: float = 1.34
+    hexagon_inset_ratio: float = 0.5
+    hexagon_max_inset_ratio: float = 0.22
     ellipse_draw_height_scale: float = 1.10
     box_draw_height_scale: float = 1.16
+    hexagon_draw_height_scale: float = 1.16
     figure_padding_x: float = 120.0
     figure_padding_y: float = 120.0
     min_dpi: int = 90
@@ -106,6 +110,55 @@ class NetworkXLayoutConfig:
     save_pad_inches: float = 0.15
 
 
+def _width_scale(shape: str, config: "NetworkXLayoutConfig") -> float:
+    """Return the width margin a node shape needs around its label."""
+
+    if shape == "ellipse":
+        return config.ellipse_draw_width_scale
+    if shape == "hexagon":
+        return config.hexagon_draw_width_scale
+    return config.box_draw_width_scale
+
+
+def _height_scale(shape: str, config: "NetworkXLayoutConfig") -> float:
+    """Return the height margin a node shape needs around its label."""
+
+    if shape == "ellipse":
+        return config.ellipse_draw_height_scale
+    if shape == "hexagon":
+        return config.hexagon_draw_height_scale
+    return config.box_draw_height_scale
+
+
+def _hexagon_vertices(
+    center_x: float,
+    center_y: float,
+    width: float,
+    height: float,
+    config: "NetworkXLayoutConfig",
+) -> list:
+    """Return the six corners of a hexagon stretched to fill a width x height box.
+
+    Matplotlib has no ready-made non-isotropic hexagon: `RegularPolygon` takes a
+    single radius, and `BoxStyle` offers none, so the corners are computed here.
+    The shape matches Graphviz's: flat top and bottom, a point at mid-height on
+    each side. The slope is 45 degrees until that would eat too much of the
+    label width, at which point the inset is capped.
+    """
+
+    half_width = width * 0.5
+    half_height = height * 0.5
+    inset = min(half_height * config.hexagon_inset_ratio * 2.0, width * config.hexagon_max_inset_ratio)
+    return [
+        (center_x - half_width, center_y),
+        (center_x - half_width + inset, center_y + half_height),
+        (center_x + half_width - inset, center_y + half_height),
+        (center_x + half_width, center_y),
+        (center_x + half_width - inset, center_y - half_height),
+        (center_x - half_width + inset, center_y - half_height),
+    ]
+
+
 DEFAULT_LAYOUT_CONFIG = NetworkXLayoutConfig()
 
 
@@ -126,7 +179,7 @@ def render_networkx_matplotlib_file(
         matplotlib.use("Agg", force=True)
         import matplotlib.pyplot as plt
         from matplotlib.path import Path as MplPath
-        from matplotlib.patches import Ellipse, FancyArrowPatch, FancyBboxPatch
+        from matplotlib.patches import Ellipse, FancyArrowPatch, FancyBboxPatch, Polygon
         import networkx as nx
     except Exception as exc:  # pragma: no cover - depends on optional dependency
         raise RuntimeError("Graph feature not available (networkx/matplotlib not installed).") from exc
@@ -273,8 +326,7 @@ def render_networkx_matplotlib_file(
 
     draw_widths: Dict[str, float] = {}
     for node_id in node_ids:
-        is_ellipse = node_shapes.get(node_id, "box") == "ellipse"
-        width_scale = config.ellipse_draw_width_scale if is_ellipse else config.box_draw_width_scale
+        width_scale = _width_scale(node_shapes.get(node_id, "box"), config)
         draw_widths[node_id] = label_widths.get(node_id, config.node_width_fallback) * width_scale
 
     def _spread_row_nodes(level: int, gap: float = config.row_spread_gap) -> None:
@@ -353,9 +405,9 @@ def render_networkx_matplotlib_file(
 
     for node_id in node_ids:
         x_coord, y_coord = positions.get(node_id, (0.0, 0.0))
-        is_ellipse = node_shapes.get(node_id, "box") == "ellipse"
-        width_scale = config.ellipse_draw_width_scale if is_ellipse else config.box_draw_width_scale
-        height_scale = config.ellipse_draw_height_scale if is_ellipse else config.box_draw_height_scale
+        shape_name = node_shapes.get(node_id, "box")
+        width_scale = _width_scale(shape_name, config)
+        height_scale = _height_scale(shape_name, config)
         node_width = label_widths.get(node_id, config.node_width_fallback) * width_scale
         node_height = label_heights.get(node_id, config.node_height_fallback) * height_scale
 
@@ -366,7 +418,16 @@ def render_networkx_matplotlib_file(
         fill_color = style.get("fillcolor", "lightgrey")
         shape = node_shapes.get(node_id, style.get("shape", "box"))
 
-        if shape == "ellipse":
+        if shape == "hexagon":
+            patch = Polygon(
+                _hexagon_vertices(x_coord, y_coord, node_width, node_height, config),
+                closed=True,
+                facecolor=fill_color,
+                edgecolor=edge_color,
+                linewidth=edge_width,
+                zorder=2,
+            )
+        elif shape == "ellipse":
             patch = Ellipse(
                 xy=(x_coord, y_coord),
                 width=node_width,
