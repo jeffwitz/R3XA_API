@@ -95,6 +95,7 @@ def test_examples_validate_all():
             artifacts / "dic_pipeline_loaded.json",
             artifacts / "qi_hu_from_scratch.json",
             artifacts / "qi_hu_from_scratch_matlab.json",
+            artifacts / "baseline_qi" / "qi_hu_from_scratch.json",
         ]:
             with path.open("r", encoding="utf-8") as f:
                 payload = json.load(f)

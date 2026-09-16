@@ -83,9 +83,9 @@ add_specimen_setting(title, description, sizes, **extra) -> dict
 add_testing_machine_setting(title, description, type, **extra) -> dict
 add_camera_source(title, output_components, output_dimension, output_units, image_size, **extra) -> dict
 add_load_cell_source(output_components, output_dimension, output_units, capacity, **extra) -> dict
-add_generic_data_set(title, description, data_sources, file_type, path, **extra) -> dict
-add_list_data_set(title, description, file_type, data_sources, time_reference, timestamps, data, **extra) -> dict
-add_file_data_set(title, description, data_sources, time_reference, timestamps, data, **extra) -> dict
+add_generic_data_set(title, parent_data_sources, path, **extra) -> dict
+add_list_data_set(title, parent_data_sources, timestamps, values, **extra) -> dict
+add_file_data_set(title, parent_data_sources, timestamps, values, **extra) -> dict
 ```
 
 Complete guided helper inventory for the current schema:
@@ -151,7 +151,7 @@ Build a schema‑compliant unit object. Only `unit` is required by the schema; `
 
 ### `data_set_file(...)`
 ```python
-data_set_file(filename: str, delimiter: str | None = None, data_range: str | None = None, **extra) -> dict
+data_set_file(filename: str, file_type: str | None = None, delimiter: str | None = None, col: int | str | None = None, rows: list[int | None] | None = None, **extra) -> dict
 ```
 Build a schema‑compliant data_set_file object.
 

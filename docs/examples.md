@@ -48,7 +48,7 @@ from r3xa_api import R3XAFile, unit
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline",
-    authors="R3XA API",
+    authors=["R3XA API"],
     date="2024-10-30",
 )
 
@@ -86,11 +86,11 @@ images = r3xa.add_image_set_list(
     title="graylevel images",
     description="raw images from CCD camera",
     path="images/",
-    file_type="image/tiff",
-    data_sources=[camera["id"]],
+    data_type="image/tiff",
+    parent_data_sources=[camera["id"]],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
-    data=image_files,
+    values=image_files,
 )
 
 dic = r3xa.add_data_source(
@@ -114,11 +114,11 @@ r3xa.add_image_set_list(
     title="DIC displacement fields",
     description="ux, uy per frame",
     path="dic/",
-    file_type="text/csv",
-    data_sources=[dic["id"]],
+    data_type="text/csv",
+    parent_data_sources=[dic["id"]],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
-    data=dic_files,
+    values=dic_files,
 )
 ```
 
@@ -150,7 +150,7 @@ camera = camera_base.merge(
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC (registry)",
     description="Camera acquisition + DIC processing pipeline (registry-based)",
-    authors="R3XA API",
+    authors=["R3XA API"],
     date="2024-10-30",
 )
 
@@ -165,11 +165,11 @@ images = r3xa.add_image_set_list(
     title="graylevel images",
     description="raw images from CCD camera",
     path="images/",
-    file_type="image/tiff",
-    data_sources=[camera["id"]],
+    data_type="image/tiff",
+    parent_data_sources=[camera["id"]],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
-    data=image_files,
+    values=image_files,
 )
 
 dic = pyxel_base.merge(
@@ -183,11 +183,11 @@ r3xa.add_image_set_list(
     title="DIC displacement fields",
     description="ux, uy per frame",
     path="dic/",
-    file_type="text/csv",
-    data_sources=[dic["id"]],
+    data_type="text/csv",
+    parent_data_sources=[dic["id"]],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
-    data=dic_files,
+    values=dic_files,
 )
 ```
 
@@ -268,6 +268,10 @@ Key ideas:
 
 This example writes:
 - `examples/artifacts/qi_hu_from_json_literal.json`
+
+The current graph baseline is stored in `examples/artifacts/baseline_qi/` and
+is generated from the current `2026.9.8` document. It is a visual
+non-regression fixture, not a compatibility reference for an older schema.
 
 ## DIC pipeline graph (from scratch example)
 SVG (Graphviz backend):

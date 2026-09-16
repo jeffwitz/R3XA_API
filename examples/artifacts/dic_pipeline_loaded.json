@@ -1,9 +1,9 @@
 {
     "title": "Open-hole tensile test with DIC (loaded example)",
     "description": "Camera acquisition + DIC processing pipeline",
-    "authors": "R3XA API",
+    "authors": ["R3XA API"],
     "date": "2024-10-30",
-    "version": "2024.7.1",
+    "version": "2026.9.8",
     "repository": "https://example.org/r3xa-api/demo",
     "settings": [
         {
@@ -115,8 +115,8 @@
             "title": "graylevel images",
             "description": "raw images from CCD camera",
             "path": "images/",
-            "file_type": "image/tiff",
-            "data_sources": [
+            "data_type": "image/tiff",
+            "parent_data_sources": [
                 "gpwojlubbxomeyrlimsmtaoq"
             ],
             "time_reference": {
@@ -133,7 +133,7 @@
                 1.5,
                 2.0
             ],
-            "data": [
+            "values": [
                 "img_0000.tif",
                 "img_0001.tif",
                 "img_0002.tif",
@@ -147,8 +147,8 @@
             "title": "DIC displacement fields",
             "description": "ux, uy per frame",
             "path": "dic/",
-            "file_type": "text/csv",
-            "data_sources": [
+            "data_type": "text/csv",
+            "parent_data_sources": [
                 "epjeqxqznutkbdhstnvlzstv"
             ],
             "time_reference": {
@@ -165,7 +165,7 @@
                 1.5,
                 2.0
             ],
-            "data": [
+            "values": [
                 "dic_0000.csv",
                 "dic_0001.csv",
                 "dic_0002.csv",

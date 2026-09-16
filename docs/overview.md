@@ -48,10 +48,10 @@ Required fields:
 Example:
 ```json
 {
-  "version": "2024.7.1",
+  "version": "2026.9.8",
   "title": "Hello World",
   "description": "Minimal R3XA file",
-  "authors": "JC Passieux",
+  "authors": ["JC Passieux"],
   "date": "2024-10-30",
   "settings": [],
   "data_sources": [],
@@ -128,11 +128,11 @@ Example (list of files):
   "title": "graylevel images",
   "description": "images taken by the CCD camera",
   "path": "images/",
-  "file_type": "image/tiff",
-  "data_sources": ["id3"],
+  "data_type": "image/tiff",
+  "parent_data_sources": ["id3"],
   "time_reference": {"kind": "unit", "title": "time_reference", "value": 0.0, "unit": "s", "scale": 1.0},
   "timestamps": [0.0, 1.0],
-  "data": ["img_0001.tif", "img_0002.tif"]
+  "values": ["img_0001.tif", "img_0002.tif"]
 }
 ```
 
@@ -143,11 +143,10 @@ Example (tabular files):
   "kind": "data_sets/file",
   "title": "force time series",
   "description": "force vs time",
-  "folder": "data/",
-  "data_sources": ["id3"],
-  "time_reference": 0.0,
+  "path": "data/",
+  "parent_data_sources": ["id3"],
   "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv"},
-  "data": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv"}
+  "values": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv"}
 }
 ```
 
@@ -160,7 +159,7 @@ from r3xa_api import R3XAFile, unit
 r3xa = R3XAFile(
     title="Hello World",
     description="Minimal R3XA file",
-    authors="JC Passieux",
+    authors=["JC Passieux"],
     date="2024-10-30",
 )
 
@@ -188,11 +187,11 @@ r3xa.add_image_set_list(
     title="graylevel images",
     description="images taken by the CCD camera",
     path="images/",
-    file_type="image/tiff",
-    data_sources=[camera["id"]],
+    data_type="image/tiff",
+    parent_data_sources=[camera["id"]],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
-    data=["img_0001.tif", "img_0002.tif"],
+    values=["img_0001.tif", "img_0002.tif"],
 )
 
 r3xa.validate()

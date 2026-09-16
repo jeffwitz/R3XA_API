@@ -1,8 +1,8 @@
 {
-    "version": "2024.7.1",
+    "version": "2026.9.8",
     "description": "Angle, couple",
     "title": "Essai torsion",
-    "authors": "Pauline",
+    "authors": ["Pauline"],
     "date": "2025-07-02",
     "settings": [
         {
@@ -156,22 +156,19 @@
             "kind": "data_sets/file",
             "title": "Rotation Torque",
             "description": "Torque of the glue stick before torsion",
-            "data_sources": [
+            "parent_data_sources": [
                 "iqydxqrfniyjwbdsebslqrdx"
             ],
-            "time_reference": 0.0,
             "timestamps": {
                 "filename": "resultats_angle&couple_rotation.csv",
                 "file_type": "csv",
                 "delimiter": ":",
-                "data_range": "A2:A63",
                 "kind": "data_set_file"
             },
-            "data": {
+            "values": {
                 "filename": "resultats_angle&couple_rotation.csv",
                 "file_type": "csv",
                 "delimiter": ":",
-                "data_range": "C2:C63",
                 "kind": "data_set_file"
             }
         },
@@ -180,20 +177,17 @@
             "kind": "data_sets/file",
             "title": "Rotation Angle",
             "description": "Rotation of the glue stick (before torsion)",
-            "data_sources": [
+            "parent_data_sources": [
                 "emmbeyekwhdrexughhlvufih"
             ],
-            "time_reference": 0.0,
             "timestamps": {
                 "filename": "resultats_angle&couple_rotation.csv",
                 "delimiter": ";",
-                "data_range": "A2;A63",
                 "kind": "data_set_file"
             },
-            "data": {
+            "values": {
                 "filename": "resultats_angle&couple_rotation.csv",
                 "delimiter": ";",
-                "data_range": "B2;B63",
                 "kind": "data_set_file"
             }
         },
@@ -202,20 +196,17 @@
             "kind": "data_sets/file",
             "title": "Torsion Angle",
             "description": "Angle of rotation of the glue stick (during torsion)",
-            "data_sources": [
+            "parent_data_sources": [
                 "emmbeyekwhdrexughhlvufih"
             ],
-            "time_reference": 0.0,
             "timestamps": {
                 "filename": "resultats_angle&couple_torsion.csv",
                 "delimiter": ";",
-                "data_range": "A2;A73",
                 "kind": "data_set_file"
             },
-            "data": {
+            "values": {
                 "filename": "resultats_angle&couple_torsion.csv",
                 "delimiter": ";",
-                "data_range": "B2;B73",
                 "kind": "data_set_file"
             }
         },
@@ -224,22 +215,19 @@
             "kind": "data_sets/file",
             "title": "Torsion Torque",
             "description": "Torque of the glue stick during torsion",
-            "data_sources": [
+            "parent_data_sources": [
                 "iqydxqrfniyjwbdsebslqrdx"
             ],
-            "time_reference": 0.0,
             "timestamps": {
                 "filename": "resultats_angle&couple_torsion.csv",
                 "file_type": "csv",
                 "delimiter": ";",
-                "data_range": "A2;A73",
                 "kind": "data_set_file"
             },
-            "data": {
+            "values": {
                 "filename": "resultats_angle&couple_torsion.csv",
                 "file_type": "csv",
                 "delimiter": ";",
-                "data_range": "C2;C73",
                 "kind": "data_set_file"
             }
         }

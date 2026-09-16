@@ -2,7 +2,7 @@ const defaultPayload = {
   title: "",
   description: "",
   version: "",
-  authors: "",
+  authors: [],
   date: "",
   settings: [],
   data_sources: [],
@@ -802,7 +802,7 @@ const defaultForField = (key, meta, payload) => {
   if (key === "output_dimension") {
     return meta.enum?.includes("surface") ? "surface" : meta.enum?.[0] || "";
   }
-  if (key === "data_sources") {
+  if (key === "parent_data_sources" || key === "attached_data_sources") {
     const sourceId = payload?.data_sources?.[0]?.id;
     return sourceId ? [sourceId] : [];
   }
@@ -854,7 +854,18 @@ const fieldControlValue = (control, meta) => {
   if (meta.type === "number" || meta.type === "integer") {
     return control.value === "" ? undefined : Number(control.value);
   }
+  if (Array.isArray(meta.type) && meta.type.includes("integer") && /^[-+]?\d+$/.test(control.value.trim())) {
+    return Number(control.value);
+  }
   return control.value;
+};
+
+const primitiveValue = (value, meta) => {
+  const types = Array.isArray(meta?.type) ? meta.type : [meta?.type];
+  if (value === "null" && types.includes("null")) return null;
+  if (types.includes("integer") && /^[-+]?\d+$/.test(value)) return Number(value);
+  if (types.includes("number") && value !== "" && Number.isFinite(Number(value))) return Number(value);
+  return value;
 };
 
 const isUnitMeta = (meta) => meta?.ref === "#/$defs/types/unit";
@@ -875,9 +886,9 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
   const labels = {
-    data_sources: t("field.related_data_sources", "Related data sources"),
+    parent_data_sources: t("field.parent_data_sources", "Parent data sources"),
     input_data_sets: t("field.input_data_sets", "Input data sets"),
-    associated_data_sources: t("field.associated_data_sources", "Associated data sources"),
+    attached_data_sources: t("field.attached_data_sources", "Attached data sources"),
   };
   label.textContent = `${labels[key] || meta.title || key}${options.required ? " *" : ""}`;
   const fieldId = options.id || `field-${key}`;
@@ -1246,7 +1257,7 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
   if (meta.type === "array" && (meta.items?.ref?.endsWith("data_set_id") || meta.items?.ref?.endsWith("data_source_id"))) {
     return renderReferenceField(container, key, meta, value, onChange, options);
   }
-  if (key === "data" && meta.type === "array" && meta.items?.type === "string" && options.path?.startsWith("data_sets/")) {
+  if (key === "values" && meta.type === "array" && meta.items?.type === "string" && options.path?.startsWith("data_sets/")) {
     return renderDataSetListField(container, key, meta, value, onChange, options);
   }
   const wrapper = document.createElement("div");
@@ -1315,7 +1326,7 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
     if (meta.const !== undefined) return;
     if (primitiveArray) {
       const parts = control.value.split(",").map((part) => part.trim()).filter(Boolean);
-      onChange(meta.items.type === "number" ? parts.map(Number) : parts);
+      onChange(parts.map((part) => primitiveValue(part, meta.items || {})));
       return;
     }
     if (complex) {
@@ -1390,7 +1401,7 @@ const validateItem = async (section, item, index) => {
     title: payload.title || "temp",
     description: payload.description || "temp",
     version: payload.version || schemaCatalog.schema_version,
-    authors: payload.authors || "temp",
+    authors: Array.isArray(payload.authors) ? payload.authors : [payload.authors || "temp"],
     date: payload.date || "2024-01-01",
     settings: [],
     data_sources: [],

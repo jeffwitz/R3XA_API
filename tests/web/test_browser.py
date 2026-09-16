@@ -96,7 +96,7 @@ def test_generic_profile_is_explicitly_free_form(page: Page, web_server: str) ->
 
 def test_generic_home_entry_starts_a_new_empty_document(page: Page, web_server: str) -> None:
     page.goto(web_server)
-    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Old draft', description: 'Old', authors: 'Old', date: '2026-01-01', version: '2024.7.1', settings: [{id: 'old', kind: 'settings/generic'}], data_sources: [], data_sets: []}))")
+    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Old draft', description: 'Old', authors: ['Old'], date: '2026-01-01', version: '2026.9.8', settings: [{id: 'old', kind: 'settings/generic'}], data_sources: [], data_sets: []}))")
     page.goto(f"{web_server}/edit?profile=generic&new=1")
     page.wait_for_function(
         """() => {
@@ -211,12 +211,12 @@ def test_adding_a_guided_item_does_not_overwrite_a_manual_relationship(page: Pag
     camera_step.get_by_role("button").click()
 
     payload = _payload(page)
-    machine_data = next(item for item in payload["data_sets"] if item.get("folder") == "machine/")
-    assert machine_data.get("data_sources") == []
+    machine_data = next(item for item in payload["data_sets"] if item.get("path") == "machine/")
+    assert machine_data.get("parent_data_sources") == []
 
 
 def test_schema_page_keeps_existing_draft(page: Page, web_server: str) -> None:
-    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Draft', description: 'Kept', authors: 'Tester', date: '2026-09-05', version: '2024.7.1', settings: [], data_sources: [], data_sets: []}))")
+    page.evaluate("localStorage.setItem('r3xaDraft', JSON.stringify({title: 'Draft', description: 'Kept', authors: ['Tester'], date: '2026-09-05', version: '2026.9.8', settings: [], data_sources: [], data_sets: []}))")
     page.goto(f"{web_server}/schema")
     page.wait_for_timeout(150)
     assert page.evaluate("localStorage.getItem('r3xaDraft')") is not None
@@ -227,9 +227,9 @@ def test_reloaded_renamed_items_are_recovered_from_dependencies(page: Page, web_
     page.wait_for_selector("#json-input", state="attached")
     payload = _payload(page)
     for item in payload["data_sets"]:
-        if item.get("folder") == "machine/":
+        if item.get("path") == "machine/":
             item["title"] = "Measured force and displacement"
-        if item.get("folder") == "dic/":
+        if item.get("path") == "dic/":
             item["title"] = "Computed displacement fields"
     page.locator("#json-input").evaluate(
         "(element, value) => { element.value = value; element.dispatchEvent(new Event('input', {bubbles: true})); }",
@@ -245,7 +245,7 @@ def test_folder_import_populates_and_naturally_sorts_data_files(page: Page, web_
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
     page.wait_for_selector(".guided-step")
     page.locator(".guided-step").filter(has_text="Images").click()
-    page.locator("#guided-images-template-data input[type=file]").evaluate(
+    page.locator("[id^='guided-images-template-'] input[type=file]").evaluate(
         """input => {
           const files = new DataTransfer();
           files.items.add(new File(['10'], 'image_10.tif', {type: 'image/tiff'}));
@@ -256,4 +256,4 @@ def test_folder_import_populates_and_naturally_sorts_data_files(page: Page, web_
     )
     payload = _payload(page)
     images = next(item for item in payload["data_sets"] if item.get("path") == "images/")
-    assert images["data"] == ["image_2.tif", "image_10.tif"]
+    assert images["values"] == ["image_2.tif", "image_10.tif"]

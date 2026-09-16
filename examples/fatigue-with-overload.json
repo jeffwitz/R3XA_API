@@ -1,6 +1,6 @@
 {
-  "version": "2024.7.1",
-  "authors": "G Bahaj Filali",
+  "version": "2026.9.8",
+  "authors": ["G Bahaj Filali"],
   "title": "Fatigue test with overload",
   "description": "Fatigue test with overload on SENT specimen made of Al-7%Si cast alloy",
   "date": "2023-06-01",
@@ -193,18 +193,17 @@
       "kind": "data_sets/file",
       "title": "Load and SIF for OVL1",
       "description": "Data for the first overload",
-      "folder": "OVL1",
-      "data_sources": [
+      "path": "OVL1",
+      "parent_data_sources": [
         "sxziirkvsuwhjapmjublvyrr",
         "xmyhkstghmhrsjjbheczwiue"
       ],
-      "time_reference": 24.0,
       "timestamps": {
         "filename": "time_stamps.csv",
         "delimiter": ";",
         "kind": "data_set_file"
       },
-      "data": {
+      "values": {
         "filename": "data_OVL1.csv",
         "delimiter": ",",
         "kind": "data_set_file"
@@ -215,9 +214,9 @@
       "kind": "data_sets/generic",
       "title": "Displacement amplitude",
       "description": "Displacement amplitude from FE-DIC using 20-pixel quadrangular elements and a first neighboor median filter",
-      "file_type": "xdmf",
+      "data_type": "xdmf",
       "path": "OVL1/deltaU_ovl_1.xdmf",
-      "data_sources": [
+      "parent_data_sources": [
         "bzcseozaegnsephtrsdystrm"
       ]
     },
@@ -227,8 +226,8 @@
       "title": "OVL1 images",
       "description": "Reference image and images acquired during OVL1.",
       "path": "OVL1/Images",
-      "file_type": "tiff",
-      "data_sources": [
+      "data_type": "tiff",
+      "parent_data_sources": [
         "ssivryngblydnhlpkbwdtkrh"
       ],
       "time_reference": {
@@ -249,7 +248,7 @@
         31.0,
         32.0
       ],
-      "data": [
+      "values": [
         "AA_CTIF_2023_07_ep_24b_000024",
         "AA_CTIF_2023_07_ep_24b_000025",
         "AA_CTIF_2023_07_ep_24b_000026",

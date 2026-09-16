@@ -104,7 +104,7 @@ from r3xa_api import R3XAFile, from_model, models
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
     description="Camera acquisition + DIC processing pipeline (typed)",
-    authors="R3XA API",
+    authors=["R3XA API"],
     date="2026-02-19",
 )
 
@@ -148,11 +148,11 @@ images = models.ImageSetList(
     title="graylevel images",
     description="raw images from CCD camera",
     path="images/",
-    file_type="image/tiff",
-    data_sources=[camera.id],
+    data_type="image/tiff",
+    parent_data_sources=[camera.id],
     time_reference=models.Unit(kind="unit", title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
-    data=image_files,
+    values=image_files,
 )
 r3xa.data_sets.append(from_model(images))
 
@@ -179,11 +179,11 @@ dic_data = models.ImageSetList(
     title="DIC displacement fields",
     description="ux, uy per frame",
     path="dic/",
-    file_type="text/csv",
-    data_sources=[dic_source.id],
+    data_type="text/csv",
+    parent_data_sources=[dic_source.id],
     time_reference=models.Unit(kind="unit", title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
-    data=dic_files,
+    values=dic_files,
 )
 r3xa.data_sets.append(from_model(dic_data))
 

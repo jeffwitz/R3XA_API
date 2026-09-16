@@ -34,9 +34,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "gl",
                     "title": "gl",
                     "value": 1.0,
-                    "unit": "gl",
                     "scale": 1.0
                 }
             ],
@@ -45,24 +45,24 @@
             "image_size": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "width",
                     "value": 640,
-                    "unit": "px",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "height",
                     "value": 512,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
             "image_scale": {
                 "kind": "unit",
+                "unit": "\u00b5m/px",
                 "title": "image_scale",
                 "value": 15,
-                "unit": "\u00b5m/px",
                 "scale": 1.0
             },
             "lens": "FLIR G1",
@@ -77,9 +77,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "gl",
                     "title": "gl",
                     "value": 1.0,
-                    "unit": "gl",
                     "scale": 1.0
                 }
             ],
@@ -88,16 +88,16 @@
             "image_size": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "width",
                     "value": 5400,
-                    "unit": "px",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "height",
                     "value": 4400,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
@@ -113,9 +113,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "N",
                     "title": "N",
                     "value": 1.0,
-                    "unit": "N",
                     "scale": 1.0
                 }
             ],
@@ -132,9 +132,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "N",
                     "title": "N",
                     "value": 1.0,
-                    "unit": "N",
                     "scale": 1.0
                 }
             ],
@@ -155,9 +155,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "\u00b0C",
                     "title": "\u00b0C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
                     "scale": 1.0
                 }
             ],
@@ -178,9 +178,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "px",
                     "title": "px",
                     "value": 1.0,
-                    "unit": "px",
                     "scale": 1.0
                 }
             ],
@@ -200,9 +200,9 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "\u00b0C",
                     "title": "\u00b0C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
                     "scale": 1.0
                 }
             ],
@@ -223,16 +223,16 @@
             "output_units": [
                 {
                     "kind": "unit",
+                    "unit": "\u00b0C",
                     "title": "\u00b0C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
                     "scale": 1.0
                 },
                 {
                     "kind": "unit",
+                    "unit": "%",
                     "title": "%",
                     "value": 1.0,
-                    "unit": "%",
                     "scale": 1.0
                 }
             ],
@@ -258,9 +258,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -806,9 +806,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [],
@@ -2619,9 +2619,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -2709,14 +2709,20 @@
                 "filename": "1_serie_2450N/Traction_1.csv",
                 "delimiter": ",",
                 "col": 0,
-                "rows": [1, 183799]
+                "rows": [
+                    1,
+                    183799
+                ]
             },
             "values": {
                 "kind": "data_set_file",
                 "filename": "Traction_1.csv",
                 "delimiter": ",",
                 "col": 1,
-                "rows": [1, 183799]
+                "rows": [
+                    1,
+                    183799
+                ]
             },
             "kind": "data_sets/file"
         },
@@ -2731,9 +2737,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -2882,9 +2888,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -2969,9 +2975,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [],
@@ -3253,9 +3259,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
@@ -3403,9 +3409,9 @@
             ],
             "time_reference": {
                 "kind": "unit",
+                "unit": "s",
                 "title": "time_reference",
                 "value": 0.0,
-                "unit": "s",
                 "scale": 1.0
             },
             "timestamps": [
