@@ -25,3 +25,13 @@ def test_validation_report_invalid() -> None:
     assert report["errors"]
     error = report["errors"][0]
     assert {"path", "message", "user_message", "validator", "schema_path"} <= set(error.keys())
+
+
+def test_validation_report_includes_integrity_errors() -> None:
+    payload = _load_example()
+    payload["data_sets"][0]["parent_data_sources"] = ["missing-source"]
+
+    report = build_validation_report(payload)
+
+    assert report["valid"] is False
+    assert any(error["validator"] == "integrity" for error in report["errors"])

@@ -28,8 +28,8 @@ from r3xa_api.webcore import build_validation_report, build_schema_summary
 ```
 
 ## Stability policy
-- Symbols documented on this page define the supported public SDK for the 1.x series.
-- Compatibility helpers remain available throughout the 1.x series and will not be removed before `2.0`.
+- Symbols documented on this page define the supported public SDK for the 2.x series.
+- Compatibility helpers may remain importable, but they do not restore source or document compatibility with pre-2.0 releases.
 - Guided helpers (`add_<kind>_setting/source/data_set`) are part of the public contract and are tested against the schema-derived required fields.
 - Undocumented module internals may evolve more freely.
 
@@ -278,7 +278,7 @@ new_camera.validate().save()
 Validate a single item against its schema definition (e.g. `data_sources/camera`).
 
 This function is part of the advanced compatibility helper layer. It remains supported in the
-1.x series, but for end-user workflows the recommended entry points are `RegistryItem.validate(...)`
+2.x series, but for end-user workflows the recommended entry points are `RegistryItem.validate(...)`
 and `Registry.validate(...)`.
 
 ### Advanced
@@ -306,7 +306,16 @@ Load the embedded schema (or a custom path).
 Extract the schema version.
 
 ### `validate(instance: dict, schema: dict | None = None) -> None`
-Validate a JSON instance against the schema.
+Validate a complete JSON instance against the schema and its semantic integrity rules.
+This includes duplicate identifiers, dangling dependency references, real calendar dates,
+and author/ORCID count consistency.
+
+### `integrity_errors(instance: Mapping[str, Any]) -> list[str]`
+Return semantic integrity errors without raising. Use this when an application needs to
+display or combine the errors with its own diagnostics.
+
+### `validate_integrity(instance: Mapping[str, Any]) -> None`
+Validate semantic integrity independently of JSON Schema validation.
 
 ## Related pages
 This page stays focused on the core SDK contract.

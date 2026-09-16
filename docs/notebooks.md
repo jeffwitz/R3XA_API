@@ -74,7 +74,7 @@ In the notebook:
 ## 2) MyBinder (public interactive run)
 
 Open:
-- [Launch notebook on MyBinder](https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v1.5.4?urlpath=proxy/2718/)
+- [Launch notebook on MyBinder](https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc1?urlpath=proxy/2718/)
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

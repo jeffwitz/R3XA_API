@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0rc1] - 2026-09-16
+- Release candidate for the breaking R3XA schema/API line based on schema `2026.9.8`.
+- Breaking schema alignment: authors are arrays, dataset provenance uses `parent_data_sources`, settings use `attached_data_sources`, dataset payloads use `data_type` and `values`, and file ranges use `col`/`rows`.
+- No source or document compatibility with the pre-2.0 schema is provided on `develop`; migrate existing documents before using this release candidate.
+- CI: validate the installed wheel with the current array-based `authors` header.
+
 ## [1.6.0.dev0] - 2026-04-04
 - Web UI: harden Guided template review with per-field confirmation, profile-scoped state, dependency-based role recovery, persistent drafts, folder import for file sequences, profile-first home page, French/English interface labels, and browser workflow tests.
 - Schema: synchronize non-empty top-level `title`, `description`, and `authors` constraints from `R3XA_SPEC`.

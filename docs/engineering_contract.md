@@ -137,7 +137,7 @@ The current contract is:
 
 - there is a guided helper for each `kind` supported by the runtime schema;
 - required fields are derived from the schema;
-- helper names follow a stable rule in `1.x`.
+- helper names follow a stable rule in `2.x`.
 
 ### 2.6. Compatibility helpers still exist, but they are no longer the recommended path
 
@@ -152,12 +152,12 @@ Some functions still exist for compatibility:
 - `Registry.get(...)`
 - `Registry.get_validated(...)`
 
-They remain usable during the `1.x` series, but they are no longer the preferred entry points for new code.
+They remain usable during the `2.x` series where implemented, but they are no longer the preferred entry points for new code and do not translate pre-2.0 schema fields.
 
 The practical rule is:
 
 - **new code** → use `load(...)`, `load_validated(...)`, `get_item(...)`, `RegistryItem`
-- **older code** → remains supported without immediate breakage
+- **older code** → must be migrated to the 2.x field names and call signatures
 
 ### 2.7. Validation is not optional in the project philosophy
 
@@ -165,6 +165,8 @@ R3XA_API is built around a JSON schema. Validation guarantees:
 
 - presence of required fields,
 - type consistency,
+- unique identifiers and resolvable data dependencies,
+- valid calendar dates and consistent author/ORCID metadata,
 - interoperability of metadata,
 - reuse of files by other teams.
 
@@ -267,7 +269,7 @@ Today, guided helpers are still generated dynamically.
 
 This is not a bug.
 
-It is a reasonable `1.x` compromise:
+It is a reasonable `2.x` compromise:
 
 - the schema drives the helpers,
 - behavior is tested,
@@ -298,20 +300,19 @@ This serves two purposes:
 1. reduce noise for new users;
 2. prevent internal details from becoming “public by accident”.
 
-### 3.7. Stability policy for the `1.x` series
+### 3.7. Stability policy for the `2.x` series
 
-The project follows a pragmatic policy:
+The project follows a pragmatic policy for the current breaking line:
 
 - what is documented in `docs/api.md` is part of the public contract;
-- compatibility helpers remain available during `1.x`;
-- they must not disappear abruptly before `2.0`;
-- `main` and release tags (`v1.x.y`, etc.) carry stable releases;
+- compatibility helpers may remain available during `2.x`, but do not provide pre-2.0 schema compatibility;
+- `main` and release tags (`v2.x.y`, etc.) carry stable releases;
 - `develop` carries preparation work for the next version.
 
 In short:
 
-- `main` = stable
-- `develop` = ongoing work
+- `main` = stable release line
+- `develop` = current `2.x` development line
 
 ### 3.8. What developers must do before a release
 
@@ -364,13 +365,13 @@ But:
 - it matches `kind="unit"` in the schema,
 - renaming it abruptly would cost more than it would bring.
 
-The correct `1.x` strategy is therefore stability, not renaming for its own sake.
+The correct `2.x` strategy is therefore explicit contracts, not silent compatibility for its own sake.
 
 ### “Why keep some helpers if they are no longer recommended?”
 
 Because a serious API does not break existing users abruptly.
 
-Keeping compatibility aliases during the `1.x` series makes it possible to improve the library without punishing historical usage patterns.
+Keeping selected compatibility aliases during the `2.x` series can ease migration, but they do not make pre-2.0 documents or field names valid.
 
 
 ## 5. Structural decisions to keep in mind
@@ -378,7 +379,7 @@ Keeping compatibility aliases during the `1.x` series makes it possible to impro
 ### For users
 
 - use the documented workflows first;
-- use stable tags (`v1.x.y`, for example the latest stable release tag) if you want a frozen behavior;
+- use stable tags (`v2.x.y`, for example the latest stable release tag) if you want a frozen behavior;
 - treat `develop` as a preparation branch, not as a release.
 
 ### For developers

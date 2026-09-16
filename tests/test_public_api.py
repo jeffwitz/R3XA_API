@@ -16,6 +16,8 @@ def test_public_api_surface() -> None:
         "load_schema",
         "schema_version",
         "validate",
+        "integrity_errors",
+        "validate_integrity",
         "Registry",
         "RegistryItem",
         "models",

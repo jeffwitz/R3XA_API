@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 import jsonschema
 
 from ..schema import load_schema
+from ..validate import integrity_errors
 
 
 def _path_to_string(path: Any) -> str:
@@ -53,9 +54,6 @@ def build_validation_report(
     validator = jsonschema.validators.Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(instance), key=jsonschema.exceptions.relevance)
 
-    if not errors:
-        return {"valid": True, "errors": []}
-
     report_errors: List[Dict[str, Any]] = []
     for error in errors:
         report_errors.append(
@@ -68,4 +66,17 @@ def build_validation_report(
             }
         )
 
-    return {"valid": False, "errors": report_errors}
+    if not errors:
+        for message in integrity_errors(instance):
+            path, separator, detail = message.partition(": ")
+            report_errors.append(
+                {
+                    "path": path if separator else "",
+                    "message": detail if separator else message,
+                    "user_message": detail if separator else message,
+                    "validator": "integrity",
+                    "schema_path": "#/integrity",
+                }
+            )
+
+    return {"valid": not report_errors, "errors": report_errors}
