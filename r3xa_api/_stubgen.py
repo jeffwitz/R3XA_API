@@ -133,6 +133,7 @@ def render_core_stub() -> str:
             "        path: str | Path,",
             "        *,",
             "        backend: str = ...,",
+            "        palette: str | None = ...,",
             "        include_description: bool = ...,",
             "        **kwargs: Any,",
             "    ) -> Path: ...",

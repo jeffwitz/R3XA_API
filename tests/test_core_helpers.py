@@ -380,3 +380,51 @@ def test_printing_a_document_directly_shows_its_summary() -> None:
     assert repr(document) == document.summary()
     assert "R3XA File" in str(document)
     assert "object at 0x" not in repr(document)
+
+
+def _document_with_every_section() -> R3XAFile:
+    """A document covering all three sections, so every palette slot is drawn."""
+
+    document = _document_with_items()
+    source_id = document.data_sources[0]["id"]
+    document.add_file_data_set(
+        title="graylevel images",
+        description="images",
+        parent_data_sources=[source_id],
+        time_reference=unit(title="t0", value=0.0, unit="s"),
+        timestamps=data_set_file(filename="timestamps.csv", file_type="text/csv"),
+        values=data_set_file(filename="images.csv", file_type="text/csv"),
+    )
+    return document
+
+
+def test_palette_option_applies_to_every_backend(tmp_path) -> None:
+    pytest.importorskip("graphviz")
+    document = _document_with_every_section()
+    ochre, crimson, teal = "c4894f", "bf0040", "038181"
+
+    default_svg = document.plot(tmp_path / "default").read_text(encoding="utf-8").lower()
+    document_svg = document.plot(
+        tmp_path / "document", palette="document"
+    ).read_text(encoding="utf-8").lower()
+
+    # The palette swaps the colours wholesale rather than mixing the two.
+    assert "2b587a" in default_svg and ochre not in default_svg
+    assert all(colour in document_svg for colour in (ochre, crimson, teal))
+    assert "2b587a" not in document_svg
+
+
+def test_palette_option_reaches_pyvis(tmp_path) -> None:
+    pytest.importorskip("pyvis")
+    document = _document_with_items()
+
+    html = document.plot(
+        tmp_path / "graph", backend="pyvis", palette="document"
+    ).read_text(encoding="utf-8").lower()
+
+    assert "c4894f" in html
+
+
+def test_palette_rejects_an_unknown_name(tmp_path) -> None:
+    with pytest.raises(ValueError, match="Unknown palette"):
+        _document_with_items().plot(tmp_path / "graph", palette="nope")

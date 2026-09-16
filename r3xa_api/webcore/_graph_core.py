@@ -57,6 +57,88 @@ STYLES = {
 }
 
 
+# J-C. Passieux's document palette: ochre settings, crimson data sources, teal
+# data sets. His renderer filled each box solidly and drew white text on top,
+# but node text colour is not controllable across all three backends here, so
+# the hue moves to the border over a light tint of itself - the same convention
+# the default palette already follows. Shapes are unchanged: only colour differs.
+DOCUMENT_STYLES = {
+    "settings": {
+        "root": {
+            "shape": "hexagon",
+            "fillcolor": "#f5e9dc",
+            "color": "#c4894f",
+            "style": "filled",
+            "penwidth": "3",
+        },
+    },
+    "data_sources": {
+        "initial": {
+            "shape": "ellipse",
+            "fillcolor": "white",
+            "color": "#bf0040",
+            "style": "filled",
+            "penwidth": "4",
+        },
+        "intermediate": {
+            "shape": "ellipse",
+            "fillcolor": "#f8dde6",
+            "color": "#bf0040",
+            "style": "filled",
+            "penwidth": "2",
+        },
+    },
+    "data_sets": {
+        "intermediate": {
+            "shape": "box",
+            "fillcolor": "#d9f0f0",
+            "color": "#038181",
+            "style": "filled",
+            "penwidth": "2",
+        },
+        "final": {
+            "shape": "box",
+            "fillcolor": "#a7dcdc",
+            "color": "#038181",
+            "style": "filled",
+            "penwidth": "6",
+        },
+    },
+    "edges": {
+        "setting": {"color": "#c4894f", "style": "dashed"},
+        "data_initial": {"color": "#555555"},
+        "data": {"color": "#555555"},
+        "input": {"color": "#555555"},
+    },
+}
+
+
+PALETTES: Dict[str, Dict[str, Any]] = {
+    "default": STYLES,
+    "document": DOCUMENT_STYLES,
+}
+
+
+def resolve_styles(
+    palette: str | None = None,
+    styles: Dict[str, Any] | None = None,
+) -> Dict[str, Any]:
+    """Return the style table for a palette name, or an explicit override.
+
+    `styles` wins when given, so a caller can still pass a bespoke table.
+    """
+
+    if styles is not None:
+        return styles
+    name = palette or "default"
+    try:
+        return PALETTES[name]
+    except KeyError:
+        raise ValueError(
+            f"Unknown palette {name!r}. Available: {', '.join(sorted(PALETTES))}"
+        ) from None
+
+
 @dataclass(frozen=True)
 class EdgeRecord:
     """Directed edge between two graph nodes with style category."""

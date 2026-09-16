@@ -231,6 +231,7 @@ class R3XAFile:
         path: str | Path,
         *,
         backend: str = ...,
+        palette: str | None = ...,
         include_description: bool = ...,
         **kwargs: Any,
     ) -> Path: ...

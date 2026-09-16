@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from ._graph_core import (
-    STYLES,
+    resolve_styles,
     build_graph_model,
     compute_graphviz_positions,
     compute_manual_positions,
@@ -116,6 +116,7 @@ def render_networkx_matplotlib_file(
     dpi: int = 220,
     layout_config: NetworkXLayoutConfig | None = None,
     include_description: bool = True,
+    palette: str | None = None,
 ) -> Path:
     """Render a static graph image with NetworkX + Matplotlib."""
 
@@ -135,7 +136,7 @@ def render_networkx_matplotlib_file(
         raise ValueError("Unsupported format. Use one of: png, svg, pdf.")
     config = layout_config or DEFAULT_LAYOUT_CONFIG
 
-    styles = STYLES
+    styles = resolve_styles(palette)
     model = build_graph_model(data)
     node_ids = model.node_ids
     graph = nx.DiGraph()

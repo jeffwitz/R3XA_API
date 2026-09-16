@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from ._graph_core import (
-    STYLES,
+    resolve_styles,
     build_graph_model,
     compute_graphviz_positions,
     compute_manual_positions,
@@ -36,7 +36,12 @@ PYVIS_OPTIONS = {
 }
 
 
-def render_pyvis_html(data: Dict[str, Any], output_path: Path, include_description: bool = True) -> Path:
+def render_pyvis_html(
+    data: Dict[str, Any],
+    output_path: Path,
+    include_description: bool = True,
+    palette: str | None = None,
+) -> Path:
     """Render an interactive PyVis HTML graph from an R3XA payload."""
 
     try:
@@ -44,7 +49,7 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path, include_descripti
     except Exception as exc:  # pragma: no cover - depends on optional dependency
         raise RuntimeError("Graph feature not available (pyvis not installed).") from exc
 
-    styles = graphviz_styles_to_pyvis(STYLES)
+    styles = graphviz_styles_to_pyvis(resolve_styles(palette))
     model = build_graph_model(data)
 
     node_labels: Dict[str, str] = {}

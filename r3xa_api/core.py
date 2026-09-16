@@ -429,6 +429,7 @@ class R3XAFile:
         path: str | Path,
         *,
         backend: str = "graphviz",
+        palette: str | None = None,
         include_description: bool = True,
         **kwargs: Any,
     ) -> Path:
@@ -438,6 +439,9 @@ class R3XAFile:
         HTML) or "matplotlib" (PNG). Each needs its optional dependency, so the
         import happens here rather than at module import time. The extension is
         supplied by the backend; the returned path is the file actually written.
+
+        `palette` selects the colours, identically for every backend: "default",
+        or "document" for J-C. Passieux's ochre/crimson/teal scheme.
         """
 
         from .webcore import graph as _graph
@@ -461,7 +465,11 @@ class R3XAFile:
             output = output.with_suffix("")
 
         return renderers[backend](
-            self.to_dict(), output, include_description=include_description, **kwargs
+            self.to_dict(),
+            output,
+            include_description=include_description,
+            palette=palette,
+            **kwargs,
         )
 
     def save(self, path: str | Path, indent: int = 4, validate: bool = True) -> Path:
