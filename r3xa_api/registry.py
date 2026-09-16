@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterator, Optional
 
 import jsonschema
 
+from .core import R3XAItem
 from .schema import load_schema
 
 
@@ -18,11 +19,15 @@ def _coerce_item_payload(item: Mapping[str, Any] | RegistryItem) -> Dict[str, An
     return dict(item)
 
 
-def load_item(path: str | Path) -> Dict[str, Any]:
-    """Load a JSON registry item from disk."""
+def load_item(path: str | Path) -> R3XAItem:
+    """Load a JSON registry item from disk.
+
+    Returns an `R3XAItem`, so a loaded item prints, validates and saves like
+    one built in memory - `save()` and `load_item()` are symmetric.
+    """
 
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        return R3XAItem(json.load(f))
 
 
 def save_item(

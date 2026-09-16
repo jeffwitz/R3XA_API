@@ -137,6 +137,7 @@ def render_networkx_matplotlib_file(
     config = layout_config or DEFAULT_LAYOUT_CONFIG
 
     styles = resolve_styles(palette)
+    font_colors: Dict[str, str] = {}
     model = build_graph_model(data)
     node_ids = model.node_ids
     graph = nx.DiGraph()
@@ -168,6 +169,7 @@ def render_networkx_matplotlib_file(
         if not setting_id:
             continue
         style = styles["settings"]["root"]
+        font_colors[setting_id] = style.get("fontcolor", "#333333")
         node_shapes[setting_id] = style["shape"]
         node_style_map[setting_id] = style
         node_labels[setting_id] = _format_static_label(
@@ -183,6 +185,7 @@ def render_networkx_matplotlib_file(
             continue
         is_intermediate = source_id in model.intermediate_sources
         style = styles["data_sources"]["intermediate" if is_intermediate else "initial"]
+        font_colors[source_id] = style.get("fontcolor", "#333333")
         node_shapes[source_id] = "ellipse"
         node_style_map[source_id] = style
         node_labels[source_id] = _format_static_label(
@@ -198,6 +201,7 @@ def render_networkx_matplotlib_file(
             continue
         is_intermediate = dataset_id in model.used_datasets
         style = styles["data_sets"]["intermediate" if is_intermediate else "final"]
+        font_colors[dataset_id] = style.get("fontcolor", "#333333")
         node_shapes[dataset_id] = "box"
         node_style_map[dataset_id] = style
         node_labels[dataset_id] = _format_static_label(
@@ -820,7 +824,8 @@ def render_networkx_matplotlib_file(
             va="center",
             fontsize=font_sizes.get(node_id, 11.0),
             linespacing=1.20,
-            color="#333333",
+            # Per node, so a solid-fill palette can ask for white text.
+            color=font_colors.get(node_id, "#333333"),
             zorder=3,
         )
 

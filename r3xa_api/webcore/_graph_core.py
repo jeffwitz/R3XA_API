@@ -57,55 +57,46 @@ STYLES = {
 }
 
 
-# J-C. Passieux's document palette: ochre settings, crimson data sources, teal
-# data sets. His renderer filled each box solidly and drew white text on top,
-# but node text colour is not controllable across all three backends here, so
-# the hue moves to the border over a light tint of itself - the same convention
-# the default palette already follows. Shapes are unchanged: only colour differs.
+# J-C. Passieux's document palette, and the default: solid fills with white
+# text, no visible outline. Hue marks the section, shade marks the position in
+# the chain, since there is no border left to carry that.
+#
+# The settings fill is a darkened ochre rather than his #c4894f: white text on
+# that original gives a 2.98 contrast ratio, well under the 4.5 WCAG AA
+# threshold. #9a6636 keeps the hue and reaches 4.85, so the whole palette can
+# stay white-on-colour instead of switching text colour per section.
+_OCHRE, _CRIMSON, _TEAL = "#9a6636", "#bf0040", "#038181"
+_CRIMSON_DEEP, _TEAL_DEEP = "#8c002f", "#026060"
+_WHITE = "#ffffff"
+
+
+def _solid(shape: str, fill: str, penwidth: str = "1") -> Dict[str, Any]:
+    """A filled node with no contrasting outline and white text."""
+
+    return {
+        "shape": shape,
+        "fillcolor": fill,
+        "color": fill,
+        "fontcolor": _WHITE,
+        "style": "filled",
+        "penwidth": penwidth,
+    }
+
+
 DOCUMENT_STYLES = {
-    "settings": {
-        "root": {
-            "shape": "hexagon",
-            "fillcolor": "#f5e9dc",
-            "color": "#c4894f",
-            "style": "filled",
-            "penwidth": "3",
-        },
-    },
+    "settings": {"root": _solid("hexagon", _OCHRE)},
     "data_sources": {
-        "initial": {
-            "shape": "ellipse",
-            "fillcolor": "white",
-            "color": "#bf0040",
-            "style": "filled",
-            "penwidth": "4",
-        },
-        "intermediate": {
-            "shape": "ellipse",
-            "fillcolor": "#f8dde6",
-            "color": "#bf0040",
-            "style": "filled",
-            "penwidth": "2",
-        },
+        # An initial source - one nothing feeds - is the deeper shade.
+        "initial": _solid("ellipse", _CRIMSON_DEEP),
+        "intermediate": _solid("ellipse", _CRIMSON),
     },
     "data_sets": {
-        "intermediate": {
-            "shape": "box",
-            "fillcolor": "#d9f0f0",
-            "color": "#038181",
-            "style": "filled",
-            "penwidth": "2",
-        },
-        "final": {
-            "shape": "box",
-            "fillcolor": "#a7dcdc",
-            "color": "#038181",
-            "style": "filled",
-            "penwidth": "6",
-        },
+        "intermediate": _solid("box", _TEAL),
+        # A data set nothing consumes is a result: deeper shade again.
+        "final": _solid("box", _TEAL_DEEP),
     },
     "edges": {
-        "setting": {"color": "#c4894f", "style": "dashed"},
+        "setting": {"color": _OCHRE, "style": "dashed"},
         "data_initial": {"color": "#555555"},
         "data": {"color": "#555555"},
         "input": {"color": "#555555"},
@@ -114,9 +105,11 @@ DOCUMENT_STYLES = {
 
 
 PALETTES: Dict[str, Dict[str, Any]] = {
-    "default": STYLES,
     "document": DOCUMENT_STYLES,
+    "classic": STYLES,
 }
+
+DEFAULT_PALETTE = "document"
 
 
 def resolve_styles(
@@ -130,7 +123,7 @@ def resolve_styles(
 
     if styles is not None:
         return styles
-    name = palette or "default"
+    name = palette or DEFAULT_PALETTE
     try:
         return PALETTES[name]
     except KeyError:
@@ -603,6 +596,9 @@ def graphviz_styles_to_pyvis(styles: Dict[str, Any] | None = None) -> Dict[str, 
                     "background": attrs.get("fillcolor", "lightgrey"),
                 },
                 "shape": attrs.get("shape", "ellipse"),
+                # Carried through so a solid-fill palette can put white text
+                # on its nodes, like Graphviz does natively.
+                "font": {"color": attrs.get("fontcolor", "#333333")},
             }
 
     for edge_type, attrs in graphviz_styles["edges"].items():

@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- Settings and data sources can be built on their own: `new_testing_machine_setting(...)` mirrors `document.add_testing_machine_setting(...)` for every schema kind, with no document to invent. Add one later with `document.settings += [item]`.
+- `new_item()` and `load_item()` return `R3XAItem` instead of a bare dictionary, so building, saving and loading an item all give the same object with `print()`, `validate()` and `save()`.
+- `document.print()` lists authors by name rather than dumping their affiliation and ORCID.
+- Item listings resolve references to the title they point at - `parent_data_sources`, `input_data_sets`, `attached_data_sources` and `mesh` - discovered from the schema, so a reference added later is resolved too. A standalone item still shows the identifier, having no document to resolve against.
+- The `document` palette becomes the default and switches to solid fills with white text and no outline; the previous scheme is available as `palette="classic"`. Its settings fill is a darkened ochre so white text clears the WCAG AA contrast threshold.
 - **Schema `2026.9.17`**: identifiers document their flat namespace with `stg-`/`src-`/`set-` examples (no pattern imposed, so existing ids stay valid); data sets gain an optional `data_origin` (`raw` | `derived`); the specimen mesh moves to `settings/specimen.mesh` and `dic_measurement.mesh` now references a setting id; `parent_data_sources` is no longer required on `data_sets/file` and `data_sets/list`.
 - **Breaking, schema `2026.9.16`**: `authors` is an array of `{name, affiliation, orcid}` objects and `author_orcids` is removed. The former parallel array could not express "one ORCID per author" in the schema, so the invariant lived in a Python check and any other consumer accepted a mismatched document. It is now structural, and an affiliation became representable.
 - Added the `author(name, affiliation=None, orcid=None)` helper, and `r3xa.author(...)` on the MATLAB side.

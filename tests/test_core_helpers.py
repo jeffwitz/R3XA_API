@@ -400,31 +400,47 @@ def _document_with_every_section() -> R3XAFile:
     return document
 
 
-def test_palette_option_applies_to_every_backend(tmp_path) -> None:
+def test_document_palette_is_the_default(tmp_path) -> None:
     pytest.importorskip("graphviz")
+    from r3xa_api.webcore._graph_core import DEFAULT_PALETTE, PALETTES
+
+    assert DEFAULT_PALETTE == "document"
     document = _document_with_every_section()
-    ochre, crimson, teal = "c4894f", "bf0040", "038181"
 
-    default_svg = document.plot(tmp_path / "default").read_text(encoding="utf-8").lower()
-    document_svg = document.plot(
-        tmp_path / "document", palette="document"
-    ).read_text(encoding="utf-8").lower()
+    implicit = document.plot(tmp_path / "implicit").read_text(encoding="utf-8").lower()
+    explicit = document.plot(tmp_path / "explicit", palette="document").read_text(encoding="utf-8").lower()
+    classic = document.plot(tmp_path / "classic", palette="classic").read_text(encoding="utf-8").lower()
 
-    # The palette swaps the colours wholesale rather than mixing the two.
-    assert "2b587a" in default_svg and ochre not in default_svg
-    assert all(colour in document_svg for colour in (ochre, crimson, teal))
-    assert "2b587a" not in document_svg
+    ochre = PALETTES["document"]["settings"]["root"]["fillcolor"].lstrip("#").lower()
+    blue = PALETTES["classic"]["settings"]["root"]["fillcolor"].lstrip("#").lower()
+
+    # Colours are read from the tables rather than retyped, so tweaking a shade
+    # does not silently invalidate the test.
+    assert ochre in implicit and ochre in explicit
+    assert blue in classic and ochre not in classic
 
 
-def test_palette_option_reaches_pyvis(tmp_path) -> None:
+def test_document_palette_is_solid_with_white_text(tmp_path) -> None:
+    from r3xa_api.webcore._graph_core import PALETTES
+
+    for section, variants in PALETTES["document"].items():
+        if section == "edges":
+            continue
+        for name, style in variants.items():
+            # No contrasting outline, and text legible on the fill.
+            assert style["color"] == style["fillcolor"], f"{section}/{name}"
+            assert style["fontcolor"] == "#ffffff", f"{section}/{name}"
+
+
+def test_palette_font_colour_reaches_pyvis(tmp_path) -> None:
     pytest.importorskip("pyvis")
-    document = _document_with_items()
 
-    html = document.plot(
-        tmp_path / "graph", backend="pyvis", palette="document"
+    html = _document_with_every_section().plot(
+        tmp_path / "graph", backend="pyvis"
     ).read_text(encoding="utf-8").lower()
 
-    assert "c4894f" in html
+    # Graphviz honours `fontcolor` natively; PyVis needs it mapped to font.color.
+    assert '"color": "#ffffff"' in html
 
 
 def test_palette_rejects_an_unknown_name(tmp_path) -> None:

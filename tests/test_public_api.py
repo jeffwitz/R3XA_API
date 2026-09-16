@@ -30,9 +30,26 @@ def test_public_api_surface() -> None:
     exports = set(r3xa_api.__all__)
 
     assert BASE_EXPORTS <= exports
-    # Beyond the base surface, only the generated model classes are exported.
-    extra = exports - BASE_EXPORTS
-    assert extra == (set(r3xa_api.models.__all__) - BASE_EXPORTS if r3xa_api.typed_available else set())
+
+    # Beyond the base surface, only two families are exported: the standalone
+    # item builders generated from the schema, and - when pydantic is
+    # installed - the generated model classes.
+    builders = set(r3xa_api.core.GUIDED_BUILDERS)
+    models = set(r3xa_api.models.__all__) if r3xa_api.typed_available else set()
+
+    assert exports - BASE_EXPORTS == (builders | models) - BASE_EXPORTS
+    assert all(name.startswith("new_") for name in builders)
+
+
+def test_standalone_builders_mirror_the_guided_helpers() -> None:
+    # Every `document.add_x(...)` has a `new_x(...)` building the same item
+    # without a document, so a setting or a source can exist on its own.
+    for kind, spec in _guided_kind_specs().items():
+        helper = spec["helper_name"]
+        builder = "new_" + helper[len("add_"):]
+        assert hasattr(R3XAFile, helper)
+        assert callable(getattr(r3xa_api, builder))
+        assert r3xa_api.core.GUIDED_BUILDERS[builder] == kind
 
 
 def test_generated_models_are_exported_at_package_level() -> None:

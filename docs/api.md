@@ -153,27 +153,30 @@ Render the item graph and return the file written. `backend` is `"graphviz"` (SV
 The extension comes from the backend, so pass a path without one.
 
 **Colour palettes.** `palette` selects the colour scheme and applies identically to all three
-backends. Two are available:
+backends. Two are available, `"document"` being the default:
 
-| `palette` | Settings | Data sources | Data sets |
-|---|---|---|---|
-| `"default"` | blue hexagons | green / blue ellipses | grey / salmon boxes |
-| `"document"` | ochre `#c4894f` | crimson `#bf0040` | teal `#038181` |
+| `palette` | Settings | Data sources | Data sets | Look |
+|---|---|---|---|---|
+| `"document"` (default) | ochre `#9a6636` | crimson `#bf0040` | teal `#038181` | solid fills, white text, no outline |
+| `"classic"` | blue | green / blue | grey / salmon | light fills with a contrasting outline |
 
-`"document"` is J-C. Passieux's scheme, meant for figures going into a printed document. In both
-palettes the hue marks the section, while the emphasis marks the position in the chain: a data
-source with no input keeps a white fill and a thicker border, and a data set nothing consumes is
-drawn with the heaviest border.
+`"document"` is J-C. Passieux's scheme for figures going into a printed document. The hue marks
+the section and the shade marks the position in the chain: a data source nothing feeds, and a data
+set nothing consumes, are drawn one shade deeper.
+
+The settings fill is a darkened ochre rather than the original `#c4894f`: white text on that
+colour reaches a contrast ratio of only 2.98, below the 4.5 WCAG AA threshold. `#9a6636` keeps the
+hue and reaches 4.85, so the whole palette can stay white-on-colour.
 
 ```python
 from r3xa_api import R3XAFile
 
 document = R3XAFile.load("experiment.json")
 
-document.plot("graph")                                 # graph.svg, default palette
-document.plot("graph-doc", palette="document")         # graph-doc.svg
-document.plot("graph", backend="pyvis", palette="document")       # interactive HTML
-document.plot("graph", backend="matplotlib", palette="document")  # PNG
+document.plot("graph")                                  # graph.svg, document palette
+document.plot("graph-classic", palette="classic")       # the older outlined scheme
+document.plot("graph", backend="pyvis")                 # interactive HTML
+document.plot("graph", backend="matplotlib")            # PNG
 ```
 
 The same argument exists on the lower-level renderers, for a payload that is not held by an
@@ -182,13 +185,13 @@ The same argument exists on the lower-level renderers, for a payload that is not
 ```python
 from r3xa_api.webcore.graph import render_graphviz_file, render_pyvis_html, render_networkx_matplotlib_file
 
-render_graphviz_file(payload, Path("graph"), palette="document")
+render_graphviz_file(payload, Path("graph"), palette="classic")
 ```
 
 and on the example script:
 
 ```bash
-python examples/python/graph_r3xa.py --input experiment.json --output graph --palette document
+python examples/python/graph_r3xa.py --input experiment.json --output graph --palette classic
 ```
 
 Typical edit cycle:

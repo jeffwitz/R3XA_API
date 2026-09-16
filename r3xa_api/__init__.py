@@ -1,5 +1,6 @@
 import importlib
 
+from . import core as _core
 from .core import R3XAFile, R3XAItem, author, new_item, unit, data_set_file
 from .registry import (
     load_item,
@@ -47,6 +48,13 @@ __all__ = [
     "models",
     "typed_available",
 ]
+
+# Standalone item builders, generated from the schema alongside the R3XAFile
+# guided helpers: `new_testing_machine_setting(...)` mirrors
+# `document.add_testing_machine_setting(...)` but needs no document.
+for _builder_name in _core.GUIDED_BUILDERS:
+    globals()[_builder_name] = getattr(_core, _builder_name)
+__all__ += sorted(_core.GUIDED_BUILDERS)
 
 if _TYPED_AVAILABLE:
     # Surface the generated classes on the package itself, so they are found as

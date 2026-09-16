@@ -53,6 +53,39 @@ def format_json_value(value: Any) -> str:
 
 
 @lru_cache(maxsize=None)
+def _reference_fields() -> Dict[str, str]:
+    """Return the fields holding item references, mapped to the section they point to.
+
+    Read from the schema rather than hardcoded, so a reference added later is
+    resolved too.
+    """
+
+    id_types = {
+        "#/$defs/types/setting_id": "settings",
+        "#/$defs/types/data_source_id": "data_sources",
+        "#/$defs/types/data_set_id": "data_sets",
+    }
+    fields: Dict[str, str] = {}
+
+    def visit(node: Any, field: Optional[str]) -> None:
+        if isinstance(node, Mapping):
+            reference = node.get("$ref")
+            if field and reference in id_types:
+                fields[field] = id_types[reference]
+            items = node.get("items")
+            if field and isinstance(items, Mapping) and items.get("$ref") in id_types:
+                fields[field] = id_types[items["$ref"]]
+            for key, value in node.items():
+                visit(value, key if key not in ("items", "properties", "$defs") else field)
+        elif isinstance(node, list):
+            for value in node:
+                visit(value, field)
+
+    visit(load_schema(), None)
+    return fields
+
+
+@lru_cache(maxsize=None)
 def _item_field_spec(kind: str) -> tuple:
     """Return the schema's field order and required names for an item kind.
 
@@ -74,12 +107,38 @@ class R3XAItem(dict):
     and equality with a plain dict all keep working unchanged.
     """
 
+    # Set when the item joins a document, so `summary()` can show what a
+    # reference points at instead of its identifier.
+    _document: Any = None
+
     @property
     def kind(self) -> Optional[str]:
         """Return the item's schema kind, when it carries one."""
 
         value = self.get("kind")
         return value if isinstance(value, str) else None
+
+    def _resolve_reference(self, section: str, identifier: Any) -> str:
+        """Render a reference as the title of the item it points at."""
+
+        document = self._document
+        if document is not None and isinstance(identifier, str):
+            for candidate in getattr(document, section, ()) or ():
+                if isinstance(candidate, Mapping) and candidate.get("id") == identifier:
+                    title = candidate.get("title")
+                    if title:
+                        return str(title)
+        return format_json_value(identifier)
+
+    def _format_field(self, name: str, value: Any) -> str:
+        """Render one field, resolving references to the titles they point at."""
+
+        section = _reference_fields().get(name)
+        if section is None or value is None:
+            return format_json_value(value)
+        if isinstance(value, list):
+            return "[" + ", ".join(self._resolve_reference(section, v) for v in value) + "]"
+        return self._resolve_reference(section, value)
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a plain dictionary copy."""
@@ -128,7 +187,7 @@ class R3XAItem(dict):
         lines = [self.kind or "R3XA item"]
         for name in names:
             marker = "*" if name in required else " "
-            lines.append(f"{marker} {name}: {format_json_value(self.get(name))}")
+            lines.append(f"{marker} {name}: {self._format_field(name, self.get(name))}")
         return "\n".join(lines)
 
     def print(self) -> None:
@@ -175,10 +234,14 @@ class R3XAItem(dict):
         return destination
 
 
-def new_item(kind: str, **fields: Any) -> Dict[str, Any]:
-    """Create a schema item with default `id` and `kind` if missing."""
+def new_item(kind: str, **fields: Any) -> R3XAItem:
+    """Create a standalone schema item with default `id` and `kind` if missing.
 
-    item = dict(fields)
+    Returns an `R3XAItem`, so the result prints, validates and saves on its own
+    without belonging to any document.
+    """
+
+    item = R3XAItem(fields)
     item.setdefault("id", _random_id())
     item.setdefault("kind", kind)
     return item
@@ -317,6 +380,42 @@ def _guided_item_spec(kind: str) -> Dict[str, Any]:
         raise ValueError(f"Unsupported guided helper kind: {kind}") from exc
 
 
+def _normalize_guided_fields(kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize guided helper fields before building an item."""
+
+    normalized = dict(fields)
+    spec = _guided_item_spec(kind)
+    for field_name in spec["array_fields"]:
+        if field_name not in normalized or isinstance(normalized[field_name], list):
+            continue
+        value = normalized[field_name]
+        if isinstance(value, (str, bytes, dict)):
+            continue
+        normalized[field_name] = list(value)
+
+    if kind == "data_sets/file":
+        normalized["timestamps"] = _ensure_data_set_file(normalized["timestamps"])
+        normalized["values"] = _ensure_data_set_file(normalized["values"])
+
+    return normalized
+
+
+def build_guided_item(kind: str, fields: Dict[str, Any]) -> R3XAItem:
+    """Build one guided item, checking the schema's required fields.
+
+    Shared by `R3XAFile.add_<kind>_<section>()` and the module-level
+    `new_<kind>_<section>()`, so a standalone item and a document-bound one are
+    built identically.
+    """
+
+    spec = _guided_item_spec(kind)
+    missing_fields = [field for field in spec["required"] if field not in fields]
+    if missing_fields:
+        missing = ", ".join(missing_fields)
+        raise TypeError(f"{spec['helper_name']} missing required arguments: {missing}")
+    return new_item(kind, **_normalize_guided_fields(kind, fields))
+
+
 def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., Dict[str, Any]]:
     """Create a guided helper with explicit required parameters for one kind."""
 
@@ -363,23 +462,30 @@ def _make_guided_alias(alias_name: str, target_name: str) -> Callable[..., Dict[
 class _ModelAwareList(list):
     """List of `R3XAItem`, accepting dicts and typed models exposing `model_dump`."""
 
-    def __init__(self, values: Iterable[Any] = ()) -> None:
+    def __init__(self, values: Iterable[Any] = (), document: Any = None) -> None:
         super().__init__()
+        self.document = document
         self.extend(values)
 
-    @staticmethod
-    def _normalize(value: Any) -> R3XAItem:
+    def _normalize(self, value: Any) -> R3XAItem:
         # Already-wrapped items pass through unchanged, so the object returned
         # by `add_item` is the very one stored in the collection.
-        if isinstance(value, R3XAItem):
-            return value
-        return R3XAItem(from_model(value))
+        item = value if isinstance(value, R3XAItem) else R3XAItem(from_model(value))
+        if self.document is not None:
+            item._document = self.document
+        return item
 
     def append(self, value: Any) -> None:
         super().append(self._normalize(value))
 
     def extend(self, values: Iterable[Any]) -> None:
         super().extend(self._normalize(value) for value in values)
+
+    def __iadd__(self, values: Iterable[Any]) -> "_ModelAwareList":
+        # `list.__iadd__` is implemented in C and bypasses the `extend` override,
+        # so `document.settings += [item]` would otherwise store a bare dict.
+        self.extend(values)
+        return self
 
     def insert(self, index: int, value: Any) -> None:
         super().insert(index, self._normalize(value))
@@ -399,9 +505,9 @@ class R3XAFile:
 
         self.header: Dict[str, Any] = dict(header)
         self.header.setdefault("version", version or schema_version())
-        self.settings: List[Dict[str, Any]] = _ModelAwareList()
-        self.data_sources: List[Dict[str, Any]] = _ModelAwareList()
-        self.data_sets: List[Dict[str, Any]] = _ModelAwareList()
+        self.settings: List[R3XAItem] = _ModelAwareList(document=self)
+        self.data_sources: List[R3XAItem] = _ModelAwareList(document=self)
+        self.data_sets: List[R3XAItem] = _ModelAwareList(document=self)
 
     @classmethod
     def from_dict(cls, payload: Dict[str, Any]) -> "R3XAFile":
@@ -410,9 +516,9 @@ class R3XAFile:
         version = payload.get("version")
         header = {k: v for k, v in payload.items() if k not in {"version", "settings", "data_sources", "data_sets"}}
         obj = cls(version=version, **header)
-        obj.settings = _ModelAwareList(payload.get("settings", []))
-        obj.data_sources = _ModelAwareList(payload.get("data_sources", []))
-        obj.data_sets = _ModelAwareList(payload.get("data_sets", []))
+        obj.settings = _ModelAwareList(payload.get("settings", []), document=obj)
+        obj.data_sources = _ModelAwareList(payload.get("data_sources", []), document=obj)
+        obj.data_sets = _ModelAwareList(payload.get("data_sets", []), document=obj)
         return obj
 
     @classmethod
@@ -481,33 +587,17 @@ class R3XAFile:
         return self.add_item(kind, **fields)
 
     def _normalize_guided_fields(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
-        """Normalize guided helper fields before delegating to low-level add methods."""
+        """Deprecated shim: use the module-level `_normalize_guided_fields`."""
 
-        normalized = dict(fields)
-        spec = _guided_item_spec(kind)
-        for field_name in spec["array_fields"]:
-            if field_name not in normalized or isinstance(normalized[field_name], list):
-                continue
-            value = normalized[field_name]
-            if isinstance(value, (str, bytes, dict)):
-                continue
-            normalized[field_name] = list(value)
+        return _normalize_guided_fields(kind, fields)
 
-        if kind == "data_sets/file":
-            normalized["timestamps"] = _ensure_data_set_file(normalized["timestamps"])
-            normalized["values"] = _ensure_data_set_file(normalized["values"])
-
-        return normalized
-
-    def _add_guided_item(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
+    def _add_guided_item(self, kind: str, fields: Dict[str, Any]) -> R3XAItem:
         """Validate required schema fields and append one guided item."""
 
-        spec = _guided_item_spec(kind)
-        missing_fields = [field for field in spec["required"] if field not in fields]
-        if missing_fields:
-            missing = ", ".join(missing_fields)
-            raise TypeError(f"{spec['helper_name']} missing required arguments: {missing}")
-        return self.add_item(kind, **self._normalize_guided_fields(kind, fields))
+        item = build_guided_item(kind, fields)
+        collection = self._target_collection(kind)
+        collection.append(item)
+        return collection[-1]
 
     def to_dict(self) -> Dict[str, Any]:
         """Return the complete JSON payload for this builder."""
@@ -555,7 +645,15 @@ class R3XAFile:
 
         for name in names:
             marker = "*" if name in required else " "
-            value = format_json_value(self.header.get(name))
+            value = self.header.get(name)
+            if name == "authors" and isinstance(value, list):
+                # A listing wants who the authors are, not their affiliations
+                # and ORCIDs; those stay one `to_dict()` away.
+                value = "[" + ", ".join(
+                    str(a.get("name", a)) if isinstance(a, Mapping) else str(a) for a in value
+                ) + "]"
+            else:
+                value = format_json_value(value)
             lines.append(f"{marker} {name:<{width}} : {value}")
 
         for name in collections:
@@ -637,8 +735,52 @@ class R3XAFile:
         return path
 
 
+def _make_standalone_builder(function_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., R3XAItem]:
+    """Create a module-level `new_<kind>_<section>()` building one item alone.
+
+    A setting or a data source is meaningful on its own - a lab's testing
+    machines, say - so building one should not require inventing a document to
+    hang it on.
+    """
+
+    params = [f"{field}: Any" for field in required_fields] + ["**extra: Any"]
+    header = ", ".join(params)
+    field_lines = "\n".join(f"    fields[{field!r}] = {field}" for field in required_fields)
+    if required_fields:
+        field_lines = "    fields: Dict[str, Any] = {}\n" + field_lines
+    else:
+        field_lines = "    fields: Dict[str, Any] = {}"
+
+    source = (
+        f"def {function_name}({header}) -> R3XAItem:\n"
+        f"{field_lines}\n"
+        "    fields.update(extra)\n"
+        f"    return build_guided_item({kind!r}, fields)\n"
+    )
+    namespace: Dict[str, Any] = {
+        "Any": Any,
+        "Dict": Dict,
+        "R3XAItem": R3XAItem,
+        "build_guided_item": build_guided_item,
+    }
+    exec(source, namespace)
+    builder = namespace[function_name]
+    builder.__qualname__ = function_name
+    builder.__doc__ = (
+        f"Create a standalone `{kind}` item.\n\n"
+        f"Required fields: {', '.join(required_fields) if required_fields else '(none)'}.\n"
+        "Optional schema fields can be passed through `**extra`.\n"
+        "The item is not attached to any document; add it later with "
+        "`document.settings.append(item)` or the matching collection."
+    )
+    return builder
+
+
+GUIDED_BUILDERS: Dict[str, str] = {}
+
+
 def _install_guided_helpers() -> None:
-    """Attach schema-driven guided helper methods to `R3XAFile`."""
+    """Attach schema-driven guided helpers to `R3XAFile` and to this module."""
 
     for kind, spec in _guided_kind_specs().items():
         setattr(
@@ -646,9 +788,16 @@ def _install_guided_helpers() -> None:
             spec["helper_name"],
             _make_guided_helper(spec["helper_name"], kind, spec["required"]),
         )
+        builder_name = "new_" + spec["helper_name"][len("add_"):]
+        globals()[builder_name] = _make_standalone_builder(builder_name, kind, spec["required"])
+        GUIDED_BUILDERS[builder_name] = kind
 
     for alias_name, target_name in _GUIDED_ALIAS_TARGETS.items():
         setattr(R3XAFile, alias_name, _make_guided_alias(alias_name, target_name))
+        builder_alias = "new_" + alias_name[len("add_"):]
+        target_builder = "new_" + target_name[len("add_"):]
+        globals()[builder_alias] = globals()[target_builder]
+        GUIDED_BUILDERS[builder_alias] = GUIDED_BUILDERS[target_builder]
 
 
 _install_guided_helpers()
