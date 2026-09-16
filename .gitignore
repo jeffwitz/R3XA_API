@@ -24,6 +24,8 @@ docs/_build/
 examples/artifacts/*.html
 !examples/artifacts/graph_qi.html
 !examples/artifacts/graph_dic_pipeline.html
+examples/artifacts/graph_qi_document.svg
+examples/artifacts/graph_qi_document_nx.png
 lib/
 
 # OS/editor

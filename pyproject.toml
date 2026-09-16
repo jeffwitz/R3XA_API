@@ -1,6 +1,6 @@
 [project]
 name = "r3xa-api"
-version = "2.0.0rc1"
+version = "2.0.0rc2"
 description = "Python SDK and WebUI for creating and validating R3XA metadata files"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -8,7 +8,7 @@ dependencies = [
   "jsonschema>=4.21.1",
   "graphviz>=0.20",
 ]
-license = {text = "GPL-2.0-or-later"}
+license = "GPL-2.0-or-later"
 
 [project.urls]
 Homepage = "https://gitlab.com/photomechanics/R3XA_API"
@@ -38,10 +38,11 @@ web = [
 ]
 
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
+include-package-data = false
 packages = ["r3xa_api", "r3xa_api.webcore", "web", "web.app"]
 
 [tool.setuptools.package-data]

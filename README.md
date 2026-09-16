@@ -2,10 +2,10 @@
 
 Python SDK and WebUI for creating and validating R3XA metadata files.
 
-> **Documentation:** [latest development documentation](https://r3xa-api.readthedocs.io/en/latest/)
+> **Documentation:** [current documentation](https://r3xa-api.readthedocs.io/en/latest/)
 
-> **Development notice:** `develop` targets the upcoming `2.0.0rc1` schema/API
-> line and is not source-compatible with the stable `1.x` releases.
+> **Release candidate:** `2.0.0rc2` targets schema `2026.9.17` and is not
+> source-compatible with the stable `1.x` releases.
 
 ## Install from PyPI
 ```bash
@@ -268,7 +268,7 @@ python scripts/dev.py notebook-dic-export
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc1?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc2?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.

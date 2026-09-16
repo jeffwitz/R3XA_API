@@ -174,11 +174,11 @@ profile builds two explicit chains: `Camera → Images → DIC processing →
 files`. Both files are final datasets. The tomography profile extends the same
 idea to `Tomograph → Projections → Reconstruction → Volume → DVC → DVC
 displacement`. Camera, machine, and specimen are root objects without
-antecedents. The data-flow edges remain the schema-defined `data_sources` and
-`input_data_sets` identifiers.
+antecedents. The data-flow edges remain the schema-defined
+`parent_data_sources` and `input_data_sets` identifiers.
 
 Graph exports include settings as root nodes. A dashed edge connects a setting
-to each of its `associated_data_sources`, making the machine and specimen
+to each of its `attached_data_sources`, making the machine and specimen
 context visible alongside the source/dataset dependency graph.
 
 ## Developer contract

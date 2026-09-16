@@ -75,6 +75,20 @@ package:
   before_script:
     - python -m pip install --upgrade pip build
   script:
+    - |
+      python - <<'PY'
+      import os
+      import tomllib
+      from pathlib import Path
+
+      tag = os.environ.get("CI_COMMIT_TAG")
+      if tag:
+          version = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+          expected = f"v{version}"
+          if tag != expected:
+              raise SystemExit(f"Git tag {tag!r} does not match package version {expected!r}")
+          print(f"Validated release tag {tag} against package version {version}")
+      PY
     - python -m build
     - |
       python - <<'PY'
