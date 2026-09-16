@@ -45,3 +45,11 @@ __all__ = [
     "models",
     "typed_available",
 ]
+
+if _TYPED_AVAILABLE:
+    # Surface the generated classes on the package itself, so they are found as
+    # `r3xa_api.CameraSource` and not only as `r3xa_api.models.CameraSource`.
+    # Only exported when pydantic is installed, hence the guard.
+    _typed_names = [name for name in models.__all__ if name not in __all__]
+    globals().update({name: getattr(models, name) for name in _typed_names})
+    __all__ += _typed_names

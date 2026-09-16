@@ -370,3 +370,13 @@ def test_plot_creates_missing_parent_directories(tmp_path) -> None:
 def test_plot_rejects_an_unknown_backend(tmp_path) -> None:
     with pytest.raises(ValueError, match="Unknown graph backend"):
         _document_with_items().plot(tmp_path / "graph", backend="nope")
+
+
+def test_printing_a_document_directly_shows_its_summary() -> None:
+    document = _document_with_items()
+
+    # `print(document)` must work, not only `document.print()`.
+    assert str(document) == document.summary()
+    assert repr(document) == document.summary()
+    assert "R3XA File" in str(document)
+    assert "object at 0x" not in repr(document)

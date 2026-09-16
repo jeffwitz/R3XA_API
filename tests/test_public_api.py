@@ -6,25 +6,41 @@ from r3xa_api import R3XAFile
 from r3xa_api.core import _guided_kind_specs
 
 
-def test_public_api_surface() -> None:
-    expected_exports = {
-        "R3XAFile",
-        "new_item",
-        "unit",
-        "data_set_file",
-        "from_model",
-        "load_schema",
-        "schema_version",
-        "validate",
-        "integrity_errors",
-        "validate_integrity",
-        "Registry",
-        "RegistryItem",
-        "models",
-        "typed_available",
-    }
+BASE_EXPORTS = {
+    "R3XAFile",
+    "new_item",
+    "unit",
+    "data_set_file",
+    "from_model",
+    "load_schema",
+    "schema_version",
+    "validate",
+    "integrity_errors",
+    "validate_integrity",
+    "Registry",
+    "RegistryItem",
+    "models",
+    "typed_available",
+}
 
-    assert set(r3xa_api.__all__) == expected_exports
+
+def test_public_api_surface() -> None:
+    exports = set(r3xa_api.__all__)
+
+    assert BASE_EXPORTS <= exports
+    # Beyond the base surface, only the generated model classes are exported.
+    extra = exports - BASE_EXPORTS
+    assert extra == (set(r3xa_api.models.__all__) - BASE_EXPORTS if r3xa_api.typed_available else set())
+
+
+def test_generated_models_are_exported_at_package_level() -> None:
+    pytest.importorskip("pydantic")
+
+    # Reachable without going through the `models` module, which is where
+    # users look for them first.
+    for name in ("CameraSource", "SpecimenSetting", "FileDataSet", "R3XADocument"):
+        assert getattr(r3xa_api, name) is getattr(r3xa_api.models, name)
+        assert name in r3xa_api.__all__
 
 
 def test_web_helpers_not_exported_from_top_level() -> None:

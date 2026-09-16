@@ -353,3 +353,13 @@ def test_typed_example_script_generates_valid_json():
                 output_path.unlink()
         else:
             output_path.write_bytes(previous_content)
+
+
+def test_printing_an_item_directly_shows_its_summary():
+    camera = _valid_camera()
+
+    assert str(camera) == camera.summary()
+    assert "1392 px" in str(camera)
+    # repr stays pydantic's compact form so a list of items remains readable.
+    assert repr(camera) != camera.summary()
+    assert "Camera(" in repr(camera)

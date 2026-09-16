@@ -442,3 +442,10 @@ class R3XAModel(BaseModel):
         """Print a readable listing of all model fields."""
 
         print(self.summary())
+
+    def __str__(self) -> str:
+        # `print(item)` shows the same listing as `item.print()`.
+        # `__repr__` stays pydantic's single-line form: it is what a list of
+        # items falls back to, and a multi-line summary per element would make
+        # `document.data_sources` unreadable.
+        return self.summary()

@@ -416,6 +416,14 @@ class R3XAFile:
 
         print(self.summary())
 
+    def __str__(self) -> str:
+        return self.summary()
+
+    def __repr__(self) -> str:
+        # The default object repr carried no information at all, so showing the
+        # same listing costs nothing and makes a bare `document` useful in a REPL.
+        return self.summary()
+
     def plot(
         self,
         path: str | Path,
