@@ -48,7 +48,7 @@ Required fields:
 Example:
 ```json
 {
-  "version": "2026.9.16",
+  "version": "2026.9.17",
   "title": "Hello World",
   "description": "Minimal R3XA file",
   "authors": [{"name": "JC Passieux"}],

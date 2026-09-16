@@ -13,7 +13,7 @@
     "repository": "https://example.org/qi-hu",
     "documentation": "https://theses.hal.science/tel-04993338",
     "license": "GPL-2.0-or-later",
-    "version": "2026.9.16",
+    "version": "2026.9.17",
     "settings": [
         {
             "id": "sample",

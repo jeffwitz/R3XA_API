@@ -5,7 +5,7 @@
 
 # R3XA Specification
 
-> Version : `2026.9.16`
+> Version : `2026.9.17`
 
 Yet another metadata file format whose goal is to provide a data representation scheme compatible with the variety of data types encountered in experimental and computational photomechanics, and to provide a convenient framework for software coupling and data fusion.
 
@@ -24,7 +24,7 @@ Yet another metadata file format whose goal is to provide a data representation 
 |---|---|---|---|
 | `title` | string | ✅ | Title of the data sets. |
 | `description` | string | ✅ | Description of the data sets. |
-| `version` | "2026.9.16" (fixed) | ✅ | Version of the schema used. |
+| `version` | "2026.9.17" (fixed) | ✅ | Version of the schema used. |
 | `authors` | array[Author] | ✅ | Authors of the experiment or analysis. |
 | `date` | string | ✅ | Global date of the experiment (YYYY-MM-DD). |
 | `repository` | string |  | URL to the repository where the dataset is stored. |
@@ -61,6 +61,7 @@ Specimen.
 | `title` | string | ✅ | Title of the specimen. |
 | `description` | string |  | Description of the specimen. |
 | `cad` | string |  | Path to the design of the specimen. |
+| `mesh` | string |  | Path to the Finite Element or BSpline mesh of the specimen. |
 | `sizes` | array[<a href="#unit">Unit</a>] |  | Sizes of the specimen. |
 | `patterning_technique` | string |  | Patterning technique used on the specimen. |
 | `patterning_feature_size` | <a href="#unit">Unit</a> |  | Characteristic size of the pattern. |
@@ -299,7 +300,7 @@ subset/global DIC, DVC, Stereo, optical flow
 | `documentation` | string |  | Documentation filename, path or URL |
 | `subset_size` | array[<a href="#unit">Unit</a>] |  | Size of the subset length unit squared. |
 | `step_size` | <a href="#unit">Unit</a> |  | distance between two adjacent subsets |
-| `mesh` | string |  | Finite Element or BSpline mesh: filename or specimen setting id |
+| `mesh` | Setting id |  | Specimen setting holding the mesh used by the analysis. |
 | `image_filtering` | string |  | Type of filter and kernel |
 | `interpolant` | string |  | Subpixel interpolation: linear, cubic spline |
 | `matching_criterion` | string |  | ZNSSD, ZNCC or other ... |
@@ -392,6 +393,7 @@ Description of the data set.
 | `data_type` | string |  | MIME type of the listed files. |
 | `path` | string | ✅ | Relative path to the folder containing the data file(s). |
 | `parent_data_sources` | array[Data source id] | ✅ | List of IDs of the data sources that generated the dataset. |
+| `data_origin` | "raw" \| "derived" |  | Whether the data set holds raw measurements or the result of an analysis. |
 
 ### Data set (single file) (`data_sets/file`)
 
@@ -404,12 +406,13 @@ When all the timestamps and data (number or filenames) is stored in a single spr
 | `title` | string | ✅ | Title of the data set. |
 | `description` | string |  | Description of the data set. |
 | `path` | string |  | Relative path to the folder containing the data file(s). |
-| `parent_data_sources` | array[Data source id] | ✅ | List of IDs of the data sources that generated the dataset. |
+| `parent_data_sources` | array[Data source id] |  | List of IDs of the data sources that generated the dataset. |
 | `data_type` | string |  | if the CSV contains numbers > data_type should be 'numbers', if it contains filenames > put the MIME type |
 | `time_reference` | <a href="#unit">Unit</a> |  | Time serving as a reference to the whole data set. |
 | `keywords` | array[string] |  | List of keywords. |
 | `timestamps` | <a href="#data-set-file">Data set file</a> | ✅ | filename (ex: CSV) + col and rows where to find the timestamps |
 | `values` | <a href="#data-set-file">Data set file</a> | ✅ | filename (ex: CSV) + col and rows where to find the files or values |
+| `data_origin` | "raw" \| "derived" |  | Whether the data set holds raw measurements or the result of an analysis. |
 
 ### Data set (list of files) (`data_sets/list`)
 
@@ -423,17 +426,18 @@ When all the data is stored in separated files (like a list of images). They sho
 | `description` | string |  | Description of the data set. |
 | `path` | string |  | Relative path to the data folder. |
 | `data_type` | string |  | MIME type of the listed data files. |
-| `parent_data_sources` | array[Data source id] | ✅ | List if IDs of the data sources that generated the dataset. |
+| `parent_data_sources` | array[Data source id] |  | List if IDs of the data sources that generated the dataset. |
 | `time_reference` | <a href="#unit">Unit</a> |  | Time serving as a reference to the whole data set. |
 | `keywords` | array[string] |  | List of keywords. |
 | `timestamps` | array[number] | ✅ | List of the timestamps. |
 | `values` | array[string] | ✅ | List of strings. |
+| `data_origin` | "raw" \| "derived" |  | Whether the data set holds raw measurements or the result of an analysis. |
 
 ## Appendix — Common Types
 
 ### Setting id
 
-ID of a setting.
+ID of a setting. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.
 
 | Property | Value |
 |---|---|
@@ -441,7 +445,7 @@ ID of a setting.
 
 ### Data set id
 
-ID of a data set.
+ID of a data set. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.
 
 | Property | Value |
 |---|---|
@@ -449,7 +453,7 @@ ID of a data set.
 
 ### Data source id
 
-ID of a data source.
+ID of a data source. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.
 
 | Property | Value |
 |---|---|

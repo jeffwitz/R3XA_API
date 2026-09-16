@@ -227,7 +227,7 @@ document = R3XAFile(
 )
 ```
 
-Since schema `2026.9.16` an author carries its own ORCID; the former parallel `author_orcids`
+Since schema `2026.9.17` an author carries its own ORCID; the former parallel `author_orcids`
 array is gone.
 
 ### `unit(...)`

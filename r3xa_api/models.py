@@ -29,6 +29,11 @@ class Types(RootModel[Any]):
     root: Any
 
 
+class DataOrigin(Enum):
+    raw = 'raw'
+    derived = 'derived'
+
+
 class OutputDimension(Enum):
     point = 'point'
     curve = 'curve'
@@ -106,11 +111,24 @@ class DataSetFile(R3XAModel):
 
 
 class DataSetId(RootModel[str]):
-    root: str = Field(..., description='ID of a data set.')
+    root: str = Field(
+        ...,
+        description='ID of a data set. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.',
+    )
 
 
 class DataSourceId(RootModel[str]):
-    root: str = Field(..., description='ID of a data source.')
+    root: str = Field(
+        ...,
+        description='ID of a data source. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.',
+    )
+
+
+class SettingId(RootModel[str]):
+    root: str = Field(
+        ...,
+        description='ID of a setting. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.',
+    )
 
 
 class Uint(RootModel[int]):
@@ -150,8 +168,8 @@ class File(R3XAModel):
         description='Relative path to the folder containing the data file(s).',
         title='Path',
     )
-    parent_data_sources: list[DataSourceId] = Field(
-        ...,
+    parent_data_sources: Optional[list[DataSourceId]] = Field(
+        None,
         description='List of IDs of the data sources that generated the dataset.',
         title='Parent data sources',
     )
@@ -177,6 +195,11 @@ class File(R3XAModel):
         ...,
         description='filename (ex: CSV) + col and rows where to find the files or values',
         title='Data set file',
+    )
+    data_origin: Optional[DataOrigin] = Field(
+        None,
+        description='Whether the data set holds raw measurements or the result of an analysis.',
+        title='Data origin',
     )
 
 
@@ -207,6 +230,11 @@ class Generic(R3XAModel):
         description='List of IDs of the data sources that generated the dataset.',
         title='Parent data sources',
     )
+    data_origin: Optional[DataOrigin] = Field(
+        None,
+        description='Whether the data set holds raw measurements or the result of an analysis.',
+        title='Data origin',
+    )
 
 
 class List(R3XAModel):
@@ -229,8 +257,8 @@ class List(R3XAModel):
     data_type: Optional[str] = Field(
         None, description='MIME type of the listed data files.', title='MIME'
     )
-    parent_data_sources: list[DataSourceId] = Field(
-        ...,
+    parent_data_sources: Optional[list[DataSourceId]] = Field(
+        None,
         description='List if IDs of the data sources that generated the dataset.',
         title='Parent data sources',
     )
@@ -247,6 +275,11 @@ class List(R3XAModel):
     )
     values: list[str] = Field(
         ..., description='List of strings.', title='List of files'
+    )
+    data_origin: Optional[DataOrigin] = Field(
+        None,
+        description='Whether the data set holds raw measurements or the result of an analysis.',
+        title='Data origin',
     )
 
 
@@ -374,9 +407,9 @@ class DicMeasurement(R3XAModel):
     step_size: Optional[Unit] = Field(
         None, description='distance between two adjacent subsets', title='Step size'
     )
-    mesh: Optional[str] = Field(
+    mesh: Optional[SettingId] = Field(
         None,
-        description='Finite Element or BSpline mesh: filename or specimen setting id',
+        description='Specimen setting holding the mesh used by the analysis.',
         title='Mesh',
     )
     image_filtering: Optional[str] = Field(
@@ -1000,6 +1033,11 @@ class Specimen(R3XAModel):
     cad: Optional[str] = Field(
         None, description='Path to the design of the specimen.', title='CAD'
     )
+    mesh: Optional[str] = Field(
+        None,
+        description='Path to the Finite Element or BSpline mesh of the specimen.',
+        title='Mesh',
+    )
     sizes: Optional[list[Unit]] = Field(
         None, description='Sizes of the specimen.', title='Sizes'
     )
@@ -1104,8 +1142,8 @@ class R3XADocument(R3XAModel):
         min_length=1,
         title='Description',
     )
-    version: Literal['2026.9.16'] = Field(
-        '2026.9.16', description='Version of the schema used.', title='Version'
+    version: Literal['2026.9.17'] = Field(
+        '2026.9.17', description='Version of the schema used.', title='Version'
     )
     authors: list[Author] = Field(
         ...,

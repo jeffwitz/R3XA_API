@@ -24,7 +24,7 @@
       "title": "Version",
       "description": "Version of the schema used.",
       "type": "string",
-      "const": "2026.9.16"
+      "const": "2026.9.17"
     },
     "authors": {
       "title": "Authors",
@@ -224,6 +224,11 @@
           "cad": {
             "title": "CAD",
             "description": "Path to the design of the specimen.",
+            "type": "string"
+          },
+          "mesh": {
+            "title": "Mesh",
+            "description": "Path to the Finite Element or BSpline mesh of the specimen.",
             "type": "string"
           },
           "sizes": {
@@ -1331,8 +1336,8 @@
           },
           "mesh": {
             "title": "Mesh",
-            "description": "Finite Element or BSpline mesh: filename or specimen setting id",
-            "type": "string"
+            "description": "Specimen setting holding the mesh used by the analysis.",
+            "$ref": "#/$defs/types/setting_id"
           },
           "image_filtering": {
             "title": "Image filtering",
@@ -1733,6 +1738,15 @@
             "items": {
               "$ref": "#/$defs/types/data_source_id"
             }
+          },
+          "data_origin": {
+            "title": "Data origin",
+            "description": "Whether the data set holds raw measurements or the result of an analysis.",
+            "type": "string",
+            "enum": [
+              "raw",
+              "derived"
+            ]
           }
         },
         "required": [
@@ -1810,13 +1824,21 @@
             "title": "Data set file",
             "description": "filename (ex: CSV) + col and rows where to find the files or values",
             "$ref": "#/$defs/types/data_set_file"
+          },
+          "data_origin": {
+            "title": "Data origin",
+            "description": "Whether the data set holds raw measurements or the result of an analysis.",
+            "type": "string",
+            "enum": [
+              "raw",
+              "derived"
+            ]
           }
         },
         "required": [
           "id",
           "kind",
           "title",
-          "parent_data_sources",
           "timestamps",
           "values"
         ],
@@ -1894,13 +1916,21 @@
             "items": {
               "type": "string"
             }
+          },
+          "data_origin": {
+            "title": "Data origin",
+            "description": "Whether the data set holds raw measurements or the result of an analysis.",
+            "type": "string",
+            "enum": [
+              "raw",
+              "derived"
+            ]
           }
         },
         "required": [
           "id",
           "kind",
           "title",
-          "parent_data_sources",
           "timestamps",
           "values"
         ],
@@ -1909,15 +1939,15 @@
     },
     "types": {
       "setting_id": {
-        "description": "ID of a setting.",
+        "description": "ID of a setting. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.",
         "type": "string"
       },
       "data_set_id": {
-        "description": "ID of a data set.",
+        "description": "ID of a data set. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.",
         "type": "string"
       },
       "data_source_id": {
-        "description": "ID of a data source.",
+        "description": "ID of a data source. Identifiers share one flat namespace: a prefix such as `stg-` / `src-` / `set-` keeps them unambiguous.",
         "type": "string"
       },
       "data_set_file": {

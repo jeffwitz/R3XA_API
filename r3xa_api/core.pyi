@@ -200,7 +200,6 @@ class R3XAFile:
     def add_file_data_set(
         self,
         title: Any,
-        parent_data_sources: Any,
         timestamps: Any,
         values: Any,
         **extra: Any,
@@ -217,7 +216,6 @@ class R3XAFile:
     def add_list_data_set(
         self,
         title: Any,
-        parent_data_sources: Any,
         timestamps: Any,
         values: Any,
         **extra: Any,
@@ -227,7 +225,6 @@ class R3XAFile:
     def add_image_set_list(
         self,
         title: Any,
-        parent_data_sources: Any,
         timestamps: Any,
         values: Any,
         **extra: Any,
@@ -236,7 +233,6 @@ class R3XAFile:
     def add_image_set_file(
         self,
         title: Any,
-        parent_data_sources: Any,
         timestamps: Any,
         values: Any,
         **extra: Any,

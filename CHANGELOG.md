@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- **Schema `2026.9.17`**: identifiers document their flat namespace with `stg-`/`src-`/`set-` examples (no pattern imposed, so existing ids stay valid); data sets gain an optional `data_origin` (`raw` | `derived`); the specimen mesh moves to `settings/specimen.mesh` and `dic_measurement.mesh` now references a setting id; `parent_data_sources` is no longer required on `data_sets/file` and `data_sets/list`.
 - **Breaking, schema `2026.9.16`**: `authors` is an array of `{name, affiliation, orcid}` objects and `author_orcids` is removed. The former parallel array could not express "one ORCID per author" in the schema, so the invariant lived in a Python check and any other consumer accepted a mismatched document. It is now structural, and an affiliation became representable.
 - Added the `author(name, affiliation=None, orcid=None)` helper, and `r3xa.author(...)` on the MATLAB side.
 - `integrity_errors()` no longer carries the author/ORCID length check: the schema enforces it.

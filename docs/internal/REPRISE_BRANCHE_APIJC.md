@@ -289,7 +289,7 @@ choix de conception. À reprendre point par point.
 2. Quels champs sont requis ? Proposition : `name` seul, les deux autres optionnels.
 3. `author_orcids` : suppression pure, ou conservation en obsolète ? Proposition : suppression,
    le changement est cassant de toute façon.
-4. Numéro de version du schéma : `2026.9.8` → `2026.9.16` ?
+4. Numéro de version du schéma : `2026.9.8` → `2026.9.17` ?
 5. `authors` garde-t-il `minItems: 1` ?
 
 Le chantier touche **48 fichiers** dans R3XA_API (schéma embarqué, modèles générés, `validate.py`,

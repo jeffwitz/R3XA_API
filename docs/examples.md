@@ -270,7 +270,7 @@ This example writes:
 - `examples/artifacts/qi_hu_from_json_literal.json`
 
 The current graph baseline is stored in `examples/artifacts/baseline_qi/` and
-is generated from the current `2026.9.16` document. It is a visual
+is generated from the current `2026.9.17` document. It is a visual
 non-regression fixture, not a compatibility reference for an older schema.
 
 ## DIC pipeline graph (from scratch example)

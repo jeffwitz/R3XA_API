@@ -58,7 +58,7 @@ def test_required_fields_marked(tmp_path):
     _run_generate(output_path)
     text = output_path.read_text(encoding="utf-8")
     assert "| `title` | string | ✅ | Title of the data sets. |" in text
-    assert '| `version` | "2026.9.16" (fixed) | ✅ | Version of the schema used. |' in text
+    assert '| `version` | "2026.9.17" (fixed) | ✅ | Version of the schema used. |' in text
 
 
 def test_enum_rendered(tmp_path):
