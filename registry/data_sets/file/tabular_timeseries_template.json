@@ -1,10 +1,18 @@
 {
-  "id": "dset_timeseries_template",
+  "id": "set-tabular-timeseries",
   "kind": "data_sets/file",
   "title": "force time series",
   "description": "force vs time",
   "path": "data/",
-  "parent_data_sources": ["ds_dic_pyxel_2d"],
-  "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv"},
-  "values": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv"}
+  "timestamps": {
+    "kind": "data_set_file",
+    "filename": "timestamps.csv",
+    "file_type": "text/csv"
+  },
+  "values": {
+    "kind": "data_set_file",
+    "filename": "force.csv",
+    "file_type": "text/csv"
+  },
+  "data_origin": "raw"
 }

@@ -1,5 +1,5 @@
 {
-  "id": "ds_cam_avt_dolphin_f145b",
+  "id": "src-camera-avt-dolphin-f145b",
   "kind": "data_sources/camera",
   "title": "CCD Camera",
   "description": "Encoding: 8-bit",
