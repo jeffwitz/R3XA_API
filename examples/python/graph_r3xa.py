@@ -51,6 +51,13 @@ def main() -> None:
         default=220,
         help="DPI used by the NetworkX backend for raster output (default: 220).",
     )
+    parser.add_argument(
+        "--palette",
+        default="default",
+        choices=["default", "document"],
+        help="Colour scheme, applied identically by every backend "
+             "(default: default; 'document' is the ochre/crimson/teal scheme).",
+    )
     args = parser.parse_args()
 
     json_path = Path(args.input)
@@ -61,8 +68,13 @@ def main() -> None:
 
     include_description = not args.hide_description
 
-    svg_path = render_graphviz_file(data, out_base, export_dot=args.dot, include_description=include_description)
-    html_path = render_pyvis_html(data, out_base, include_description=include_description)
+    svg_path = render_graphviz_file(
+        data, out_base, export_dot=args.dot,
+        include_description=include_description, palette=args.palette,
+    )
+    html_path = render_pyvis_html(
+        data, out_base, include_description=include_description, palette=args.palette
+    )
 
     print(f"Graphviz SVG: {svg_path}")
     print(f"PyVis HTML: {html_path}")
@@ -73,6 +85,7 @@ def main() -> None:
             format=args.networkx_format,
             dpi=args.networkx_dpi,
             include_description=include_description,
+            palette=args.palette,
         )
         print(f"NetworkX + Matplotlib {args.networkx_format.upper()}: {nx_path}")
 

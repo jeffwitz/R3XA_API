@@ -16,7 +16,8 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - {glsrc}`examples/python/complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
 - {glsrc}`examples/python/complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
 - {glsrc}`examples/python/create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
-- {glsrc}`examples/python/graph_r3xa.py`: graph generator (Graphviz + PyVis).
+- {glsrc}`examples/python/graph_r3xa.py`: graph generator (Graphviz + PyVis + NetworkX).
+  Accepts `--palette default|document` to switch the colour scheme on every backend at once.
 - {glsrc}`examples/python/load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
 - {glsrc}`examples/python/qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
 - {glsrc}`examples/python/registry_discovery.py`: list registry entries, merge one item, and save the merged result.

@@ -150,7 +150,46 @@ plot(path: str | Path, *, backend: str = "graphviz", palette: str | None = None,
 ```
 Render the item graph and return the file written. `backend` is `"graphviz"` (SVG),
 `"pyvis"` (interactive HTML) or `"matplotlib"` (PNG); each requires its optional extra.
-`palette` is `"default"` or `"document"` and applies identically to every backend.
+The extension comes from the backend, so pass a path without one.
+
+**Colour palettes.** `palette` selects the colour scheme and applies identically to all three
+backends. Two are available:
+
+| `palette` | Settings | Data sources | Data sets |
+|---|---|---|---|
+| `"default"` | blue hexagons | green / blue ellipses | grey / salmon boxes |
+| `"document"` | ochre `#c4894f` | crimson `#bf0040` | teal `#038181` |
+
+`"document"` is J-C. Passieux's scheme, meant for figures going into a printed document. In both
+palettes the hue marks the section, while the emphasis marks the position in the chain: a data
+source with no input keeps a white fill and a thicker border, and a data set nothing consumes is
+drawn with the heaviest border.
+
+```python
+from r3xa_api import R3XAFile
+
+document = R3XAFile.load("experiment.json")
+
+document.plot("graph")                                 # graph.svg, default palette
+document.plot("graph-doc", palette="document")         # graph-doc.svg
+document.plot("graph", backend="pyvis", palette="document")       # interactive HTML
+document.plot("graph", backend="matplotlib", palette="document")  # PNG
+```
+
+The same argument exists on the lower-level renderers, for a payload that is not held by an
+`R3XAFile`:
+
+```python
+from r3xa_api.webcore.graph import render_graphviz_file, render_pyvis_html, render_networkx_matplotlib_file
+
+render_graphviz_file(payload, Path("graph"), palette="document")
+```
+
+and on the example script:
+
+```bash
+python examples/python/graph_r3xa.py --input experiment.json --output graph --palette document
+```
 
 Typical edit cycle:
 
