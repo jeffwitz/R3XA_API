@@ -91,7 +91,7 @@ package:
       payload = R3XAFile(
           title="Wheel smoke test",
           description="Installed package smoke test",
-          authors="R3XA_API",
+          authors=["R3XA_API"],
           date="2026-01-01",
       ).to_dict()
       validate(payload)
