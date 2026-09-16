@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 MODELS_PATH = Path("r3xa_api/models.py")
@@ -45,41 +46,40 @@ def _pick(available: set[str], *candidates: str) -> str:
 
 
 def _alias_block(available: set[str]) -> str:
-    camera = _pick(available, "Camera")
-    generic_source = _pick(available, "GenericModel", "GenericSource")
-    specimen = _pick(available, "Specimen")
-    generic_setting = _pick(available, "GenericModel1", "GenericSetting")
-    image_list = _pick(available, "List", "ImageSetList")
-    image_file = _pick(available, "File", "ImageSetFile")
-    generic_dataset = _pick(available, "Generic", "GenericDataSet")
-    document = _pick(available, "R3XADocument")
+    aliases = {
+        "CameraSource": _pick(available, "Camera"),
+        "GenericSource": _pick(available, "GenericModel", "GenericSource"),
+        "InfraredSource": _pick(available, "Infrared"),
+        "TomographSource": _pick(available, "Tomograph"),
+        "LoadCellSource": _pick(available, "LoadCell"),
+        "StrainGaugeSource": _pick(available, "StrainGauge"),
+        "PointTemperatureSource": _pick(available, "PointTemperature"),
+        "DicMeasurementSource": _pick(available, "DicMeasurement"),
+        "MechanicalAnalysisSource": _pick(available, "MechanicalAnalysis"),
+        "IdentificationSource": _pick(available, "Identification"),
+        "StrainComputationSource": _pick(available, "StrainComputation"),
+        "SpecimenSetting": _pick(available, "Specimen"),
+        "GenericSetting": _pick(available, "GenericModel1", "GenericSetting"),
+        "TestingMachineSetting": _pick(available, "TestingMachine"),
+        "StereorigSetting": _pick(available, "Stereorig"),
+        "ListDataSet": _pick(available, "List", "ListDataSet"),
+        "FileDataSet": _pick(available, "File", "FileDataSet"),
+        "GenericDataSet": _pick(available, "Generic", "GenericDataSet"),
+        "ImageSetList": _pick(available, "List", "ImageSetList"),
+        "ImageSetFile": _pick(available, "File", "ImageSetFile"),
+    }
 
-    lines = [
-        "",
-        ALIAS_START,
-        f"CameraSource = {camera}",
-        f"GenericSource = {generic_source}",
-        f"SpecimenSetting = {specimen}",
-        f"GenericSetting = {generic_setting}",
-        f"ImageSetList = {image_list}",
-        f"ImageSetFile = {image_file}",
-        f"GenericDataSet = {generic_dataset}",
-    ]
-    if document != "R3XADocument":
-        lines.append(f"R3XADocument = {document}")
+    lines = ["", ALIAS_START]
+    lines.extend(f"{alias} = {target}" for alias, target in aliases.items())
     lines += [
         "",
         "__all__ = [",
+        "    'R3XAModel',",
         "    'Unit',",
         "    'DataSetFile',",
-        "    'CameraSource',",
-        "    'GenericSource',",
-        "    'SpecimenSetting',",
-        "    'GenericSetting',",
-        "    'ImageSetList',",
-        "    'ImageSetFile',",
-        "    'GenericDataSet',",
-        "    'R3XADocument',",
+        "    'OutputDimension',",
+    "    'R3XADocument',",
+        *[f"    '{alias}'," for alias in aliases if alias != "R3XADocument"],
         "]",
         ALIAS_END,
         "",
@@ -87,17 +87,18 @@ def _alias_block(available: set[str]) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
-    if not MODELS_PATH.exists():
-        raise FileNotFoundError(f"Missing generated file: {MODELS_PATH}")
+def main(models_path: Path | str | None = None) -> None:
+    path = Path(models_path) if models_path is not None else MODELS_PATH
+    if not path.exists():
+        raise FileNotFoundError(f"Missing generated file: {path}")
 
-    body = _strip_codegen_header(MODELS_PATH.read_text(encoding="utf-8"))
+    body = _strip_codegen_header(path.read_text(encoding="utf-8"))
     body = _remove_existing_alias_block(body)
     available = _class_names(body)
     alias_block = _alias_block(available)
 
-    MODELS_PATH.write_text(HEADER + "\n" + body + alias_block, encoding="utf-8")
+    path.write_text(HEADER + "\n" + body + alias_block, encoding="utf-8")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) > 1 else None)

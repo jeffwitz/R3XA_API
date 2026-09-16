@@ -13,7 +13,7 @@ specimen = registry.load_validated("settings/specimen/openhole_sample")
 r3xa = R3XAFile(
     title="Experiment with registry items",
     description="Using registry items to build an R3XA file",
-    authors="R3XA API",
+    authors=["R3XA API"],
     date="2024-10-30",
 )
 
@@ -24,9 +24,9 @@ r3xa.data_sources.append(camera)
 image_template = registry.get_item("data_sets/list/camera_images_template")
 image_dataset = image_template.merge(
     id="dset_images_exp01",
-    data_sources=[camera["id"]],
+    parent_data_sources=[camera["id"]],
     timestamps=[0.0, 1.0, 2.0],
-    data=["img_0001.tif", "img_0002.tif", "img_0003.tif"],
+    values=["img_0001.tif", "img_0002.tif", "img_0003.tif"],
 )
 
 r3xa.data_sets.append(image_dataset)

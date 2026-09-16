@@ -54,19 +54,30 @@ def unit(
     return payload
 
 
-def data_set_file(filename: str, delimiter: Optional[str] = None, data_range: Optional[str] = None, **extra: Any) -> Dict[str, Any]:
-    """Build a `data_set_file` payload for `timestamps` or `data` fields."""
+def data_set_file(
+    filename: str,
+    file_type: Optional[str] = None,
+    delimiter: Optional[str] = None,
+    col: Optional[Union[int, str]] = None,
+    rows: Optional[Sequence[Optional[int]]] = None,
+    **extra: Any,
+) -> Dict[str, Any]:
+    """Build a `data_set_file` payload for `timestamps` or `values` fields."""
 
     payload = {
         "kind": "data_set_file",
         "filename": filename,
     }
+    if file_type is not None:
+        payload["file_type"] = file_type
     if delimiter is not None:
         payload["delimiter"] = delimiter
-    if data_range is not None:
-        if not isinstance(data_range, str):
-            raise TypeError("data_range must be a string or None")
-        payload["data_range"] = data_range
+    if col is not None:
+        payload["col"] = col
+    if rows is not None:
+        if isinstance(rows, (str, bytes)):
+            raise TypeError("rows must be a sequence of integers or None")
+        payload["rows"] = list(rows)
     payload.update(extra)
     return payload
 
@@ -298,12 +309,7 @@ class R3XAFile:
 
         if kind == "data_sets/file":
             normalized["timestamps"] = _ensure_data_set_file(normalized["timestamps"])
-            normalized["data"] = _ensure_data_set_file(normalized["data"])
-
-        if kind == "data_sets/list":
-            time_reference = normalized["time_reference"]
-            if not isinstance(time_reference, dict) or time_reference.get("kind") != "unit":
-                raise ValueError("time_reference for data_sets/list must be a unit payload")
+            normalized["values"] = _ensure_data_set_file(normalized["values"])
 
         return normalized
 

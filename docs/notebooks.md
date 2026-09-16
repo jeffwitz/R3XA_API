@@ -25,11 +25,21 @@ python -m pip install -r requirements-notebook.txt
 ### Graphviz requirement
 
 The notebook renders graphs as SVG with Graphviz.
-The Python requirements are **not enough** on their own: the Graphviz executable `dot` must also be installed on the system.
+The Python requirements include the `graphviz` wrapper, but they are **not
+enough** on their own: the Graphviz executable `dot` must also be installed on
+the system.
+
+> **Windows and macOS users:** run `r3xa-ensure-graphviz` from the activated
+> virtual environment before starting the notebook. On Windows it uses WinGet
+> or Chocolatey and may ask for administrator approval. On macOS it uses
+> Homebrew; install Homebrew first if necessary. Verify with `dot -V`.
 
 - Linux: `sudo apt-get install graphviz`
-- macOS: `brew install graphviz`
-- Windows: install from <https://graphviz.org/download/> and ensure `dot` is in `PATH`
+- macOS: `r3xa-ensure-graphviz` installs it through Homebrew
+- Windows: `r3xa-ensure-graphviz` installs it through WinGet, or Chocolatey when WinGet is unavailable
+
+From a source checkout, use `python scripts/dev.py ensure-graphviz`. The command is explicit:
+it does not install system software as a side effect of a normal Python package installation.
 
 Quick check:
 
@@ -39,7 +49,7 @@ dot -V
 
 ### Start Marimo
 ```bash
-python scripts/dev.py notebook-dic
+python scripts/dev.py notebook-dic --ensure-graphviz
 ```
 
 Then open the URL printed by Marimo (usually `http://127.0.0.1:2718`).
@@ -64,7 +74,7 @@ In the notebook:
 ## 2) MyBinder (public interactive run)
 
 Open:
-- [Launch notebook on MyBinder](https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v1.5.4?urlpath=proxy/2718/)
+- [Launch notebook on MyBinder](https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc1?urlpath=proxy/2718/)
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

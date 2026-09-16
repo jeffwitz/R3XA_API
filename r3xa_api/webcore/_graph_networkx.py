@@ -162,6 +162,20 @@ def render_networkx_matplotlib_file(
             return f"{title_text}\n({description_text})"
         return title_text
 
+    for setting in data.get("settings", []):
+        setting_id = setting.get("id")
+        if not setting_id:
+            continue
+        style = styles["settings"]["root"]
+        node_shapes[setting_id] = style["shape"]
+        node_style_map[setting_id] = style
+        node_labels[setting_id] = _format_static_label(
+            setting.get("title", ""),
+            setting.get("description", ""),
+            "box",
+            include_description=include_description,
+        )
+
     for source in data.get("data_sources", []):
         source_id = source.get("id")
         if not source_id:
@@ -693,6 +707,7 @@ def render_networkx_matplotlib_file(
             "mutation_scale": config.edge_arrow_scale,
             "linewidth": config.edge_linewidth,
             "color": style.get("color", "black"),
+            "linestyle": style.get("style", "solid"),
             "zorder": 1,
         }
         x_src, _ = positions[src]

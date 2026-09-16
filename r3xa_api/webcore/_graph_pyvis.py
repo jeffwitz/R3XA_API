@@ -48,6 +48,14 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path, include_descripti
     model = build_graph_model(data)
 
     node_labels: Dict[str, str] = {}
+    for setting in data.get("settings", []):
+        setting_id = setting.get("id")
+        if setting_id:
+            node_labels[setting_id] = format_node_label(
+                setting.get("title", ""),
+                setting.get("description", ""),
+                include_description=include_description,
+            )
     for source in data.get("data_sources", []):
         source_id = source.get("id")
         if source_id:
@@ -93,6 +101,15 @@ def render_pyvis_html(data: Dict[str, Any], output_path: Path, include_descripti
     canvas_height = estimate_canvas_height(positions, label_heights)
     net = Network(height=f"{canvas_height}px", width="100%", directed=True)
     net.set_options(json.dumps(PYVIS_OPTIONS))
+
+    for setting in data.get("settings", []):
+        setting_id = setting.get("id")
+        if not setting_id:
+            continue
+        style = styles["settings"]["root"]
+        label = node_labels.get(setting_id, "")
+        x_coord, y_coord = positions.get(setting_id, (0.0, 0.0))
+        net.add_node(setting_id, label=label, x=x_coord, y=y_coord, physics=False, **style)
 
     for source in data.get("data_sources", []):
         source_id = source.get("id")

@@ -2,18 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.5.4] - 2026-05-15
-- Graphs: add a title-only rendering option across Graphviz, PyVis, NetworkX, the graph export script, and the web schema viewer for long datasource/dataset descriptions.
+## [2.0.0rc1] - 2026-09-16
+- Release candidate for the breaking R3XA schema/API line based on schema `2026.9.8`.
+- Breaking schema alignment: authors are arrays, dataset provenance uses `parent_data_sources`, settings use `attached_data_sources`, dataset payloads use `data_type` and `values`, and file ranges use `col`/`rows`.
+- No source or document compatibility with the pre-2.0 schema is provided on `develop`; migrate existing documents before using this release candidate.
+- CI: validate the installed wheel with the current array-based `authors` header.
 
-## [1.5.3] - 2026-04-05
-- MATLAB: add the missing guided helpers, introduce canonical `add_list_data_set(...)` / `add_file_data_set(...)` names, and align the MATLAB reference page with the current v1.5 helper surface.
-
-## [1.5.2] - 2026-04-04
+## [1.6.0.dev0] - 2026-04-04
+- Web UI: harden Guided template review with per-field confirmation, profile-scoped state, dependency-based role recovery, persistent drafts, folder import for file sequences, profile-first home page, French/English interface labels, and browser workflow tests.
+- Schema: synchronize non-empty top-level `title`, `description`, and `authors` constraints from `R3XA_SPEC`.
+- Start the next development cycle after the `1.5.0` release.
+- Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.5.4`).
 - Tests: make `tests/test_dev_cli.py` hermetic by simulating a project-local `.venv` instead of depending on the contributor's real environment.
-
-## [1.5.1] - 2026-04-04
-- Developer tooling: resolve the project `.venv` interpreter lazily in `scripts/dev.py` so the CLI module and its tests can be imported without a pre-existing virtual environment.
-- Documentation: convert the remaining inline source references in `docs/examples.md` and `docs/qi_case.md` to `{glsrc}` links.
+- MATLAB: add the missing guided helpers, introduce canonical `add_list_data_set(...)` / `add_file_data_set(...)` names, and align the MATLAB reference page with the current v1.5 helper surface.
+- Graphs: add a title-only rendering option across Graphviz, PyVis, NetworkX, the graph export script, and the web schema viewer for long datasource/dataset descriptions.
 
 ## [1.5.0] - 2026-04-04
 - API stability: narrow the recommended top-level surface, add an explicit stability policy, and lock the guided-helper contract with public API tests.
@@ -26,7 +28,7 @@ All notable changes to this project will be documented in this file.
 - Repository hygiene: move internal working notes under `docs/internal/`, archive the PM-IDICS presentation under `docs/archive/`, and keep the public Sphinx build focused on user-facing pages.
 - Documentation: realign the public MyBinder links on `develop` with the latest stable release tag (`v1.4.4`).
 - Internal planning: refresh `docs/internal/PLAN_ACTION_API_ERGO.md` so completed ergonomics work and remaining v2 topics are tracked accurately.
-- Documentation/meta: update Binder links to `v1.4.7`, clarify GitHub as the public repository with GitLab as upstream, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
+- Documentation/meta: update Binder links to `v1.4.7`, clarify repository locations, quote the web extra install command, and refresh `docs/internal/PLAN_ACTION_HORS_SCHEMA.md`.
 - Validation: lock `examples/essai-torsion.json` behind an automated validation test and update the internal traceability report now that the schema accepts the resolved generic-source fields.
 - Developer tooling: replace the old shell wrappers and `Makefile` entry points with the cross-platform `python scripts/dev.py ...` runner, add `setup-dev` for one-shot contributor bootstrap, and verify the workflow from a fresh clone.
 

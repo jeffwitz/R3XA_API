@@ -101,7 +101,7 @@ r3xa = R3XAFile(
     version=schema_version(),
     title="IR Lagrangian thermography - Qi Hu",
     description="Qi Hu experimental pipeline (IR + visible imaging, processing, DIC-like steps)",
-    authors="J-F. Witz, Q. Hu",
+    authors=["J-F. Witz", "Q. Hu"],
     date="2024-10-30",
     repository="https://example.org/qi-hu",
     documentation="https://theses.hal.science/tel-04993338",
@@ -254,11 +254,11 @@ r3xa.add_data_set(
     title="IR raws images",
     description="Raw images from the FLIR InfraRed Camera",
     path="original images IR/",
-    file_type="image/tiff",
-    data_sources=["camera_IR"],
+    data_type="image/tiff",
+    parent_data_sources=["camera_IR"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=ir_timeline,
-    data=ir_files,
+    values=ir_files,
 )
 
 calibration_files = []
@@ -274,11 +274,11 @@ r3xa.add_data_set(
     title="calibration tables",
     description="tables of Black body calibrations",
     path="./",
-    file_type="image/tiff",
-    data_sources=["camera_IR"],
+    data_type="image/tiff",
+    parent_data_sources=["camera_IR"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[],
-    data=calibration_files,
+    values=calibration_files,
 )
 
 r3xa.add_data_set(
@@ -287,11 +287,11 @@ r3xa.add_data_set(
     title="DIC fields",
     description="Visible DIC fields",
     path="./",
-    file_type="application/x-netcdf",
-    data_sources=["dic"],
+    data_type="application/x-netcdf",
+    parent_data_sources=["dic"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
-    data=["node.nc", "modes.nc"],
+    values=["node.nc", "modes.nc"],
 )
 
 r3xa.add_data_set(
@@ -299,13 +299,12 @@ r3xa.add_data_set(
     id="load_cell_data",
     title="Load cell data",
     description="Load cell data",
-    folder="./1_serie_2450N/",
-    data_sources=["load_cell"],
-    time_reference=0.0,
+    path="./1_serie_2450N/",
+    parent_data_sources=["load_cell"],
     timestamps=data_set_file(
-        filename="1_serie_2450N/Traction_1.csv", delimiter=",", data_range="1:0:183799:1"
+        filename="1_serie_2450N/Traction_1.csv", delimiter=",", col=0, rows=[1, 183799]
     ),
-    data=data_set_file(filename="Traction_1.csv", delimiter=",", data_range="1:1:183799:1"),
+    values=data_set_file(filename="Traction_1.csv", delimiter=",", col=1, rows=[1, 183799]),
 )
 
 visible_files = [
@@ -319,11 +318,11 @@ r3xa.add_data_set(
     title="Visible images",
     description="visible images from Ximea camera",
     path="original visible images/",
-    file_type="image/tiff",
-    data_sources=["camera_visible"],
+    data_type="image/tiff",
+    parent_data_sources=["camera_visible"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
-    data=visible_files,
+    values=visible_files,
 )
 
 r3xa.add_data_set(
@@ -332,11 +331,11 @@ r3xa.add_data_set(
     title="Load cell data interpolated on visible timeline data",
     description="load cell data interpolated on visible timeline data",
     path="./thermomechanical results/",
-    file_type="application/octet-stream",
-    data_sources=["load_cell_visible_timeline"],
+    data_type="application/octet-stream",
+    parent_data_sources=["load_cell_visible_timeline"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
-    data=["F_macro.npy"],
+    values=["F_macro.npy"],
 )
 
 eulerian_files = [
@@ -349,11 +348,11 @@ r3xa.add_data_set(
     title="Eulerian Temperature fields",
     description="Eulerian Temperature fields",
     path="./",
-    file_type="application/octet-stream",
-    data_sources=["calibration_IR"],
+    data_type="application/octet-stream",
+    parent_data_sources=["calibration_IR"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[],
-    data=eulerian_files,
+    values=eulerian_files,
 )
 
 lagrangian_files = [
@@ -371,11 +370,11 @@ r3xa.add_data_set(
         "and with the DIC field to be lagrangian"
     ),
     path="./",
-    file_type="application/octet-stream",
-    data_sources=["lagrangian_thermography"],
+    data_type="application/octet-stream",
+    parent_data_sources=["lagrangian_thermography"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
-    data=lagrangian_files,
+    values=lagrangian_files,
 )
 
 energy_balance_files = [
@@ -388,11 +387,11 @@ r3xa.add_data_set(
     title="Final results :\nLagrangian energy balance fields",
     description="Energy balance fields",
     path="./",
-    file_type="application/octet-stream",
-    data_sources=["energy_balance"],
+    data_type="application/octet-stream",
+    parent_data_sources=["energy_balance"],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=VISIBLE_TIMESTAMPS,
-    data=energy_balance_files,
+    values=energy_balance_files,
 )
 
 # Validate and save

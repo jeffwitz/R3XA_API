@@ -1,6 +1,6 @@
 # R3XA Web (v0)
 
-Minimal FastAPI shell wired to the `r3xa_api.webcore` contracts.
+FastAPI editor wired to schema-derived `r3xa_api.webcore` contracts.
 
 ## Install
 
@@ -19,7 +19,10 @@ available.
 
 Notes:
 - SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system.
+- After installation, `r3xa-ensure-graphviz` can install it through Homebrew on macOS or WinGet/Chocolatey on Windows.
 - The schema viewer JS is vendored; **no `npm install` is required** for normal use.
+- The editor keeps one canonical R3XA JSON document across Guided, Advanced, and Expert modes.
+- Schema kinds come from `GET /api/schema/catalog`; UI presentation and profiles come from `GET /api/ui`.
 
 ## Branding
 
@@ -39,3 +42,6 @@ It will be displayed in the top bar if present.
 - `POST /api/validate`
 - `GET /api/schema`
 - `GET /api/schema/summary`
+- `GET /api/schema/catalog`
+- `GET /api/ui`
+- `GET /api/profiles`

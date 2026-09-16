@@ -14,7 +14,7 @@ from .registry import (
 )
 from .schema import load_schema, schema_version
 from .typed import from_model
-from .validate import validate
+from .validate import integrity_errors, validate, validate_integrity
 
 _TYPED_AVAILABLE = False
 typed_available = False
@@ -38,6 +38,8 @@ __all__ = [
     "load_schema",
     "schema_version",
     "validate",
+    "integrity_errors",
+    "validate_integrity",
     "Registry",
     "RegistryItem",
     "models",

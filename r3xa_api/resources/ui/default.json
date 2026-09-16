@@ -1,0 +1,14 @@
+{
+  "fields": {
+    "id": {
+      "level": "expert"
+    },
+    "kind": {
+      "level": "expert"
+    },
+    "description": {
+      "level": "advanced"
+    }
+  },
+  "levels": ["basic", "advanced", "expert"]
+}

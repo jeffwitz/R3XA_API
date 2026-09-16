@@ -2,7 +2,7 @@ from pathlib import Path
 
 import jsonschema
 
-from r3xa_api import R3XAFile, Registry, RegistryItem, load_item, load_registry, merge_item, unit, validate_item
+from r3xa_api import R3XAFile, Registry, RegistryItem, load_item, load_registry, merge_item, validate_item
 
 
 def test_validate_registry_items():
@@ -110,19 +110,18 @@ def test_registry_item_can_be_appended_to_r3xafile() -> None:
     r3xa = R3XAFile(
         title="Registry item append",
         description="Append RegistryItem directly to a file",
-        authors="R3XA API",
+        authors=["R3XA API"],
         date="2026-04-03",
     )
     r3xa.data_sources.append(camera)
     r3xa.add_list_data_set(
         title="Images",
         description="Camera image sequence",
-        file_type="image/tiff",
+        data_type="image/tiff",
         path="images/",
-        data_sources=[camera["id"]],
-        time_reference=unit(unit="s"),
+        parent_data_sources=[camera["id"]],
         timestamps=[0.0],
-        data=["img_0000.tif"],
+        values=["img_0000.tif"],
     )
 
     validate_item(camera)

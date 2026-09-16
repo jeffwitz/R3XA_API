@@ -76,9 +76,12 @@ def save_item_path(
 def _wrap_def(schema: Dict[str, Any], kind: str) -> Dict[str, Any]:
     """Wrap a `$defs` item into a standalone schema root for validation."""
 
-    section, name = kind.split("/", 1)
+    if "/" in kind:
+        reference = f"#/$defs/{kind}"
+    else:
+        reference = f"#/$defs/types/{kind}"
     return {
-        "$ref": f"#/$defs/{section}/{name}",
+        "$ref": reference,
         "$defs": schema.get("$defs", {}),
     }
 

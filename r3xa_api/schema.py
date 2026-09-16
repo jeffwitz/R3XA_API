@@ -31,4 +31,5 @@ def schema_version(path: Optional[str] = None) -> Optional[str]:
     """Return the schema version constant declared in loaded schema."""
 
     schema = load_schema(path)
-    return str(schema.get("properties", {}).get("version", {}).get("const"))
+    value = schema.get("properties", {}).get("version", {}).get("const")
+    return None if value is None else str(value)

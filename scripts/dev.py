@@ -10,6 +10,47 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 FULL_DEV_EXTRAS = ".[dev,docs,typed,web,notebook,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
+SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
+MODELS_OUTPUT = "r3xa_api/models.py"
+
+
+def model_codegen_command(python: str, output: str = MODELS_OUTPUT) -> tuple[str, ...]:
+    """Return the datamodel-code-generator invocation that builds the typed models.
+
+    `tests/test_models_sync.py` reuses this so the sync check cannot drift from
+    the command developers actually run.
+    """
+
+    return (
+        python,
+        "-m",
+        "datamodel_code_generator",
+        "--input",
+        SCHEMA_RESOURCE,
+        "--input-file-type",
+        "jsonschema",
+        "--output",
+        output,
+        "--use-standard-collections",
+        "--target-python-version",
+        "3.10",
+        "--field-constraints",
+        "--output-model-type",
+        "pydantic_v2.BaseModel",
+        "--base-class",
+        "r3xa_api.model_base.R3XAModel",
+        "--class-name",
+        "R3XADocument",
+        "--disable-timestamp",
+        "--no-use-union-operator",
+        "--use-one-literal-as-default",
+    )
+
+
+def _ensure_graphviz() -> Path:
+    from r3xa_api.graphviz_setup import ensure_graphviz
+
+    return ensure_graphviz()
 
 
 def _project_python() -> str:
@@ -65,27 +106,7 @@ def cmd_build_docs(args: argparse.Namespace) -> None:
 
 def cmd_generate_models(_: argparse.Namespace) -> None:
     python = project_python()
-    _run(
-        python,
-        "-m",
-        "datamodel_code_generator",
-        "--input",
-        "r3xa_api/resources/schema.json",
-        "--input-file-type",
-        "jsonschema",
-        "--output",
-        "r3xa_api/models.py",
-        "--use-standard-collections",
-        "--target-python-version",
-        "3.10",
-        "--field-constraints",
-        "--output-model-type",
-        "pydantic_v2.BaseModel",
-        "--class-name",
-        "R3XADocument",
-        "--disable-timestamp",
-        "--no-use-union-operator",
-    )
+    _run(*model_codegen_command(python))
     _run(python, "scripts/postprocess_models.py")
 
 
@@ -95,6 +116,8 @@ def cmd_generate_stubs(_: argparse.Namespace) -> None:
 
 def cmd_notebook_dic(args: argparse.Namespace) -> None:
     python = project_python()
+    if args.ensure_graphviz:
+        print(f"Graphviz is ready: {_ensure_graphviz()}")
     command = [
         python,
         "-m",
@@ -124,6 +147,8 @@ def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
 
 def cmd_run_web(args: argparse.Namespace) -> None:
     python = project_python()
+    if args.ensure_graphviz:
+        print(f"Graphviz is ready: {_ensure_graphviz()}")
     if args.install:
         _run(python, "-m", "pip", "install", "-e", ".[web]")
     command = [
@@ -218,27 +243,7 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
 
     steps.extend(
         [
-            (
-                python,
-                "-m",
-                "datamodel_code_generator",
-                "--input",
-                "r3xa_api/resources/schema.json",
-                "--input-file-type",
-                "jsonschema",
-                "--output",
-                "r3xa_api/models.py",
-                "--use-standard-collections",
-                "--target-python-version",
-                "3.10",
-                "--field-constraints",
-                "--output-model-type",
-                "pydantic_v2.BaseModel",
-                "--class-name",
-                "R3XADocument",
-                "--disable-timestamp",
-                "--no-use-union-operator",
-            ),
+            model_codegen_command(python),
             (python, "scripts/postprocess_models.py"),
             (python, "scripts/generate_core_stub.py"),
         ]
@@ -268,6 +273,10 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
 
     for step in steps:
         _run_or_print(step, dry_run=args.dry_run)
+
+
+def cmd_ensure_graphviz(_: argparse.Namespace) -> None:
+    print(f"Graphviz is ready: {_ensure_graphviz()}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -323,6 +332,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     notebook_dic = subparsers.add_parser("notebook-dic", help="launch the interactive Marimo DIC notebook")
     notebook_dic.add_argument("--port", type=int, default=None, help="optional Marimo port override")
+    notebook_dic.add_argument(
+        "--ensure-graphviz",
+        action="store_true",
+        help="install Graphviz with the platform package manager when dot is missing",
+    )
     notebook_dic.set_defaults(func=cmd_notebook_dic)
 
     notebook_export = subparsers.add_parser("notebook-dic-export", help="export the Marimo notebook to static HTML")
@@ -334,7 +348,18 @@ def build_parser() -> argparse.ArgumentParser:
     run_web.add_argument("--app", default="web.app.main:app", help="ASGI application import path")
     run_web.add_argument("--no-reload", dest="reload", action="store_false", help="disable Uvicorn autoreload")
     run_web.add_argument("--install", action="store_true", help="install the web extra before launching the server")
+    run_web.add_argument(
+        "--ensure-graphviz",
+        action="store_true",
+        help="install Graphviz with the platform package manager when dot is missing",
+    )
     run_web.set_defaults(func=cmd_run_web, reload=True)
+
+    ensure_graphviz_command = subparsers.add_parser(
+        "ensure-graphviz",
+        help="install Graphviz with the platform package manager when dot is missing",
+    )
+    ensure_graphviz_command.set_defaults(func=cmd_ensure_graphviz)
 
     clean = subparsers.add_parser("clean-artifacts", help="remove build products, caches, and generated artifacts")
     clean.set_defaults(func=cmd_clean_artifacts)

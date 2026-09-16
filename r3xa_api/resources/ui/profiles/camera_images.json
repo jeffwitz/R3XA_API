@@ -1,0 +1,95 @@
+{
+  "id": "camera_images",
+  "title": "Camera image acquisition",
+  "description": "A prefilled camera workflow linking a visible camera to its recorded image sequence.",
+  "recommended_kinds": [
+    "settings/specimen",
+    "data_sources/camera",
+    "data_sets/list"
+  ],
+  "links": [
+    {"from_step": "camera", "to_step": "images", "to_field": "parent_data_sources", "to_many": true}
+  ],
+  "steps": [
+    {
+      "id": "experiment",
+      "title": "Experiment",
+      "section": "header",
+      "defaults": {
+        "title": "Camera image acquisition",
+        "description": "Prefilled example with a camera and an image sequence.",
+        "authors": ["R3XA Team"],
+        "date": "2026-09-01"
+      },
+      "questions": [
+        {"field": "title", "title": "What is the name of the acquisition?", "required": true},
+        {"field": "description", "title": "How would you describe the acquisition?", "required": true},
+        {"field": "authors", "title": "Who performed the acquisition?"},
+        {"field": "date", "title": "When was it performed?"}
+      ]
+    },
+    {
+      "id": "specimen",
+      "title": "Specimen",
+      "section": "settings",
+      "kind": "settings/specimen",
+      "defaults": {
+        "title": "Openhole sample",
+        "description": "Glass-epoxy specimen.",
+        "sizes": [{"kind": "unit", "title": "width", "value": 30.0, "unit": "mm", "scale": 1.0}]
+      },
+      "questions": [
+        {"field": "title", "title": "What specimen was recorded?", "required": true},
+        {"field": "description", "title": "Describe the specimen.", "required": true},
+        {"field": "sizes", "title": "What are the specimen dimensions?"}
+      ]
+    },
+    {
+      "id": "camera",
+      "title": "Camera",
+      "section": "data_sources",
+      "kind": "data_sources/camera",
+      "defaults": {
+        "title": "CCD Camera",
+        "description": "Visible camera recording the specimen.",
+        "output_components": 1,
+        "output_dimension": "surface",
+        "output_units": [{"kind": "unit", "title": "graylevel", "unit": "gl", "scale": 1.0}],
+        "manufacturer": "Allied Vision Technologies (AVT)",
+        "model": "Dolphin F-145B",
+        "image_size": [
+          {"kind": "unit", "title": "width", "value": 1392, "unit": "px", "scale": 1.0},
+          {"kind": "unit", "title": "height", "value": 1040, "unit": "px", "scale": 1.0}
+        ]
+      },
+      "questions": [
+        {"field": "title", "title": "Which camera recorded the images?", "required": true},
+        {"field": "description", "title": "Describe the camera."},
+        {"field": "manufacturer", "title": "Who manufactured the camera?"},
+        {"field": "model", "title": "What is the camera model?"},
+        {"field": "image_size", "title": "What is the image resolution?", "required": true}
+      ]
+    },
+    {
+      "id": "images",
+      "title": "Images",
+      "section": "data_sets",
+      "kind": "data_sets/list",
+      "defaults": {
+        "title": "Graylevel images",
+        "description": "Image sequence recorded by the camera.",
+        "path": "images/",
+        "data_type": "image/tiff",
+        "time_reference": {"kind": "unit", "title": "reference time", "value": 0.0, "unit": "s", "scale": 1.0},
+        "timestamps": [0.0, 1.0],
+        "values": ["img_0001.tif", "img_0002.tif"]
+      },
+      "questions": [
+        {"field": "title", "title": "How should the image data be named?", "required": true},
+        {"field": "description", "title": "Describe the image data.", "required": true},
+        {"field": "path", "title": "Where are the image files stored?"},
+        {"field": "data_type", "title": "What type of image files are they?", "required": true}
+      ]
+    }
+  ]
+}

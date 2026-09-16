@@ -1,15 +1,17 @@
 // R3XA graph
 digraph {
 	node [margin="0.2,0.1"]
-	gpwojlubbxomeyrlimsmtaoq [label="CCD Camera
+	mkllsvkmwjodavfgrpzrgvay [label="Openhole sample
+(Glass-epoxy specimen)" color="#2b587a" fillcolor="#e8f1fb" penwidth=3 shape=hexagon style=filled]
+	ndtsuemqoswuvcuysmtvblmk [label="CCD Camera
 (Encoding: 8-bit)" color=lightgreen fillcolor=white penwidth=4 shape=ellipse style=filled]
-	epjeqxqznutkbdhstnvlzstv [label="DIC processing (pyxel)
+	tqhvocoqzlgwwlzionhydxvn [label="DIC processing (pyxel)
 (2D DIC using pyxel)" color=black fillcolor=lightblue penwidth=2 shape=ellipse style=filled]
-	yzqbcxrpkpmgokzvybbaoaie [label="graylevel images
+	uckwhuagiizyuhikaqdfppeo [label="graylevel images
 (raw images from CCD camera)" color=black fillcolor=lightgrey penwidth=2 shape=box style=filled]
-	dseyyjnjhhassfgktihvuzga [label="DIC displacement fields
+	oxaeffiixuicvvdrjwozhold [label="DIC displacement fields
 (ux, uy per frame)" color=red fillcolor="#FFA07A" penwidth=6 shape=box style=filled]
-	yzqbcxrpkpmgokzvybbaoaie -> epjeqxqznutkbdhstnvlzstv [color=black]
-	gpwojlubbxomeyrlimsmtaoq -> yzqbcxrpkpmgokzvybbaoaie [color=black]
-	epjeqxqznutkbdhstnvlzstv -> dseyyjnjhhassfgktihvuzga [color=black]
+	uckwhuagiizyuhikaqdfppeo -> tqhvocoqzlgwwlzionhydxvn [color=black]
+	ndtsuemqoswuvcuysmtvblmk -> uckwhuagiizyuhikaqdfppeo [color=black]
+	tqhvocoqzlgwwlzionhydxvn -> oxaeffiixuicvvdrjwozhold [color=black]
 }

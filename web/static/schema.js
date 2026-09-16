@@ -16,7 +16,6 @@ const ensureServerStart = () => {
   const stored = localStorage.getItem("r3xaAppStart");
   if (stored !== appStart) {
     localStorage.setItem("r3xaAppStart", appStart);
-    localStorage.removeItem("r3xaDraft");
   }
 };
 

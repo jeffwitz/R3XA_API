@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 import importlib.util
 import json
@@ -88,11 +90,15 @@ def test_examples_validate_all():
             examples / "valid_camera_list.json",
             examples / "valid_tabular_file.json",
             examples / "essai-torsion.json",
+            examples / "fatigue-with-overload.json",
             artifacts / "dic_pipeline.json",
             artifacts / "dic_pipeline_registry.json",
             artifacts / "dic_pipeline_loaded.json",
+            artifacts / "dic_pipeline_typed.json",
+            artifacts / "qi_hu_from_json_literal.json",
             artifacts / "qi_hu_from_scratch.json",
             artifacts / "qi_hu_from_scratch_matlab.json",
+            artifacts / "baseline_qi" / "qi_hu_from_scratch.json",
         ]:
             with path.open("r", encoding="utf-8") as f:
                 payload = json.load(f)

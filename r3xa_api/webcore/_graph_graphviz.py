@@ -18,6 +18,17 @@ def build_graphviz_dot(data: Dict[str, Any], format: str = "svg", include_descri
     dot.attr("node", margin="0.2,0.1")
     model = build_graph_model(data)
 
+    for setting in data.get("settings", []):
+        setting_id = setting.get("id")
+        if not setting_id:
+            continue
+        label = format_node_label(
+            setting.get("title", ""),
+            setting.get("description", ""),
+            include_description=include_description,
+        )
+        dot.node(setting_id, label, **STYLES["settings"]["root"])
+
     for source in data.get("data_sources", []):
         is_intermediate = source.get("id") in model.intermediate_sources
         style = STYLES["data_sources"]["intermediate" if is_intermediate else "initial"]

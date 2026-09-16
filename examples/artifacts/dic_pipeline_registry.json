@@ -1,9 +1,11 @@
 {
     "title": "Open-hole tensile test with DIC (registry)",
     "description": "Camera acquisition + DIC processing pipeline (registry-based)",
-    "authors": "R3XA API",
+    "authors": [
+        "R3XA API"
+    ],
     "date": "2024-10-30",
-    "version": "2024.7.1",
+    "version": "2026.9.8",
     "settings": [
         {
             "id": "set_spec_exp01",
@@ -73,9 +75,9 @@
             },
             "standoff_distance": {
                 "kind": "unit",
+                "unit": "m",
                 "title": "standoff",
                 "value": 0.5,
-                "unit": "m",
                 "scale": 1.0
             }
         },
@@ -105,26 +107,16 @@
             "manufacturer": "Pyxel",
             "model": "pyxel-2d",
             "input_data_sets": [
-                "mpglquxlxiknufdoelegxqmm"
+                "ynjavxvhotaibrykouenfodk"
             ]
         }
     ],
     "data_sets": [
         {
             "title": "graylevel images",
-            "description": "raw images from CCD camera",
-            "path": "images/",
-            "file_type": "image/tiff",
-            "data_sources": [
+            "parent_data_sources": [
                 "ds_cam_exp01"
             ],
-            "time_reference": {
-                "kind": "unit",
-                "title": "time_reference",
-                "value": 0.0,
-                "unit": "s",
-                "scale": 1.0
-            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -132,31 +124,31 @@
                 1.5,
                 2.0
             ],
-            "data": [
+            "values": [
                 "img_0000.tif",
                 "img_0001.tif",
                 "img_0002.tif",
                 "img_0003.tif",
                 "img_0004.tif"
             ],
-            "id": "mpglquxlxiknufdoelegxqmm",
+            "description": "raw images from CCD camera",
+            "path": "images/",
+            "data_type": "image/tiff",
+            "time_reference": {
+                "kind": "unit",
+                "unit": "s",
+                "title": "time_reference",
+                "value": 0.0,
+                "scale": 1.0
+            },
+            "id": "ynjavxvhotaibrykouenfodk",
             "kind": "data_sets/list"
         },
         {
             "title": "DIC displacement fields",
-            "description": "ux, uy per frame",
-            "path": "dic/",
-            "file_type": "text/csv",
-            "data_sources": [
+            "parent_data_sources": [
                 "ds_dic_exp01"
             ],
-            "time_reference": {
-                "kind": "unit",
-                "title": "time_reference",
-                "value": 0.0,
-                "unit": "s",
-                "scale": 1.0
-            },
             "timestamps": [
                 0.0,
                 0.5,
@@ -164,14 +156,24 @@
                 1.5,
                 2.0
             ],
-            "data": [
+            "values": [
                 "dic_0000.csv",
                 "dic_0001.csv",
                 "dic_0002.csv",
                 "dic_0003.csv",
                 "dic_0004.csv"
             ],
-            "id": "dexzizytiecnsqgaclicnegr",
+            "description": "ux, uy per frame",
+            "path": "dic/",
+            "data_type": "text/csv",
+            "time_reference": {
+                "kind": "unit",
+                "unit": "s",
+                "title": "time_reference",
+                "value": 0.0,
+                "scale": 1.0
+            },
+            "id": "zklbghcjivbknwmlhgawttny",
             "kind": "data_sets/list"
         }
     ]

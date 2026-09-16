@@ -23,6 +23,11 @@ pip install -e ".[graph_nx]"       # NetworkX + Matplotlib static graph backend
 pip install -e ".[dev]"            # pytest and developer tools
 ```
 
+The base installation includes the Python `graphviz` wrapper because graph
+generation is used by the SDK, notebook, and web workflows. It cannot install
+the system Graphviz executable (`dot`) through `pip`; install that executable
+with `r3xa-ensure-graphviz` on macOS/Windows or with the Linux package manager.
+
 Graphviz (`dot`) is a **system dependency** for SVG graph generation.
 
 ## Bootstrap a contributor environment
@@ -41,6 +46,38 @@ This command:
 - regenerates `r3xa_api/models.py`
 - regenerates `r3xa_api/core.pyi`
 - regenerates `docs/specification.md`
+
+### Schema-driven typed models
+
+The typed models follow the same source-of-truth rule as the rest of the SDK:
+
+```text
+R3XA_SPEC/schema-full.json
+        ↓
+R3XA_API/r3xa_api/resources/schema.json
+        ↓
+datamodel-code-generator
+        ↓
+r3xa_api/models.py
+        ↓
+scripts/postprocess_models.py
+```
+
+`datamodel-code-generator` is an external generator configured to emit Pydantic
+v2 models. Pydantic provides runtime validation and serialization; it is not the
+tool that generates the models from JSON Schema. The generated classes inherit
+the shared `R3XAModel` behavior from {glsrc}`r3xa_api/model_base.py`.
+
+Never edit {glsrc}`r3xa_api/models.py` by hand. After a schema change, update the
+source schema in `R3XA_SPEC`, propagate it to the API repository, then run:
+
+```bash
+python scripts/dev.py generate-models
+```
+
+The command regenerates the classes and stable public aliases. Tests in
+{glsrc}`tests/test_models.py` cover the ergonomic behavior and ensure that the
+generated classes remain usable.
 - builds the Sphinx HTML documentation
 
 Use it when you want a ready-to-work contributor environment without running
@@ -83,11 +120,18 @@ The exact number of collected tests depends on the optional extras installed in 
 - `pip install -e ".[dev,typed,web,graph_nx]"`  
   Gives the full local matrix used for repository maintenance.
 
+For local graph support, run `r3xa-ensure-graphviz` after installing the package.
+In a source checkout, `python scripts/dev.py ensure-graphviz` provides the same
+cross-platform helper.
+
 If two contributors report different totals, check the installed extras before comparing raw pytest counts.
 
 GitLab CI runs the full test suite with the `dev`, `typed`, `web`, and `graph_nx`
-extras, and installs the Graphviz `dot` executable. A package job also verifies
-that the distributed wheel contains the web application and its static assets.
+extras on Python 3.9 through 3.13, and installs the Graphviz `dot` executable.
+A separate quality job builds the documentation with warnings treated as
+errors. The package job verifies the wheel contents and runs a smoke test from
+an environment where the installed wheel, rather than the source tree, is
+imported.
 
 ## Common developer commands
 

@@ -93,7 +93,7 @@ def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, fil
 
     expected_node_ids = {
         item["id"]
-        for section in ("data_sources", "data_sets")
+        for section in ("settings", "data_sources", "data_sets")
         for item in payload.get(section, [])
         if item.get("id")
     }
@@ -108,17 +108,25 @@ def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, fil
         return 0
 
     def _source_count(dataset: dict) -> int:
-        value = dataset.get("data_sources")
-        if value is None and "data_source" in dataset:
-            value = dataset.get("data_source")
+        value = dataset.get("parent_data_sources")
         if not value:
             return 0
         if isinstance(value, list):
             return len([v for v in value if v])
         return 1
 
-    expected_edge_count = sum(_input_count(source) for source in payload.get("data_sources", [])) + sum(
-        _source_count(dataset) for dataset in payload.get("data_sets", [])
+    def _associated_source_count(setting: dict) -> int:
+        value = setting.get("attached_data_sources")
+        if not value:
+            return 0
+        if isinstance(value, list):
+            return len([item for item in value if item])
+        return 1
+
+    expected_edge_count = (
+        sum(_associated_source_count(setting) for setting in payload.get("settings", []))
+        + sum(_input_count(source) for source in payload.get("data_sources", []))
+        + sum(_source_count(dataset) for dataset in payload.get("data_sets", []))
     )
 
     dot_node_ids = {
