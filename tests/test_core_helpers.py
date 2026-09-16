@@ -301,3 +301,72 @@ def test_new_guided_helpers_validate_against_schema() -> None:
     )
 
     validate(r3xa.to_dict())
+
+
+def _document_with_items() -> R3XAFile:
+    document = R3XAFile(
+        title="Torsion test",
+        description="A short document",
+        authors=["J.-C. Passieux"],
+        date="2026-09-07",
+    )
+    document.add_specimen_setting(
+        title="Open-hole sample",
+        description="sample",
+        sizes=[unit(title="width", value=20, unit="mm")],
+    )
+    document.add_camera_source(
+        title="CCD Camera",
+        description="camera",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[unit(title="graylevel", value=1.0, unit="gl")],
+    )
+    return document
+
+
+def test_document_summary_lists_header_and_item_titles() -> None:
+    summary = _document_with_items().summary()
+
+    # Schema-required header fields are marked, optional ones still listed.
+    assert "* title" in summary
+    assert "Torsion test" in summary
+    assert "  repository" in summary
+    # Collections are identified by the titles a reader recognises.
+    assert "settings" in summary and "[Open-hole sample]" in summary
+    assert "data_sources" in summary and "[CCD Camera]" in summary
+    assert "data_sets" in summary and "[]" in summary
+
+
+def test_document_summary_shares_value_formatting_with_models() -> None:
+    document = R3XAFile(title="t", description="d", authors=["a"], date="2026-01-01")
+    document.header["license"] = unit(title="w", value=1392, unit="px")
+
+    # The unit collapses exactly as it does in a model's summary().
+    assert "1392 px" in document.summary()
+
+
+def test_plot_lets_the_backend_choose_the_extension(tmp_path) -> None:
+    pytest.importorskip("graphviz")
+    document = _document_with_items()
+
+    without_suffix = document.plot(tmp_path / "graph")
+    with_suffix = document.plot(tmp_path / "other.svg")
+
+    # Graphviz appends the format itself: neither form may double it.
+    assert without_suffix.name == "graph.svg"
+    assert with_suffix.name == "other.svg"
+    assert without_suffix.exists() and with_suffix.exists()
+
+
+def test_plot_creates_missing_parent_directories(tmp_path) -> None:
+    pytest.importorskip("graphviz")
+
+    output = _document_with_items().plot(tmp_path / "nested" / "dir" / "graph")
+
+    assert output.exists()
+
+
+def test_plot_rejects_an_unknown_backend(tmp_path) -> None:
+    with pytest.raises(ValueError, match="Unknown graph backend"):
+        _document_with_items().plot(tmp_path / "graph", backend="nope")

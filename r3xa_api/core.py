@@ -4,6 +4,7 @@ import json
 import inspect
 import random
 import string
+from collections.abc import Mapping
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Union
@@ -18,6 +19,37 @@ def _random_id(n: int = 24) -> str:
 
     chars = string.ascii_lowercase
     return "".join(random.choice(chars) for _ in range(n))
+
+
+def format_number(value: Any) -> str:
+    """Render an integral float without its trailing zero: 1392.0 -> 1392."""
+
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def format_json_value(value: Any) -> str:
+    """Render a JSON-compatible value the way it reads to a user.
+
+    Units collapse to `1392 px` and lists of them to `[1392 px, 1040 px]`.
+    The typed models reuse this so document-level and item-level `print()`
+    agree on the same conventions; it stays free of any pydantic dependency
+    because `R3XAFile` works on plain dictionaries.
+    """
+
+    if value is None:
+        return "None"
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, Mapping):
+        if value.get("kind") == "unit" and "value" in value and "unit" in value:
+            return f"{format_number(value['value'])} {value['unit']}"
+        inner = ", ".join(f"{key}: {format_json_value(item)}" for key, item in value.items())
+        return "{" + inner + "}"
+    if isinstance(value, (list, tuple)):
+        return "[" + ", ".join(format_json_value(item) for item in value) + "]"
+    return format_number(value)
 
 
 def new_item(kind: str, **fields: Any) -> Dict[str, Any]:
@@ -341,6 +373,88 @@ class R3XAFile:
         """Serialize payload as a JSON string."""
 
         return json.dumps(self.to_dict(), indent=indent)
+
+    @staticmethod
+    def _item_titles(items: Iterable[Dict[str, Any]]) -> str:
+        """Return the titles of a collection, which is what identifies items on sight."""
+
+        return "[" + ", ".join(str(item.get("title", "None")) for item in items) + "]"
+
+    def summary(self) -> str:
+        """Return a readable listing of the header and the document collections.
+
+        Header fields follow the schema's own order and are marked with `*`
+        when the schema requires them, matching the typed models' `summary()`.
+        """
+
+        schema = load_schema()
+        properties = schema.get("properties", {})
+        collections = ("settings", "data_sources", "data_sets")
+        required = set(schema.get("required", []))
+
+        names = [name for name in properties if name not in collections]
+        # Header keys the document carries but the schema does not describe.
+        names += [name for name in self.header if name not in properties]
+
+        width = max(len(name) for name in names + list(collections))
+        lines = ["R3XA File", "─" * max(width + 20, 40)]
+
+        for name in names:
+            marker = "*" if name in required else " "
+            value = format_json_value(self.header.get(name))
+            lines.append(f"{marker} {name:<{width}} : {value}")
+
+        for name in collections:
+            marker = "*" if name in required else " "
+            titles = self._item_titles(getattr(self, name))
+            lines.append(f"{marker} {name:<{width}} : {titles}")
+
+        return "\n".join(lines)
+
+    def print(self) -> None:
+        """Print a readable listing of the document."""
+
+        print(self.summary())
+
+    def plot(
+        self,
+        path: str | Path,
+        *,
+        backend: str = "graphviz",
+        include_description: bool = True,
+        **kwargs: Any,
+    ) -> Path:
+        """Render the document's item graph to a file and return its path.
+
+        `backend` selects the renderer: "graphviz" (SVG), "pyvis" (interactive
+        HTML) or "matplotlib" (PNG). Each needs its optional dependency, so the
+        import happens here rather than at module import time. The extension is
+        supplied by the backend; the returned path is the file actually written.
+        """
+
+        from .webcore import graph as _graph
+
+        renderers: Dict[str, Callable[..., Path]] = {
+            "graphviz": _graph.render_graphviz_file,
+            "pyvis": _graph.render_pyvis_html,
+            "matplotlib": _graph.render_networkx_matplotlib_file,
+        }
+        if backend not in renderers:
+            raise ValueError(
+                f"Unknown graph backend {backend!r}. "
+                f"Available: {', '.join(sorted(renderers))}"
+            )
+
+        output = Path(path)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        if backend == "graphviz" and output.suffix == ".svg":
+            # Graphviz appends the format itself, so `g.svg` would become
+            # `g.svg.svg`. The other backends normalise the suffix themselves.
+            output = output.with_suffix("")
+
+        return renderers[backend](
+            self.to_dict(), output, include_description=include_description, **kwargs
+        )
 
     def save(self, path: str | Path, indent: int = 4, validate: bool = True) -> Path:
         """Validate optionally, then serialize payload as JSON to disk."""

@@ -11,6 +11,8 @@ from typing import Any, ClassVar, Dict, Mapping, TypeVar, Union, get_args, get_o
 
 from pydantic import BaseModel, ConfigDict, RootModel
 
+from .core import format_json_value
+
 
 ModelT = TypeVar("ModelT", bound="R3XAModel")
 
@@ -400,42 +402,31 @@ class R3XAModel(BaseModel):
         return destination
 
     @staticmethod
-    def _format_number(value: Any) -> str:
-        """Render an integral float without its trailing zero: 1392.0 -> 1392."""
+    def _to_json_like(value: Any) -> Any:
+        """Reduce pydantic values to plain JSON types, preserving structure."""
 
-        if isinstance(value, float) and value.is_integer():
-            return str(int(value))
-        return str(value)
+        if isinstance(value, Enum):
+            return value.value
+        if isinstance(value, RootModel):
+            # Constrained scalars (Uint, DataSetId, ...) read as their payload.
+            return R3XAModel._to_json_like(value.root)
+        if isinstance(value, BaseModel):
+            return value.model_dump(mode="json")
+        if isinstance(value, Mapping):
+            return {key: R3XAModel._to_json_like(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [R3XAModel._to_json_like(item) for item in value]
+        return value
 
     @staticmethod
     def _format_value(value: Any) -> str:
         """Render a field value the way it reads to a user, not as a repr.
 
-        Units collapse to `1392 px` and lists of them to `[1392 px, 1040 px]`,
-        rather than exposing the underlying model representation.
+        Delegates to `core.format_json_value` so item-level and document-level
+        `print()` render units and lists identically.
         """
 
-        fmt = R3XAModel._format_value
-
-        if value is None:
-            return "None"
-        if isinstance(value, Enum):
-            return str(value.value)
-        if isinstance(value, RootModel):
-            # Constrained scalars (Uint, DataSetId, ...) read as their payload.
-            return fmt(value.root)
-        if isinstance(value, BaseModel):
-            return fmt(value.model_dump(mode="json"))
-        if isinstance(value, Mapping):
-            if value.get("kind") == "unit" and "value" in value and "unit" in value:
-                return f"{R3XAModel._format_number(value['value'])} {value['unit']}"
-            inner = ", ".join(f"{key}: {fmt(item)}" for key, item in value.items())
-            return "{" + inner + "}"
-        if isinstance(value, (list, tuple)):
-            return "[" + ", ".join(fmt(item) for item in value) + "]"
-        if isinstance(value, bool):
-            return str(value)
-        return R3XAModel._format_number(value)
+        return format_json_value(R3XAModel._to_json_like(value))
 
     def summary(self) -> str:
         """Return a readable listing of all model fields, including null values."""
