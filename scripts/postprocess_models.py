@@ -16,6 +16,30 @@ HEADER = (
 ALIAS_START = "# --- stable typed aliases (auto-generated) ---"
 ALIAS_END = "# --- end stable typed aliases ---"
 
+# Names used by the 1.x line and by J-C. Passieux's apijc branch. Kept as
+# aliases so existing code keeps importing: the target classes carry the same
+# fields, so the alias is honest rather than a rename in disguise.
+# Two exceptions are documented in docs/internal/REPRISE_BRANCHE_APIJC.md:
+# TestingMachineSettings and StereorigSettings also had their
+# `associated_data_sources` field renamed to `attached_data_sources`, so the
+# class name resolves but that argument does not.
+LEGACY_ALIASES = {
+    "SpecimenSettings": "SpecimenSetting",
+    "StereorigSettings": "StereorigSetting",
+    "TestingMachineSettings": "TestingMachineSetting",
+    "GenericDataSource": "GenericSource",
+    "CameraDataSource": "CameraSource",
+    "InfraredDataSource": "InfraredSource",
+    "TomographDataSource": "TomographSource",
+    "LoadCellDataSource": "LoadCellSource",
+    "StrainGaugeDataSource": "StrainGaugeSource",
+    "PointTemperatureDataSource": "PointTemperatureSource",
+    "DicMeasurementDataSource": "DicMeasurementSource",
+    "MechanicalAnalysisDataSource": "MechanicalAnalysisSource",
+    "IdentificationDataSource": "IdentificationSource",
+    "StrainComputationDataSource": "StrainComputationSource",
+}
+
 
 def _strip_codegen_header(text: str) -> str:
     lines = text.splitlines()
@@ -71,6 +95,10 @@ def _alias_block(available: set[str]) -> str:
 
     lines = ["", ALIAS_START]
     lines.extend(f"{alias} = {target}" for alias, target in aliases.items())
+
+    lines += ["", "# Legacy names from the 1.x line and the apijc branch."]
+    lines.extend(f"{legacy} = {target}" for legacy, target in LEGACY_ALIASES.items())
+
     lines += [
         "",
         "__all__ = [",
@@ -80,6 +108,7 @@ def _alias_block(available: set[str]) -> str:
         "    'OutputDimension',",
     "    'R3XADocument',",
         *[f"    '{alias}'," for alias in aliases if alias != "R3XADocument"],
+        *[f"    '{legacy}'," for legacy in LEGACY_ALIASES],
         "]",
         ALIAS_END,
         "",

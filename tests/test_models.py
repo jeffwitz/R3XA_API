@@ -363,3 +363,34 @@ def test_printing_an_item_directly_shows_its_summary():
     # repr stays pydantic's compact form so a list of items remains readable.
     assert repr(camera) != camera.summary()
     assert "Camera(" in repr(camera)
+
+
+def test_legacy_class_names_alias_the_current_ones():
+    # Names from the 1.x line and the apijc branch keep resolving, to the very
+    # same classes - the field sets match, so the alias is not a rename in
+    # disguise.
+    legacy = {
+        "SpecimenSettings": "SpecimenSetting",
+        "StereorigSettings": "StereorigSetting",
+        "TestingMachineSettings": "TestingMachineSetting",
+        "GenericDataSource": "GenericSource",
+        "CameraDataSource": "CameraSource",
+        "InfraredDataSource": "InfraredSource",
+        "TomographDataSource": "TomographSource",
+        "LoadCellDataSource": "LoadCellSource",
+        "StrainGaugeDataSource": "StrainGaugeSource",
+        "PointTemperatureDataSource": "PointTemperatureSource",
+        "DicMeasurementDataSource": "DicMeasurementSource",
+        "MechanicalAnalysisDataSource": "MechanicalAnalysisSource",
+        "IdentificationDataSource": "IdentificationSource",
+        "StrainComputationDataSource": "StrainComputationSource",
+    }
+
+    for old, current in legacy.items():
+        assert getattr(models, old) is getattr(models, current), old
+        assert old in models.__all__
+        # Reachable from the package too, like the current names.
+        assert getattr(r3xa_api, old) is getattr(models, current)
+
+    # GenericSetting was already singular on the apijc branch: no alias needed.
+    assert not hasattr(models, "GenericSettings")

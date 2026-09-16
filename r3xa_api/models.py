@@ -1179,6 +1179,22 @@ GenericDataSet = Generic
 ImageSetList = List
 ImageSetFile = File
 
+# Legacy names from the 1.x line and the apijc branch.
+SpecimenSettings = SpecimenSetting
+StereorigSettings = StereorigSetting
+TestingMachineSettings = TestingMachineSetting
+GenericDataSource = GenericSource
+CameraDataSource = CameraSource
+InfraredDataSource = InfraredSource
+TomographDataSource = TomographSource
+LoadCellDataSource = LoadCellSource
+StrainGaugeDataSource = StrainGaugeSource
+PointTemperatureDataSource = PointTemperatureSource
+DicMeasurementDataSource = DicMeasurementSource
+MechanicalAnalysisDataSource = MechanicalAnalysisSource
+IdentificationDataSource = IdentificationSource
+StrainComputationDataSource = StrainComputationSource
+
 __all__ = [
     'R3XAModel',
     'Unit',
@@ -1205,5 +1221,19 @@ __all__ = [
     'GenericDataSet',
     'ImageSetList',
     'ImageSetFile',
+    'SpecimenSettings',
+    'StereorigSettings',
+    'TestingMachineSettings',
+    'GenericDataSource',
+    'CameraDataSource',
+    'InfraredDataSource',
+    'TomographDataSource',
+    'LoadCellDataSource',
+    'StrainGaugeDataSource',
+    'PointTemperatureDataSource',
+    'DicMeasurementDataSource',
+    'MechanicalAnalysisDataSource',
+    'IdentificationDataSource',
+    'StrainComputationDataSource',
 ]
 # --- end stable typed aliases ---
