@@ -1,7 +1,8 @@
 # Reprise de la branche `apijc` dans la ligne 2.x
 
 Document de travail pour la discussion avec Jean-Charles Passieux.
-État au 16 septembre 2026. **Décisions de J-C. Passieux intégrées** (section 8).
+État au 16 septembre 2026. **Les huit décisions sont prises et implémentées** (section 8).
+Schéma courant : **`2026.9.17`**. R3XA_API `develop` à `8f2d87b`, R3XA_SPEC `main` à `42df844`.
 
 ---
 
@@ -192,12 +193,12 @@ font résoudre le *nom*, pas l'appel. `essai_tous_types.py` devra donc être rep
 
 ---
 
-## 6. Questions de schéma encore ouvertes
+## 6. Questions de schéma — toutes tranchées
 
-Elles sont **cassantes**. Tant qu'on est en `2.0.0rc1`, les trancher est gratuit ; après la
-2.0.0 finale, chacune coûte une version majeure. C'est le point le plus urgent de cette liste.
+Elles étaient **cassantes**, donc traitées pendant la fenêtre `rc`, où elles ne coûtent rien.
+Deux versions de schéma en sont sorties : `2026.9.16` puis `2026.9.17`.
 
-### 6.1 `authors` — ✅ **décidé : on adopte `{name, affiliation, orcid}`**
+### 6.1 `authors` → **fait, schéma `2026.9.16`** (API `ec14467`, SPEC `2a33911`)
 
 Tu proposais un tableau d'objets `{nom, affiliation, orcid}`. La 2.x a livré un tableau de chaînes
 avec `author_orcids` **en parallèle**. Ta proposition est techniquement meilleure, et c'est
@@ -213,8 +214,14 @@ La description du champ le dit elle-même : *« ORCIDs parallel to authors; use 
 has no ORCID »*. Il faut bourrer de `null` pour tenir l'alignement.
 
 Avec un tableau d'objets, l'invariant devient **structurel** : impossible à violer, dans n'importe
-quel langage, sans code de validation ad hoc. En prime, l'affiliation devient exprimable — la
-forme actuelle ne peut pas la porter.
+quel langage, sans code de validation ad hoc. En prime, l'affiliation devient exprimable.
+
+**Implémenté ainsi.** Nouveau type `$defs/types/author` — `name` seul requis,
+`additionalProperties: false` pour rejeter les fautes de frappe, pas de champ `kind` (il sert à
+discriminer des variantes, un auteur n'en a pas). `author_orcids` supprimé ; le contrôle de
+longueur de `validate.py` disparaît, le schéma s'en charge. Helper `author()` en Python et
+`r3xa.author(...)` en MATLAB, sur le modèle de `unit()`. 62 fichiers migrés côté API ; le
+frontend web normalise désormais les auteurs au lieu de supposer des chaînes.
 
 ### 6.2 `data_sources` → `produced_by`, `associated_data_sources` → `equipped_with`
 
@@ -234,9 +241,20 @@ fois tous les documents et le registre dans le même cycle de version, pour un g
 - **`listdataset.data` → `values`** : fait.
 - **Homogénéisation des requis, `path` / `data`** : fait.
 
-### 6.4 Restent à arbitrer
+### 6.4 Les cinq derniers points → **faits, schéma `2026.9.17`** (API `8f2d87b`, SPEC `42df844`)
 
-- ~~`file_type` → `mime_type`~~ : **abandonné** (décision JC). `file_type` reste.
+| Question posée | Réponse | Ce qui a été fait, et pourquoi |
+|---|---|---|
+| `file_type` → `mime_type` | **Abandon** | `file_type` reste. Il n'était de toute façon implémenté nulle part, ni en 2.x ni dans `apijc`. |
+| Préfixes d'identifiants | **« EXAMPLE »** | Des `examples` (`stg-` / `src-` / `set-`) et la mention explicite de l'espace de noms plat, **sans motif imposé**. Un motif aurait invalidé tous les identifiants produits par `_random_id()` et forcé à réécrire le générateur. |
+| Flag données brutes / analyse | **Ok** | `data_origin` optionnel sur les trois types de data_sets, valeurs `raw` \| `derived`. Énumération plutôt que booléen, pour qu'un troisième cas reste exprimable ; optionnel, pour qu'un import ancien ne déclare pas une origine qu'il ignore. |
+| LSA / `fullfieldmeasurement` | **Pas prioritaire** | Rien fait. Méthode d'un chercheur, hors périmètre pour l'instant. |
+| Emplacement du maillage | **« associé à l'éprouvette »** | `settings/specimen` gagne `mesh`, à côté de `cad`. **Conséquence tirée au-delà de la réponse** : `dic_measurement.mesh` acceptait « filename or specimen setting id » dans une même chaîne — deux natures qu'aucun consommateur ne pouvait départager. Il devient une référence de `setting_id`. Aucun document ne renseignait ce champ : migration nulle. |
+| `GenericDataSet` sans source | **Requis pour `generic`, pas pour les autres** | `parent_data_sources` reste requis sur `data_sets/generic`, devient optionnel sur `file` et `list`. |
+
+Chaque point a été vérifié par validation, pas par relecture : `file` sans source accepté,
+`generic` sans source refusé, `raw` et `derived` acceptés, `cooked` rejeté, champ absent toléré,
+maillage sur l'éprouvette accepté.
 - Préfixes ou motifs d'identifiants (`stg-`, `src-`, `set-`) contre les collisions entre espaces
   de noms plats.
 - Flag données brutes / données d'analyse.
@@ -262,36 +280,37 @@ Pour équilibrer le tableau :
 
 ---
 
-## 8. Décisions prises (J-C. Passieux, 16 septembre)
+## 8. Les huit décisions, et ce qu'elles ont donné
 
-| # | Question | Réponse | Suite donnée |
-|---|---|---|---|
-| 1 | `authors` en `{name, affiliation, orcid}` | **Oui** | À implémenter avant la 2.0.0 finale — changement cassant, multi-dépôts |
-| 2 | `file_type` → `mime_type` | **Abandon** | Rien à faire |
-| 3 | Palette : bordure colorée / fond clair | **Validée** | Rien à faire |
-| 4 | Porter `schemaplot` | **Non**, « le rendu actuel est ok » | Rien à faire |
-| 5 | Porter ses fichiers de travail | **Non**, réécriture par l'équipe | `apijc` peut être supprimée (tag `apijc-snapshot`) |
-| 6 | Alias de classes | **Oui si iso-propriétés** | Condition vérifiée, alias livrés — voir 5.1 |
-| 7 | `__repr__` des items | « Ce qui est le mieux » | Forme compacte conservée : un `document.data_sources` de 9 éléments resterait illisible autrement. `print(item)` donne le listing complet. |
-| 8 | Points de schéma restants | **Ok** | ⚠️ À préciser — voir ci-dessous |
+| # | Question | Réponse de JC | Traduction technique | Commit |
+|---|---|---|---|---|
+| 1 | `authors` en `{name, affiliation, orcid}` | **Oui** | Type `author`, `author_orcids` supprimé, helpers Python et MATLAB, 62 fichiers migrés | `ec14467` + SPEC `2a33911` |
+| 2 | `file_type` → `mime_type` | **Abandon** | Rien | — |
+| 3 | Palette bordure colorée / fond clair | **Validée** | Rien ; `palette="document"` reste optionnelle | `dd879e9` |
+| 4 | Porter `schemaplot` | **Non**, « le rendu actuel est ok » | Rien ; les trois moteurs suffisent | — |
+| 5 | Porter ses fichiers de travail | **Non**, réécriture par l'équipe | `apijc` peut être supprimée, le tag `apijc-snapshot` la préserve | — |
+| 6 | Alias de classes | **Oui si iso-propriétés** | Condition vérifiée classe par classe : 12/14 strictement identiques ; les 14 alias sont livrés | `80cfd31` |
+| 7 | `__repr__` des items | « Ce qui est le mieux » | Forme compacte conservée | — |
+| 8 | Cinq points de schéma | Voir 6.4 | Schéma `2026.9.17` | `8f2d87b` + SPEC `42df844` |
 
-### Deux précisions encore nécessaires
+### Trois réserves, à connaître
 
-**Sur le point 8.** Les items restants de la section 6.4 ne sont pas des propositions mais des
-*questions ouvertes* : préfixes d'identifiants (lesquels ?), flag données brutes / analyse (quel
-nom, quelles valeurs ?), LSA `fullfieldmeasurement`, emplacement du maillage d'éprouvette,
-`GenericDataSet` sans source. Un « Ok » global ne suffit pas à les implémenter : chacun demande un
-choix de conception. À reprendre point par point.
+**Les alias ne font pas tourner l'ancien code.** Ils font résoudre le *nom*, pas l'appel : les
+scripts d'`apijc` passent leurs arguments en positionnel, ce que pydantic refuse. Et deux classes
+ne sont pas strictement iso — `TestingMachineSettings` et `StereorigSettings`, dont
+`associated_data_sources` est devenu `attached_data_sources`.
 
-**Sur le point 1.** L'accord porte sur le principe. Restent à fixer avant écriture :
+**Le maillage : une conséquence tirée au-delà de la réponse.** « Le maillage est associé à
+l'éprouvette » justifiait d'ajouter `settings/specimen.mesh`. En avoir déduit que
+`dic_measurement.mesh` devient une référence de setting est une interprétation — défendable, car
+elle supprime une ambiguïté réelle, mais à confirmer par JC.
 
-1. Noms des champs : `name`, `affiliation`, `orcid` — le schéma est en anglais.
-2. Quels champs sont requis ? Proposition : `name` seul, les deux autres optionnels.
-3. `author_orcids` : suppression pure, ou conservation en obsolète ? Proposition : suppression,
-   le changement est cassant de toute façon.
-4. Numéro de version du schéma : `2026.9.8` → `2026.9.17` ?
-5. `authors` garde-t-il `minItems: 1` ?
+**Le point 2 vient d'un malentendu.** `file_type` → `mime_type` était coché comme fait dans le
+compte-rendu du 31 août, alors qu'il n'a jamais été implémenté nulle part. L'abandon clôt le
+sujet, mais il vaut la peine de savoir que la case cochée était erronée.
 
-Le chantier touche **48 fichiers** dans R3XA_API (schéma embarqué, modèles générés, `validate.py`,
-10 profils d'interface web, documentation, exemples, MATLAB, tests, CI), plus 7 dans R3XA_SPEC.
-R3XA_REGISTRY n'est pas concerné : ses items ne portent pas d'en-tête de document.
+### Ce qui n'est plus bloquant
+
+Plus aucune question de schéma n'attend devant la **2.0.0 finale**. Les deux changements cassants
+ont été faits pendant la fenêtre `rc`, où ils ne coûtent rien ; après la finale, chacun aurait
+coûté une version majeure.
