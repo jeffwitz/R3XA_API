@@ -8,6 +8,7 @@ from r3xa_api.core import _guided_kind_specs
 
 BASE_EXPORTS = {
     "R3XAFile",
+    "R3XAItem",
     "new_item",
     "unit",
     "data_set_file",

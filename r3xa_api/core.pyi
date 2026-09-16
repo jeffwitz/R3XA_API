@@ -6,6 +6,21 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+class R3XAItem(Dict[str, Any]):
+    @property
+    def kind(self) -> Optional[str]: ...
+    def to_dict(self) -> Dict[str, Any]: ...
+    def required_fields(self) -> list[str]: ...
+    def optional_fields(self) -> list[str]: ...
+    def missing_fields(self) -> list[str]: ...
+    def field_descriptions(self) -> Dict[str, str]: ...
+    def summary(self) -> str: ...
+    def print(self) -> None: ...
+    def validate(self, schema: Optional[Dict[str, Any]] = ...) -> R3XAItem: ...
+    @classmethod
+    def load(cls, path: str | Path) -> R3XAItem: ...
+    def save(self, path: str | Path, *, validate: bool = ..., indent: int = ...) -> Path: ...
+
 def new_item(kind: str, **fields: Any) -> Dict[str, Any]: ...
 
 def unit(
@@ -27,9 +42,9 @@ def data_set_file(
 
 class R3XAFile:
     header: Dict[str, Any]
-    settings: list[Dict[str, Any]]
-    data_sources: list[Dict[str, Any]]
-    data_sets: list[Dict[str, Any]]
+    settings: list[R3XAItem]
+    data_sources: list[R3XAItem]
+    data_sets: list[R3XAItem]
 
     def __init__(self, version: Optional[str] = ..., **header: Any) -> None: ...
 
@@ -44,35 +59,35 @@ class R3XAFile:
 
     def set_header(self, **fields: Any) -> R3XAFile: ...
 
-    def add_item(self, kind: str, **fields: Any) -> Dict[str, Any]: ...
-    def add_setting(self, kind: str, **fields: Any) -> Dict[str, Any]: ...
-    def add_data_source(self, kind: str, **fields: Any) -> Dict[str, Any]: ...
-    def add_data_set(self, kind: str, **fields: Any) -> Dict[str, Any]: ...
+    def add_item(self, kind: str, **fields: Any) -> R3XAItem: ...
+    def add_setting(self, kind: str, **fields: Any) -> R3XAItem: ...
+    def add_data_source(self, kind: str, **fields: Any) -> R3XAItem: ...
+    def add_data_set(self, kind: str, **fields: Any) -> R3XAItem: ...
 
     # Guided setting helpers
     def add_generic_setting(
         self,
         title: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_specimen_setting(
         self,
         title: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_stereorig_setting(
         self,
         title: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_testing_machine_setting(
         self,
         title: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     # Guided data source helpers
     def add_camera_source(
@@ -82,7 +97,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_dic_measurement_source(
         self,
@@ -91,7 +106,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_generic_source(
         self,
@@ -100,7 +115,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_identification_source(
         self,
@@ -109,7 +124,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_infrared_source(
         self,
@@ -118,7 +133,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_load_cell_source(
         self,
@@ -127,7 +142,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_mechanical_analysis_source(
         self,
@@ -136,7 +151,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_point_temperature_source(
         self,
@@ -145,7 +160,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_strain_computation_source(
         self,
@@ -154,7 +169,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_strain_gauge_source(
         self,
@@ -163,7 +178,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_tomograph_source(
         self,
@@ -172,7 +187,7 @@ class R3XAFile:
         output_dimension: Any,
         output_units: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     # Guided data set helpers
     def add_file_data_set(
@@ -182,7 +197,7 @@ class R3XAFile:
         timestamps: Any,
         values: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_generic_data_set(
         self,
@@ -190,7 +205,7 @@ class R3XAFile:
         parent_data_sources: Any,
         path: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_list_data_set(
         self,
@@ -199,7 +214,7 @@ class R3XAFile:
         timestamps: Any,
         values: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     # Legacy guided helper aliases
     def add_image_set_list(
@@ -209,7 +224,7 @@ class R3XAFile:
         timestamps: Any,
         values: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def add_image_set_file(
         self,
@@ -218,7 +233,7 @@ class R3XAFile:
         timestamps: Any,
         values: Any,
         **extra: Any,
-    ) -> Dict[str, Any]: ...
+    ) -> R3XAItem: ...
 
     def to_dict(self) -> Dict[str, Any]: ...
     def validate(self) -> None: ...

@@ -1,7 +1,9 @@
 import jsonschema
 import pytest
 
-from r3xa_api import R3XAFile, data_set_file, load_schema, unit, validate
+import json
+
+from r3xa_api import R3XAFile, R3XAItem, data_set_file, load_schema, unit, validate
 
 
 class _FakeTypedModel:
@@ -428,3 +430,72 @@ def test_palette_option_reaches_pyvis(tmp_path) -> None:
 def test_palette_rejects_an_unknown_name(tmp_path) -> None:
     with pytest.raises(ValueError, match="Unknown palette"):
         _document_with_items().plot(tmp_path / "graph", palette="nope")
+
+
+def test_added_items_are_objects_not_bare_dicts() -> None:
+    document = R3XAFile(
+        title="R3XA tutorial 1",
+        description="Minimal example of a R3XA file",
+        authors=["JC Passieux"],
+        date="2026-04-02",
+    )
+
+    specimen = document.add_specimen_setting(
+        title="Openhole sample",
+        description="Glass-epoxy specimen",
+        sizes=[unit(title="width", value=30.0, unit="mm", scale=1.0)],
+    )
+
+    # The helper returns the very object stored in the collection, so mutating
+    # the returned item updates the document.
+    assert specimen is document.settings[0]
+    specimen["description"] = "changed"
+    assert document.settings[0]["description"] == "changed"
+
+    # It prints like a typed model: every schema field, `*` on required ones,
+    # units collapsed - including fields the item does not carry.
+    summary = specimen.summary()
+    assert summary.splitlines()[0] == "settings/specimen"
+    assert "* title: Openhole sample" in summary
+    assert "  sizes: [30 mm]" in summary
+    assert "  cad: None" in summary
+    assert str(specimen) == summary
+
+
+def test_items_stay_usable_as_plain_dictionaries(tmp_path) -> None:
+    document = _document_with_items()
+    setting = document.settings[0]
+
+    # Nothing downstream may notice the wrapper.
+    assert isinstance(setting, dict)
+    assert setting == dict(setting)
+    assert json.loads(json.dumps(document.to_dict()))["settings"][0] == dict(setting)
+    assert "title" in {**setting}
+    # repr stays dict's compact form so a collection remains readable.
+    assert repr(setting).startswith("{")
+
+
+def test_items_validate_save_and_reload_on_their_own(tmp_path) -> None:
+    document = _document_with_items()
+    camera = document.data_sources[0]
+
+    assert camera.validate() is camera
+    assert camera.required_fields()[:2] == ["id", "kind"]
+    assert "description" in camera.optional_fields()
+    assert camera.missing_fields() == []
+    assert "Title of the camera." in camera.field_descriptions()["title"]
+
+    path = camera.save(tmp_path / "camera.json")
+    reloaded = R3XAItem.load(path)
+
+    assert reloaded == camera
+    assert isinstance(reloaded, R3XAItem)
+
+
+def test_loaded_documents_expose_objects_too(tmp_path) -> None:
+    path = _document_with_items().save(tmp_path / "doc.json")
+
+    reloaded = R3XAFile.load(path)
+
+    assert isinstance(reloaded.settings[0], R3XAItem)
+    assert "* title" in reloaded.settings[0].summary()

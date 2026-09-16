@@ -52,6 +52,129 @@ def format_json_value(value: Any) -> str:
     return format_number(value)
 
 
+@lru_cache(maxsize=None)
+def _item_field_spec(kind: str) -> tuple:
+    """Return the schema's field order and required names for an item kind.
+
+    Cached, and deliberately returning immutable values: the result is shared.
+    """
+
+    schema = load_schema()
+    section, _, name = kind.partition("/")
+    definition = schema.get("$defs", {}).get(section, {}).get(name, {})
+    return tuple(definition.get("properties", {})), frozenset(definition.get("required", ()))
+
+
+class R3XAItem(dict):
+    """An R3XA item that stays a dictionary but prints, validates and saves.
+
+    `R3XAFile` must work without pydantic, so items cannot be typed models.
+    The ergonomics are added to the dictionary itself instead: this is a real
+    `dict` subclass, so `item["title"]`, `isinstance(item, dict)`, `json.dumps`
+    and equality with a plain dict all keep working unchanged.
+    """
+
+    @property
+    def kind(self) -> Optional[str]:
+        """Return the item's schema kind, when it carries one."""
+
+        value = self.get("kind")
+        return value if isinstance(value, str) else None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return a plain dictionary copy."""
+
+        return dict(self)
+
+    def required_fields(self) -> List[str]:
+        """Return the field names the schema requires for this kind."""
+
+        order, required = _item_field_spec(self.kind or "")
+        return [name for name in order if name in required]
+
+    def optional_fields(self) -> List[str]:
+        """Return the field names the schema allows but does not require."""
+
+        order, required = _item_field_spec(self.kind or "")
+        return [name for name in order if name not in required]
+
+    def missing_fields(self) -> List[str]:
+        """Return required fields that are absent or null."""
+
+        return [name for name in self.required_fields() if self.get(name) is None]
+
+    def field_descriptions(self) -> Dict[str, str]:
+        """Return the schema description of each documented field."""
+
+        schema = load_schema()
+        section, _, name = (self.kind or "").partition("/")
+        definition = schema.get("$defs", {}).get(section, {}).get(name, {})
+        return {
+            field: spec["description"]
+            for field, spec in definition.get("properties", {}).items()
+            if isinstance(spec, dict) and spec.get("description")
+        }
+
+    def summary(self) -> str:
+        """Return a readable listing of every schema field, including absent ones.
+
+        Same conventions as the typed models: `*` marks required fields, and
+        values render through `format_json_value`.
+        """
+
+        order, required = _item_field_spec(self.kind or "")
+        names = list(order) + [name for name in self if name not in order]
+
+        lines = [self.kind or "R3XA item"]
+        for name in names:
+            marker = "*" if name in required else " "
+            lines.append(f"{marker} {name}: {format_json_value(self.get(name))}")
+        return "\n".join(lines)
+
+    def print(self) -> None:
+        """Print a readable listing of the item."""
+
+        print(self.summary())
+
+    def __str__(self) -> str:
+        # `__repr__` stays dict's compact form, so a list of items remains
+        # readable; `print(item)` gets the listing.
+        return self.summary()
+
+    def validate(self, schema: Optional[Dict[str, Any]] = None) -> "R3XAItem":
+        """Validate this item against its schema kind and return it."""
+
+        from .registry import validate_item
+
+        validate_item(self, kind=self.kind, schema=schema)
+        return self
+
+    @classmethod
+    def load(cls, path: str | Path) -> "R3XAItem":
+        """Load a single item from a JSON file."""
+
+        return cls(json.loads(Path(path).read_text(encoding="utf-8")))
+
+    def save(
+        self,
+        path: str | Path,
+        *,
+        validate: bool = True,
+        indent: int = 2,
+    ) -> Path:
+        """Validate and save this item alone to a JSON file."""
+
+        if validate:
+            self.validate()
+        destination = Path(path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            json.dumps(self.to_dict(), ensure_ascii=False, indent=indent) + "\n",
+            encoding="utf-8",
+        )
+        return destination
+
+
 def new_item(kind: str, **fields: Any) -> Dict[str, Any]:
     """Create a schema item with default `id` and `kind` if missing."""
 
@@ -215,15 +338,19 @@ def _make_guided_alias(alias_name: str, target_name: str) -> Callable[..., Dict[
 
 
 class _ModelAwareList(list):
-    """List that accepts dicts and typed models exposing `model_dump`."""
+    """List of `R3XAItem`, accepting dicts and typed models exposing `model_dump`."""
 
     def __init__(self, values: Iterable[Any] = ()) -> None:
         super().__init__()
         self.extend(values)
 
     @staticmethod
-    def _normalize(value: Any) -> Dict[str, Any]:
-        return from_model(value)
+    def _normalize(value: Any) -> R3XAItem:
+        # Already-wrapped items pass through unchanged, so the object returned
+        # by `add_item` is the very one stored in the collection.
+        if isinstance(value, R3XAItem):
+            return value
+        return R3XAItem(from_model(value))
 
     def append(self, value: Any) -> None:
         super().append(self._normalize(value))
@@ -298,12 +425,16 @@ class R3XAFile:
             return self.data_sets
         raise ValueError("kind must start with settings/, data_sources/, or data_sets/")
 
-    def add_item(self, kind: str, **fields: Any) -> Dict[str, Any]:
-        """Append an item to the correct collection from its kind prefix."""
+    def add_item(self, kind: str, **fields: Any) -> R3XAItem:
+        """Append an item to the correct collection and return it.
 
-        item = new_item(kind, **fields)
-        self._target_collection(kind).append(item)
-        return item
+        The returned object is the one stored in the collection, so mutating it
+        updates the document.
+        """
+
+        collection = self._target_collection(kind)
+        collection.append(new_item(kind, **fields))
+        return collection[-1]
 
     def add_setting(self, kind: str, **fields: Any) -> Dict[str, Any]:
         """Append a setting item and return it."""

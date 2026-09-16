@@ -1,6 +1,6 @@
 import importlib
 
-from .core import R3XAFile, new_item, unit, data_set_file
+from .core import R3XAFile, R3XAItem, new_item, unit, data_set_file
 from .registry import (
     load_item,
     save_item,
@@ -31,6 +31,7 @@ else:
 
 __all__ = [
     "R3XAFile",
+    "R3XAItem",
     "new_item",
     "unit",
     "data_set_file",

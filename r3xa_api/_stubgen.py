@@ -13,7 +13,7 @@ def _indent(lines: Iterable[str], prefix: str = "    ") -> list[str]:
     return [f"{prefix}{line}" if line else "" for line in lines]
 
 
-def _render_method_stub(name: str, required_fields: tuple[str, ...], return_type: str = "Dict[str, Any]") -> list[str]:
+def _render_method_stub(name: str, required_fields: tuple[str, ...], return_type: str = "R3XAItem") -> list[str]:
     lines = [f"def {name}("]
     lines.extend(_indent(["self,"]))
     for field in required_fields:
@@ -49,6 +49,21 @@ def render_core_stub() -> str:
         "from pathlib import Path",
         "from typing import Any, Dict, Optional",
         "",
+        "class R3XAItem(Dict[str, Any]):",
+        "    @property",
+        "    def kind(self) -> Optional[str]: ...",
+        "    def to_dict(self) -> Dict[str, Any]: ...",
+        "    def required_fields(self) -> list[str]: ...",
+        "    def optional_fields(self) -> list[str]: ...",
+        "    def missing_fields(self) -> list[str]: ...",
+        "    def field_descriptions(self) -> Dict[str, str]: ...",
+        "    def summary(self) -> str: ...",
+        "    def print(self) -> None: ...",
+        "    def validate(self, schema: Optional[Dict[str, Any]] = ...) -> R3XAItem: ...",
+        "    @classmethod",
+        "    def load(cls, path: str | Path) -> R3XAItem: ...",
+        "    def save(self, path: str | Path, *, validate: bool = ..., indent: int = ...) -> Path: ...",
+        "",
         "def new_item(kind: str, **fields: Any) -> Dict[str, Any]: ...",
         "",
         "def unit(",
@@ -70,9 +85,9 @@ def render_core_stub() -> str:
         "",
         "class R3XAFile:",
         "    header: Dict[str, Any]",
-        "    settings: list[Dict[str, Any]]",
-        "    data_sources: list[Dict[str, Any]]",
-        "    data_sets: list[Dict[str, Any]]",
+        "    settings: list[R3XAItem]",
+        "    data_sources: list[R3XAItem]",
+        "    data_sets: list[R3XAItem]",
         "",
         "    def __init__(self, version: Optional[str] = ..., **header: Any) -> None: ...",
         "",
@@ -87,10 +102,10 @@ def render_core_stub() -> str:
         "",
         "    def set_header(self, **fields: Any) -> R3XAFile: ...",
         "",
-        "    def add_item(self, kind: str, **fields: Any) -> Dict[str, Any]: ...",
-        "    def add_setting(self, kind: str, **fields: Any) -> Dict[str, Any]: ...",
-        "    def add_data_source(self, kind: str, **fields: Any) -> Dict[str, Any]: ...",
-        "    def add_data_set(self, kind: str, **fields: Any) -> Dict[str, Any]: ...",
+        "    def add_item(self, kind: str, **fields: Any) -> R3XAItem: ...",
+        "    def add_setting(self, kind: str, **fields: Any) -> R3XAItem: ...",
+        "    def add_data_source(self, kind: str, **fields: Any) -> R3XAItem: ...",
+        "    def add_data_set(self, kind: str, **fields: Any) -> R3XAItem: ...",
         "",
     ]
 
