@@ -25,6 +25,16 @@ pytest.importorskip(
     reason="datamodel-code-generator is only present with the [dev] extra",
 )
 
+# Python 3.9 resolves datamodel-code-generator 0.45, which predates
+# --no-use-union-operator and exits 2 on the project's own flags. Regenerating
+# is a developer task on a modern interpreter - the models target 3.10 - so
+# check the sync on 3.10+, where four CI jobs still cover it.
+if sys.version_info < (3, 10):  # pragma: no cover - environment dependent
+    pytest.skip(
+        "model generation requires Python 3.10+ (datamodel-code-generator flags)",
+        allow_module_level=True,
+    )
+
 ROOT = Path(__file__).resolve().parents[1]
 MODELS_PATH = ROOT / "r3xa_api" / "models.py"
 
@@ -44,18 +54,25 @@ def _significant_lines(text: str) -> list[str]:
     return [line.rstrip() for line in text.splitlines() if line.strip()]
 
 
+def _run(command: list[str]) -> None:
+    """Run a generation step, surfacing stderr so a failure is diagnosable."""
+
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise AssertionError(
+            f"Generation step failed with exit code {result.returncode}:\n"
+            f"  {' '.join(command)}\n"
+            f"--- stderr ---\n{result.stderr}"
+            f"--- stdout ---\n{result.stdout}"
+        )
+
+
 def test_models_match_packaged_schema(tmp_path: Path) -> None:
     dev = _load_dev_module()
     generated = tmp_path / "models.py"
 
-    command = dev.model_codegen_command(sys.executable, str(generated))
-    subprocess.run(list(command), cwd=ROOT, check=True, capture_output=True)
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "postprocess_models.py"), str(generated)],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-    )
+    _run(list(dev.model_codegen_command(sys.executable, str(generated))))
+    _run([sys.executable, str(ROOT / "scripts" / "postprocess_models.py"), str(generated)])
 
     expected = _significant_lines(generated.read_text(encoding="utf-8"))
     actual = _significant_lines(MODELS_PATH.read_text(encoding="utf-8"))
