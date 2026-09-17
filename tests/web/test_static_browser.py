@@ -186,3 +186,31 @@ def test_static_schema_viewer_falls_back_for_complex_drafts(static_site: str) ->
         assert "Failed to load draft" not in tree_text
         assert "Stereo DIC" in tree_text
         browser.close()
+
+
+def test_static_graph_failure_does_not_break_the_editor(static_site: str) -> None:
+    payload = {
+        "title": "WASM fallback",
+        "description": "Graph failure must not disable editing",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.route("**/assets/graph.generated.js", lambda route: route.abort())
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_function(
+            "document.querySelector('#graph-container').textContent.includes('Graphviz WASM rendering failed')"
+        )
+        page.goto(f"{static_site}/edit/")
+        page.wait_for_selector("#json-input", state="attached")
+        assert page.evaluate("window.R3XARuntime.mode") == "static"
+        browser.close()

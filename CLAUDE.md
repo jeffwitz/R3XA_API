@@ -30,10 +30,11 @@ adapter, and page scripts use `window.R3XARuntime` instead of direct `/api/*`
 calls. Phase B is complete: `python scripts/dev.py build-static-web` generates
 static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
 validator. Phase C is complete: static document, Registry, and integrity
-validation work locally. Phase D is in progress: Graphviz WebAssembly is
-bundled at build time and loaded lazily for local SVG rendering. The latest
-checkpoint is commit `da51128`; it includes the resilient schema viewer and
-the explicit `Graphviz WebAssembly` backend label.
+validation work locally. Phase D is complete: Graphviz WebAssembly is bundled
+at build time, loaded lazily, and covered by successful and failure-path browser
+tests. Phase E is now in progress. The current HEAD is the Phase E starting
+point; it includes the resilient schema viewer and the explicit
+`Graphviz WebAssembly` backend label.
 
 ## Working rules
 

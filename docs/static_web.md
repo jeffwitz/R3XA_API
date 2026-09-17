@@ -83,8 +83,8 @@ Explicitly out of scope:
 | A | Hide server API calls behind a runtime abstraction | **Completed** |
 | B | Build static pages and schema-derived JSON artefacts | **Completed** |
 | C | Add standalone JavaScript validation and integrity checks | **Completed** |
-| D | Add lazy Graphviz WebAssembly SVG rendering | **In progress** |
-| E | Test the generated `dist/` with parity and zero-API checks | Planned |
+| D | Add lazy Graphviz WebAssembly SVG rendering | **Completed** |
+| E | Test the generated `dist/` with parity and zero-API checks | **In progress** |
 | F | Publish the static site with GitLab Pages | Planned |
 | G | Complete documentation, deployment notes, and cleanup | Planned |
 
@@ -294,6 +294,7 @@ The initiative is complete only when all of the following are true:
 - Added Node, static-build, and Chromium browser coverage for local SVG
   rendering and the absence of `/api/*` requests.
 
-The next work in this phase is graceful feature messaging and final static
-qualification. A browser that cannot execute WebAssembly must still retain
-editing, validation, import, export, and Registry functionality.
+Phase D acceptance is complete: Graphviz is loaded lazily, local SVG rendering
+works in Chromium, palette data comes from the Python source, and a failed
+WebAssembly load produces a graph-specific error without disabling the editor.
+The next work is Phase E static qualification and Python/JavaScript parity.
