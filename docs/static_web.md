@@ -340,3 +340,7 @@ user-facing error wording and any gaps found during the hosted smoke test.
 - Added GitLab CI jobs for static build, static browser qualification, and
   Pages publication. The Pages job consumes the same build artifact that is
   available for download and publishes it at the root of the Pages site.
+- GitLab CI lint accepted the Pages configuration. The first explicit pipeline
+  (`2859601291`, commit `161b6b8`) could not start its jobs because GitLab
+  rejected them with `ci_quota_exceeded`; a successful hosted smoke test still
+  requires available runner quota.

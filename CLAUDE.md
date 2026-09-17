@@ -100,8 +100,12 @@ WebUI initiative. The following work remains, in this order:
 - The static Schema viewer falls back to a native JSON `<pre>` when the bundled
   JSON viewer cannot display a complex draft, including `null` values.
 - GitLab Pages publication is configured but still needs a successful GitLab
-  pipeline and hosted smoke test. The broader zero-CDN/zero-API acceptance
-  suite and complete error-report parity are not implemented yet.
+  pipeline and hosted smoke test. An explicit validation pipeline
+  (`2859601291`, commit `161b6b8`) was created but all jobs were rejected with
+  GitLab's `ci_quota_exceeded` runner failure before execution; this is an
+  infrastructure quota issue, not a reported test or YAML error. The broader
+  zero-CDN/zero-API acceptance suite and complete error-report parity are not
+  implemented yet.
 
 ## Useful checks
 
