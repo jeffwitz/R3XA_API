@@ -54,8 +54,7 @@ const renderJsonViewer = (data, expand = false) => {
 const renderSummary = async () => {
   try {
     if (!cachedSummary) {
-      const response = await fetch("/api/schema/summary");
-      cachedSummary = await response.json();
+      cachedSummary = await window.R3XARuntime.loadSchemaSummary();
     }
     renderJsonViewer(cachedSummary, true);
   } catch {
@@ -112,15 +111,10 @@ const renderGraph = async () => {
     const backend = graphBackendSelect ? graphBackendSelect.value : "graphviz";
     const showDescription = graphDescriptionToggle ? graphDescriptionToggle.checked : true;
     const palette = graphPaletteSelect ? graphPaletteSelect.value : "document";
-    const query = new URLSearchParams({
-      show_description: showDescription ? "true" : "false",
+    const response = await window.R3XARuntime.renderGraph(payload, {
+      showDescription,
       palette,
       backend,
-    });
-    const response = await fetch(`/api/graph?${query.toString()}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
     });
     if (!response.ok) {
       let detail = await response.text();

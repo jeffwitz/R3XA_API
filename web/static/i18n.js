@@ -39,8 +39,8 @@
   };
 
   window.R3XAI18N = {apply, installCatalog, language: () => language, t: translate};
-  fetch("/api/ui")
-    .then((response) => response.ok ? response.json() : null)
+  window.R3XARuntime.loadUiCatalog()
+    .catch(() => null)
     .then((catalog) => installCatalog(catalog))
     .catch(() => apply());
 })();

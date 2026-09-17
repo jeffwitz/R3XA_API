@@ -60,11 +60,7 @@ const validateItem = async () => {
   }
 
   try {
-    const response = await fetch("/api/registry/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const response = await window.R3XARuntime.validateItem(item, kind);
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     if (report.valid) {

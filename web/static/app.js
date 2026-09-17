@@ -1420,11 +1420,7 @@ const validateItem = async (section, item, index) => {
   copy[section] = [item];
   const itemTitle = item.title || `${section} #${index + 1}`;
   try {
-    const response = await fetch("/api/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(copy),
-    });
+    const response = await window.R3XARuntime.validateDocument(copy);
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     if (report.valid) {
@@ -1628,13 +1624,10 @@ const syncFormFromJson = () => {
 
 const renderSummary = async () => {
   try {
-    const [schemaResponse, uiResponse] = await Promise.all([
-      fetch("/api/schema/catalog"),
-      fetch("/api/ui"),
+    [schemaCatalog, uiCatalog] = await Promise.all([
+      window.R3XARuntime.loadSchemaCatalog(),
+      window.R3XARuntime.loadUiCatalog(),
     ]);
-    if (!schemaResponse.ok || !uiResponse.ok) throw new Error("Unable to load editor metadata");
-    schemaCatalog = await schemaResponse.json();
-    uiCatalog = await uiResponse.json();
     window.R3XAI18N?.installCatalog(uiCatalog);
     populateProfiles();
     pendingTemplateReview = loadPendingTemplateReview();
@@ -1690,11 +1683,7 @@ const validate = async () => {
   }
 
   try {
-    const response = await fetch("/api/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const response = await window.R3XARuntime.validateDocument(payload);
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     renderValidationReport(report);
@@ -1705,11 +1694,7 @@ const validate = async () => {
 
 const validateDocumentForSave = async (payload) => {
   try {
-    const response = await fetch("/api/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const response = await window.R3XARuntime.validateDocument(payload);
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     if (!report.valid) {

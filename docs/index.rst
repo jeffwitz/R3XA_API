@@ -196,4 +196,5 @@ If you do not want to read the whole documentation, start from one of these thre
    matlab.md
    validation.md
    web.md
+   static_web.md
    dev_workflow.md

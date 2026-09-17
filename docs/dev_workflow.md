@@ -2,6 +2,18 @@
 
 This page documents the recommended contributor workflow for local development.
 
+## Static WebUI initiative
+
+The static WebUI is being developed as a second runtime alongside the existing
+FastAPI application. The durable plan, phase status, architectural decisions,
+and acceptance criteria are maintained in
+[`static_web.md`](static_web.md). Read that document before changing the WebUI
+runtime or adding build and CI jobs for the static distribution.
+
+The current first phase is complete: page scripts use the shared server runtime
+adapter instead of calling `/api/*` directly. The next phase is to generate
+the static pages and schema-derived assets.
+
 ## Runtime model for graphs
 
 - **Primary engine:** Graphviz (`dot`) is the reference layout engine for SVG output.

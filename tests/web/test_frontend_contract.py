@@ -4,9 +4,15 @@ from pathlib import Path
 def test_frontend_assets_are_wired() -> None:
     root = Path(__file__).resolve().parents[2]
     source = (root / "web" / "static" / "app.js").read_text(encoding="utf-8")
+    runtime = (root / "web" / "static" / "runtime.js").read_text(encoding="utf-8")
 
-    assert 'fetch("/api/schema/catalog")' in source
-    assert 'fetch("/api/ui")' in source
+    assert "window.R3XARuntime.loadSchemaCatalog()" in source
+    assert "window.R3XARuntime.loadUiCatalog()" in source
+    assert "window.R3XARuntime" in runtime
+    assert "validateDocument" in runtime
+    assert "validateItem" in runtime
+    assert "renderGraph" in runtime
+    assert "URLSearchParams" in runtime
     template = (root / "web" / "templates" / "edit.html").read_text(encoding="utf-8")
     index_template = (root / "web" / "templates" / "index.html").read_text(encoding="utf-8")
     stylesheet = (root / "web" / "static" / "style.css").read_text(encoding="utf-8")
@@ -14,6 +20,7 @@ def test_frontend_assets_are_wired() -> None:
     assert 'id="guided-prefill"' in template
     assert "Create prefilled workflow" in template
     assert 'src="/static/i18n.js?v={{ app_start }}"' in template
+    assert 'src="/static/runtime.js?v={{ app_start }}"' in template
     assert '/static/app.js?v={{ app_start }}' in template
     assert '/static/style.css?v={{ app_start }}' in template
     assert 'data-editor-surface="header"' in template
@@ -34,4 +41,7 @@ def test_frontend_assets_are_wired() -> None:
     assert "palette," in schema_source
     assert "backend," in schema_source
     assert "graph-frame" in schema_source
-    assert "URLSearchParams" in schema_source
+    for script_name in ("app.js", "home.js", "i18n.js", "registry.js", "schema.js"):
+        script_source = (root / "web" / "static" / script_name).read_text(encoding="utf-8")
+        assert 'fetch("/api/' not in script_source
+        assert "fetch(`/api/" not in script_source

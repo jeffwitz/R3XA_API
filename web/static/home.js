@@ -25,9 +25,7 @@ const renderProfileCards = (catalog) => {
 
 const loadHome = async () => {
   try {
-    const response = await fetch("/api/ui");
-    if (!response.ok) throw new Error("Unable to load profiles");
-    const catalog = await response.json();
+    const catalog = await window.R3XARuntime.loadUiCatalog();
     window.R3XAI18N?.installCatalog(catalog);
     window.r3xaUiCatalog = catalog;
     renderProfileCards(catalog);
