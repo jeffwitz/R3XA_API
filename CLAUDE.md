@@ -35,9 +35,9 @@ at build time, loaded lazily, and covered by successful and failure-path browser
 tests. Phase E is now in progress. The current HEAD includes the resilient
 schema viewer and the explicit
 `Graphviz WebAssembly` backend label, non-root subpath hosting, same-origin
-GET-only navigation, schema-validation parity cases, and the main static
-editor workflows (mode changes, local import/persistence, directory selection,
-graph palettes, fullscreen, standalone export, and i18n).
+GET-only navigation, local-only asset checks, schema-validation parity cases,
+and the main static editor workflows (mode changes, local import/persistence,
+directory selection, graph palettes, fullscreen, standalone export, and i18n).
 
 ## Working rules
 
@@ -79,15 +79,11 @@ WebUI initiative. The following work remains, in this order:
 1. **Complete Phase E:** finish normalized error-report parity, including
    user-facing messages, and close any remaining static-only workflow gaps
    found by browser qualification.
-2. **Add the zero-network acceptance checks:** browser tests must fail on
-   `/api/*`, POST requests carrying documents, third-party resources, CDNs,
-   telemetry, or remote graph/validation services. Keep all runtime assets,
-   including validator and WASM code, local to the static origin.
-3. **Finish Phase F GitLab Pages:** validate the new `static-web-build`,
+2. **Finish Phase F GitLab Pages:** validate the new `static-web-build`,
    `static-web-test`, and Pages jobs in GitLab, then document the resulting
    Pages URL, iframe headers, and artifact download. Existing Python, docs,
    package, and FastAPI jobs remain unchanged.
-4. **Complete Phase G documentation:** review the new static deployment notes
+3. **Complete Phase G documentation:** review the new static deployment notes
    against the first hosted Pages smoke test and add any project-specific URL
    or header findings. The general build, subpath, iframe, CSP, privacy, and
    backend-difference documentation is now present.
@@ -103,9 +99,8 @@ WebUI initiative. The following work remains, in this order:
   pipeline and hosted smoke test. An explicit validation pipeline
   (`2859601291`, commit `161b6b8`) was created but all jobs were rejected with
   GitLab's `ci_quota_exceeded` runner failure before execution; this is an
-  infrastructure quota issue, not a reported test or YAML error. The broader
-  zero-CDN/zero-API acceptance suite and complete error-report parity are not
-  implemented yet.
+  infrastructure quota issue, not a reported test or YAML error. Complete
+  error-report parity and the hosted smoke test remain open.
 
 ## Useful checks
 

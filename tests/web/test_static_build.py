@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 from pathlib import Path
 
 
@@ -67,3 +68,23 @@ def test_static_web_assets_do_not_use_fastapi_api_urls(tmp_path: Path) -> None:
         source = asset.read_text(encoding="utf-8")
         assert 'fetch("/api/' not in source
         assert "fetch(`/api/" not in source
+
+
+def test_static_web_pages_reference_only_local_runtime_assets(tmp_path: Path) -> None:
+    module = _load_dev_module()
+    output_dir = tmp_path / "r3xa-webui"
+    module.build_static_web(output_dir)
+
+    url_attributes = re.compile(r"(?:src|href)=[\"']([^\"']+)[\"']")
+    for page in output_dir.rglob("*.html"):
+        for url in url_attributes.findall(page.read_text(encoding="utf-8")):
+            assert not url.startswith(("http://", "https://", "//")), (page, url)
+
+    for asset in (output_dir / "assets").rglob("*.css"):
+        for url in re.findall(r"url\(\s*[\"']?([^\"')]+)", asset.read_text(encoding="utf-8")):
+            assert not url.startswith(("http://", "https://", "//")), (asset, url)
+
+    runtime = (output_dir / "assets" / "runtime-static.js").read_text(encoding="utf-8")
+    assert "https://" not in runtime
+    assert "http://" not in runtime
+    assert "/api/" not in runtime

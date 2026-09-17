@@ -178,6 +178,42 @@ def test_static_navigation_uses_only_same_origin_get_requests(static_site: str) 
     assert not any("/api/" in url for _, url in requests)
 
 
+def test_static_user_session_uses_no_remote_or_post_requests(static_site: str) -> None:
+    requests: list[tuple[str, str]] = []
+    payload = {
+        "title": "Static session",
+        "description": "No network session",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.on("request", lambda request: requests.append((request.method, request.url)))
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#validate-btn").click()
+        page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
+        page.goto(f"{static_site}/schema/")
+        page.wait_for_selector("#schema-tree")
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
+        page.goto(f"{static_site}/registry/")
+        page.wait_for_selector("#registry-json-input")
+        browser.close()
+
+    assert requests
+    assert all(method == "GET" for method, _ in requests)
+    assert all(url.startswith(static_site) for _, url in requests)
+    assert not any("/api/" in url for _, url in requests)
+
+
 def test_static_editor_preserves_one_document_across_modes(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())

@@ -200,8 +200,11 @@ document by POST, or loads JavaScript, CSS, fonts, schema, catalogue, or WASM
 from a third-party domain.
 
 The current Phase E implementation verifies that generated pages work below a
-non-root path and that a representative static navigation session uses only
-same-origin `GET` requests. The static validator is also compared with the
+non-root path and that both a representative navigation session and a complete
+editor/schema/Registry session use only same-origin `GET` requests. The build
+also rejects absolute or protocol-relative page and stylesheet resources, and
+the static runtime contains no remote or FastAPI API endpoint. The static
+validator is also compared with the
 Python validation report for valid documents and representative schema
 failures (missing required field, wrong constant, and wrong type), as well as
 duplicate-ID integrity errors. The parity assertion compares validity and the
@@ -423,9 +426,10 @@ The initiative is complete only when all of the following are true:
 Phase D acceptance is complete: Graphviz is loaded lazily, local SVG rendering
 works in Chromium, palette data comes from the Python source, and a failed
 WebAssembly load produces a graph-specific error without disabling the editor.
-Phase E browser qualification and schema/integrity status parity are now
-covered by the local test suite. The remaining Phase E work is normalized
-user-facing error wording and any gaps found during the hosted smoke test.
+Phase E browser qualification, zero-network checks, and schema/integrity status
+parity are now covered by the local test suite. The remaining Phase E work is
+normalized user-facing error wording and any gaps found during the hosted
+smoke test.
 
 ### Phase F progress
 
