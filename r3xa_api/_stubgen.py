@@ -3,11 +3,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Iterable
 
+from . import models
 from .core import _guided_kind_specs
 from .schema import load_schema
 
 
 _CORE_STUB_PATH = Path(__file__).with_name("core.pyi")
+_PACKAGE_STUB_PATH = Path(__file__).with_name("__init__.pyi")
 
 
 def _indent(lines: Iterable[str], prefix: str = "    ") -> list[str]:
@@ -21,6 +23,15 @@ def _render_method_stub(name: str, required_fields: tuple[str, ...], return_type
         lines.extend(_indent([f"{field}: Any,"]))
     lines.extend(_indent(["**extra: Any,"]))
     lines.append(f") -> {return_type}: ...")
+    return lines
+
+
+def _render_function_stub(name: str, required_fields: tuple[str, ...]) -> list[str]:
+    lines = [f"def {name}("]
+    for field in required_fields:
+        lines.extend(_indent([f"{field}: Any,"]))
+    lines.extend(_indent(["**extra: Any,"]))
+    lines.append(") -> R3XAItem: ...")
     return lines
 
 
@@ -148,6 +159,15 @@ def render_core_stub() -> str:
         "    **extra: Any,",
         ") -> R3XAItem: ...",
         "",
+    ]
+
+    for kind, spec in sorted(helper_specs.items(), key=_helper_sort_key):
+        builder_name = "new_" + spec["helper_name"][len("add_"):]
+        lines.extend(_render_function_stub(builder_name, tuple(spec["required"])))
+        lines.append("")
+
+    lines.extend(
+        [
         "class R3XAFile(R3XADocument):",
         "    header: Dict[str, Any]",
         *_document_header_stubs(),
@@ -184,7 +204,8 @@ def render_core_stub() -> str:
         "    @classmethod",
         "    def field_descriptions(cls) -> Dict[str, str]: ...",
         "",
-    ]
+        ]
+    )
 
     current_section: str | None = None
     for kind, spec in sorted(helper_specs.items(), key=_helper_sort_key):
@@ -233,4 +254,62 @@ def render_core_stub() -> str:
 
 def write_core_stub(path: Path = _CORE_STUB_PATH) -> Path:
     path.write_text(render_core_stub(), encoding="utf-8")
+    return path
+
+
+def render_package_stub() -> str:
+    """Render the package-level stub, including dynamic top-level exports."""
+
+    model_names = [name for name in models.__all__ if name != "R3XAItem"]
+    builder_names = sorted(
+        "new_" + spec["helper_name"][len("add_"):]
+        for spec in _guided_kind_specs().values()
+    )
+    lines = [
+        "from __future__ import annotations",
+        "",
+        "# AUTO-GENERATED FROM THE ACTIVE R3XA SCHEMA.",
+        "# DO NOT EDIT MANUALLY.",
+        "",
+        "from typing import Any",
+        "",
+        "from . import models",
+        "from .core import R3XAFile, R3XAItem, author, data_set_file, new_item, unit",
+        "from .core import (",
+    ]
+    lines.extend(f"    {name}," for name in builder_names)
+    lines.extend(
+        [
+            ")",
+            "from .models import (",
+        ]
+    )
+    lines.extend(f"    {name}," for name in model_names)
+    lines.extend(
+        [
+            ")",
+            "from .registry import (",
+            "    Registry,",
+            "    RegistryItem,",
+            "    load_item,",
+            "    load_item_path,",
+            "    load_registry,",
+            "    merge_item,",
+            "    save_item,",
+            "    save_item_path,",
+            "    validate_item,",
+            ")",
+            "from .schema import load_schema, schema_version",
+            "from .typed import from_model",
+            "from .validate import integrity_errors, validate, validate_integrity",
+            "",
+            "typed_available: bool",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def write_package_stub(path: Path = _PACKAGE_STUB_PATH) -> Path:
+    path.write_text(render_package_stub(), encoding="utf-8")
     return path

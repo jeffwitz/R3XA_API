@@ -83,6 +83,135 @@ def data_set_file(
     **extra: Any,
 ) -> R3XAItem: ...
 
+def new_generic_setting(
+    title: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_specimen_setting(
+    title: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_stereorig_setting(
+    title: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_testing_machine_setting(
+    title: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_camera_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_dic_measurement_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_generic_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_identification_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_infrared_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_load_cell_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_mechanical_analysis_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_point_temperature_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_strain_computation_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_strain_gauge_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_tomograph_source(
+    title: Any,
+    output_components: Any,
+    output_dimension: Any,
+    output_units: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_file_data_set(
+    title: Any,
+    timestamps: Any,
+    values: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_generic_data_set(
+    title: Any,
+    parent_data_sources: Any,
+    path: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
+def new_list_data_set(
+    title: Any,
+    timestamps: Any,
+    values: Any,
+    **extra: Any,
+) -> R3XAItem: ...
+
 class R3XAFile(R3XADocument):
     header: Dict[str, Any]
     title: Optional[str]

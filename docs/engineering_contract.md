@@ -247,7 +247,7 @@ It must be propagated to:
 - `r3xa_api/resources/schema.json`
 - `docs/specification.md`
 - `r3xa_api/models.py` (typed models)
-- `r3xa_api/core.pyi` (IDE stub for guided helpers)
+- `r3xa_api/core.pyi` and `r3xa_api/__init__.pyi` (IDE stubs for guided helpers and top-level builders)
 - runtime guided helpers
 - examples
 - tests
@@ -264,7 +264,7 @@ Without a stub:
 - autocompletion is incomplete,
 - static analysis does not know which signatures to expose.
 
-The file `r3xa_api/core.pyi` solves this:
+The generated `r3xa_api/core.pyi` and `r3xa_api/__init__.pyi` solve this:
 
 - it changes **nothing** at runtime;
 - it exists only for static tooling;

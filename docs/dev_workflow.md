@@ -43,7 +43,7 @@ This command:
 - installs the editable contributor stack `.[dev,docs,web,notebook,graph_nx]`
   with `--no-build-isolation`
 - regenerates `r3xa_api/models.py`
-- regenerates `r3xa_api/core.pyi`
+- regenerates `r3xa_api/core.pyi` and `r3xa_api/__init__.pyi`
 - regenerates `docs/specification.md`
 
 ### Schema-driven typed models
@@ -160,13 +160,16 @@ for targeted day-to-day work.
 
 ### Schema-driven stubs
 
-The guided helper methods on `R3XAFile` are reflected for static tooling through
-the generated stub file {glsrc}`r3xa_api/core.pyi`.
+The guided helper methods on `R3XAFile` and the standalone `new_*` builders are
+reflected for static tooling through the generated stub files
+{glsrc}`r3xa_api/core.pyi` and {glsrc}`r3xa_api/__init__.pyi`.
 
 How this works:
 
 - {glsrc}`r3xa_api/core.py` remains the runtime implementation used by Python.
 - {glsrc}`r3xa_api/core.pyi` is a **type stub** read by IDEs and static type checkers.
+- {glsrc}`r3xa_api/__init__.pyi` exposes the dynamic top-level builders and
+  generated model classes to IDEs and static type checkers.
 - {glsrc}`r3xa_api/py.typed` marks the installed package as shipping official typing
   information.
 - This improves completion and signature awareness for schema-driven guided
@@ -180,7 +183,7 @@ python scripts/dev.py generate-stubs
 
 This does not change runtime behavior. It refreshes the static API description
 used by IDEs and type checkers. If the runtime helpers change but
-`r3xa_api/core.pyi` is not regenerated, editors may show stale signatures even
+the generated stubs are not regenerated, editors may show stale signatures even
 though the package still runs.
 
 ### Test commands
