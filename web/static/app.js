@@ -1622,6 +1622,16 @@ const syncFormFromJson = () => {
   syncing = false;
 };
 
+const consumeLaunchActions = () => {
+  const params = new URLSearchParams(window.location.search);
+  const hadAction = params.has("new") || params.has("prefill");
+  if (!hadAction) return;
+  params.delete("new");
+  params.delete("prefill");
+  const query = params.toString();
+  window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
+};
+
 const renderSummary = async () => {
   try {
     [schemaCatalog, uiCatalog] = await Promise.all([
@@ -1648,9 +1658,11 @@ const renderSummary = async () => {
     buildHeaderForm(schemaCatalog.sections?.header?.properties || {});
     if (newDocumentRequested) {
       newDocumentRequested = false;
+      consumeLaunchActions();
       reset();
     } else if (prefillRequested) {
       prefillRequested = false;
+      consumeLaunchActions();
       createPrefilledWorkflow();
     } else {
       syncFormFromJson();

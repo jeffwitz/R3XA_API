@@ -32,10 +32,12 @@ static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
 validator. Phase C is complete: static document, Registry, and integrity
 validation work locally. Phase D is complete: Graphviz WebAssembly is bundled
 at build time, loaded lazily, and covered by successful and failure-path browser
-tests. Phase E is now in progress. The current HEAD is the Phase E starting
-point; it includes the resilient schema viewer and the explicit
+tests. Phase E is now in progress. The current HEAD includes the resilient
+schema viewer and the explicit
 `Graphviz WebAssembly` backend label, non-root subpath hosting, same-origin
-GET-only navigation, and schema-validation parity cases.
+GET-only navigation, schema-validation parity cases, and the main static
+editor workflows (mode changes, local import/persistence, directory selection,
+graph palettes, fullscreen, standalone export, and i18n).
 
 ## Working rules
 
@@ -74,11 +76,9 @@ Graphviz rendering runs in the browser. Stop it with `Ctrl+C`.
 Do not treat the current static graph success as completion of the whole static
 WebUI initiative. The following work remains, in this order:
 
-1. **Complete Phase E:** qualify the generated `dist/` under a non-root
-   subpath; test Guided → Advanced → Expert transitions, import/export,
-   localStorage persistence, directory selection, fullscreen, standalone HTML,
-   English/French switching, and graph palette changes. Add Python/JavaScript
-   validation parity fixtures for schema errors and integrity errors.
+1. **Complete Phase E:** add full Python/JavaScript validation parity fixtures,
+   including integrity errors and normalized error reports, and close any
+   remaining static-only workflow gaps found by browser qualification.
 2. **Add the zero-network acceptance checks:** browser tests must fail on
    `/api/*`, POST requests carrying documents, third-party resources, CDNs,
    telemetry, or remote graph/validation services. Keep all runtime assets,

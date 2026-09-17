@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import shutil
 import socket
@@ -141,6 +142,11 @@ def test_static_web_works_under_a_non_root_subpath(static_subpath_site: str) -> 
         page.goto(f"{static_subpath_site}/edit/")
         page.wait_for_selector("#schema-summary")
         assert page.evaluate("window.R3XARuntime.mode") == "static"
+        page.goto(f"{static_subpath_site}/")
+        page.wait_for_selector(".profile-card")
+        page.locator(".profile-card").first.click()
+        page.wait_for_selector("#schema-summary")
+        assert page.url.startswith(f"{static_subpath_site}/edit/")
         page.goto(f"{static_subpath_site}/schema/")
         page.wait_for_selector("#schema-tree")
         page.goto(f"{static_subpath_site}/registry/")
@@ -168,6 +174,121 @@ def test_static_navigation_uses_only_same_origin_get_requests(static_site: str) 
     assert all(method == "GET" for method, _ in requests)
     assert all(url.startswith(static_site) for _, url in requests)
     assert not any("/api/" in url for _, url in requests)
+
+
+def test_static_editor_preserves_one_document_across_modes(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=dic_2d&prefill=1")
+        page.wait_for_selector("#schema-summary")
+        page.wait_for_function("Boolean(localStorage.getItem('r3xaDraft'))")
+        original = page.evaluate("localStorage.getItem('r3xaDraft')")
+        for mode in ("advanced", "expert", "guided"):
+            page.locator(f"[data-editor-mode='{mode}']").click()
+            page.wait_for_function("mode => document.body.dataset.editorMode === mode", arg=mode)
+            assert page.evaluate("localStorage.getItem('r3xaDraft')") == original
+        browser.close()
+
+
+def test_static_editor_imports_json_and_persists_it_locally(static_site: str) -> None:
+    payload = {
+        "title": "Imported static document",
+        "description": "Loaded from a local file",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("#load-json-input").evaluate(
+            """(input, text) => {
+              const files = new DataTransfer();
+              files.items.add(new File([text], 'imported.json', {type: 'application/json'}));
+              Object.defineProperty(input, 'files', {value: files.files});
+              input.dispatchEvent(new Event('change', {bubbles: true}));
+            }""",
+            json.dumps(payload),
+        )
+        page.wait_for_function("JSON.parse(document.querySelector('#json-input').value).title === 'Imported static document'")
+        page.reload()
+        page.wait_for_function("JSON.parse(document.querySelector('#json-input').value).title === 'Imported static document'")
+        assert page.evaluate("JSON.parse(document.querySelector('#json-input').value).title") == payload["title"]
+        browser.close()
+
+
+def test_static_directory_selection_naturally_sorts_list_values(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=dic_2d&prefill=1")
+        page.wait_for_selector(".guided-step")
+        page.locator(".guided-step").filter(has_text="Images").click()
+        page.locator("[id^='guided-images-template-'] input[type=file]").evaluate(
+            """input => {
+              const files = new DataTransfer();
+              files.items.add(new File(['10'], 'image_10.tif', {type: 'image/tiff'}));
+              files.items.add(new File(['2'], 'image_2.tif', {type: 'image/tiff'}));
+              Object.defineProperty(input, 'files', {value: files.files});
+              input.dispatchEvent(new Event('change', {bubbles: true}));
+            }"""
+        )
+        payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        images = next(item for item in payload["data_sets"] if item.get("path") == "images/")
+        assert images["values"] == ["image_2.tif", "image_10.tif"]
+        browser.close()
+
+
+def test_static_graph_exports_svg_and_standalone_html(static_site: str) -> None:
+    payload = {
+        "title": "Export graph",
+        "description": "Static export test",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        context = browser.new_context(accept_downloads=True)
+        page = context.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
+        page.locator("#graph-palette").select_option("classic")
+        page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
+        page.locator("#fullscreen-graph-btn").click()
+        page.wait_for_selector(".graph-overlay")
+        page.keyboard.press("Escape")
+        assert page.locator(".graph-overlay").count() == 0
+        with page.expect_download() as svg_download:
+            page.locator("#save-graph-btn").click()
+        assert svg_download.value.suggested_filename == "r3xa-graph.svg"
+        with page.expect_download() as html_download:
+            page.locator("#export-standalone-btn").click()
+        assert html_download.value.suggested_filename == "r3xa-standalone.html"
+        browser.close()
+
+
+def test_static_language_switch_updates_home_page(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(locale="en-US")
+        page.goto(f"{static_site}/")
+        page.wait_for_selector(".profile-card")
+        page.locator("[data-language-select]").select_option("fr")
+        assert page.locator("h1").inner_text() == "Décrivez votre expérience"
+        browser.close()
 
 
 def test_static_registry_validation_uses_local_validator(static_site: str) -> None:

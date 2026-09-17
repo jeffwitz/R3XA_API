@@ -8,8 +8,8 @@ const renderProfileCards = (catalog) => {
     const card = document.createElement("a");
     card.className = "profile-card";
     card.href = profileId === "generic"
-      ? "/edit?profile=generic&new=1"
-      : `/edit?profile=${encodeURIComponent(profileId)}&prefill=1`;
+      ? "edit/?profile=generic&new=1"
+      : `edit/?profile=${encodeURIComponent(profileId)}&prefill=1`;
     const title = document.createElement("strong");
     title.textContent = t(`profile.${profileId}.title`, profile.title || profileId);
     const description = document.createElement("span");

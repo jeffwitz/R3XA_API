@@ -207,6 +207,13 @@ failures (missing required field, wrong constant, and wrong type). Integrity
 parity remains a separate follow-up because the JavaScript runtime adds those
 semantic checks after schema validation.
 
+The browser qualification also covers Guided → Advanced → Expert transitions,
+local JSON import and persistence across reload, natural sorting of selected
+directory files, both graph palettes, fullscreen display, standalone HTML and
+SVG downloads, and English/French switching. One-shot `new=1` and `prefill=1`
+launch URLs are consumed after use so a browser reload does not recreate or
+discard the document unexpectedly.
+
 ## Phase F — GitLab Pages
 
 The Pages job publishes only the generated `dist/r3xa-webui/` directory and
@@ -269,6 +276,10 @@ The initiative is complete only when all of the following are true:
   test, same-origin/GET-only request assertions, and Python/JavaScript schema
   validation parity cases. The browser suite now covers the WebAssembly
   failure path as well as successful local Graphviz rendering.
+- Extended Phase E browser coverage to the shared editor workflows: mode
+  transitions, local import/reload persistence, directory selection, palette
+  switching, fullscreen, standalone/SVG export, and language switching. Fixed
+  launch-action URLs so `new=1` and `prefill=1` are applied only once.
 
 ### Phase B progress
 
