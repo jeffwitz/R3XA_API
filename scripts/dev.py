@@ -283,6 +283,7 @@ def cmd_test_static_web(args: argparse.Namespace) -> None:
     tests = (
         "tests/web/test_static_build.py",
         "tests/web/test_static_graph.py",
+        "tests/web/test_static_parity.py",
         "tests/web/test_static_browser.py",
     )
     _run(python, "-m", "pytest", *tests, *args.pytest_args)

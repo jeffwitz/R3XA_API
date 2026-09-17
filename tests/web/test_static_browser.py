@@ -7,6 +7,7 @@ import socket
 import subprocess
 import sys
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -38,15 +39,13 @@ def _load_dev_module():
     return module
 
 
-@pytest.fixture
-def static_site(tmp_path: Path) -> str:
-    output_dir = tmp_path / "r3xa-webui"
-    _load_dev_module().build_static_web(output_dir)
+@contextmanager
+def _serve_static_directory(directory: Path):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
     process = subprocess.Popen(
-        [sys.executable, "-m", "http.server", str(port), "--directory", str(output_dir)],
+        [sys.executable, "-m", "http.server", str(port), "--directory", str(directory)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -63,9 +62,28 @@ def static_site(tmp_path: Path) -> str:
         process.terminate()
         process.wait(timeout=5)
         raise RuntimeError("Static WebUI test server did not start.")
-    yield base_url
-    process.terminate()
-    process.wait(timeout=5)
+    try:
+        yield base_url
+    finally:
+        process.terminate()
+        process.wait(timeout=5)
+
+
+@pytest.fixture
+def static_site(tmp_path: Path) -> str:
+    output_dir = tmp_path / "r3xa-webui"
+    _load_dev_module().build_static_web(output_dir)
+    with _serve_static_directory(output_dir) as base_url:
+        yield base_url
+
+
+@pytest.fixture
+def static_subpath_site(tmp_path: Path) -> str:
+    host_dir = tmp_path / "host"
+    output_dir = host_dir / "r3xa-webui"
+    _load_dev_module().build_static_web(output_dir)
+    with _serve_static_directory(host_dir) as base_url:
+        yield f"{base_url}/r3xa-webui"
 
 
 @pytest.fixture
@@ -116,6 +134,42 @@ def test_static_editor_loads_catalogue_and_validates_locally(static_page: Page, 
     assert any(error["validator"] == "integrity" for error in report["errors"])
 
 
+def test_static_web_works_under_a_non_root_subpath(static_subpath_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_subpath_site}/edit/")
+        page.wait_for_selector("#schema-summary")
+        assert page.evaluate("window.R3XARuntime.mode") == "static"
+        page.goto(f"{static_subpath_site}/schema/")
+        page.wait_for_selector("#schema-tree")
+        page.goto(f"{static_subpath_site}/registry/")
+        page.wait_for_selector("#registry-json-input")
+        browser.close()
+
+
+def test_static_navigation_uses_only_same_origin_get_requests(static_site: str) -> None:
+    requests: list[tuple[str, str]] = []
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.on("request", lambda request: requests.append((request.method, request.url)))
+        page.goto(f"{static_site}/")
+        page.wait_for_selector(".profile-card")
+        page.goto(f"{static_site}/edit/")
+        page.wait_for_selector("#schema-summary")
+        page.goto(f"{static_site}/schema/")
+        page.wait_for_selector("#schema-tree")
+        page.goto(f"{static_site}/registry/")
+        page.wait_for_selector("#registry-json-input")
+        browser.close()
+
+    assert requests
+    assert all(method == "GET" for method, _ in requests)
+    assert all(url.startswith(static_site) for _, url in requests)
+    assert not any("/api/" in url for _, url in requests)
+
+
 def test_static_registry_validation_uses_local_validator(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
@@ -129,7 +183,7 @@ def test_static_registry_validation_uses_local_validator(static_site: str) -> No
 
 
 def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None:
-    requests: list[str] = []
+    requests: list[tuple[str, str]] = []
     payload = {
         "title": "Browser graph",
         "description": "Static graph test",
@@ -148,7 +202,7 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page()
-        page.on("request", lambda request: requests.append(request.url))
+        page.on("request", lambda request: requests.append((request.method, request.url)))
         page.goto(f"{static_site}/schema/")
         assert page.locator("#graph-backend option:checked").inner_text() == "Graphviz WebAssembly · SVG · browser"
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
@@ -158,7 +212,9 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
         page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
         assert page.locator("#graph-container svg").count() == 1
         assert "Machine" in page.locator("#graph-container").inner_text()
-        assert not any("/api/" in url for url in requests)
+        assert all(method == "GET" for method, _ in requests)
+        assert all(url.startswith(static_site) for _, url in requests)
+        assert not any("/api/" in url for _, url in requests)
         browser.close()
 
 
@@ -180,6 +236,7 @@ def test_static_schema_viewer_falls_back_for_complex_drafts(static_site: str) ->
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page()
         page.goto(f"{static_site}/edit/?profile=stereo_dic&prefill=1")
+        page.wait_for_function("localStorage.getItem('r3xaDraft')?.includes('Stereo DIC')")
         page.goto(f"{static_site}/schema/")
         page.wait_for_selector("#schema-tree")
         tree_text = page.locator("#schema-tree").inner_text()

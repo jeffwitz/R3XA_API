@@ -199,6 +199,14 @@ The static acceptance test must fail if the browser requests `/api/*`, sends a
 document by POST, or loads JavaScript, CSS, fonts, schema, catalogue, or WASM
 from a third-party domain.
 
+The current Phase E implementation verifies that generated pages work below a
+non-root path and that a representative static navigation session uses only
+same-origin `GET` requests. The static validator is also compared with the
+Python validation report for valid documents and representative schema
+failures (missing required field, wrong constant, and wrong type). Integrity
+parity remains a separate follow-up because the JavaScript runtime adds those
+semantic checks after schema validation.
+
 ## Phase F — GitLab Pages
 
 The Pages job publishes only the generated `dist/r3xa-webui/` directory and
@@ -257,7 +265,10 @@ The initiative is complete only when all of the following are true:
   adapter and routed page metadata, validation, and graph operations through it.
 - Verified Phase A with JavaScript syntax checks, 26 WebUI API/contract tests,
   and 16 browser tests.
-- Phase B is next: generate the static pages and schema-derived assets.
+- Completed the first Phase E qualification batch: added a subpath browser
+  test, same-origin/GET-only request assertions, and Python/JavaScript schema
+  validation parity cases. The browser suite now covers the WebAssembly
+  failure path as well as successful local Graphviz rendering.
 
 ### Phase B progress
 
