@@ -42,18 +42,26 @@ const renderJsonViewer = (data, expand = false) => {
   treeEl.innerHTML = "";
   const container = document.createElement("div");
   treeEl.appendChild(container);
+  const serialized = JSON.stringify(data, null, 2);
   if (typeof JSONViewer === "undefined") {
     const pre = document.createElement("pre");
-    pre.textContent = JSON.stringify(data, null, 2);
+    pre.textContent = serialized;
     container.appendChild(pre);
     return;
   }
-  new JSONViewer({
-    container,
-    data: JSON.stringify(data, null, 2),
-    theme: "light",
-    expand,
-  });
+  try {
+    new JSONViewer({
+      container,
+      data: serialized,
+      theme: "light",
+      expand,
+    });
+  } catch {
+    container.replaceChildren();
+    const pre = document.createElement("pre");
+    pre.textContent = serialized;
+    container.appendChild(pre);
+  }
 };
 
 const renderSummary = async () => {

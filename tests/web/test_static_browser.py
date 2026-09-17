@@ -173,3 +173,16 @@ def test_static_schema_viewer_handles_an_invalid_saved_draft(static_site: str) -
         assert "Failed to load draft" not in page.locator("#schema-tree").inner_text()
         assert "schema_version" in page.locator("#schema-tree").inner_text()
         browser.close()
+
+
+def test_static_schema_viewer_falls_back_for_complex_drafts(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=stereo_dic&prefill=1")
+        page.goto(f"{static_site}/schema/")
+        page.wait_for_selector("#schema-tree")
+        tree_text = page.locator("#schema-tree").inner_text()
+        assert "Failed to load draft" not in tree_text
+        assert "Stereo DIC" in tree_text
+        browser.close()
