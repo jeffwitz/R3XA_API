@@ -3,21 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <title>R3XA Web</title>
-    <link rel="stylesheet" href="/static/style.css?v={{ app_start }}" />
+    <link rel="stylesheet" href="{{ static_base|default('/static') }}/style.css?v={{ app_start }}" />
   </head>
   <body data-app-start="{{ app_start }}">
     <header class="topbar">
       <div class="brand">
-        <img src="/static/photomeca-logo.png" alt="Photomeca" onerror="this.style.display='none'" />
-        <img src="/static/r3xa-logo.png" alt="R3XA" onerror="this.style.display='none'" />
+        <img src="{{ static_base|default('/static') }}/photomeca-logo.png" alt="Photomeca" onerror="this.style.display='none'" />
+        <img src="{{ static_base|default('/static') }}/r3xa-logo.png" alt="R3XA" onerror="this.style.display='none'" />
         <div>
           <div class="brand-title">Photomeca · R3XA</div>
           <div class="brand-sub">Web Editor &amp; Validator</div>
         </div>
       </div>
       <nav class="nav">
-        <a href="/edit" data-i18n="nav.editor">Editor</a>
-        <a href="/schema" data-i18n="nav.schema">Schema viewer</a>
+        <a href="{{ app_base|default('') }}/edit/" data-i18n="nav.editor">Editor</a>
+        <a href="{{ app_base|default('') }}/schema/" data-i18n="nav.schema">Schema viewer</a>
         <label class="language-control"><span data-i18n="language.label">Language</span><select data-language-select><option value="en">English</option><option value="fr">Français</option></select></label>
       </nav>
     </header>
@@ -37,19 +37,19 @@
       <section class="panel advanced-tools">
         <h2 data-i18n="home.advanced">Advanced tools</h2>
         <div class="advanced-tool-grid">
-          <a class="tool-card" href="/registry">
+          <a class="tool-card" href="{{ app_base|default('') }}/registry/">
             <strong data-i18n="home.registry">Registry item editor</strong>
             <span data-i18n="home.registry_description">For maintainers and experienced users who edit one registry item.</span>
           </a>
-          <a class="tool-card" href="/schema">
+          <a class="tool-card" href="{{ app_base|default('') }}/schema/">
             <strong data-i18n="home.schema">Explore schema and graph</strong>
             <span data-i18n="home.schema_description">Inspect the R3XA schema or generate a graph from your current draft.</span>
           </a>
         </div>
       </section>
     </main>
-    <script src="/static/runtime.js?v={{ app_start }}"></script>
-    <script src="/static/i18n.js?v={{ app_start }}"></script>
-    <script src="/static/home.js?v={{ app_start }}"></script>
+    <script src="{{ static_base|default('/static') }}/{{ runtime_name|default('runtime.js') }}?v={{ app_start }}" data-asset-base="{{ static_base|default('/static') }}"></script>
+    <script src="{{ static_base|default('/static') }}/i18n.js?v={{ app_start }}"></script>
+    <script src="{{ static_base|default('/static') }}/home.js?v={{ app_start }}"></script>
   </body>
 </html>

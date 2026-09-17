@@ -80,7 +80,7 @@ def _ui_catalog(web_server: str) -> dict:
 def test_home_starts_from_experiment_profiles(page: Page) -> None:
     page.wait_for_selector(".profile-card")
     assert page.locator(".profile-card").count() >= 3
-    assert page.locator(".advanced-tools a[href='/registry']").count() == 1
+    assert page.locator(".advanced-tools a[href='/registry/']").count() == 1
     assert page.locator(".hero a[href='/registry']").count() == 0
 
 

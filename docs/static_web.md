@@ -81,7 +81,7 @@ Explicitly out of scope:
 | Phase | Goal | Status |
 | --- | --- | --- |
 | A | Hide server API calls behind a runtime abstraction | **Completed** |
-| B | Build static pages and schema-derived JSON artefacts | **Next** |
+| B | Build static pages and schema-derived JSON artefacts | **In progress** |
 | C | Add standalone JavaScript validation and integrity checks | Planned |
 | D | Add lazy Graphviz WebAssembly SVG rendering | Planned |
 | E | Test the generated `dist/` with parity and zero-API checks | Planned |
@@ -252,3 +252,12 @@ The initiative is complete only when all of the following are true:
 - Verified Phase A with JavaScript syntax checks, 26 WebUI API/contract tests,
   and 16 browser tests.
 - Phase B is next: generate the static pages and schema-derived assets.
+
+### Phase B progress
+
+- Added `python scripts/dev.py build-static-web`.
+- The command currently generates the four static pages, local schema/UI
+  catalogues, build metadata, and a static runtime scaffold under
+  `dist/r3xa-webui/`.
+- Static metadata loading is available; browser validation, integrity checks,
+  and graph rendering remain intentionally deferred to phases C and D.

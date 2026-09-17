@@ -19,15 +19,14 @@ def test_frontend_assets_are_wired() -> None:
     assert 'data-editor-mode="guided"' in template
     assert 'id="guided-prefill"' in template
     assert "Create prefilled workflow" in template
-    assert 'src="/static/i18n.js?v={{ app_start }}"' in template
-    assert 'src="/static/runtime.js?v={{ app_start }}"' in template
-    assert '/static/app.js?v={{ app_start }}' in template
-    assert '/static/style.css?v={{ app_start }}' in template
+    assert 'src="{{ static_base|default(\'/static\') }}/{{ runtime_name|default(\'runtime.js\') }}?v={{ app_start }}"' in template
+    assert '{{ static_base|default(\'/static\') }}/app.js?v={{ app_start }}' in template
+    assert '{{ static_base|default(\'/static\') }}/style.css?v={{ app_start }}' in template
     assert 'data-editor-surface="header"' in template
     assert 'data-editor-surface="data_sets"' in template
     assert 'id="profile-cards"' in index_template
     assert "advanced-tools" in index_template
-    assert 'src="/static/home.js?v={{ app_start }}"' in index_template
+    assert '{{ static_base|default(\'/static\') }}/home.js?v={{ app_start }}' in index_template
     assert 'body[data-editor-mode="guided"] .editor-surface' in stylesheet
     assert 'body[data-editor-mode="advanced"] .expert-panel' in stylesheet
     assert ".profile-cards" in stylesheet

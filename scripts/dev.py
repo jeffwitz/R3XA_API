@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shlex
 import shutil
 import subprocess
+from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -12,6 +14,8 @@ FULL_DEV_EXTRAS = ".[dev,docs,web,notebook,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
 SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
 MODELS_OUTPUT = "r3xa_api/models.py"
+WEB_TEMPLATES = ROOT / "web" / "templates"
+WEB_STATIC = ROOT / "web" / "static"
 
 
 def model_codegen_command(python: str, output: str = MODELS_OUTPUT) -> tuple[str, ...]:
@@ -165,6 +169,93 @@ def cmd_run_web(args: argparse.Namespace) -> None:
     if args.reload:
         command.append("--reload")
     _run(*command)
+
+
+def _git_revision() -> str:
+    try:
+        return subprocess.check_output(
+            ("git", "rev-parse", "HEAD"),
+            cwd=ROOT,
+            text=True,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+
+
+def _write_json(path: Path, payload: object) -> None:
+    path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def build_static_web(output_dir: Path) -> Path:
+    """Build the schema/catalogue-backed static WebUI scaffold."""
+
+    from jinja2 import Environment, FileSystemLoader
+    from r3xa_api.schema import load_schema
+    from r3xa_api.webcore import build_schema_catalog, build_schema_summary, build_ui_catalog
+
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    assets_dir = output_dir / "assets"
+    assets_dir.mkdir(parents=True)
+    shutil.copytree(
+        WEB_STATIC,
+        assets_dir,
+        ignore=shutil.ignore_patterns("runtime.js"),
+        dirs_exist_ok=True,
+    )
+
+    schema = load_schema()
+    schema_catalog = build_schema_catalog(schema)
+    _write_json(assets_dir / "schema.json", schema)
+    _write_json(assets_dir / "schema-catalog.json", schema_catalog)
+    _write_json(assets_dir / "schema-summary.json", build_schema_summary(schema))
+    _write_json(assets_dir / "ui-catalog.json", build_ui_catalog(schema_catalog))
+    try:
+        api_version = package_version("r3xa-api")
+    except PackageNotFoundError:
+        api_version = "development"
+    _write_json(
+        assets_dir / "build-info.json",
+        {
+            "api_version": api_version,
+            "schema_version": schema_catalog.get("schema_version"),
+            "git_commit": _git_revision(),
+            "build_id": _git_revision(),
+        },
+    )
+
+    environment = Environment(loader=FileSystemLoader(str(WEB_TEMPLATES)))
+    pages = {
+        "index.html": ("index.html", ".", "."),
+        "edit/index.html": ("edit.html", "..", ".."),
+        "schema/index.html": ("schema.html", "..", ".."),
+        "registry/index.html": ("registry.html", "..", ".."),
+    }
+    build_id = _git_revision()
+    for relative_path, (template_name, static_base, app_base) in pages.items():
+        destination = output_dir / relative_path
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(
+            environment.get_template(template_name).render(
+                app_start=build_id,
+                app_base=app_base,
+                runtime_name="runtime-static.js",
+                static_base=f"{static_base}/assets" if static_base != "." else "assets",
+            ),
+            encoding="utf-8",
+        )
+    return output_dir
+
+
+def cmd_build_static_web(args: argparse.Namespace) -> None:
+    output_dir = Path(args.output)
+    if not output_dir.is_absolute():
+        output_dir = ROOT / output_dir
+    build_static_web(output_dir)
+    print(f"Static WebUI written to {output_dir}")
 
 
 def cmd_clean_artifacts(_: argparse.Namespace) -> None:
@@ -355,6 +446,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="install Graphviz with the platform package manager when dot is missing",
     )
     run_web.set_defaults(func=cmd_run_web, reload=True)
+
+    static_web = subparsers.add_parser(
+        "build-static-web",
+        help="build the schema-driven static WebUI distribution",
+    )
+    static_web.add_argument(
+        "--output",
+        default="dist/r3xa-webui",
+        help="output directory, relative to the project root by default",
+    )
+    static_web.set_defaults(func=cmd_build_static_web)
 
     ensure_graphviz_command = subparsers.add_parser(
         "ensure-graphviz",

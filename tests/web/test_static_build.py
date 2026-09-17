@@ -1,0 +1,59 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+from pathlib import Path
+
+
+def _load_dev_module():
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "dev.py"
+    spec = importlib.util.spec_from_file_location("r3xa_dev_static_test", script_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) -> None:
+    module = _load_dev_module()
+    output_dir = tmp_path / "r3xa-webui"
+
+    module.build_static_web(output_dir)
+
+    assert (output_dir / "index.html").is_file()
+    assert (output_dir / "edit" / "index.html").is_file()
+    assert (output_dir / "schema" / "index.html").is_file()
+    assert (output_dir / "registry" / "index.html").is_file()
+    assets = output_dir / "assets"
+    for name in (
+        "schema.json",
+        "schema-catalog.json",
+        "schema-summary.json",
+        "ui-catalog.json",
+        "build-info.json",
+        "runtime-static.js",
+    ):
+        assert (assets / name).is_file(), name
+    assert not (assets / "runtime.js").exists()
+
+    catalog = json.loads((assets / "schema-catalog.json").read_text(encoding="utf-8"))
+    assert catalog["schema_version"]
+    assert "data_sources" in catalog["sections"]
+    index = (output_dir / "index.html").read_text(encoding="utf-8")
+    editor = (output_dir / "edit" / "index.html").read_text(encoding="utf-8")
+    assert 'src="assets/runtime-static.js' in index
+    assert 'src="../assets/runtime-static.js' in editor
+    assert 'href="./edit/"' in index
+    assert 'href="../schema/"' in editor
+
+
+def test_static_web_assets_do_not_use_fastapi_api_urls(tmp_path: Path) -> None:
+    module = _load_dev_module()
+    output_dir = tmp_path / "r3xa-webui"
+    module.build_static_web(output_dir)
+
+    for asset in (output_dir / "assets").rglob("*.js"):
+        source = asset.read_text(encoding="utf-8")
+        assert 'fetch("/api/' not in source
+        assert "fetch(`/api/" not in source

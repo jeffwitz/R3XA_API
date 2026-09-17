@@ -162,6 +162,7 @@ python scripts/dev.py generate-models
 python scripts/dev.py generate-stubs
 python scripts/dev.py generate-spec
 python scripts/dev.py build-docs
+python scripts/dev.py build-static-web
 python scripts/dev.py clean-artifacts
 python scripts/dev.py source-archive
 ```
