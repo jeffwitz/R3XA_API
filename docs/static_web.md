@@ -207,10 +207,12 @@ the static runtime contains no remote or FastAPI API endpoint. The static
 validator is also compared with the
 Python validation report for valid documents and representative schema
 failures (missing required field, wrong constant, and wrong type), as well as
-duplicate-ID integrity errors. The parity assertion compares validity and the
-stable `(path, validator)` identity of each error. Common Guided-mode messages
-for required, type, constant, enum, pattern, item-count, and numeric-bound
-errors are also aligned with the Python report builder.
+duplicate-ID integrity errors and an invalid item kind. The static report
+collapses branch-level `oneOf`/`anyOf` diagnostics so that the result matches
+the meaningful Python validation error. The parity assertion compares validity
+and the stable `(path, validator)` identity of each error. Common Guided-mode
+messages for required, type, constant, enum, pattern, item-count, and
+numeric-bound errors are also aligned with the Python report builder.
 
 The browser qualification also covers Guided → Advanced → Expert transitions,
 local JSON import and persistence across reload, natural sorting of selected
@@ -428,8 +430,8 @@ works in Chromium, palette data comes from the Python source, and a failed
 WebAssembly load produces a graph-specific error without disabling the editor.
 Phase E browser qualification, zero-network checks, and schema/integrity status
 parity are now covered by the local test suite. The remaining Phase E work is
-normalized user-facing error wording and any gaps found during the hosted
-smoke test.
+the final normalized user-facing error wording review and any gaps found during
+the hosted smoke test.
 
 ### Phase F progress
 

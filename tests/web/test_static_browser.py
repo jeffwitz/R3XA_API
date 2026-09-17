@@ -459,6 +459,10 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
         "schema": {key: value for key, value in valid_payload.items() if key != "title"},
         "wrong_version": {**valid_payload, "version": "not-the-current-schema"},
         "wrong_author_type": {**valid_payload, "authors": ["Tester"]},
+        "invalid_setting_kind": {
+            **valid_payload,
+            "settings": [{"id": "setting", "kind": "settings/unknown", "title": "Setup"}],
+        },
         "integrity": valid_payload,
     }
     with sync_playwright() as runtime:
@@ -479,7 +483,7 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
             assert [(error["path"], error["validator"]) for error in actual["errors"]] == [
                 (error["path"], error["validator"]) for error in expected["errors"]
             ], name
-            if name != "integrity":
+            if name not in {"integrity", "invalid_setting_kind"}:
                 assert [error["user_message"] for error in actual["errors"]] == [
                     error["user_message"] for error in expected["errors"]
                 ], name

@@ -131,13 +131,24 @@
     return error.message || "Validation failed.";
   };
 
-  const reportFromErrors = (errors) => errors.map((error) => ({
-    path: (error.instancePath || "").replace(/^\/+/, ""),
-    message: error.message || "Validation failed.",
-    user_message: friendlyMessage(error),
-    validator: error.keyword || "schema",
-    schema_path: error.schemaPath || "",
-  }));
+  const reportFromErrors = (errors) => {
+    const combinators = errors.filter((error) => ["anyOf", "oneOf"].includes(error.keyword));
+    const relevantErrors = errors.filter((error) => {
+      if (["anyOf", "oneOf"].includes(error.keyword)) return true;
+      const errorPath = error.instancePath || "";
+      return !combinators.some((combinator) => {
+        const combinatorPath = combinator.instancePath || "";
+        return errorPath === combinatorPath || errorPath.startsWith(`${combinatorPath}/`);
+      });
+    });
+    return relevantErrors.map((error) => ({
+      path: (error.instancePath || "").replace(/^\/+/, ""),
+      message: error.message || "Validation failed.",
+      user_message: friendlyMessage(error),
+      validator: error.keyword || "schema",
+      schema_path: error.schemaPath || "",
+    }));
+  };
 
   const responseFromReport = (report) => new Response(JSON.stringify(report), {
     status: 200,
