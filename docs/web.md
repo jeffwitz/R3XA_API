@@ -1,9 +1,9 @@
 # Web UI (R3XA_API)
 
 The current development runtime is the FastAPI WebUI described on this page.
-The parallel static-WebUI migration is tracked in
-[`static_web.md`](static_web.md); it will provide the same user interface from
-`dist/r3xa-webui/` without a Python backend at runtime.
+The static WebUI is available as a second runtime from `dist/r3xa-webui/`,
+without a Python backend at runtime. Its implementation and deployment status
+are tracked in [`static_web.md`](static_web.md).
 
 For deployment without a backend, follow the static build, GitLab Pages, and
 iframe instructions in [`static_web.md`](static_web.md).

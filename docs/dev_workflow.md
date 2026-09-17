@@ -10,10 +10,12 @@ and acceptance criteria are maintained in
 [`static_web.md`](static_web.md). Read that document before changing the WebUI
 runtime or adding build and CI jobs for the static distribution.
 
-Phase A is complete: page scripts use the shared server runtime adapter instead
-of calling `/api/*` directly. Phase B now generates static pages and
-schema-derived assets. Phase C compiles the local browser validator and Phase
-D adds lazy Graphviz WebAssembly SVG rendering.
+Phases A through D are complete: page scripts use the shared server runtime
+adapter, static pages and schema-derived assets are generated, browser
+validation runs locally, and lazy Graphviz WebAssembly SVG rendering is
+available. Phase E qualifies the static workflows and Phase F adds the GitLab
+Pages publication jobs; the persistent status is maintained in
+[`static_web.md`](static_web.md).
 
 To build the static distribution, install the JavaScript build dependency once:
 
