@@ -76,9 +76,9 @@ Graphviz rendering runs in the browser. Stop it with `Ctrl+C`.
 Do not treat the current static graph success as completion of the whole static
 WebUI initiative. The following work remains, in this order:
 
-1. **Complete Phase E:** add full Python/JavaScript validation parity fixtures,
-   including integrity errors and normalized error reports, and close any
-   remaining static-only workflow gaps found by browser qualification.
+1. **Complete Phase E:** finish normalized error-report parity, including
+   user-facing messages, and close any remaining static-only workflow gaps
+   found by browser qualification.
 2. **Add the zero-network acceptance checks:** browser tests must fail on
    `/api/*`, POST requests carrying documents, third-party resources, CDNs,
    telemetry, or remote graph/validation services. Keep all runtime assets,
@@ -101,7 +101,7 @@ WebUI initiative. The following work remains, in this order:
 - The static Schema viewer falls back to a native JSON `<pre>` when the bundled
   JSON viewer cannot display a complex draft, including `null` values.
 - GitLab Pages publication, the broader zero-CDN/zero-API acceptance suite,
-  and complete integrity/error-report parity are not implemented yet.
+  and complete error-report parity are not implemented yet.
 
 ## Useful checks
 

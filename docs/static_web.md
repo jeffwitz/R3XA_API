@@ -203,9 +203,10 @@ The current Phase E implementation verifies that generated pages work below a
 non-root path and that a representative static navigation session uses only
 same-origin `GET` requests. The static validator is also compared with the
 Python validation report for valid documents and representative schema
-failures (missing required field, wrong constant, and wrong type). Integrity
-parity remains a separate follow-up because the JavaScript runtime adds those
-semantic checks after schema validation.
+failures (missing required field, wrong constant, and wrong type), as well as
+duplicate-ID integrity errors. The parity assertion compares validity and the
+stable `(path, validator)` identity of each error; exact user-facing wording
+remains a separate follow-up.
 
 The browser qualification also covers Guided → Advanced → Expert transitions,
 local JSON import and persistence across reload, natural sorting of selected
@@ -280,6 +281,8 @@ The initiative is complete only when all of the following are true:
   transitions, local import/reload persistence, directory selection, palette
   switching, fullscreen, standalone/SVG export, and language switching. Fixed
   launch-action URLs so `new=1` and `prefill=1` are applied only once.
+- Added browser parity coverage for schema and duplicate-ID integrity errors,
+  and made Registry validation assert same-origin GET-only resource usage.
 
 ### Phase B progress
 

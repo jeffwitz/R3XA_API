@@ -17,6 +17,8 @@ import pytest
 playwright = pytest.importorskip("playwright.sync_api")
 from playwright.sync_api import Browser, Page, sync_playwright
 
+from r3xa_api.webcore import build_validation_report
+
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -295,11 +297,16 @@ def test_static_registry_validation_uses_local_validator(static_site: str) -> No
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page()
+        requests: list[tuple[str, str]] = []
+        page.on("request", lambda request: requests.append((request.method, request.url)))
         page.goto(f"{static_site}/registry/")
         page.wait_for_selector("#registry-validation-output", state="attached")
         page.click("#registry-validate-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.length > 0")
         assert "Valid registry item" in page.locator("#registry-validation-output").inner_text()
+        assert all(method == "GET" for method, _ in requests)
+        assert all(url.startswith(static_site) for _, url in requests)
+        assert not any("/api/" in url for _, url in requests)
         browser.close()
 
 
@@ -391,4 +398,47 @@ def test_static_graph_failure_does_not_break_the_editor(static_site: str) -> Non
         page.goto(f"{static_site}/edit/")
         page.wait_for_selector("#json-input", state="attached")
         assert page.evaluate("window.R3XARuntime.mode") == "static"
+        browser.close()
+
+
+def test_static_validation_matches_python_for_schema_and_integrity_errors(static_site: str) -> None:
+    valid_payload = {
+        "title": "Parity document",
+        "description": "Validation parity",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [{"id": "duplicate", "kind": "settings/generic", "title": "Setup"}],
+        "data_sources": [{
+            "id": "duplicate",
+            "kind": "data_sources/generic",
+            "title": "Source",
+            "output_components": 1,
+            "output_dimension": "point",
+            "output_units": [],
+        }],
+        "data_sets": [],
+    }
+    cases = {
+        "schema": {key: value for key, value in valid_payload.items() if key != "title"},
+        "integrity": valid_payload,
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/")
+        page.wait_for_selector("#schema-summary")
+        for name, payload in cases.items():
+            expected = build_validation_report(payload)
+            actual = page.evaluate(
+                """async payload => {
+                  const response = await window.R3XARuntime.validateDocument(payload);
+                  return response.json();
+                }""",
+                payload,
+            )
+            assert actual["valid"] == expected["valid"], name
+            assert [(error["path"], error["validator"]) for error in actual["errors"]] == [
+                (error["path"], error["validator"]) for error in expected["errors"]
+            ], name
         browser.close()
