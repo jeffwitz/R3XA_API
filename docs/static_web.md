@@ -206,8 +206,9 @@ also rejects absolute or protocol-relative page and stylesheet resources, and
 the static runtime contains no remote or FastAPI API endpoint. The static
 validator is also compared with the
 Python validation report for valid documents and representative schema
-failures (missing required field, wrong constant, and wrong type), as well as
-duplicate-ID integrity errors and an invalid item kind. The static report
+failures (missing required field, empty text, unexpected properties, wrong
+constant, wrong type, and an invalid item kind), as well as duplicate-ID
+integrity errors. The static report
 collapses branch-level `oneOf`/`anyOf` diagnostics so that the result matches
 the meaningful Python validation error. The parity assertion compares validity
 and the stable `(path, validator)` identity of each error. Common Guided-mode

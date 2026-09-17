@@ -457,6 +457,8 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
     }
     cases = {
         "schema": {key: value for key, value in valid_payload.items() if key != "title"},
+        "empty_title": {**valid_payload, "title": ""},
+        "extra_property": {**valid_payload, "unexpected": True},
         "wrong_version": {**valid_payload, "version": "not-the-current-schema"},
         "wrong_author_type": {**valid_payload, "authors": ["Tester"]},
         "invalid_setting_kind": {
@@ -483,7 +485,7 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
             assert [(error["path"], error["validator"]) for error in actual["errors"]] == [
                 (error["path"], error["validator"]) for error in expected["errors"]
             ], name
-            if name not in {"integrity", "invalid_setting_kind"}:
+            if name != "integrity":
                 assert [error["user_message"] for error in actual["errors"]] == [
                     error["user_message"] for error in expected["errors"]
                 ], name

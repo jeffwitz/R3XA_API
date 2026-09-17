@@ -120,6 +120,7 @@
       return `Use the required value '${params.allowedValue}'.`;
     }
     if (error.keyword === "pattern") return "Use the expected text format.";
+    if (error.keyword === "minLength") return `Enter at least ${params.limit} character(s).`;
     if (error.keyword === "minItems") return `Add at least ${params.limit} item(s).`;
     if (error.keyword === "maxItems") return `Use no more than ${params.limit} item(s).`;
     if (["minimum", "exclusiveMinimum"].includes(error.keyword)) {
@@ -128,6 +129,10 @@
     if (["maximum", "exclusiveMaximum"].includes(error.keyword)) {
       return `Enter a value less than or equal to ${params.limit}.`;
     }
+    if (error.keyword === "additionalProperties") {
+      return "Remove unsupported fields before continuing.";
+    }
+    if (["anyOf", "oneOf"].includes(error.keyword)) return "Choose a valid value.";
     return error.message || "Validation failed.";
   };
 

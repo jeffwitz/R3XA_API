@@ -34,6 +34,8 @@ def _friendly_message(error: jsonschema.ValidationError) -> str:
         return f"Use the required value '{error.validator_value}'."
     if validator == "pattern":
         return "Use the expected text format."
+    if validator == "minLength":
+        return f"Enter at least {error.validator_value} character(s)."
     if validator == "minItems":
         return f"Add at least {error.validator_value} item(s)."
     if validator == "maxItems":
@@ -42,6 +44,10 @@ def _friendly_message(error: jsonschema.ValidationError) -> str:
         return f"Enter a value greater than or equal to {error.validator_value}."
     if validator in {"maximum", "exclusiveMaximum"}:
         return f"Enter a value less than or equal to {error.validator_value}."
+    if validator == "additionalProperties":
+        return "Remove unsupported fields before continuing."
+    if validator in {"anyOf", "oneOf"}:
+        return "Choose a valid value."
     return error.message
 
 
