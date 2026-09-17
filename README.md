@@ -14,6 +14,13 @@ python -m pip install r3xa-api
 
 This installs the latest stable release from the Python Package Index.
 
+To try the current release candidate instead, install the tagged GitLab
+source explicitly:
+
+```bash
+python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc3"
+```
+
 Graph support is part of the standard SDK installation: the Python `graphviz`
 wrapper is installed automatically. The system Graphviz executable (`dot`) is
 separate; after installation, run `r3xa-ensure-graphviz` on macOS or Windows,

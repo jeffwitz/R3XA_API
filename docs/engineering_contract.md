@@ -196,10 +196,9 @@ ordinary R3XA JSON, and `to_dict()` / `from_dict()` are the explicit conversion
 boundary. The legacy `from_model(...)` bridge remains available for integrations
 but is not needed for ordinary document construction.
 
-For developers, the key point is:
-
-- **it is not mandatory**;
-- **it significantly improves comfort in VS Code / PyCharm / mypy / pyright**.
+For developers, the key point is that Pydantic is now a standard runtime
+dependency of the 2.x SDK, not an optional extra. It provides the object model
+and significantly improves comfort in VS Code, PyCharm, mypy, and pyright.
 
 
 ## 3. Developer perspective — what must be respected

@@ -8,7 +8,7 @@ If you want to learn the library hands-on, start with [notebooks.md](notebooks.m
 
 **Credits and origin**
 - Initial implementation by **E. Roubin**, based on a shared specification led by **J‑C. Passieux**.
-- Original upstream repository: `https://gitlab.com/photomecanics/r3xa`
+- Original upstream repository: `https://gitlab.com/photomechanics/r3xa`
 - Current public repository: `https://gitlab.com/photomechanics/R3XA_API`
 
 ## Why R3XA
@@ -48,7 +48,7 @@ Required fields:
 Example:
 ```json
 {
-  "version": "2026.9.17",
+  "version": "2026.9.18",
   "title": "Hello World",
   "description": "Minimal R3XA file",
   "authors": [{"name": "JC Passieux"}],

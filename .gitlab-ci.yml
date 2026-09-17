@@ -27,7 +27,7 @@ test:
     - apt-get update
     - apt-get install -y --no-install-recommends graphviz
     - python -m pip install --upgrade pip
-    - python -m pip install -e ".[dev,typed,web,graph_nx]"
+    - python -m pip install -e ".[dev,web,graph_nx]"
   script:
     - python -m pytest -q --ignore=tests/web/test_browser.py --junitxml=pytest.xml
   artifacts:

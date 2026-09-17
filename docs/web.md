@@ -210,7 +210,7 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 ## Links
 
 - Source repo: <https://gitlab.com/photomechanics/R3XA_API>
-- Original upstream repository: <https://gitlab.com/photomecanics/r3xa>
+- Original upstream repository: <https://gitlab.com/photomechanics/r3xa>
 - Documentation: <https://r3xa-api.readthedocs.io/en/latest/>
 
 ## API endpoints

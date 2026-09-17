@@ -28,8 +28,8 @@ before the final JSON Schema validation step.
 
 | What changes | Auto-generated after schema update | Still manual |
 |---|---|---|
-| New `kind` in the schema | Model class in `r3xa_api/models.py` | Convenience helpers in `R3XAFile` |
-| New field in an existing object | Updated typed constructor and field hints | Builder methods that hard-code that object |
+| New `kind` in the schema | Model class and schema-driven guided helper after regeneration | Dedicated business profile or widget, if needed |
+| New field in an existing object | Updated typed constructor and field hints | Business logic that depends on that field |
 | New object compatible with the schema | Usable through `new_item(...)` / `add_item(...)` | A dedicated helper like `add_lidar_source(...)` |
 | Schema constraint changes | Reflected in generated models and validation | Business logic that depends on the old structure |
 

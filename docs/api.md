@@ -96,14 +96,15 @@ fields as explicit parameters and accept optional schema fields through `**extra
 Examples:
 
 ```python
-add_generic_setting(title, description, **extra) -> R3XAItem
-add_specimen_setting(title, description, sizes, **extra) -> R3XAItem
-add_testing_machine_setting(title, description, type, **extra) -> R3XAItem
-add_camera_source(title, output_components, output_dimension, output_units, image_size, **extra) -> R3XAItem
-add_load_cell_source(output_components, output_dimension, output_units, capacity, **extra) -> R3XAItem
+add_generic_setting(title, **extra) -> R3XAItem
+add_specimen_setting(title, **extra) -> R3XAItem
+add_testing_machine_setting(title, **extra) -> R3XAItem
+add_stereorig_setting(title, **extra) -> R3XAItem
+add_camera_source(title, output_components, output_dimension, output_units, **extra) -> R3XAItem
+add_load_cell_source(title, output_components, output_dimension, output_units, **extra) -> R3XAItem
 add_generic_data_set(title, parent_data_sources, path, **extra) -> R3XAItem
-add_list_data_set(title, parent_data_sources, timestamps, values, **extra) -> R3XAItem
-add_file_data_set(title, parent_data_sources, timestamps, values, **extra) -> R3XAItem
+add_list_data_set(title, timestamps, values, **extra) -> R3XAItem
+add_file_data_set(title, timestamps, values, **extra) -> R3XAItem
 ```
 
 Complete guided helper inventory for the current schema:
@@ -300,7 +301,7 @@ document = R3XAFile(
 )
 ```
 
-Since schema `2026.9.17` an author carries its own ORCID; the former parallel `author_orcids`
+Since schema `2026.9.16` an author carries its own ORCID; the former parallel `author_orcids`
 array is gone.
 
 ### `unit(...)`

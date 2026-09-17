@@ -3,7 +3,7 @@
 This directory contains the current graph baseline for `R3XA_API`.
 
 - Source document: `qi_hu_from_scratch.json`
-- Schema: `2026.9.16`
+- Schema: `2026.9.18`
 - Source fixture: `examples/artifacts/qi_hu_from_scratch.json`
 - Purpose: current-schema graph and visual non-regression checks
 
