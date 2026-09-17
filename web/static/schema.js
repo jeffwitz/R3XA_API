@@ -8,8 +8,11 @@ const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const exportStandaloneBtn = document.getElementById("export-standalone-btn");
 const graphDescriptionToggle = document.getElementById("graph-show-description");
 const graphPaletteSelect = document.getElementById("graph-palette");
+const graphBackendSelect = document.getElementById("graph-backend");
 
 let cachedSummary = null;
+let currentGraph = null;
+let graphObjectUrl = null;
 
 const ensureServerStart = () => {
   const appStart = document.body?.dataset?.appStart;
@@ -93,6 +96,11 @@ const renderGraph = async () => {
   const stored = getStoredDraftText();
   if (!graphContainer) return false;
   graphContainer.textContent = "Generating graph…";
+  currentGraph = null;
+  if (graphObjectUrl) {
+    URL.revokeObjectURL(graphObjectUrl);
+    graphObjectUrl = null;
+  }
   if (!stored) {
     graphContainer.textContent = "No draft found. Create one in the editor first.";
     if (saveGraphBtn) saveGraphBtn.style.display = "none";
@@ -101,11 +109,13 @@ const renderGraph = async () => {
   }
   try {
     const payload = JSON.parse(stored);
+    const backend = graphBackendSelect ? graphBackendSelect.value : "graphviz";
     const showDescription = graphDescriptionToggle ? graphDescriptionToggle.checked : true;
     const palette = graphPaletteSelect ? graphPaletteSelect.value : "document";
     const query = new URLSearchParams({
       show_description: showDescription ? "true" : "false",
       palette,
+      backend,
     });
     const response = await fetch(`/api/graph?${query.toString()}`, {
       method: "POST",
@@ -123,30 +133,77 @@ const renderGraph = async () => {
       graphContainer.textContent = `Graph error: ${detail}`;
       return false;
     }
-    const svgText = await response.text();
-    graphContainer.innerHTML = svgText;
-    const svg = graphContainer.querySelector("svg");
-    if (svg) {
-      svg.removeAttribute("width");
-      svg.removeAttribute("height");
-      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    if (backend === "matplotlib") {
+      const blob = await response.blob();
+      graphObjectUrl = URL.createObjectURL(blob);
+      const image = document.createElement("img");
+      image.className = "graph-image";
+      image.src = graphObjectUrl;
+      image.alt = "R3XA graph rendered with Matplotlib";
+      graphContainer.replaceChildren(image);
+      currentGraph = {backend, data: blob, extension: "png", mediaType: "image/png"};
+    } else {
+      const content = await response.text();
+      currentGraph = {
+        backend,
+        data: content,
+        extension: backend === "pyvis" ? "html" : "svg",
+        mediaType: backend === "pyvis" ? "text/html" : "image/svg+xml",
+      };
+      if (backend === "pyvis") {
+        const frame = document.createElement("iframe");
+        frame.className = "graph-frame";
+        frame.title = "Interactive R3XA graph";
+        frame.srcdoc = content;
+        graphContainer.replaceChildren(frame);
+      } else {
+        graphContainer.innerHTML = content;
+        const svg = graphContainer.querySelector("svg");
+        if (svg) {
+          svg.removeAttribute("width");
+          svg.removeAttribute("height");
+          svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+        }
+      }
     }
-    if (saveGraphBtn) saveGraphBtn.style.display = svg ? "" : "none";
-    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = svg ? "" : "none";
+    if (saveGraphBtn) saveGraphBtn.style.display = currentGraph ? "" : "none";
+    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = currentGraph ? "" : "none";
+    if (exportStandaloneBtn) exportStandaloneBtn.style.display = backend === "graphviz" ? "" : "none";
     localStorage.setItem("r3xaDraftLast", stored);
-    return !!svg;
+    return !!currentGraph;
   } catch (err) {
     graphContainer.textContent = `Failed to generate graph: ${err.message || err}`;
+    currentGraph = null;
     if (saveGraphBtn) saveGraphBtn.style.display = "none";
     if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = "none";
+    if (exportStandaloneBtn) exportStandaloneBtn.style.display = "none";
     return false;
   }
 };
 
 const showFullscreenGraph = () => {
   const svg = graphContainer?.querySelector("svg");
-  if (!svg) {
+  const visual = svg || graphContainer?.querySelector("img, iframe");
+  if (!visual) {
     if (graphContainer) graphContainer.textContent = "No graph available. Generate it first.";
+    return;
+  }
+
+  if (!svg) {
+    const overlay = document.createElement("div");
+    overlay.className = "graph-overlay";
+    overlay.addEventListener("click", () => overlay.remove());
+    const inner = document.createElement("div");
+    inner.className = "graph-overlay-inner graph-overlay-media";
+    inner.addEventListener("click", (event) => event.stopPropagation());
+    inner.appendChild(visual.cloneNode(true));
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "graph-overlay-close";
+    closeBtn.textContent = "Close";
+    closeBtn.addEventListener("click", () => overlay.remove());
+    inner.appendChild(closeBtn);
+    overlay.appendChild(inner);
+    document.body.appendChild(overlay);
     return;
   }
 
@@ -215,15 +272,14 @@ const showFullscreenGraph = () => {
 };
 
 const saveGraph = () => {
-  const svg = graphContainer?.querySelector("svg");
-  if (!svg) return;
-  const serializer = new XMLSerializer();
-  const svgText = serializer.serializeToString(svg);
-  const blob = new Blob([svgText], { type: "image/svg+xml" });
+  if (!currentGraph) return;
+  const blob = currentGraph.data instanceof Blob
+    ? currentGraph.data
+    : new Blob([currentGraph.data], {type: currentGraph.mediaType});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "r3xa-graph.svg";
+  a.download = `r3xa-graph.${currentGraph.extension}`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -231,8 +287,7 @@ const saveGraph = () => {
 };
 
 const openFullscreenGraph = async () => {
-  const hasSvg = graphContainer?.querySelector("svg");
-  if (!hasSvg) {
+  if (!currentGraph) {
     const ok = await renderGraph();
     if (!ok) return;
   }
@@ -333,6 +388,7 @@ const bindEvents = () => {
     else renderSummary();
   });
   graphPaletteSelect?.addEventListener("change", renderGraph);
+  graphBackendSelect?.addEventListener("change", renderGraph);
   document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
   saveGraphBtn?.addEventListener("click", saveGraph);
   fullscreenGraphBtn?.addEventListener("click", openFullscreenGraph);

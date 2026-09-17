@@ -628,6 +628,21 @@ body[data-editor-mode="expert"] .guided-panel {
   cursor: zoom-in;
 }
 
+.graph-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: zoom-in;
+}
+
+.graph-frame {
+  display: block;
+  width: 100%;
+  min-height: 620px;
+  border: 0;
+  background: #fff;
+}
+
 .graph-overlay {
   position: fixed;
   inset: 0;
@@ -656,6 +671,22 @@ body[data-editor-mode="expert"] .guided-panel {
   height: 100%;
   display: block;
   cursor: zoom-out;
+}
+
+.graph-overlay-media {
+  max-height: 95vh;
+  max-width: 95vw;
+  overflow: auto;
+}
+
+.graph-overlay-media img,
+.graph-overlay-media iframe {
+  display: block;
+  width: min(90vw, 1400px);
+  height: auto;
+  min-height: 70vh;
+  border: 0;
+  background: #fff;
 }
 
 .graph-overlay-close {

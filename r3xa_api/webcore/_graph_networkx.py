@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 from ._graph_core import (
     resolve_styles,
@@ -128,6 +128,68 @@ def _height_scale(shape: str, config: "NetworkXLayoutConfig") -> float:
     if shape == "hexagon":
         return config.hexagon_draw_height_scale
     return config.box_draw_height_scale
+
+
+def _center_positions_by_dependencies(
+    positions: Dict[str, tuple[float, float]],
+    levels: Dict[str, int],
+    edges: Iterable[tuple[str, str]],
+    draw_widths: Dict[str, float],
+    gap: float,
+    iterations: int = 12,
+    damping: float = 0.82,
+) -> None:
+    """Center connected nodes while preserving collision-free layer order.
+
+    Layered layouts often place a merge node at the center of the whole row
+    rather than at the center of its parents. Repeatedly moving each node
+    toward the mean x-coordinate of its direct neighbours fixes that drift.
+    Each pass reapplies the minimum horizontal spacing, so wide labels remain
+    separated while branches and merges become visually balanced.
+    """
+
+    edge_list = list(edges)
+    neighbours: Dict[str, list[str]] = {node_id: [] for node_id in positions}
+    for source, target in edge_list:
+        if source not in positions or target not in positions:
+            continue
+        neighbours[source].append(target)
+        neighbours[target].append(source)
+
+    level_nodes: Dict[int, list[str]] = {}
+    for node_id in positions:
+        level_nodes.setdefault(levels.get(node_id, 0), []).append(node_id)
+
+    for _ in range(max(1, iterations)):
+        current_x = {node_id: coordinates[0] for node_id, coordinates in positions.items()}
+        desired_x = dict(current_x)
+        for node_id, connected_nodes in neighbours.items():
+            if connected_nodes:
+                neighbour_mean = sum(current_x[other] for other in connected_nodes) / len(connected_nodes)
+                desired_x[node_id] = current_x[node_id] + damping * (neighbour_mean - current_x[node_id])
+
+        for level, nodes in level_nodes.items():
+            ordered_nodes = sorted(nodes, key=lambda node_id: current_x[node_id])
+            if not ordered_nodes:
+                continue
+            target_center = sum(desired_x[node_id] for node_id in ordered_nodes) / len(ordered_nodes)
+            adjusted_x: Dict[str, float] = {}
+            for index, node_id in enumerate(ordered_nodes):
+                candidate = desired_x[node_id]
+                if index:
+                    previous_node = ordered_nodes[index - 1]
+                    previous = adjusted_x[previous_node]
+                    minimum_gap = (
+                        0.5 * draw_widths.get(previous_node, 220.0)
+                        + 0.5 * draw_widths.get(node_id, 220.0)
+                        + gap
+                    )
+                    candidate = max(candidate, previous + minimum_gap)
+                adjusted_x[node_id] = candidate
+            adjusted_center = sum(adjusted_x.values()) / len(adjusted_x)
+            center_shift = target_center - adjusted_center
+            for node_id in ordered_nodes:
+                positions[node_id] = (adjusted_x[node_id] + center_shift, positions[node_id][1])
 
 
 def _hexagon_vertices(
@@ -356,6 +418,14 @@ def render_networkx_matplotlib_file(
 
     for level in ordered_levels:
         _spread_row_nodes(level)
+
+    _center_positions_by_dependencies(
+        positions,
+        levels,
+        edge_pairs,
+        draw_widths,
+        gap=config.row_spread_gap,
+    )
 
     row_top = {level: row_y[level] - row_heights[level] * 0.5 for level in ordered_levels}
     row_bottom = {level: row_y[level] + row_heights[level] * 0.5 for level in ordered_levels}

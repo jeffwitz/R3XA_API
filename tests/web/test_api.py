@@ -81,6 +81,16 @@ async def test_api_profiles() -> None:
 
 
 @pytest.mark.anyio
+async def test_api_graph_backends() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/graph/backends")
+    assert response.status_code == 200
+    assert response.json() == {"backends": ["graphviz", "pyvis", "matplotlib"]}
+
+
+@pytest.mark.anyio
 async def test_api_schema_raw() -> None:
     app = create_app()
     transport = ASGITransport(app=app)
@@ -254,6 +264,59 @@ async def test_api_graph_svg_passes_palette(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert response.status_code == 200
     assert response.content == svg_payload
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("backend", "media_type", "payload"),
+    [
+        ("pyvis", "text/html", b"<html>interactive</html>"),
+        ("matplotlib", "image/png", b"PNG"),
+    ],
+)
+async def test_api_graph_supports_non_svg_backends(
+    monkeypatch: pytest.MonkeyPatch,
+    backend: str,
+    media_type: str,
+    payload: bytes,
+) -> None:
+    def _fake_render_graph_content(
+        document: dict,
+        backend: str = "graphviz",
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> tuple[bytes, str, str]:
+        assert document == _load_example()
+        assert backend in {"pyvis", "matplotlib"}
+        assert include_description is False
+        assert palette == "classic"
+        return payload, media_type, "html" if backend == "pyvis" else "png"
+
+    monkeypatch.setattr(api_module, "render_graph_content", _fake_render_graph_content)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            f"/api/graph?backend={backend}&show_description=false&palette=classic",
+            json=_load_example(),
+        )
+
+    assert response.status_code == 200
+    assert response.headers.get("content-type", "").startswith(media_type)
+    assert response.headers.get("x-r3xa-graph-backend") == backend
+    assert response.content == payload
+
+
+@pytest.mark.anyio
+async def test_api_graph_rejects_unknown_backend() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph?backend=unknown", json=_load_example())
+
+    assert response.status_code == 400
+    assert "Unknown graph backend" in response.json()["detail"]
 
 
 @pytest.mark.anyio

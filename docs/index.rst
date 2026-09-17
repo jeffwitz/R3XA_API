@@ -115,7 +115,7 @@ Choose one profile from the project root, inside ``.venv``:
      pip install -e ".[notebook]"
      python scripts/dev.py notebook-dic --ensure-graphviz
 
-- **Static graph fallback** — enable the optional NetworkX/Matplotlib renderer:
+- **Static graph rendering** — enable the optional NetworkX/Matplotlib renderer outside the WebUI:
 
   .. code-block:: bash
 

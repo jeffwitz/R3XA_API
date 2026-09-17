@@ -10,7 +10,9 @@ from r3xa_api.webcore import (
     build_schema_summary,
     build_ui_catalog,
     build_validation_report,
+    GRAPH_BACKENDS,
     generate_svg,
+    render_graph_content,
 )
 
 router = APIRouter()
@@ -46,6 +48,7 @@ async def validate_registry_item(request: Request) -> Dict[str, Any]:
 @router.post("/graph")
 async def graph_svg(
     request: Request,
+    backend: str = Query(default="graphviz"),
     show_description: bool = Query(default=True),
     palette: Optional[str] = Query(default=None),
 ) -> Response:
@@ -53,16 +56,30 @@ async def graph_svg(
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
     try:
-        svg_bytes = generate_svg(
-            payload,
-            include_description=show_description,
-            palette=palette,
-        )
+        if backend == "graphviz":
+            content = generate_svg(
+                payload,
+                include_description=show_description,
+                palette=palette,
+            )
+            media_type = "image/svg+xml"
+        else:
+            content, media_type, _extension = render_graph_content(
+                payload,
+                backend=backend,
+                include_description=show_description,
+                palette=palette,
+            )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    return Response(content=svg_bytes, media_type="image/svg+xml")
+    return Response(content=content, media_type=media_type, headers={"X-R3XA-Graph-Backend": backend})
+
+
+@router.get("/graph/backends")
+async def graph_backends() -> Dict[str, Any]:
+    return {"backends": list(GRAPH_BACKENDS)}
 
 @router.get("/schema")
 async def schema_raw() -> Dict[str, Any]:

@@ -98,6 +98,16 @@ def test_pyvis_settings_use_anisotropic_custom_hexagons(tmp_path: Path) -> None:
     ) * 0.5
     assert '"ctxRenderer": r3xaHexagonRenderer' in html
     assert "function r3xaHexagonRenderer" in html
+    assert '"r3xaFontColor": "#ffffff"' in html
+
+
+def test_pyvis_hexagons_use_the_selected_palette_font_color(tmp_path: Path) -> None:
+    payload = _load_example_payload("qi_hu_from_scratch.json")
+    html_path = render_pyvis_html(payload, tmp_path / "graph_qi_classic", palette="classic")
+    html = html_path.read_text(encoding="utf-8").lower()
+
+    assert '"r3xafontcolor": "#333333"' in html
+    assert "node.r3xafontcolor || font.color || \"#333333\"" in html
 
 
 @pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)

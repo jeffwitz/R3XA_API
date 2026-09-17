@@ -7,7 +7,7 @@ This page documents the recommended contributor workflow for local development.
 - **Primary engine:** Graphviz (`dot`) is the reference layout engine for SVG output.
 - **Interactive HTML:** PyVis is generated from the same graph model.
 - **Fallback behavior:** if Graphviz is unavailable, PyVis falls back to a manual layered layout.
-- **Static optional backend:** NetworkX + Matplotlib can generate `png/svg/pdf` artifacts for environments without interactive HTML needs.
+- **Static backend:** NetworkX + Matplotlib can generate static `png/svg/pdf` artifacts and is included in the WebUI extra.
 
 ## Optional dependency sets
 
@@ -16,9 +16,9 @@ Install only what you need:
 ```bash
 pip install -e .
 pip install -e ".[docs]"           # Sphinx + doc extensions
-pip install -e ".[web]"            # FastAPI web UI/API
+pip install -e ".[web]"            # FastAPI UI/API + all three graph backends
 pip install -e ".[notebook]"       # Marimo notebooks
-pip install -e ".[graph_nx]"       # NetworkX + Matplotlib static graph backend
+pip install -e ".[graph_nx]"       # NetworkX + Matplotlib for non-WebUI use
 pip install -e ".[dev]"            # pytest and developer tools
 ```
 
@@ -113,7 +113,7 @@ The exact number of collected tests depends on the optional extras installed in 
 - `pip install -e ".[dev]"`  
   Includes the Pydantic object-model tests.
 - `pip install -e ".[dev,web]"`  
-  Adds web/API tests.
+  Adds web/API tests and all graph backend dependencies.
 - `pip install -e ".[dev,graph_nx]"`  
   Adds NetworkX + Matplotlib graph backend tests.
 - `pip install -e ".[dev,web,graph_nx]"`  

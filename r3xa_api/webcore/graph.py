@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from tempfile import TemporaryDirectory
 from pathlib import Path
 from typing import Any, Dict
 
@@ -22,7 +23,10 @@ __all__ = [
     "render_graphviz_file",
     "render_networkx_matplotlib_file",
     "render_pyvis_html",
+    "render_graph_content",
 ]
+
+GRAPH_BACKENDS = ("graphviz", "pyvis", "matplotlib")
 
 
 def render_graphviz_file(
@@ -74,3 +78,41 @@ def render_networkx_matplotlib_file(
         include_description=include_description,
         palette=palette,
     )
+
+
+def render_graph_content(
+    data: Dict[str, Any],
+    backend: str = "graphviz",
+    include_description: bool = True,
+    palette: str | None = None,
+) -> tuple[bytes, str, str]:
+    """Render a graph backend for HTTP delivery.
+
+    Returns the content bytes, media type, and suggested file extension. The
+    file-oriented renderer APIs remain available for Python callers.
+    """
+
+    if backend not in GRAPH_BACKENDS:
+        available = ", ".join(GRAPH_BACKENDS)
+        raise ValueError(f"Unknown graph backend {backend!r}. Available: {available}")
+    if backend == "graphviz":
+        return generate_svg(data, include_description=include_description, palette=palette), "image/svg+xml", "svg"
+
+    with TemporaryDirectory(prefix="r3xa-graph-") as temporary_directory:
+        output_base = Path(temporary_directory) / "graph"
+        if backend == "pyvis":
+            output_path = render_pyvis_html(
+                data,
+                output_base,
+                include_description=include_description,
+                palette=palette,
+            )
+            return output_path.read_bytes(), "text/html; charset=utf-8", "html"
+        output_path = render_networkx_matplotlib_file(
+            data,
+            output_base,
+            format="png",
+            include_description=include_description,
+            palette=palette,
+        )
+        return output_path.read_bytes(), "image/png", "png"

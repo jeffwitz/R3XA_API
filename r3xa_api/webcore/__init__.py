@@ -2,7 +2,7 @@ from .reports import build_validation_report
 from .schema_catalog import build_schema_catalog
 from .schema_summary import build_schema_summary
 from .ui_catalog import build_ui_catalog
-from .graph import generate_svg
+from .graph import GRAPH_BACKENDS, generate_svg, render_graph_content
 
 __all__ = [
     "build_validation_report",
@@ -10,4 +10,6 @@ __all__ = [
     "build_schema_summary",
     "build_ui_catalog",
     "generate_svg",
+    "GRAPH_BACKENDS",
+    "render_graph_content",
 ]

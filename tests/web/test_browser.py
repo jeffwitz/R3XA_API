@@ -255,6 +255,47 @@ def test_graph_palette_selector_is_sent_to_api(page: Page, web_server: str) -> N
     assert "show_description=true" in graph_urls[0]
 
 
+def test_graph_backend_selector_renders_interactive_and_static_views(page: Page, web_server: str) -> None:
+    payload = {
+        "title": "Backend test",
+        "description": "Graph backend test",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-05",
+        "version": "2026.9.18",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+
+    def fulfill_graph(route) -> None:
+        url = route.request.url
+        if "backend=pyvis" in url:
+            route.fulfill(status=200, content_type="text/html", body="<html><body>interactive</body></html>")
+        elif "backend=matplotlib" in url:
+            route.fulfill(status=200, content_type="image/png", body=b"\x89PNG\r\n\x1a\n")
+        else:
+            route.fulfill(
+                status=200,
+                content_type="image/svg+xml",
+                body='<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>',
+            )
+
+    page.route("**/api/graph**", fulfill_graph)
+    page.goto(f"{web_server}/schema")
+    page.locator("#generate-graph-btn").click()
+    page.wait_for_selector("#graph-container svg")
+
+    page.locator("#graph-backend").select_option("pyvis")
+    page.wait_for_selector("#graph-container iframe.graph-frame")
+    assert page.locator("#save-graph-btn").is_visible()
+    assert page.locator("#export-standalone-btn").is_hidden()
+
+    page.locator("#graph-backend").select_option("matplotlib")
+    page.wait_for_selector("#graph-container img.graph-image")
+    assert page.locator("#save-graph-btn").is_visible()
+
+
 def test_reloaded_renamed_items_are_recovered_from_dependencies(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
     page.wait_for_selector("#json-input", state="attached")

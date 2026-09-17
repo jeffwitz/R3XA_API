@@ -603,6 +603,7 @@ def graphviz_styles_to_pyvis(styles: Dict[str, Any] | None = None) -> Dict[str, 
                 # Carried through so a solid-fill palette can put white text
                 # on its nodes, like Graphviz does natively.
                 "font": {"color": attrs.get("fontcolor", "#333333")},
+                "r3xaFontColor": attrs.get("fontcolor", "#333333"),
             }
 
     for edge_type, attrs in graphviz_styles["edges"].items():

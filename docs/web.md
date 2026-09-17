@@ -6,7 +6,7 @@ This section documents the optional web UI included in the repository.
 
 The web UI is split into two layers:
 
-- **`r3xa_api/webcore/`**: pure Python helpers used by the web API (validation reports, resolved schema catalogue, UI profiles, schema summary, SVG graph generation).
+- **`r3xa_api/webcore/`**: pure Python helpers used by the web API (validation reports, resolved schema catalogue, UI profiles, schema summary, and the Graphviz, PyVis, and NetworkX/Matplotlib graph backends).
 - **`web/`**: FastAPI app + HTML/JS/CSS templates and static assets.
 
 This keeps the **core API** (`r3xa_api`) as the single source of truth, while the web UI remains a thin consumer of that API.
@@ -35,6 +35,9 @@ python scripts/dev.py run-web --ensure-graphviz --port 8002
 ```
 
 Open: `http://127.0.0.1:8002/`
+
+The `web` extra installs the Python dependencies for all three graph backends:
+Graphviz SVG, interactive PyVis HTML, and static NetworkX/Matplotlib images.
 
 > Note: SVG graph generation requires the **Graphviz executable** (`dot`) to be installed on your system.
 > The schema viewer JS is vendored; **no `npm install` is required** for normal usage.
@@ -81,10 +84,10 @@ dot -V
   - See dedicated page: [Registry Web Editor](registry_web.md).
 - **Schema viewer** (`/schema`)
   - Inspect the schema summary or the current draft.
-  - Generate an SVG graph from the current draft.
+  - Generate a graph from the current draft with Graphviz (SVG), PyVis (interactive HTML), or Matplotlib (PNG).
   - Optional: hide node descriptions and keep titles only.
   - Choose the graph palette: **Document** (the R3XA document palette) or **Classic** (the legacy palette).
-  - Export a fully inlined standalone HTML report (graph + JSON) shareable without server.
+  - Export a fully inlined standalone HTML report (Graphviz SVG + JSON) shareable without server.
 
 ## Editor modes
 
@@ -221,4 +224,8 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 - `GET /api/schema/catalog` → resolved schema catalogue for the editor
 - `GET /api/ui` → presentation rules and experience profiles
 - `GET /api/profiles` → experience profiles only
-- `POST /api/graph?show_description=true&palette=document` → SVG graph (Graphviz); `palette` accepts `document` (recommended) or `classic` (legacy).
+- `GET /api/graph/backends` → supported graph backend names.
+- `POST /api/graph?backend=graphviz&show_description=true&palette=document` → Graphviz SVG.
+- `POST /api/graph?backend=pyvis&show_description=true&palette=document` → interactive PyVis HTML.
+- `POST /api/graph?backend=matplotlib&show_description=true&palette=document` → static Matplotlib PNG.
+- `backend` defaults to `graphviz`; `palette` accepts `document` (recommended) or `classic` (legacy).

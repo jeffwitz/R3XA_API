@@ -6,6 +6,7 @@ import pytest
 pytest.importorskip("networkx")
 pytest.importorskip("matplotlib")
 
+from r3xa_api.webcore._graph_networkx import _center_positions_by_dependencies
 from r3xa_api.webcore.graph import render_networkx_matplotlib_file
 
 
@@ -56,3 +57,25 @@ def test_render_networkx_matplotlib_invalid_format(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError):
         render_networkx_matplotlib_file(payload, output_base, format="jpg", dpi=120)
+
+
+def test_dependency_centering_aligns_branches_and_merges() -> None:
+    positions = {
+        "root": (-400.0, 0.0),
+        "left": (-250.0, 1.0),
+        "right": (250.0, 1.0),
+        "merge": (400.0, 2.0),
+    }
+
+    _center_positions_by_dependencies(
+        positions,
+        {"root": 0, "left": 1, "right": 1, "merge": 2},
+        [("root", "left"), ("root", "right"), ("left", "merge"), ("right", "merge")],
+        {node_id: 200.0 for node_id in positions},
+        gap=40.0,
+    )
+
+    branch_center = (positions["left"][0] + positions["right"][0]) / 2.0
+    assert positions["root"][0] == pytest.approx(branch_center, abs=1e-3)
+    assert positions["merge"][0] == pytest.approx(branch_center, abs=1e-3)
+    assert positions["right"][0] - positions["left"][0] >= 240.0

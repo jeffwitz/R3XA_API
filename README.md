@@ -294,6 +294,7 @@ Notes:
   - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
   - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
+- The WebUI graph selector supports Graphviz SVG, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. The `web` extra installs the Python packages for all three; Graphviz `dot` remains a system dependency.
 
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.

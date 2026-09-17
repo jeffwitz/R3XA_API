@@ -92,7 +92,7 @@ function r3xaHexagonRenderer({ctx, id, x, y, state, style, label}) {
             : style.borderWidth || 1;
         ctx.stroke();
 
-        ctx.fillStyle = font.color || "#ffffff";
+        ctx.fillStyle = node.r3xaFontColor || font.color || "#333333";
         ctx.font = `${font.size || 16}px ${font.face || "Arial"}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
