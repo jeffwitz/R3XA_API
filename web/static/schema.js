@@ -30,7 +30,12 @@ const getStoredDraftText = () => {
 const getStoredDraft = () => {
   const stored = getStoredDraftText();
   if (!stored) return null;
-  return JSON.parse(stored);
+  try {
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
 };
 
 const renderJsonViewer = (data, expand = false) => {
@@ -395,6 +400,10 @@ const bindEvents = () => {
 const configureGraphBackends = () => {
   if (!graphBackendSelect || !Array.isArray(window.R3XARuntime?.graphBackends)) return;
   const supported = new Set(window.R3XARuntime.graphBackends);
+  const graphvizOption = graphBackendSelect.querySelector('option[value="graphviz"]');
+  if (graphvizOption && window.R3XARuntime.mode === "static") {
+    graphvizOption.textContent = "Graphviz WebAssembly · SVG · browser";
+  }
   Array.from(graphBackendSelect.options).forEach((option) => {
     const enabled = supported.has(option.value);
     option.hidden = !enabled;

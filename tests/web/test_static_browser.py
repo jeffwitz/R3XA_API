@@ -150,6 +150,7 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
         page = browser.new_page()
         page.on("request", lambda request: requests.append(request.url))
         page.goto(f"{static_site}/schema/")
+        assert page.locator("#graph-backend option:checked").inner_text() == "Graphviz WebAssembly · SVG · browser"
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.reload()
         page.wait_for_selector("#graph-backend")
@@ -158,4 +159,17 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
         assert page.locator("#graph-container svg").count() == 1
         assert "Machine" in page.locator("#graph-container").inner_text()
         assert not any("/api/" in url for url in requests)
+        browser.close()
+
+
+def test_static_schema_viewer_handles_an_invalid_saved_draft(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("localStorage.setItem('r3xaDraft', 'not-json')")
+        page.reload()
+        page.wait_for_selector("#schema-tree")
+        assert "Failed to load draft" not in page.locator("#schema-tree").inner_text()
+        assert "schema_version" in page.locator("#schema-tree").inner_text()
         browser.close()
