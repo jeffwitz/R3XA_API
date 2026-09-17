@@ -87,10 +87,10 @@ WebUI initiative. The following work remains, in this order:
    `static-web-test`, and Pages jobs in GitLab, then document the resulting
    Pages URL, iframe headers, and artifact download. Existing Python, docs,
    package, and FastAPI jobs remain unchanged.
-4. **Complete Phase G documentation:** document static deployment, subpath
-   hosting, iframe headers and sandbox permissions, CSP/WebAssembly needs,
-   privacy guarantees, known limitations, and the difference between static
-   Graphviz WebAssembly and the server-side PyVis/Matplotlib backends.
+4. **Complete Phase G documentation:** review the new static deployment notes
+   against the first hosted Pages smoke test and add any project-specific URL
+   or header findings. The general build, subpath, iframe, CSP, privacy, and
+   backend-difference documentation is now present.
 
 ## Current known limitations
 

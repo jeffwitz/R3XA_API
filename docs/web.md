@@ -5,6 +5,9 @@ The parallel static-WebUI migration is tracked in
 [`static_web.md`](static_web.md); it will provide the same user interface from
 `dist/r3xa-webui/` without a Python backend at runtime.
 
+For deployment without a backend, follow the static build, GitLab Pages, and
+iframe instructions in [`static_web.md`](static_web.md).
+
 This section documents the optional web UI included in the repository.
 
 ## Architecture choices

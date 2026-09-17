@@ -86,7 +86,7 @@ Explicitly out of scope:
 | D | Add lazy Graphviz WebAssembly SVG rendering | **Completed** |
 | E | Test the generated `dist/` with parity and zero-API checks | **In progress** |
 | F | Publish the static site with GitLab Pages | **In progress** |
-| G | Complete documentation, deployment notes, and cleanup | Planned |
+| G | Complete documentation, deployment notes, and cleanup | **In progress** |
 
 Each phase must keep the existing Python and server WebUI tests meaningful. A
 phase is complete only when its acceptance checks are recorded in this file or
@@ -240,6 +240,98 @@ such as `X-Frame-Options` and `Content-Security-Policy` must be checked before
 claiming that the hosted Pages URL is embeddable. If GitLab hosting prevents an
 iframe, the same static artefact remains deployable on PhotoMechanics hosting.
 
+## Local build and deployment
+
+Install the build-time dependencies and create the site from the repository
+root:
+
+```bash
+npm ci --prefix web
+python scripts/dev.py build-static-web
+```
+
+The generated `dist/r3xa-webui/` directory is the complete deployment unit.
+For a local static smoke test, serve that directory with any ordinary static
+HTTP server:
+
+```bash
+cd dist/r3xa-webui
+python -m http.server 8080
+```
+
+The serving machine does not need `r3xa-api`, FastAPI, Node.js, `dot`, or
+Graphviz installed. Node.js and Python are needed only to build the artefact
+or to use Python as the local file server. The canonical checks are:
+
+```bash
+python scripts/dev.py test-static-web
+```
+
+The GitLab Pages job publishes the same content that is stored as the
+`static-web-build` artifact. After a successful default-branch pipeline, copy
+the URL shown in **Deploy → Pages**; it is also available to the job as
+`CI_PAGES_URL`. The URL may include a project subpath, which is why the build
+uses relative asset and navigation paths.
+
+## Iframe integration
+
+The published site can be embedded when the selected host permits framing:
+
+```html
+<iframe
+  src="https://<pages-host>/<project-path>/edit/"
+  title="R3XA Web Editor"
+  loading="lazy"
+  style="width:100%;height:85vh;border:0;">
+</iframe>
+```
+
+If a sandbox is required, start with only the permissions needed by the host
+and test them explicitly:
+
+```html
+<iframe
+  src="https://<pages-host>/<project-path>/edit/"
+  title="R3XA Web Editor"
+  sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-modals"
+  style="width:100%;height:85vh;border:0;">
+</iframe>
+```
+
+The editor falls back to a regular browser download when the File System
+Access API is unavailable, including in many cross-origin iframe contexts.
+GitLab Pages response headers are controlled by the hosting service. Before
+promising iframe support, inspect the deployed URL:
+
+```bash
+curl -I "https://<pages-host>/<project-path>/"
+```
+
+Check `X-Frame-Options` and the `Content-Security-Policy` `frame-ancestors`
+directive. If they prevent framing, deploy the same `dist/r3xa-webui/`
+directory on a PhotoMechanics-controlled static host instead.
+
+## Runtime security and privacy
+
+The static runtime has no account, database, upload endpoint, telemetry, CDN,
+or remote validation service. Once its local assets are loaded, the R3XA
+document is edited, validated, graphed, and exported in the browser. Drafts
+are stored in origin-scoped `localStorage`; experimental files selected for a
+list dataset contribute only their names or relative paths and are not
+uploaded.
+
+For a controlled static host, a restrictive starting policy is:
+
+```text
+default-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'
+```
+
+Graphviz WebAssembly may require the host's documented WebAssembly CSP
+allowance. Keep that allowance limited to the static origin and verify it with
+the browser graph test. The static graph runtime is intentionally Graphviz
+WebAssembly/SVG only; PyVis and Matplotlib remain available in the FastAPI
+runtime.
+
 ## Decisions and invariants
 
 - `R3XA_SPEC` remains the normative source of the format.
@@ -344,3 +436,10 @@ user-facing error wording and any gaps found during the hosted smoke test.
   (`2859601291`, commit `161b6b8`) could not start its jobs because GitLab
   rejected them with `ci_quota_exceeded`; a successful hosted smoke test still
   requires available runner quota.
+
+### Phase G progress
+
+- Added operational documentation for local static deployment, GitLab Pages,
+  subpath hosting, iframe embedding and sandbox permissions, CSP/WebAssembly,
+  privacy, local storage, and the distinction between browser and server graph
+  backends. A hosted Pages smoke test remains before closing this phase.
