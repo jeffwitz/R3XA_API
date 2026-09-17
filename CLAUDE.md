@@ -27,11 +27,11 @@ The architectural invariants are:
 
 Phase A is complete: `web/static/runtime.js` provides the server runtime
 adapter, and page scripts use `window.R3XARuntime` instead of direct `/api/*`
-calls. Phase B is in progress: `python scripts/dev.py build-static-web` now
-generates static pages, local schema/UI artefacts, build metadata, and a
-static-runtime scaffold. Later phases cover browser validation, local
-Graphviz WebAssembly, parity tests, zero-API checks, and GitLab Pages
-publication.
+calls. Phase B is complete: `python scripts/dev.py build-static-web` generates
+static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
+validator. Phase C is in progress: static document, Registry, and integrity
+validation work locally. Later phases cover report parity, local Graphviz
+WebAssembly, zero-API checks, and GitLab Pages publication.
 
 ## Working rules
 

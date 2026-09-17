@@ -81,8 +81,8 @@ Explicitly out of scope:
 | Phase | Goal | Status |
 | --- | --- | --- |
 | A | Hide server API calls behind a runtime abstraction | **Completed** |
-| B | Build static pages and schema-derived JSON artefacts | **In progress** |
-| C | Add standalone JavaScript validation and integrity checks | Planned |
+| B | Build static pages and schema-derived JSON artefacts | **Completed** |
+| C | Add standalone JavaScript validation and integrity checks | **In progress** |
 | D | Add lazy Graphviz WebAssembly SVG rendering | Planned |
 | E | Test the generated `dist/` with parity and zero-API checks | Planned |
 | F | Publish the static site with GitLab Pages | Planned |
@@ -154,6 +154,12 @@ Use a Draft 2020-12 JavaScript validator, preferably precompiled during the
 build. The browser runtime must expose normalized validation reports for the
 Guided, Advanced, Expert, and Registry views. R3XA integrity checks must be a
 separate pure browser function and run after schema validation.
+
+The first local implementation now compiles the packaged schema with Ajv
+standalone during `build-static-web`. Document validation and Registry item
+validation use the generated local validator; integrity checking is applied to
+complete documents. Report wording is being aligned with the Python reports in
+the remaining validation work.
 
 The Python and JavaScript validators must agree at least on valid/invalid
 status for representative valid and invalid documents. Required fields, types,
@@ -257,7 +263,18 @@ The initiative is complete only when all of the following are true:
 
 - Added `python scripts/dev.py build-static-web`.
 - The command currently generates the four static pages, local schema/UI
-  catalogues, build metadata, and a static runtime scaffold under
+  catalogues, build metadata, a precompiled Ajv validator, and a static runtime
+  under
   `dist/r3xa-webui/`.
-- Static metadata loading is available; browser validation, integrity checks,
-  and graph rendering remain intentionally deferred to phases C and D.
+- Static metadata loading and schema validation are available locally. Static
+  integrity checks and Registry validation are also wired; report parity and
+  graph rendering remain in phases C and D.
+
+### Phase C progress
+
+- Ajv 2020 standalone compilation is implemented in
+  `web/scripts/build-validator.mjs` and runs as part of the static build.
+- The static runtime validates documents and Registry fragments without a
+  server, then applies local ID/reference/date integrity checks to documents.
+- Browser tests cover local document validation, duplicate-ID integrity errors,
+  Registry validation, and absence of `/api/*` requests.

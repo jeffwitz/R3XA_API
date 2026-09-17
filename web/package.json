@@ -4,12 +4,16 @@
   "description": "Minimal FastAPI shell wired to the `r3xa_api.webcore` contracts.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No JavaScript test suite configured yet\"",
+    "build-validator": "node scripts/build-validator.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "json-viewer-js": "^1.0.8"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1"
   }
 }

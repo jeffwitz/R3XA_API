@@ -10,9 +10,24 @@ and acceptance criteria are maintained in
 [`static_web.md`](static_web.md). Read that document before changing the WebUI
 runtime or adding build and CI jobs for the static distribution.
 
-The current first phase is complete: page scripts use the shared server runtime
-adapter instead of calling `/api/*` directly. The next phase is to generate
-the static pages and schema-derived assets.
+Phase A is complete: page scripts use the shared server runtime adapter instead
+of calling `/api/*` directly. Phase B now generates static pages and
+schema-derived assets, and Phase C compiles the local browser validator.
+
+To build the static distribution, install the JavaScript build dependency once:
+
+```bash
+npm ci --prefix web
+python scripts/dev.py build-static-web
+```
+
+The generated `dist/r3xa-webui/` directory is disposable and ignored by Git.
+Serve it for a local smoke test with:
+
+```bash
+cd dist/r3xa-webui
+python -m http.server 8080
+```
 
 ## Runtime model for graphs
 

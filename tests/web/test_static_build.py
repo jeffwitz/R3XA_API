@@ -33,9 +33,14 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "ui-catalog.json",
         "build-info.json",
         "runtime-static.js",
+        "validator.generated.js",
     ):
         assert (assets / name).is_file(), name
     assert not (assets / "runtime.js").exists()
+    assert "export" in (assets / "validator.generated.js").read_text(encoding="utf-8")
+    static_runtime = (assets / "runtime-static.js").read_text(encoding="utf-8")
+    assert "integrityErrors" in static_runtime
+    assert "validateItem" in static_runtime
 
     catalog = json.loads((assets / "schema-catalog.json").read_text(encoding="utf-8"))
     assert catalog["schema_version"]
@@ -46,6 +51,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert 'src="../assets/runtime-static.js' in editor
     assert 'href="./edit/"' in index
     assert 'href="../schema/"' in editor
+    assert 'src="../assets/photomeca-logo.png"' in editor
 
 
 def test_static_web_assets_do_not_use_fastapi_api_urls(tmp_path: Path) -> None:

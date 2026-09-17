@@ -226,6 +226,18 @@ def build_static_web(output_dir: Path) -> Path:
             "build_id": _git_revision(),
         },
     )
+    node = shutil.which("node")
+    if node is None:
+        raise RuntimeError(
+            "Node.js is required to build the static validator. "
+            "Install Node.js and run `npm ci` in web/ first."
+        )
+    _run(
+        node,
+        "web/scripts/build-validator.mjs",
+        SCHEMA_RESOURCE,
+        str(assets_dir / "validator.generated.js"),
+    )
 
     environment = Environment(loader=FileSystemLoader(str(WEB_TEMPLATES)))
     pages = {
