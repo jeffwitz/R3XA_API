@@ -83,11 +83,10 @@ WebUI initiative. The following work remains, in this order:
    `/api/*`, POST requests carrying documents, third-party resources, CDNs,
    telemetry, or remote graph/validation services. Keep all runtime assets,
    including validator and WASM code, local to the static origin.
-3. **Implement Phase F GitLab Pages:** add `static-web-build`, `static-web-test`,
-   and Pages jobs to `.gitlab-ci.yml` without removing the existing Python,
-   docs, package, or FastAPI jobs. Publish `dist/r3xa-webui/` and expose the
-   same directory as a downloadable CI artefact. Keep publication on the
-   validated publication branch according to the current CI policy.
+3. **Finish Phase F GitLab Pages:** validate the new `static-web-build`,
+   `static-web-test`, and Pages jobs in GitLab, then document the resulting
+   Pages URL, iframe headers, and artifact download. Existing Python, docs,
+   package, and FastAPI jobs remain unchanged.
 4. **Complete Phase G documentation:** document static deployment, subpath
    hosting, iframe headers and sandbox permissions, CSP/WebAssembly needs,
    privacy guarantees, known limitations, and the difference between static
@@ -100,8 +99,9 @@ WebUI initiative. The following work remains, in this order:
 - The static graph bundle is deliberately loaded only after `Generate graph`.
 - The static Schema viewer falls back to a native JSON `<pre>` when the bundled
   JSON viewer cannot display a complex draft, including `null` values.
-- GitLab Pages publication, the broader zero-CDN/zero-API acceptance suite,
-  and complete error-report parity are not implemented yet.
+- GitLab Pages publication is configured but still needs a successful GitLab
+  pipeline and hosted smoke test. The broader zero-CDN/zero-API acceptance
+  suite and complete error-report parity are not implemented yet.
 
 ## Useful checks
 

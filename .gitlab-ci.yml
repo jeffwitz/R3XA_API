@@ -9,6 +9,7 @@ stages:
   - test
   - quality
   - package
+  - deploy
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -77,6 +78,38 @@ browser:
   script:
     - R3XA_CHROMIUM_EXECUTABLE=/usr/bin/chromium python -m pytest -q tests/web/test_browser.py
 
+static-web-build:
+  stage: quality
+  image: python:3.12-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends nodejs npm zip
+    - python -m pip install --upgrade pip
+    - python -m pip install -e ".[web]"
+    - npm ci --prefix web
+  script:
+    - python scripts/dev.py build-static-web
+    - zip -qr "dist/r3xa-webui-${CI_COMMIT_SHORT_SHA}.zip" dist/r3xa-webui
+  artifacts:
+    paths:
+      - dist/r3xa-webui/
+      - dist/r3xa-webui-*.zip
+
+static-web-test:
+  stage: quality
+  image: python:3.12-slim
+  needs:
+    - job: static-web-build
+      artifacts: true
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends nodejs npm chromium
+    - python -m pip install --upgrade pip
+    - python -m pip install -e ".[dev,web]"
+    - npm ci --prefix web
+  script:
+    - R3XA_CHROMIUM_EXECUTABLE=/usr/bin/chromium python scripts/dev.py test-static-web
+
 package:
   stage: package
   image: python:3.12-slim
@@ -142,3 +175,20 @@ package:
   artifacts:
     paths:
       - dist/
+
+static-pages:
+  stage: deploy
+  needs:
+    - job: static-web-build
+      artifacts: true
+  script:
+    - mkdir -p public
+    - cp -a dist/r3xa-webui/. public/
+  pages:
+    publish: public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api" || $CI_COMMIT_MESSAGE =~ /\[ci run\]/)'
+    - when: never
+  artifacts:
+    paths:
+      - public/

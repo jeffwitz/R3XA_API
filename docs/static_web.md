@@ -85,7 +85,7 @@ Explicitly out of scope:
 | C | Add standalone JavaScript validation and integrity checks | **Completed** |
 | D | Add lazy Graphviz WebAssembly SVG rendering | **Completed** |
 | E | Test the generated `dist/` with parity and zero-API checks | **In progress** |
-| F | Publish the static site with GitLab Pages | Planned |
+| F | Publish the static site with GitLab Pages | **In progress** |
 | G | Complete documentation, deployment notes, and cleanup | Planned |
 
 Each phase must keep the existing Python and server WebUI tests meaningful. A
@@ -217,8 +217,16 @@ discard the document unexpectedly.
 
 ## Phase F — GitLab Pages
 
-The Pages job publishes only the generated `dist/r3xa-webui/` directory and
-also exposes it as a downloadable CI artefact. The build is independent of
+The CI now has separate `static-web-build` and `static-web-test` jobs. The
+build job installs the Python build dependencies and the local JavaScript
+dependencies, produces `dist/r3xa-webui/`, and stores both the directory and a
+short-SHA zip as artifacts. The test job runs the canonical static build and
+browser qualification with system Chromium.
+
+The `static-pages` job publishes only the generated `dist/r3xa-webui/`
+directory and is restricted to the default branch when the pipeline is
+explicitly started or requested with `[ci run]`. Ordinary pushes remain
+subject to the repository's CI execution policy. The build is independent of
 GitLab and can be copied to another static host.
 
 Development work continues on `develop`; publication is made from the
@@ -322,4 +330,12 @@ The initiative is complete only when all of the following are true:
 Phase D acceptance is complete: Graphviz is loaded lazily, local SVG rendering
 works in Chromium, palette data comes from the Python source, and a failed
 WebAssembly load produces a graph-specific error without disabling the editor.
-The next work is Phase E static qualification and Python/JavaScript parity.
+Phase E browser qualification and schema/integrity status parity are now
+covered by the local test suite. The remaining Phase E work is normalized
+user-facing error wording and any gaps found during the hosted smoke test.
+
+### Phase F progress
+
+- Added GitLab CI jobs for static build, static browser qualification, and
+  Pages publication. The Pages job consumes the same build artifact that is
+  available for download and publishes it at the root of the Pages site.
