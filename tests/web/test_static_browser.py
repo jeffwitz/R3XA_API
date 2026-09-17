@@ -421,6 +421,8 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
     }
     cases = {
         "schema": {key: value for key, value in valid_payload.items() if key != "title"},
+        "wrong_version": {**valid_payload, "version": "not-the-current-schema"},
+        "wrong_author_type": {**valid_payload, "authors": ["Tester"]},
         "integrity": valid_payload,
     }
     with sync_playwright() as runtime:
@@ -441,4 +443,8 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
             assert [(error["path"], error["validator"]) for error in actual["errors"]] == [
                 (error["path"], error["validator"]) for error in expected["errors"]
             ], name
+            if name != "integrity":
+                assert [error["user_message"] for error in actual["errors"]] == [
+                    error["user_message"] for error in expected["errors"]
+                ], name
         browser.close()

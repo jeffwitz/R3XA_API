@@ -205,8 +205,9 @@ same-origin `GET` requests. The static validator is also compared with the
 Python validation report for valid documents and representative schema
 failures (missing required field, wrong constant, and wrong type), as well as
 duplicate-ID integrity errors. The parity assertion compares validity and the
-stable `(path, validator)` identity of each error; exact user-facing wording
-remains a separate follow-up.
+stable `(path, validator)` identity of each error. Common Guided-mode messages
+for required, type, constant, enum, pattern, item-count, and numeric-bound
+errors are also aligned with the Python report builder.
 
 The browser qualification also covers Guided → Advanced → Expert transitions,
 local JSON import and persistence across reload, natural sorting of selected

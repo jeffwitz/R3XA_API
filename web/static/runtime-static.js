@@ -104,10 +104,37 @@
     return errors;
   };
 
+  const friendlyMessage = (error) => {
+    const params = error.params || {};
+    if (error.keyword === "required") {
+      return `Add the required field '${params.missingProperty || "information"}'.`;
+    }
+    if (error.keyword === "type") {
+      const expected = Array.isArray(params.type) ? params.type.join(", ") : params.type;
+      return `Enter a value of type '${expected}'.`;
+    }
+    if (error.keyword === "enum") {
+      return `Choose one of: ${(params.allowedValues || []).join(", ")}.`;
+    }
+    if (error.keyword === "const") {
+      return `Use the required value '${params.allowedValue}'.`;
+    }
+    if (error.keyword === "pattern") return "Use the expected text format.";
+    if (error.keyword === "minItems") return `Add at least ${params.limit} item(s).`;
+    if (error.keyword === "maxItems") return `Use no more than ${params.limit} item(s).`;
+    if (["minimum", "exclusiveMinimum"].includes(error.keyword)) {
+      return `Enter a value greater than or equal to ${params.limit}.`;
+    }
+    if (["maximum", "exclusiveMaximum"].includes(error.keyword)) {
+      return `Enter a value less than or equal to ${params.limit}.`;
+    }
+    return error.message || "Validation failed.";
+  };
+
   const reportFromErrors = (errors) => errors.map((error) => ({
-    path: error.instancePath || "",
+    path: (error.instancePath || "").replace(/^\/+/, ""),
     message: error.message || "Validation failed.",
-    user_message: error.message || "Validation failed.",
+    user_message: friendlyMessage(error),
     validator: error.keyword || "schema",
     schema_path: error.schemaPath || "",
   }));
