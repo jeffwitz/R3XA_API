@@ -31,8 +31,9 @@ calls. Phase B is complete: `python scripts/dev.py build-static-web` generates
 static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
 validator. Phase C is complete: static document, Registry, and integrity
 validation work locally. Phase D is in progress: Graphviz WebAssembly is
-bundled at build time and loaded lazily for local SVG rendering. Later phases
-cover report parity, zero-API checks, and GitLab Pages publication.
+bundled at build time and loaded lazily for local SVG rendering. The latest
+checkpoint is commit `da51128`; it includes the resilient schema viewer and
+the explicit `Graphviz WebAssembly` backend label.
 
 ## Working rules
 
@@ -45,6 +46,65 @@ cover report parity, zero-API checks, and GitLab Pages publication.
   demonstrated.
 - Run targeted tests first, then the broader suite and documentation build
   before handing off a phase.
+
+## Resume checklist
+
+The next agent should start on `develop`, verify the worktree, and run:
+
+```bash
+git status -sb
+npm ci --prefix web
+.venv/bin/python scripts/dev.py test-static-web
+```
+
+The static site can be tested manually with:
+
+```bash
+.venv/bin/python scripts/dev.py serve-static-web --port 8080
+```
+
+Open `http://127.0.0.1:8080/`, create or load a document, then use
+`Schema viewer` → `Generate graph`. The plain Python process only serves files;
+Graphviz rendering runs in the browser. Stop it with `Ctrl+C`.
+
+## Remaining work
+
+Do not treat the current static graph success as completion of the whole static
+WebUI initiative. The following work remains, in this order:
+
+1. **Finish Phase D:** add a browser test for the WebAssembly-unavailable path
+   and confirm that editing, validation, Registry, import, and export remain
+   usable when graph rendering fails. The static runtime intentionally supports
+   Graphviz WebAssembly SVG only; PyVis and Matplotlib remain server-runtime
+   backends.
+2. **Complete Phase E:** qualify the generated `dist/` under a non-root
+   subpath; test Guided → Advanced → Expert transitions, import/export,
+   localStorage persistence, directory selection, fullscreen, standalone HTML,
+   English/French switching, and graph palette changes. Add Python/JavaScript
+   validation parity fixtures for schema errors and integrity errors.
+3. **Add the zero-network acceptance checks:** browser tests must fail on
+   `/api/*`, POST requests carrying documents, third-party resources, CDNs,
+   telemetry, or remote graph/validation services. Keep all runtime assets,
+   including validator and WASM code, local to the static origin.
+4. **Implement Phase F GitLab Pages:** add `static-web-build`, `static-web-test`,
+   and Pages jobs to `.gitlab-ci.yml` without removing the existing Python,
+   docs, package, or FastAPI jobs. Publish `dist/r3xa-webui/` and expose the
+   same directory as a downloadable CI artefact. Keep publication on the
+   validated publication branch according to the current CI policy.
+5. **Complete Phase G documentation:** document static deployment, subpath
+   hosting, iframe headers and sandbox permissions, CSP/WebAssembly needs,
+   privacy guarantees, known limitations, and the difference between static
+   Graphviz WebAssembly and the server-side PyVis/Matplotlib backends.
+
+## Current known limitations
+
+- The static build requires Node.js and `npm ci --prefix web` at build time;
+  the generated site does not require Node.js at runtime.
+- The static graph bundle is deliberately loaded only after `Generate graph`.
+- The static Schema viewer falls back to a native JSON `<pre>` when the bundled
+  JSON viewer cannot display a complex draft, including `null` values.
+- GitLab Pages publication, exhaustive subpath testing, complete validation
+  parity, and the zero-CDN/zero-API acceptance suite are not implemented yet.
 
 ## Useful checks
 
