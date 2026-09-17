@@ -40,7 +40,8 @@ schema-sync:
   image: python:3.12-slim
   variables:
     R3XA_SPEC_URL: "https://gitlab.com/photomechanics/R3XA_SPEC.git"
-    R3XA_SPEC_REF: "main"
+    # Pin validation to the published schema tag instead of a moving branch.
+    R3XA_SPEC_REF: "2026.9.18"
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends git ca-certificates
