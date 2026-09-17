@@ -1,25 +1,34 @@
-# Typed models (optional) — `dic_pipeline` example
+# Object-first models — `dic_pipeline` example
 
-This page explains the optional typed workflow built on top of the existing dict-based API.
+This page explains the object-first workflow. R3XA objects are generated from the JSON Schema by
+`datamodel-code-generator` and use Pydantic for IDE completion and assignment validation.
 
 ## Goal
 
-The typed layer gives:
+The object-first layer gives:
 - IDE autocompletion
 - Earlier validation while building objects
 
-The core API stays unchanged:
-- `R3XAFile` still consumes plain `dict`
+The wire format stays unchanged:
+- object attributes are serialized by `to_dict()`
+- references are objects in memory and IDs in JSON
 - JSON output remains standard R3XA JSON
+
+`R3XAFile` is the public generated Pydantic document model. It may be incomplete
+while an experiment is being assembled, and its collections contain the same
+generated Pydantic objects used everywhere else in the API. There is no second
+in-memory builder representation: `to_dict()` is the explicit JSON boundary and
+`validate()` checks the completed document against the schema.
 
 ## Why Pydantic helps in the workflow
 
-Pydantic is useful here as an **authoring layer**, not as a replacement for the dict-based API.
-It gives earlier feedback while the JSON is being built, before the final schema validation step.
+Pydantic is the object model used by the Python SDK. It gives IDE completion,
+attribute access, assignment validation, and an explicit `to_dict()` boundary
+before the final JSON Schema validation step.
 
 | What changes | Auto-generated after schema update | Still manual |
 |---|---|---|
-| New `kind` in the schema | Typed model class in `r3xa_api/models.py` | Convenience helpers in `R3XAFile` |
+| New `kind` in the schema | Model class in `r3xa_api/models.py` | Convenience helpers in `R3XAFile` |
 | New field in an existing object | Updated typed constructor and field hints | Builder methods that hard-code that object |
 | New object compatible with the schema | Usable through `new_item(...)` / `add_item(...)` | A dedicated helper like `add_lidar_source(...)` |
 | Schema constraint changes | Reflected in generated models and validation | Business logic that depends on the old structure |
@@ -28,12 +37,12 @@ Main benefit:
 - faster feedback in the IDE
 - less trial-and-error while assembling objects
 - same JSON output in the end
-- no change for dict-only users
+- the JSON boundary remains ordinary R3XA JSON
 
 ## Install
 
 ```bash
-pip install -e ".[typed]"
+python -m pip install r3xa-api
 ```
 
 Typed models are generated from the schema:
@@ -48,14 +57,15 @@ Generated file:
 ## Public typed entry points
 
 - `from r3xa_api import models`
-- `from r3xa_api import from_model`
-- `from r3xa_api import _TYPED_AVAILABLE` (or `typed_available`)
+- `from r3xa_api import typed_available`
 
-`from_model(...)` converts a Pydantic model into a plain dict compatible with `R3XAFile`.
+`R3XAFile` and `R3XADocument` use the same generated object model. The legacy
+`from_model(...)` bridge remains available for integrations, but it is not part
+of the normal construction workflow.
 
 ## Ergonomic model helpers
 
-Generated models inherit common helpers from `R3XAModel`. Specialized classes know their
+Generated models inherit common helpers from `R3XAItem` (also exported as `R3XAModel`). Specialized classes know their
 schema `kind`, and item identifiers are generated when they are not provided explicitly.
 The generated `version` field also defaults to the packaged schema version.
 
@@ -82,6 +92,7 @@ loaded_camera = models.CameraSource.load("camera.json")
 The following helpers are available on generated models:
 
 - `to_dict()` and `to_json()` for JSON-compatible representations
+- `merge(...)` for a typed copy with selected attribute overrides
 - `from_dict()` and `load()` for typed reconstruction
 - `validate()` for validation against the canonical R3XA schema
 - `save()` for validated JSON serialization
@@ -92,14 +103,14 @@ The following helpers are available on generated models:
 - `integrity_errors()` and `validate_integrity()` for reference checks
 
 Object validation checks one item. Validation of references between settings, data
-sources, and data sets belongs to the complete typed `R3XADocument`.
+sources, and data sets belongs to the complete document (`R3XAFile` or `R3XADocument`).
 
 ## `dic_pipeline` in typed mode
 
 This follows the same logic as {glsrc}`examples/python/complex_dic_pipeline.py`, but creates typed objects first.
 
 ```python
-from r3xa_api import R3XAFile, from_model, models
+from r3xa_api import R3XAFile, models
 
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",
@@ -119,7 +130,7 @@ specimen = models.SpecimenSetting(
     ],
     patterning_technique="white background with black spray paint",
 )
-r3xa.settings.append(from_model(specimen))
+r3xa.settings.append(specimen)
 
 camera = models.CameraSource(
     id="ds_camera_01",
@@ -135,7 +146,7 @@ camera = models.CameraSource(
         models.Unit(kind="unit", title="height", value=1040, unit="px", scale=1.0),
     ],
 )
-r3xa.data_sources.append(from_model(camera))
+r3xa.data_sources.append(camera)
 
 num_frames = 5
 timestamps = [i * 0.5 for i in range(num_frames)]
@@ -149,19 +160,19 @@ images = models.ImageSetList(
     description="raw images from CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera.id],
+    parent_data_sources=[camera],
     time_reference=models.Unit(kind="unit", title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=image_files,
 )
-r3xa.data_sets.append(from_model(images))
+r3xa.data_sets.append(images)
 
 dic_source = models.GenericSource(
     id="src_dic_01",
     kind="data_sources/generic",
     title="DIC processing (pyxel)",
     description="2D DIC using pyxel",
-    input_data_sets=[images.id],
+    input_data_sets=[images],
     output_components=2,
     output_dimension="surface",
     output_units=[
@@ -171,7 +182,7 @@ dic_source = models.GenericSource(
     manufacturer="Pyxel",
     model="pyxel-2d",
 )
-r3xa.data_sources.append(from_model(dic_source))
+r3xa.data_sources.append(dic_source)
 
 dic_data = models.ImageSetList(
     id="ds_dic_01",
@@ -180,21 +191,21 @@ dic_data = models.ImageSetList(
     description="ux, uy per frame",
     path="dic/",
     data_type="text/csv",
-    parent_data_sources=[dic_source.id],
+    parent_data_sources=[dic_source],
     time_reference=models.Unit(kind="unit", title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=dic_files,
 )
-r3xa.data_sets.append(from_model(dic_data))
+r3xa.data_sets.append(dic_data)
 
 r3xa.validate()
 r3xa.save("examples/artifacts/dic_pipeline_typed.json")
 ```
 
-## Important compatibility note
+## JSON boundary
 
-- A script that imports `r3xa_api.models` requires the `[typed]` extra.
-- The generated JSON file itself does **not** depend on Pydantic and remains usable by dict-only users.
+Pydantic is required by the object-first Python API. The generated JSON file remains an ordinary
+R3XA document and can be consumed by any implementation that follows the schema.
 
 ## Ready-to-run example script
 

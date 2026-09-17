@@ -390,12 +390,16 @@
         "description": "Final file containing the load measured during the overload.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "load.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "load.csv",
           "file_type": "text/csv",
@@ -429,12 +433,16 @@
         "description": "Final file containing the stress-intensity-factor results for the overload.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "sif.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "sif.csv",
           "file_type": "text/csv",

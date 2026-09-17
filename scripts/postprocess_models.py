@@ -16,6 +16,12 @@ HEADER = (
 ALIAS_START = "# --- stable typed aliases (auto-generated) ---"
 ALIAS_END = "# --- end stable typed aliases ---"
 
+REFERENCE_ALIASES = """# Object-first references accept either a wire ID or an in-memory R3XA object.
+DataSourceReference = Union[DataSourceId, R3XAItem]
+DataSetReference = Union[DataSetId, R3XAItem]
+SettingReference = Union[SettingId, R3XAItem]
+"""
+
 # Names used by the 1.x line and by J-C. Passieux's apijc branch. Kept as
 # aliases so existing code keeps importing: the target classes carry the same
 # fields, so the alias is honest rather than a rename in disguise.
@@ -58,6 +64,31 @@ def _remove_existing_alias_block(text: str) -> str:
     return re.sub(pattern, "\n", text).rstrip() + "\n"
 
 
+def _remove_existing_reference_aliases(text: str) -> str:
+    pattern = re.compile(
+        r"\n?# Object-first references accept either a wire ID or an in-memory R3XA object\.\n"
+        r"DataSourceReference = .*?\nDataSetReference = .*?\nSettingReference = .*?\n",
+        flags=re.S,
+    )
+    return re.sub(pattern, "\n", text)
+
+
+def _rewrite_reference_annotations(text: str) -> str:
+    replacements = {
+        "Optional[list[DataSourceId]]": "Optional[list[DataSourceReference]]",
+        "list[DataSourceId]": "list[DataSourceReference]",
+        "Optional[DataSetId]": "Optional[DataSetReference]",
+        "Optional[list[DataSetId]]": "Optional[list[DataSetReference]]",
+        "list[DataSetId]": "list[DataSetReference]",
+        "Optional[SettingId]": "Optional[SettingReference]",
+        "Optional[list[SettingId]]": "Optional[list[SettingReference]]",
+        "list[SettingId]": "list[SettingReference]",
+    }
+    for source, target in replacements.items():
+        text = text.replace(source, target)
+    return text
+
+
 def _class_names(text: str) -> set[str]:
     return set(re.findall(r"^class\s+([A-Za-z_][A-Za-z0-9_]*)\(", text, flags=re.M))
 
@@ -93,7 +124,7 @@ def _alias_block(available: set[str]) -> str:
         "ImageSetFile": _pick(available, "File", "ImageSetFile"),
     }
 
-    lines = ["", ALIAS_START]
+    lines = ["", ALIAS_START, "R3XAModel = R3XAItem"]
     lines.extend(f"{alias} = {target}" for alias, target in aliases.items())
 
     lines += ["", "# Legacy names from the 1.x line and the apijc branch."]
@@ -102,10 +133,14 @@ def _alias_block(available: set[str]) -> str:
     lines += [
         "",
         "__all__ = [",
+        "    'R3XAItem',",
         "    'R3XAModel',",
         "    'Unit',",
         "    'DataSetFile',",
         "    'OutputDimension',",
+        "    'DataSourceReference',",
+        "    'DataSetReference',",
+        "    'SettingReference',",
     "    'R3XADocument',",
         *[f"    '{alias}'," for alias in aliases if alias != "R3XADocument"],
         *[f"    '{legacy}'," for legacy in LEGACY_ALIASES],
@@ -123,6 +158,9 @@ def main(models_path: Path | str | None = None) -> None:
 
     body = _strip_codegen_header(path.read_text(encoding="utf-8"))
     body = _remove_existing_alias_block(body)
+    body = _remove_existing_reference_aliases(body)
+    body = _rewrite_reference_annotations(body)
+    body = body.replace("\nclass Uint(", f"\n{REFERENCE_ALIASES}\nclass Uint(", 1)
     available = _class_names(body)
     alias_block = _alias_block(available)
 

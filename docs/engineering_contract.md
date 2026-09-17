@@ -78,10 +78,10 @@ This is not a cosmetic choice. It answers a usability problem:
 
 There are two valid registry workflows:
 
-1. **I only want a validated dictionary**  
+1. **I want a generated object for a Python workflow**  
    → use `Registry.load(...)` or `Registry.load_validated(...)`
 
-2. **I want to manipulate an item as an object, then merge, validate, or save it**  
+2. **I want mapping semantics or a registry-bound wrapper**  
    → use `Registry.get_item(...)`
 
 Example:
@@ -91,13 +91,19 @@ from r3xa_api import Registry
 
 registry = Registry("registry")
 
-camera_dict = registry.load("data_sources/camera/avt_dolphin_f145b")
+camera = registry.load("data_sources/camera/avt_dolphin_f145b")
+camera = camera.merge(description="Camera used in experiment 01")
+camera.save("camera_exp01.json")
+
+# Use get_item only when a mapping wrapper or bound registry path is useful.
 camera_item = registry.get_item("data_sources/camera/avt_dolphin_f145b")
 camera_item = camera_item.merge(description="Camera used in experiment 01")
 camera_item.save("camera_exp01.json")
 ```
 
-This distinction exists to avoid reducing everything to bare `dict` values while keeping a simple access path when a dictionary is enough.
+Both paths avoid reducing the normal Python workflow to bare `dict` values. The
+first returns the generated object; the second adds mapping semantics and
+registry path metadata.
 
 ### 2.4. Why `RegistryItem` was introduced
 
@@ -166,27 +172,31 @@ R3XA_API is built around a JSON schema. Validation guarantees:
 - presence of required fields,
 - type consistency,
 - unique identifiers and resolvable data dependencies,
-- valid calendar dates and consistent author/ORCID metadata,
+- valid calendar dates and structurally attached author metadata,
 - interoperability of metadata,
 - reuse of files by other teams.
 
 This matters for the community: a file that is “almost correct” is not sufficient if the goal is reproducibility.
 
-### 2.8. Typing and IDE autocompletion are optional, but useful
+### 2.8. Object models and IDE autocompletion are part of the standard API
 
-The core API remains **dict-based**. This is intentional:
+The Python SDK uses schema-generated Pydantic objects as its complete authoring
+model. `R3XAFile` is the public generated document class, and its collections
+contain the same generated Pydantic item objects used by the standalone item
+API. There is no separate dictionary-backed builder or conversion step.
+This is intentional:
 
-- it is lightweight,
-- robust,
-- easy to serialize to JSON,
-- and compatible with many environments.
+- attributes are discoverable in an IDE,
+- assignments are checked early,
+- references can be manipulated as objects in memory,
+- and `to_dict()` provides an explicit JSON boundary.
 
-But the project also provides:
+The project also preserves JSON-native interoperability: serialized output is
+ordinary R3XA JSON, and `to_dict()` / `from_dict()` are the explicit conversion
+boundary. The legacy `from_model(...)` bridge remains available for integrations
+but is not needed for ordinary document construction.
 
-- generated typed Pydantic models (`r3xa_api/models.py`),
-- and a stub file `r3xa_api/core.pyi` that makes guided helpers visible to IDEs.
-
-For users, the key point is:
+For developers, the key point is:
 
 - **it is not mandatory**;
 - **it significantly improves comfort in VS Code / PyCharm / mypy / pyright**.
@@ -347,13 +357,12 @@ This is not bureaucracy. It is the mechanism that prevents silent drift between:
 
 ## 4. Common misunderstandings
 
-### “Why keep a dict-based API if Pydantic exists?”
+### “Why keep JSON dictionaries if Pydantic objects exist?”
 
-Because Pydantic and the dict-based API do not serve the same purpose.
-
-- the dict API is the simple, robust runtime foundation;
-- Pydantic provides editing comfort and typing;
-- the two layers can coexist without replacing each other.
+Because dictionaries are the interchange format, not the preferred in-memory
+authoring interface. Pydantic objects provide the ergonomic Python API; their
+`to_dict()` and `from_dict()` methods make conversion explicit at file, registry,
+and HTTP boundaries. There is no second scientific data model to maintain.
 
 ### “Why is the helper called `unit()` if the object contains more than a unit?”
 

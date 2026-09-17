@@ -1,6 +1,7 @@
 {
     "title": "IR Lagrangian thermography - Qi Hu",
     "description": "Qi Hu experimental pipeline (IR + visible imaging, processing, DIC-like steps)",
+    "version": "2026.9.18",
     "authors": [
         {
             "name": "J-F. Witz"
@@ -13,246 +14,246 @@
     "repository": "https://example.org/qi-hu",
     "documentation": "https://theses.hal.science/tel-04993338",
     "license": "GPL-2.0-or-later",
-    "version": "2026.9.17",
     "settings": [
         {
             "id": "sample",
+            "kind": "settings/generic",
             "title": "316L",
-            "description": "316L",
-            "kind": "settings/generic"
+            "description": "316L"
         },
         {
             "id": "settings_Instron_tensile_test",
+            "kind": "settings/generic",
             "title": "Instron 8800",
-            "description": "Electromechanical Machine",
-            "kind": "settings/generic"
+            "description": "Electromechanical Machine"
         }
     ],
     "data_sources": [
         {
             "id": "camera_IR",
+            "kind": "data_sources/camera",
             "title": "FILR InfraRed Camera",
             "description": "FILR InfraRed Camera used for the test",
             "output_components": 1,
             "output_dimension": "surface",
             "output_units": [
                 {
-                    "kind": "unit",
                     "title": "gl",
                     "value": 1.0,
                     "unit": "gl",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
             "manufacturer": "FLIR",
             "model": " X6580sc",
             "image_size": [
                 {
-                    "kind": "unit",
                     "title": "width",
-                    "value": 640,
+                    "value": 640.0,
                     "unit": "px",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 },
                 {
-                    "kind": "unit",
                     "title": "height",
-                    "value": 512,
+                    "value": 512.0,
                     "unit": "px",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
             "image_scale": {
-                "kind": "unit",
                 "title": "image_scale",
-                "value": 15,
-                "unit": "\u00b5m/px",
-                "scale": 1.0
+                "value": 15.0,
+                "unit": "µm/px",
+                "scale": 1.0,
+                "kind": "unit"
             },
-            "lens": "FLIR G1",
-            "kind": "data_sources/camera"
+            "lens": "FLIR G1"
         },
         {
             "id": "camera_visible",
+            "kind": "data_sources/camera",
             "title": "Ximea PCIe visible camera",
             "description": "Visible camera used ofr the test",
             "output_components": 1,
             "output_dimension": "surface",
             "output_units": [
                 {
-                    "kind": "unit",
                     "title": "gl",
                     "value": 1.0,
                     "unit": "gl",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
             "manufacturer": "Ximea",
             "model": "CB500",
             "image_size": [
                 {
-                    "kind": "unit",
                     "title": "width",
-                    "value": 5400,
+                    "value": 5400.0,
                     "unit": "px",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 },
                 {
-                    "kind": "unit",
                     "title": "height",
-                    "value": 4400,
+                    "value": 4400.0,
                     "unit": "px",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
-            "lens": "LAOWA Utra-Macro 2.5-5x",
-            "kind": "data_sources/camera"
+            "lens": "LAOWA Utra-Macro 2.5-5x"
         },
         {
             "id": "load_cell",
+            "kind": "data_sources/generic",
             "title": "Load cell",
             "description": "Load cell of INSTRON 8800 300KN machine",
             "output_components": 1,
             "output_dimension": "point",
             "output_units": [
                 {
-                    "kind": "unit",
                     "title": "N",
                     "value": 1.0,
                     "unit": "N",
-                    "scale": 1.0
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
             "manufacturer": "Instron",
-            "model": "8800",
-            "kind": "data_sources/generic"
+            "model": "8800"
         },
         {
             "id": "load_cell_visible_timeline",
+            "kind": "data_sources/generic",
             "title": "Load cell on visible timeline",
             "description": "Load cell interpolator on visible timeline",
-            "output_components": 1,
-            "output_dimension": "point",
-            "output_units": [
-                {
-                    "kind": "unit",
-                    "title": "N",
-                    "value": 1.0,
-                    "unit": "N",
-                    "scale": 1.0
-                }
-            ],
-            "manufacturer": "Instron",
-            "model": "8800",
             "input_data_sets": [
                 "load_cell_data",
                 "visible_images"
             ],
-            "kind": "data_sources/generic"
+            "output_components": 1,
+            "output_dimension": "point",
+            "output_units": [
+                {
+                    "title": "N",
+                    "value": 1.0,
+                    "unit": "N",
+                    "scale": 1.0,
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "Instron",
+            "model": "8800"
         },
         {
             "id": "calibration_IR",
+            "kind": "data_sources/generic",
             "title": "Infra Red calibration process",
-            "description": "Conversion from DL to T(\u00b0C)",
-            "output_components": 1,
-            "output_dimension": "surface",
-            "output_units": [
-                {
-                    "kind": "unit",
-                    "title": "\u00b0C",
-                    "value": 1.0,
-                    "unit": "\u00b0C",
-                    "scale": 1.0
-                }
-            ],
-            "manufacturer": "NUMPY",
-            "model": "1.calibrited_ir_camera.py",
+            "description": "Conversion from DL to T(°C)",
             "input_data_sets": [
                 "IR_raws",
                 "calibration_tables"
             ],
-            "kind": "data_sources/generic"
+            "output_components": 1,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "title": "°C",
+                    "value": 1.0,
+                    "unit": "°C",
+                    "scale": 1.0,
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "NUMPY",
+            "model": "1.calibrited_ir_camera.py"
         },
         {
             "id": "dic",
+            "kind": "data_sources/generic",
             "title": "DIC Analysis",
             "description": "Displacement measurement",
-            "output_components": 1,
-            "output_dimension": "surface",
-            "output_units": [
-                {
-                    "kind": "unit",
-                    "title": "px",
-                    "value": 1.0,
-                    "unit": "px",
-                    "scale": 1.0
-                }
-            ],
-            "manufacturer": "YaDICs",
-            "model": "v04.14a",
             "input_data_sets": [
                 "visible_images"
             ],
-            "kind": "data_sources/generic"
-        },
-        {
-            "id": "lagrangian_thermography",
-            "title": "Lagrangian thermography",
-            "description": "Lagrangian thermography computation from :\n    - rescaling IR images and following on visibe reference frame\n     - DIC field registration to be lagrangian",
             "output_components": 1,
             "output_dimension": "surface",
             "output_units": [
                 {
-                    "kind": "unit",
-                    "title": "\u00b0C",
+                    "title": "px",
                     "value": 1.0,
-                    "unit": "\u00b0C",
-                    "scale": 1.0
+                    "unit": "px",
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
-            "manufacturer": "python/script",
-            "model": "3.Langrangian thermography with Yadics.py",
+            "manufacturer": "YaDICs",
+            "model": "v04.14a"
+        },
+        {
+            "id": "lagrangian_thermography",
+            "kind": "data_sources/generic",
+            "title": "Lagrangian thermography",
+            "description": "Lagrangian thermography computation from :\n    - rescaling IR images and following on visibe reference frame\n     - DIC field registration to be lagrangian",
             "input_data_sets": [
                 "dic_fields",
                 "temperature_fields_eulerian"
             ],
-            "kind": "data_sources/generic"
-        },
-        {
-            "id": "energy_balance",
-            "title": "Energy balance",
-            "description": "Von Mises strains, Thermal flux, Taylor Quiney map computation",
-            "output_components": 2,
+            "output_components": 1,
             "output_dimension": "surface",
             "output_units": [
                 {
-                    "kind": "unit",
-                    "title": "\u00b0C",
+                    "title": "°C",
                     "value": 1.0,
-                    "unit": "\u00b0C",
-                    "scale": 1.0
-                },
-                {
-                    "kind": "unit",
-                    "title": "%",
-                    "value": 1.0,
-                    "unit": "%",
-                    "scale": 1.0
+                    "unit": "°C",
+                    "scale": 1.0,
+                    "kind": "unit"
                 }
             ],
             "manufacturer": "python/script",
-            "model": "3.Langrangian thermography with Yadics.py",
+            "model": "3.Langrangian thermography with Yadics.py"
+        },
+        {
+            "id": "energy_balance",
+            "kind": "data_sources/generic",
+            "title": "Energy balance",
+            "description": "Von Mises strains, Thermal flux, Taylor Quiney map computation",
             "input_data_sets": [
                 "dic_fields",
                 "temperature_fields_lagrangian",
                 "load_cell_data_interp_visible_timeline_data"
             ],
-            "kind": "data_sources/generic"
+            "output_components": 2,
+            "output_dimension": "surface",
+            "output_units": [
+                {
+                    "title": "°C",
+                    "value": 1.0,
+                    "unit": "°C",
+                    "scale": 1.0,
+                    "kind": "unit"
+                },
+                {
+                    "title": "%",
+                    "value": 1.0,
+                    "unit": "%",
+                    "scale": 1.0,
+                    "kind": "unit"
+                }
+            ],
+            "manufacturer": "python/script",
+            "model": "3.Langrangian thermography with Yadics.py"
         }
     ],
     "data_sets": [
         {
             "id": "IR_raws",
+            "kind": "data_sets/list",
             "title": "IR raws images",
             "description": "Raw images from the FLIR InfraRed Camera",
             "path": "original images IR/",
@@ -261,11 +262,11 @@
                 "camera_IR"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [
                 10.0861051,
@@ -796,11 +797,11 @@
                 "original images IR/Rec-1_serie_2450N-000001-001_02_06_49_467_2328.tif",
                 "original images IR/Rec-1_serie_2450N-000001-001_02_06_49_467_2329.tif",
                 "original images IR/Rec-1_serie_2450N-000001-001_02_06_49_467_2330.tif"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "calibration_tables",
+            "kind": "data_sets/list",
             "title": "calibration tables",
             "description": "tables of Black body calibrations",
             "path": "./",
@@ -809,11 +810,11 @@
                 "camera_IR"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [],
             "values": [
@@ -2609,11 +2610,11 @@
                 "./calibration IR camera/60/Rec-60-000018-001_04_49_20_419_97.tif",
                 "./calibration IR camera/60/Rec-60-000018-001_04_49_20_419_98.tif",
                 "./calibration IR camera/60/Rec-60-000018-001_04_49_20_419_99.tif"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "dic_fields",
+            "kind": "data_sets/list",
             "title": "DIC fields",
             "description": "Visible DIC fields",
             "path": "./",
@@ -2622,11 +2623,11 @@
                 "dic"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [
                 10.087318,
@@ -2697,11 +2698,11 @@
             "values": [
                 "node.nc",
                 "modes.nc"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "load_cell_data",
+            "kind": "data_sets/file",
             "title": "Load cell data",
             "description": "Load cell data",
             "path": "./1_serie_2450N/",
@@ -2709,29 +2710,29 @@
                 "load_cell"
             ],
             "timestamps": {
-                "kind": "data_set_file",
                 "filename": "1_serie_2450N/Traction_1.csv",
                 "delimiter": ",",
                 "col": 0,
                 "rows": [
                     1,
                     183799
-                ]
+                ],
+                "kind": "data_set_file"
             },
             "values": {
-                "kind": "data_set_file",
                 "filename": "Traction_1.csv",
                 "delimiter": ",",
                 "col": 1,
                 "rows": [
                     1,
                     183799
-                ]
-            },
-            "kind": "data_sets/file"
+                ],
+                "kind": "data_set_file"
+            }
         },
         {
             "id": "visible_images",
+            "kind": "data_sets/list",
             "title": "Visible images",
             "description": "visible images from Ximea camera",
             "path": "original visible images/",
@@ -2740,11 +2741,11 @@
                 "camera_visible"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [
                 10.087318,
@@ -2878,11 +2879,11 @@
                 "original visible images/000356.tif",
                 "original visible images/000357.tif",
                 "original visible images/ref.tif"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "load_cell_data_interp_visible_timeline_data",
+            "kind": "data_sets/list",
             "title": "Load cell data interpolated on visible timeline data",
             "description": "load cell data interpolated on visible timeline data",
             "path": "./thermomechanical results/",
@@ -2891,11 +2892,11 @@
                 "load_cell_visible_timeline"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [
                 10.087318,
@@ -2965,11 +2966,11 @@
             ],
             "values": [
                 "F_macro.npy"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "temperature_fields_eulerian",
+            "kind": "data_sets/list",
             "title": "Eulerian Temperature fields",
             "description": "Eulerian Temperature fields",
             "path": "./",
@@ -2978,11 +2979,11 @@
                 "calibration_IR"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [],
             "values": [
@@ -3249,11 +3250,11 @@
                 "traction_temperature_field_ir_configuration/260.npy",
                 "traction_temperature_field_ir_configuration/261.npy",
                 "traction_temperature_field_ir_configuration/262.npy"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "temperature_fields_lagrangian",
+            "kind": "data_sets/list",
             "title": "Lagrangian Temperature Field",
             "description": "Eulerian thermography registered\nafter rescaling IR images and following on visibe reference frame\nand with the DIC field to be lagrangian",
             "path": "./",
@@ -3262,11 +3263,11 @@
                 "lagrangian_thermography"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [
                 10.087318,
@@ -3399,11 +3400,11 @@
                 "thermomechanical results/temperature_field_ccd_configuration_ROI/T_61.npy",
                 "thermomechanical results/temperature_field_ccd_configuration_ROI/T_62.npy",
                 "thermomechanical results/temperature_field_ccd_configuration_ROI/T_63.npy"
-            ],
-            "kind": "data_sets/list"
+            ]
         },
         {
             "id": "energy_balance_fields",
+            "kind": "data_sets/list",
             "title": "Final results :\nLagrangian energy balance fields",
             "description": "Energy balance fields",
             "path": "./",
@@ -3412,11 +3413,11 @@
                 "energy_balance"
             ],
             "time_reference": {
-                "kind": "unit",
                 "title": "time_reference",
                 "value": 0.0,
                 "unit": "s",
-                "scale": 1.0
+                "scale": 1.0,
+                "kind": "unit"
             },
             "timestamps": [
                 10.087318,
@@ -3748,8 +3749,7 @@
                 "./traction_temperature_field_ir_configuration/260.npy",
                 "./traction_temperature_field_ir_configuration/261.npy",
                 "./traction_temperature_field_ir_configuration/262.npy"
-            ],
-            "kind": "data_sets/list"
+            ]
         }
     ]
 }

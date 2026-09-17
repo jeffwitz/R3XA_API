@@ -132,12 +132,16 @@
         "description": "Force versus time stored in a CSV file.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "timestamps.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "force.csv",
           "file_type": "text/csv",

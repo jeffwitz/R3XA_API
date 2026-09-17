@@ -16,7 +16,6 @@ Install only what you need:
 ```bash
 pip install -e .
 pip install -e ".[docs]"           # Sphinx + doc extensions
-pip install -e ".[typed]"          # Pydantic typed models
 pip install -e ".[web]"            # FastAPI web UI/API
 pip install -e ".[notebook]"       # Marimo notebooks
 pip install -e ".[graph_nx]"       # NetworkX + Matplotlib static graph backend
@@ -41,7 +40,7 @@ python scripts/dev.py setup-dev
 This command:
 
 - bootstraps `pip`, `setuptools`, and `wheel` inside `.venv`
-- installs the editable contributor stack `.[dev,docs,typed,web,notebook,graph_nx]`
+- installs the editable contributor stack `.[dev,docs,web,notebook,graph_nx]`
   with `--no-build-isolation`
 - regenerates `r3xa_api/models.py`
 - regenerates `r3xa_api/core.pyi`
@@ -65,8 +64,9 @@ scripts/postprocess_models.py
 
 `datamodel-code-generator` is an external generator configured to emit Pydantic
 v2 models. Pydantic provides runtime validation and serialization; it is not the
-tool that generates the models from JSON Schema. The generated classes inherit
-the shared `R3XAModel` behavior from {glsrc}`r3xa_api/model_base.py`.
+tool that generates the models from JSON Schema. Pydantic is a runtime dependency
+of the object-first SDK, not an optional feature. The generated classes inherit
+the shared `R3XAItem` behavior from {glsrc}`r3xa_api/model_base.py`.
 
 Never edit {glsrc}`r3xa_api/models.py` by hand. After a schema change, update the
 source schema in `R3XA_SPEC`, propagate it to the API repository, then run:
@@ -107,17 +107,15 @@ python scripts/dev.py setup-dev --no-build-docs
 
 The exact number of collected tests depends on the optional extras installed in the active `.venv`.
 
-- `pip install -e ".[dev]"`  
-  Core SDK tests and developer tooling.
 - `pip install -e ".[docs]"`  
   Adds the Sphinx documentation toolchain.
-- `pip install -e ".[dev,typed]"`  
-  Adds typed-model tests.
+- `pip install -e ".[dev]"`  
+  Includes the Pydantic object-model tests.
 - `pip install -e ".[dev,web]"`  
   Adds web/API tests.
 - `pip install -e ".[dev,graph_nx]"`  
   Adds NetworkX + Matplotlib graph backend tests.
-- `pip install -e ".[dev,typed,web,graph_nx]"`  
+- `pip install -e ".[dev,web,graph_nx]"`  
   Gives the full local matrix used for repository maintenance.
 
 For local graph support, run `r3xa-ensure-graphviz` after installing the package.
@@ -126,7 +124,7 @@ cross-platform helper.
 
 If two contributors report different totals, check the installed extras before comparing raw pytest counts.
 
-GitLab CI runs the full test suite with the `dev`, `typed`, `web`, and `graph_nx`
+GitLab CI runs the full test suite with the `dev`, `web`, and `graph_nx`
 extras on Python 3.9 through 3.13, and installs the Graphviz `dot` executable.
 A separate quality job builds the documentation with warnings treated as
 errors. The package job verifies the wheel contents and runs a smoke test from

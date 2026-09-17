@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from enum import Enum
 from collections.abc import Mapping, MutableMapping
 from pathlib import Path
 from typing import Any, Dict, Iterator, Optional
@@ -11,12 +12,40 @@ from .core import R3XAItem
 from .schema import load_schema
 
 
-def _coerce_item_payload(item: Mapping[str, Any] | RegistryItem) -> Dict[str, Any]:
+def _coerce_item_payload(item: Mapping[str, Any] | R3XAItem | RegistryItem) -> Dict[str, Any]:
     """Return a plain dictionary payload for registry helpers."""
 
     if isinstance(item, RegistryItem):
         return item.to_dict()
+    to_dict = getattr(item, "to_dict", None)
+    if callable(to_dict):
+        return dict(to_dict())
+    model_dump = getattr(item, "model_dump", None)
+    if callable(model_dump):
+        return dict(model_dump(mode="json", exclude_none=True))
     return dict(item)
+
+
+def _plain_value(value: Any) -> Any:
+    """Convert object-first models into JSON-compatible registry payloads."""
+
+    if isinstance(value, Enum):
+        return value.value
+    if hasattr(value, "root") and not isinstance(value, Mapping):
+        return _plain_value(value.root)
+    if isinstance(value, R3XAItem):
+        return value.to_dict()
+    if isinstance(value, Mapping):
+        return {
+            key: _plain_value(item)
+            for key, item in value.items()
+            if item is not None
+        }
+    if isinstance(value, (list, tuple)):
+        return [_plain_value(item) for item in value]
+    if hasattr(value, "model_dump"):
+        return value.model_dump(mode="json", exclude_none=True)
+    return value
 
 
 def load_item(path: str | Path) -> R3XAItem:
@@ -27,12 +56,12 @@ def load_item(path: str | Path) -> R3XAItem:
     """
 
     with open(path, "r", encoding="utf-8") as f:
-        return R3XAItem(json.load(f))
+        return R3XAItem.from_dict(json.load(f))
 
 
 def save_item(
     path: str | Path,
-    item: Mapping[str, Any] | RegistryItem,
+    item: Mapping[str, Any] | R3XAItem | RegistryItem,
     *,
     validate: bool = True,
     kind: Optional[str] = None,
@@ -49,7 +78,7 @@ def save_item(
     return path
 
 
-def load_item_path(root: str | Path, tree_path: str) -> Dict[str, Any]:
+def load_item_path(root: str | Path, tree_path: str) -> R3XAItem:
     """Load a registry item addressed as section/kind/name."""
 
     root = Path(root)
@@ -60,7 +89,7 @@ def load_item_path(root: str | Path, tree_path: str) -> Dict[str, Any]:
 def save_item_path(
     root: str | Path,
     tree_path: str,
-    item: Mapping[str, Any] | RegistryItem,
+    item: Mapping[str, Any] | R3XAItem | RegistryItem,
     *,
     validate: bool = True,
     kind: Optional[str] = None,
@@ -113,11 +142,11 @@ def validate_item(
         raise jsonschema.exceptions.ValidationError(msg)
 
 
-def load_registry(root: str | Path) -> Dict[str, Dict[str, Dict[str, Any]]]:
+def load_registry(root: str | Path) -> Dict[str, Dict[str, Dict[str, R3XAItem]]]:
     """Load all JSON entries from a registry tree."""
 
     root = Path(root)
-    registry: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    registry: Dict[str, Dict[str, Dict[str, R3XAItem]]] = {}
 
     for section in ["settings", "data_sources", "data_sets"]:
         section_dir = root / section
@@ -152,7 +181,8 @@ class RegistryItem(MutableMapping[str, Any]):
         registry_root: str | Path | None = None,
         tree_path: str | None = None,
     ) -> None:
-        self._payload = dict(payload)
+        raw_payload = payload.to_dict() if hasattr(payload, "to_dict") else dict(payload)
+        self._payload = _plain_value(raw_payload)
         self.registry_root = Path(registry_root) if registry_root is not None else None
         self.tree_path = tree_path
 
@@ -265,17 +295,17 @@ class Registry:
 
         self.root = Path(root)
 
-    def get(self, tree_path: str) -> Dict[str, Any]:
+    def get(self, tree_path: str) -> R3XAItem:
         """Load an item from `section/kind/name` path."""
 
         return load_item_path(self.root, tree_path)
 
-    def load(self, tree_path: str) -> Dict[str, Any]:
+    def load(self, tree_path: str) -> R3XAItem:
         """Alias for `get()` with a more discoverable name."""
 
         return self.get(tree_path)
 
-    def wrap(self, item: Mapping[str, Any], tree_path: str | None = None) -> RegistryItem:
+    def wrap(self, item: Mapping[str, Any] | R3XAItem, tree_path: str | None = None) -> RegistryItem:
         """Wrap a plain item payload into a bound `RegistryItem`."""
 
         return RegistryItem(item, registry_root=self.root, tree_path=tree_path)
@@ -289,7 +319,7 @@ class Registry:
     def save(
         self,
         tree_path: str,
-        item: Mapping[str, Any] | RegistryItem,
+        item: Mapping[str, Any] | R3XAItem | RegistryItem,
         *,
         validate: bool = True,
         kind: Optional[str] = None,
@@ -298,19 +328,19 @@ class Registry:
 
         return save_item_path(self.root, tree_path, item, validate=validate, kind=kind)
 
-    def validate(self, item: Mapping[str, Any] | RegistryItem, kind: Optional[str] = None) -> None:
+    def validate(self, item: Mapping[str, Any] | R3XAItem | RegistryItem, kind: Optional[str] = None) -> None:
         """Validate an item using explicit `kind` or embedded `item.kind`."""
 
         validate_item(item, kind=kind)
 
-    def get_validated(self, tree_path: str, kind: Optional[str] = None) -> Dict[str, Any]:
+    def get_validated(self, tree_path: str, kind: Optional[str] = None) -> R3XAItem:
         """Load then validate a registry item in one call."""
 
         item = self.get(tree_path)
         self.validate(item, kind=kind)
         return item
 
-    def load_validated(self, tree_path: str, kind: Optional[str] = None) -> Dict[str, Any]:
+    def load_validated(self, tree_path: str, kind: Optional[str] = None) -> R3XAItem:
         """Alias for `get_validated()` with a more discoverable name."""
 
         return self.get_validated(tree_path, kind=kind)
@@ -348,7 +378,7 @@ class Registry:
         *,
         validated: bool = False,
         wrapped: bool = False,
-    ) -> Iterator[tuple[str, Dict[str, Any] | RegistryItem]]:
+    ) -> Iterator[tuple[str, R3XAItem | RegistryItem]]:
         """Iterate over registry items, optionally validated and/or wrapped."""
 
         for tree_path in self.list(section=section, kind=kind):

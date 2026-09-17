@@ -3,14 +3,16 @@ from __future__ import annotations
 import json
 import random
 import string
-from collections.abc import Mapping
+from collections.abc import Mapping, MutableMapping
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Union
 
 from .schema import load_schema, schema_version
-from .typed import from_model
 from .validate import validate
+from ._format import format_json_value
+from .model_base import R3XAItem
+from ._references import reference_fields, reference_id
 
 
 def _random_id(n: int = 24) -> str:
@@ -20,247 +22,42 @@ def _random_id(n: int = 24) -> str:
     return "".join(random.choice(chars) for _ in range(n))
 
 
-def format_number(value: Any) -> str:
-    """Render an integral float without its trailing zero: 1392.0 -> 1392."""
-
-    if isinstance(value, float) and value.is_integer():
-        return str(int(value))
-    return str(value)
-
-
-def _format_data_set_file(value: Mapping[str, Any]) -> str:
-    """Render a data-set file selector without repeating its technical metadata."""
-
-    filename = str(value["filename"])
-    selector = []
-    if "col" in value:
-        selector.append(format_json_value(value["col"]))
-        selector.append("x")
-    if "rows" in value:
-        selector.append(format_json_value(value["rows"]))
-    suffix = " " + " ".join(selector) if selector else ""
-    return "{" + filename + (":" + suffix if suffix else "") + "}"
-
-
-def format_json_value(value: Any) -> str:
-    """Render a JSON-compatible value the way it reads to a user.
-
-    Units collapse to `1392 px` and lists of them to `[1392 px, 1040 px]`.
-    Data-set file selectors collapse to `{file.csv: 1 x [1, 5]}`.
-    The typed models reuse this so document-level and item-level `print()`
-    agree on the same conventions; it stays free of any pydantic dependency
-    because `R3XAFile` works on plain dictionaries.
-    """
-
-    if value is None:
-        return "None"
-    if isinstance(value, bool):
-        return str(value)
-    if isinstance(value, Mapping):
-        if value.get("kind") == "data_set_file" and "filename" in value:
-            return _format_data_set_file(value)
-        if value.get("kind") == "unit" and "value" in value and "unit" in value:
-            return f"{format_number(value['value'])} {value['unit']}"
-        inner = ", ".join(f"{key}: {format_json_value(item)}" for key, item in value.items())
-        return "{" + inner + "}"
-    if isinstance(value, (list, tuple)):
-        return "[" + ", ".join(format_json_value(item) for item in value) + "]"
-    return format_number(value)
-
-
-@lru_cache(maxsize=None)
-def _reference_fields() -> Dict[str, str]:
-    """Return the fields holding item references, mapped to the section they point to.
-
-    Read from the schema rather than hardcoded, so a reference added later is
-    resolved too.
-    """
-
-    id_types = {
-        "#/$defs/types/setting_id": "settings",
-        "#/$defs/types/data_source_id": "data_sources",
-        "#/$defs/types/data_set_id": "data_sets",
-    }
-    fields: Dict[str, str] = {}
-
-    def visit(node: Any, field: Optional[str]) -> None:
-        if isinstance(node, Mapping):
-            reference = node.get("$ref")
-            if field and reference in id_types:
-                fields[field] = id_types[reference]
-            items = node.get("items")
-            if field and isinstance(items, Mapping) and items.get("$ref") in id_types:
-                fields[field] = id_types[items["$ref"]]
-            for key, value in node.items():
-                visit(value, key if key not in ("items", "properties", "$defs") else field)
-        elif isinstance(node, list):
-            for value in node:
-                visit(value, field)
-
-    visit(load_schema(), None)
-    return fields
-
-
-@lru_cache(maxsize=None)
-def _item_field_spec(kind: str) -> tuple:
-    """Return the schema's field order and required names for an item kind.
-
-    Cached, and deliberately returning immutable values: the result is shared.
-    """
-
-    schema = load_schema()
-    section, _, name = kind.partition("/")
-    definition = schema.get("$defs", {}).get(section, {}).get(name, {})
-    return tuple(definition.get("properties", {})), frozenset(definition.get("required", ()))
-
-
-class R3XAItem(dict):
-    """An R3XA item that stays a dictionary but prints, validates and saves.
-
-    `R3XAFile` must work without pydantic, so items cannot be typed models.
-    The ergonomics are added to the dictionary itself instead: this is a real
-    `dict` subclass, so `item["title"]`, `isinstance(item, dict)`, `json.dumps`
-    and equality with a plain dict all keep working unchanged.
-    """
-
-    # Set when the item joins a document, so `summary()` can show what a
-    # reference points at instead of its identifier.
-    _document: Any = None
-
-    @property
-    def kind(self) -> Optional[str]:
-        """Return the item's schema kind, when it carries one."""
-
-        value = self.get("kind")
-        return value if isinstance(value, str) else None
-
-    def _resolve_reference(self, section: str, identifier: Any) -> str:
-        """Render a reference as the title of the item it points at."""
-
-        document = self._document
-        if document is not None and isinstance(identifier, str):
-            for candidate in getattr(document, section, ()) or ():
-                if isinstance(candidate, Mapping) and candidate.get("id") == identifier:
-                    title = candidate.get("title")
-                    if title:
-                        return str(title)
-        return format_json_value(identifier)
-
-    def _format_field(self, name: str, value: Any) -> str:
-        """Render one field, resolving references to the titles they point at."""
-
-        section = _reference_fields().get(name)
-        if section is None or value is None:
-            return format_json_value(value)
-        if isinstance(value, list):
-            return "[" + ", ".join(self._resolve_reference(section, v) for v in value) + "]"
-        return self._resolve_reference(section, value)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Return a plain dictionary copy."""
-
-        return dict(self)
-
-    def required_fields(self) -> List[str]:
-        """Return the field names the schema requires for this kind."""
-
-        order, required = _item_field_spec(self.kind or "")
-        return [name for name in order if name in required]
-
-    def optional_fields(self) -> List[str]:
-        """Return the field names the schema allows but does not require."""
-
-        order, required = _item_field_spec(self.kind or "")
-        return [name for name in order if name not in required]
-
-    def missing_fields(self) -> List[str]:
-        """Return required fields that are absent or null."""
-
-        return [name for name in self.required_fields() if self.get(name) is None]
-
-    def field_descriptions(self) -> Dict[str, str]:
-        """Return the schema description of each documented field."""
-
-        schema = load_schema()
-        section, _, name = (self.kind or "").partition("/")
-        definition = schema.get("$defs", {}).get(section, {}).get(name, {})
-        return {
-            field: spec["description"]
-            for field, spec in definition.get("properties", {}).items()
-            if isinstance(spec, dict) and spec.get("description")
-        }
-
-    def summary(self) -> str:
-        """Return a readable listing of every schema field, including absent ones.
-
-        Same conventions as the typed models: `*` marks required fields, and
-        values render through `format_json_value`.
-        """
-
-        order, required = _item_field_spec(self.kind or "")
-        names = list(order) + [name for name in self if name not in order]
-
-        lines = [self.kind or "R3XA item"]
-        for name in names:
-            marker = "*" if name in required else " "
-            lines.append(f"{marker} {name}: {self._format_field(name, self.get(name))}")
-        return "\n".join(lines)
-
-    def print(self) -> None:
-        """Print a readable listing of the item."""
-
-        print(self.summary())
-
-    def __str__(self) -> str:
-        # `__repr__` stays dict's compact form, so a list of items remains
-        # readable; `print(item)` gets the listing.
-        return self.summary()
-
-    def validate(self, schema: Optional[Dict[str, Any]] = None) -> "R3XAItem":
-        """Validate this item against its schema kind and return it."""
-
-        from .registry import validate_item
-
-        validate_item(self, kind=self.kind, schema=schema)
-        return self
-
-    @classmethod
-    def load(cls, path: str | Path) -> "R3XAItem":
-        """Load a single item from a JSON file."""
-
-        return cls(json.loads(Path(path).read_text(encoding="utf-8")))
-
-    def save(
-        self,
-        path: str | Path,
-        *,
-        validate: bool = True,
-        indent: int = 2,
-    ) -> Path:
-        """Validate and save this item alone to a JSON file."""
-
-        if validate:
-            self.validate()
-        destination = Path(path)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(
-            json.dumps(self.to_dict(), ensure_ascii=False, indent=indent) + "\n",
-            encoding="utf-8",
-        )
-        return destination
-
-
 def new_item(kind: str, **fields: Any) -> R3XAItem:
     """Create a standalone schema item with default `id` and `kind` if missing.
 
     Returns an `R3XAItem`, so the result prints, validates and saves on its own
     without belonging to any document.
     """
+    model_class = _model_class_for_kind(kind)
+    if model_class is None:
+        raise ValueError(f"Unsupported R3XA item kind: {kind}")
+    payload = dict(fields)
+    if "id" in model_class.model_fields:
+        payload.setdefault("id", _random_id())
+    payload.setdefault("kind", kind)
+    return model_class(**payload)
 
-    item = R3XAItem(fields)
-    item.setdefault("id", _random_id())
-    item.setdefault("kind", kind)
-    return item
+
+@lru_cache(maxsize=1)
+def _model_classes_by_kind() -> Dict[str, type[R3XAItem]]:
+    """Discover generated object classes by their schema-fixed `kind`."""
+
+    from . import models
+
+    discovered: Dict[str, type[R3XAItem]] = {}
+    for name in getattr(models, "__all__", ()):
+        candidate = getattr(models, name, None)
+        if not isinstance(candidate, type) or not issubclass(candidate, R3XAItem):
+            continue
+        field = candidate.model_fields.get("kind")
+        value = getattr(field, "default", None) if field is not None else None
+        if isinstance(value, str):
+            discovered.setdefault(value, candidate)
+    return discovered
+
+
+def _model_class_for_kind(kind: str) -> type[R3XAItem] | None:
+    return _model_classes_by_kind().get(kind)
 
 
 def unit(
@@ -269,15 +66,13 @@ def unit(
     unit: Optional[str] = None,
     scale: Optional[float] = 1.0,
     **extra: Any,
-) -> Dict[str, Any]:
-    """Build a unit payload compatible with R3XA schema."""
 
-    payload = {
-        "kind": "unit",
-    }
+) -> R3XAItem:
+    """Build a typed unit object compatible with the R3XA schema."""
+
     if unit is None:
         raise TypeError("unit requires the `unit` field")
-    payload["unit"] = unit
+    payload: Dict[str, Any] = {"kind": "unit", "unit": unit}
     if title is not None:
         payload["title"] = title
     if value is not None:
@@ -285,7 +80,7 @@ def unit(
     if scale is not None:
         payload["scale"] = scale
     payload.update(extra)
-    return payload
+    return new_item("unit", **{key: value for key, value in payload.items() if key != "kind"})
 
 
 def author(
@@ -293,7 +88,7 @@ def author(
     affiliation: Optional[str] = None,
     orcid: Optional[str] = None,
     **extra: Any,
-) -> Dict[str, Any]:
+) -> R3XAItem:
     """Build an author payload compatible with the R3XA schema.
 
     Since schema 2026.9.16 an author carries its own ORCID, instead of being a
@@ -308,23 +103,26 @@ def author(
     if orcid is not None:
         payload["orcid"] = orcid
     payload.update(extra)
-    return payload
+    from . import models
+
+    return models.Author.model_validate(payload)
 
 
 def data_set_file(
-    filename: str,
+    filename: Optional[str] = None,
     file_type: Optional[str] = None,
     delimiter: Optional[str] = None,
     col: Optional[Union[int, str]] = None,
     rows: Optional[Sequence[Optional[int]]] = None,
     **extra: Any,
-) -> Dict[str, Any]:
-    """Build a `data_set_file` payload for `timestamps` or `values` fields."""
+) -> R3XAItem:
+    """Build a typed `data_set_file` object for timestamps or values."""
 
-    payload = {
-        "kind": "data_set_file",
-        "filename": filename,
-    }
+    if "data_range" in extra:
+        raise TypeError(
+            "data_range is not part of schema 2026.9.18; use col= and rows= instead"
+        )
+    payload: Dict[str, Any] = {"kind": "data_set_file", "filename": filename}
     if file_type is not None:
         payload["file_type"] = file_type
     if delimiter is not None:
@@ -336,14 +134,21 @@ def data_set_file(
             raise TypeError("rows must be a sequence of integers or None")
         payload["rows"] = list(rows)
     payload.update(extra)
-    return payload
+    return new_item(
+        "data_set_file",
+        **{key: value for key, value in payload.items() if key != "kind"},
+    )
 
 
-def _ensure_data_set_file(value: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
-    """Normalize string path or dict into a `data_set_file` payload."""
+def _ensure_data_set_file(value: Union[str, Mapping[str, Any], R3XAItem]) -> R3XAItem:
+    """Normalize a path, mapping, or typed selector into a `DataSetFile`."""
 
-    if isinstance(value, dict):
+    if isinstance(value, R3XAItem):
         return value
+    if isinstance(value, Mapping):
+        payload = dict(value)
+        payload.pop("kind", None)
+        return data_set_file(**payload)
     return data_set_file(filename=value)
 
 
@@ -458,34 +263,42 @@ def _make_guided_helper(method_name: str, kind: str, required_fields: Sequence[s
     return helper
 
 
-class _ModelAwareList(list):
-    """List of `R3XAItem`, accepting dicts and typed models exposing `model_dump`."""
+class _DocumentList(list):
+    """List that stores generated R3XA objects and binds them to a document."""
 
     def __init__(self, values: Iterable[Any] = (), document: Any = None) -> None:
-        super().__init__()
         self.document = document
+        super().__init__()
         self.extend(values)
 
     def _normalize(self, value: Any) -> R3XAItem:
-        # Already-wrapped items pass through unchanged, so the object returned
-        # by `add_item` is the very one stored in the collection.
         if isinstance(value, R3XAItem):
-            item = value if value._document in (None, self.document) else R3XAItem(value.to_dict())
+            item = value
+            if self.document is not None and getattr(item, "_document", None) not in (None, self.document):
+                item = R3XAItem.from_dict(item.to_dict(), validate=False)
         else:
-            item = R3XAItem(from_model(value))
+            if hasattr(value, "to_dict"):
+                payload = value.to_dict()
+            elif hasattr(value, "model_dump"):
+                payload = value.model_dump(mode="json", exclude_none=True)
+            else:
+                payload = dict(value)
+            kind = payload.get("kind")
+            if not isinstance(kind, str):
+                raise TypeError("Document collections only accept objects with a kind")
+            item = new_item(kind, **{key: value for key, value in payload.items() if key != "kind"})
         if self.document is not None:
-            item._document = self.document
+            item.bind_document(self.document)
         return item
 
     def append(self, value: Any) -> None:
         super().append(self._normalize(value))
 
     def extend(self, values: Iterable[Any]) -> None:
-        super().extend(self._normalize(value) for value in values)
+        for value in values:
+            self.append(value)
 
-    def __iadd__(self, values: Iterable[Any]) -> "_ModelAwareList":
-        # `list.__iadd__` is implemented in C and bypasses the `extend` override,
-        # so `document.settings += [item]` would otherwise store a bare dict.
+    def __iadd__(self, values: Iterable[Any]) -> "_DocumentList":
         self.extend(values)
         return self
 
@@ -495,193 +308,282 @@ class _ModelAwareList(list):
     def __setitem__(self, index: Any, value: Any) -> None:
         if isinstance(index, slice):
             super().__setitem__(index, [self._normalize(item) for item in value])
-            return
-        super().__setitem__(index, self._normalize(value))
+        else:
+            super().__setitem__(index, self._normalize(value))
 
 
-class R3XAFile:
-    """Mutable builder for an R3XA JSON document."""
+class _HeaderProxy(MutableMapping[str, Any]):
+    """Compatibility mapping backed by the document's direct attributes."""
 
-    def __init__(self, version: Optional[str] = None, **header: Any):
-        """Initialize an R3XA document with optional header overrides."""
+    def __init__(self, document: "R3XAFile") -> None:
+        self.document = document
 
-        self.header: Dict[str, Any] = dict(header)
-        self.header.setdefault("version", version or schema_version())
-        self.settings: List[R3XAItem] = _ModelAwareList(document=self)
-        self.data_sources: List[R3XAItem] = _ModelAwareList(document=self)
-        self.data_sets: List[R3XAItem] = _ModelAwareList(document=self)
+    def __getitem__(self, key: str) -> Any:
+        try:
+            return getattr(self.document, key)
+        except AttributeError as exc:
+            raise KeyError(key) from exc
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        setattr(self.document, key, value)
+
+    def __delitem__(self, key: str) -> None:
+        if key not in self.document._header:
+            raise KeyError(key)
+        del self.document._header[key]
+
+    def __iter__(self):
+        return iter(self.document._header)
+
+    def __len__(self) -> int:
+        return len(self.document._header)
+
+
+class _LegacyR3XAFile:
+    """Object-first mutable R3XA document.
+
+    Header fields are direct attributes, and the three document collections
+    contain generated Pydantic objects. References are IDs on the wire but are
+    resolved to the corresponding objects while the item belongs to this file.
+    """
+
+    _DIRECT_FIELDS = (
+        "title",
+        "description",
+        "version",
+        "authors",
+        "date",
+        "repository",
+        "documentation",
+        "license",
+    )
+    title: Optional[str]
+    description: Optional[str]
+    version: Optional[str]
+    authors: Optional[list[R3XAItem]]
+    date: Optional[str]
+    repository: Optional[str]
+    documentation: Optional[str]
+    license: Optional[str]
+    settings: list[R3XAItem]
+    data_sources: list[R3XAItem]
+    data_sets: list[R3XAItem]
+
+    def __init__(self, version: Optional[str] = None, **header: Any) -> None:
+        object.__setattr__(self, "_header", {})
+        object.__setattr__(self, "_header_proxy", _HeaderProxy(self))
+        self.version = version or schema_version()
+        for field, value in header.items():
+            setattr(self, field, value)
+        self.settings = _DocumentList(document=self)
+        self.data_sources = _DocumentList(document=self)
+        self.data_sets = _DocumentList(document=self)
+
+    @property
+    def header(self) -> MutableMapping[str, Any]:
+        """Return a compatibility view; direct attributes are preferred."""
+
+        return self._header_proxy
+
+    def __getattr__(self, name: str) -> Any:
+        header = self.__dict__.get("_header", {})
+        if name in header:
+            return header[name]
+        raise AttributeError(name)
 
     def __setattr__(self, name: str, value: Any) -> None:
+        if name == "authors" and value is not None:
+            from . import models
+
+            value = [
+                item if isinstance(item, models.Author) else models.Author.model_validate(item)
+                for item in value
+            ]
+        if name in self._DIRECT_FIELDS or (
+            "_header" in self.__dict__ and name not in {"settings", "data_sources", "data_sets"}
+            and not name.startswith("_")
+        ):
+            self._header[name] = value
+            return
         if name in {"settings", "data_sources", "data_sets"}:
-            if not (isinstance(value, _ModelAwareList) and value.document is self):
-                value = _ModelAwareList(value, document=self)
+            value = _DocumentList(value, document=self)
         object.__setattr__(self, name, value)
 
     @classmethod
-    def from_dict(cls, payload: Dict[str, Any]) -> "R3XAFile":
-        """Create a builder from an existing document payload."""
-
-        version = payload.get("version")
-        header = {k: v for k, v in payload.items() if k not in {"version", "settings", "data_sources", "data_sets"}}
-        obj = cls(version=version, **header)
-        obj.settings = _ModelAwareList(payload.get("settings", []), document=obj)
-        obj.data_sources = _ModelAwareList(payload.get("data_sources", []), document=obj)
-        obj.data_sets = _ModelAwareList(payload.get("data_sets", []), document=obj)
+    def from_dict(cls, payload: Mapping[str, Any]) -> "R3XAFile":
+        payload = dict(payload)
+        obj = cls(**{key: value for key, value in payload.items() if key not in {"settings", "data_sources", "data_sets"}})
+        obj.settings = payload.get("settings", [])
+        obj.data_sources = payload.get("data_sources", [])
+        obj.data_sets = payload.get("data_sets", [])
         return obj
 
     @classmethod
-    def load(cls, path: str | Path) -> "R3XAFile":
-        """Load an R3XA JSON file from disk."""
-
-        return cls.loads(Path(path).read_text(encoding="utf-8"))
-
-    @classmethod
     def loads(cls, text: str) -> "R3XAFile":
-        """Load an R3XA document from a JSON string."""
-
         payload = json.loads(text)
         if not isinstance(payload, dict):
             raise TypeError("R3XA document root must be a JSON object")
         return cls.from_dict(payload)
 
-    def set_header(self, **fields: Any) -> "R3XAFile":
-        """Update top-level header fields in place."""
+    @classmethod
+    def load(cls, path: str | Path) -> "R3XAFile":
+        return cls.loads(Path(path).read_text(encoding="utf-8"))
 
-        self.header.update(fields)
+    @classmethod
+    def from_model(cls, model: Any) -> "R3XAFile":
+        """Create a mutable builder from a generated document model."""
+
+        to_dict = getattr(model, "to_dict", None)
+        if callable(to_dict):
+            return cls.from_dict(to_dict())
+        model_dump = getattr(model, "model_dump", None)
+        if callable(model_dump):
+            return cls.from_dict(model_dump(mode="json", exclude_none=True))
+        raise TypeError("R3XAFile.from_model expects a generated document model")
+
+    def set_header(self, **fields: Any) -> "R3XAFile":
+        for field, value in fields.items():
+            setattr(self, field, value)
         return self
 
-    def _target_collection(self, kind: str) -> List[R3XAItem]:
-        """Return the target top-level collection matching item kind."""
-
+    def _target_collection(self, kind: str) -> _DocumentList:
         section = kind.split("/", 1)[0]
-        if section == "settings":
-            return self.settings
-        if section == "data_sources":
-            return self.data_sources
-        if section == "data_sets":
-            return self.data_sets
-        raise ValueError("kind must start with settings/, data_sources/, or data_sets/")
+        if section not in {"settings", "data_sources", "data_sets"}:
+            raise ValueError("kind must start with settings/, data_sources/, or data_sets/")
+        return getattr(self, section)
 
     def add_item(self, kind: str, **fields: Any) -> R3XAItem:
-        """Append an item to the correct collection and return it.
-
-        The returned object is the one stored in the collection, so mutating it
-        updates the document.
-        """
-
+        item = new_item(kind, **fields)
         collection = self._target_collection(kind)
-        collection.append(new_item(kind, **fields))
-        return collection[-1]
+        collection.append(item)
+        return item
 
     def add_setting(self, kind: str, **fields: Any) -> R3XAItem:
-        """Append a setting item and return it."""
-
         if not kind.startswith("settings/"):
             raise ValueError("add_setting expects a kind starting with settings/")
         return self.add_item(kind, **fields)
 
     def add_data_source(self, kind: str, **fields: Any) -> R3XAItem:
-        """Append a data source item and return it."""
-
         if not kind.startswith("data_sources/"):
             raise ValueError("add_data_source expects a kind starting with data_sources/")
         return self.add_item(kind, **fields)
 
     def add_data_set(self, kind: str, **fields: Any) -> R3XAItem:
-        """Append a dataset item and return it."""
-
         if not kind.startswith("data_sets/"):
             raise ValueError("add_data_set expects a kind starting with data_sets/")
         return self.add_item(kind, **fields)
 
-    def _normalize_guided_fields(self, kind: str, fields: Dict[str, Any]) -> Dict[str, Any]:
-        """Deprecated shim: use the module-level `_normalize_guided_fields`."""
-
-        return _normalize_guided_fields(kind, fields)
-
     def _add_guided_item(self, kind: str, fields: Dict[str, Any]) -> R3XAItem:
-        """Validate required schema fields and append one guided item."""
-
         item = build_guided_item(kind, fields)
-        collection = self._target_collection(kind)
-        collection.append(item)
-        return collection[-1]
+        self._target_collection(kind).append(item)
+        return item
+
+    def find(self, item_id: str) -> R3XAItem | None:
+        for collection in (self.settings, self.data_sources, self.data_sets):
+            for item in collection:
+                if getattr(item, "id", None) == item_id:
+                    return item
+        return None
+
+    @classmethod
+    def required_fields(cls) -> list[str]:
+        """Return top-level fields required by the document schema."""
+
+        return list(load_schema().get("required", ()))
+
+    @classmethod
+    def optional_fields(cls) -> list[str]:
+        """Return top-level fields allowed by the document schema but optional."""
+
+        properties = load_schema().get("properties", {})
+        required = set(cls.required_fields())
+        return [field for field in properties if field not in required]
+
+    def missing_fields(self) -> list[str]:
+        """Return required top-level fields that are absent or empty."""
+
+        missing: list[str] = []
+        for field in self.required_fields():
+            value = getattr(self, field, None)
+            if value is None or value == "" or value == []:
+                missing.append(field)
+        return missing
+
+    @classmethod
+    def field_descriptions(cls) -> Dict[str, str]:
+        """Return descriptions for top-level schema fields."""
+
+        return {
+            field: value["description"]
+            for field, value in load_schema().get("properties", {}).items()
+            if isinstance(value, Mapping) and value.get("description")
+        }
 
     def to_dict(self) -> Dict[str, Any]:
-        """Return the complete JSON payload for this builder."""
+        def serialize(value: Any) -> Any:
+            if isinstance(value, R3XAItem):
+                return value.to_dict()
+            if isinstance(value, Mapping):
+                return {key: serialize(item) for key, item in value.items()}
+            if isinstance(value, (list, tuple)):
+                return [serialize(item) for item in value]
+            return value
 
-        payload = dict(self.header)
-        payload["settings"] = self.settings
-        payload["data_sources"] = self.data_sources
-        payload["data_sets"] = self.data_sets
+        payload = {key: serialize(value) for key, value in self._header.items()}
+        payload["settings"] = [item.to_dict() for item in self.settings]
+        payload["data_sources"] = [item.to_dict() for item in self.data_sources]
+        payload["data_sets"] = [item.to_dict() for item in self.data_sets]
         return payload
 
-    def validate(self) -> None:
-        """Validate current payload against the active schema."""
-
+    def validate(self) -> "R3XAFile":
         validate(self.to_dict())
+        return self
+
+    def to_model(self) -> Any:
+        """Return the complete generated Pydantic document model."""
+
+        self.validate()
+        from . import models
+
+        return models.R3XADocument.model_validate(self.to_dict())
 
     def dump(self, indent: int = 4) -> str:
-        """Serialize payload as a JSON string."""
+        return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)
 
-        return json.dumps(self.to_dict(), indent=indent)
-
-    @staticmethod
-    def _item_titles(items: Iterable[R3XAItem]) -> str:
-        """Return the titles of a collection, which is what identifies items on sight."""
-
-        return "[" + ", ".join(str(item.get("title", "None")) for item in items) + "]"
+    def save(self, path: str | Path, indent: int = 4, validate: bool = True) -> Path:
+        if validate:
+            self.validate()
+        destination = Path(path)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(self.dump(indent=indent) + "\n", encoding="utf-8")
+        return destination
 
     def summary(self) -> str:
-        """Return a readable listing of the header and the document collections.
-
-        Header fields follow the schema's own order and are marked with `*`
-        when the schema requires them, matching the typed models' `summary()`.
-        """
-
         schema = load_schema()
         properties = schema.get("properties", {})
         collections = ("settings", "data_sources", "data_sets")
-        required = set(schema.get("required", []))
-
         names = [name for name in properties if name not in collections]
-        # Header keys the document carries but the schema does not describe.
-        names += [name for name in self.header if name not in properties]
-
+        names += [name for name in self._header if name not in names]
         width = max(len(name) for name in names + list(collections))
         lines = ["R3XA File", "─" * max(width + 20, 40)]
-
+        required = set(schema.get("required", ()))
         for name in names:
-            marker = "*" if name in required else " "
-            value = self.header.get(name)
-            if name == "authors" and isinstance(value, list):
-                # A listing wants who the authors are, not their affiliations
-                # and ORCIDs; those stay one `to_dict()` away.
-                value = "[" + ", ".join(
-                    str(a.get("name", a)) if isinstance(a, Mapping) else str(a) for a in value
-                ) + "]"
-            else:
-                value = format_json_value(value)
-            lines.append(f"{marker} {name:<{width}} : {value}")
-
+            value = getattr(self, name, None)
+            if name == "authors":
+                value = [getattr(item, "name", item) for item in value or []]
+            lines.append(f"{'*' if name in required else ' '} {name:<{width}} : {format_json_value(value)}")
         for name in collections:
-            marker = "*" if name in required else " "
-            titles = self._item_titles(getattr(self, name))
-            lines.append(f"{marker} {name:<{width}} : {titles}")
-
+            titles = [getattr(item, "title", None) for item in getattr(self, name)]
+            lines.append(f"{'*' if name in required else ' '} {name:<{width}} : {format_json_value(titles)}")
         return "\n".join(lines)
 
     def print(self) -> None:
-        """Print a readable listing of the document."""
-
         print(self.summary())
 
     def __str__(self) -> str:
         return self.summary()
 
     def __repr__(self) -> str:
-        # The default object repr carried no information at all, so showing the
-        # same listing costs nothing and makes a bare `document` useful in a REPL.
         return self.summary()
 
     def plot(
@@ -693,17 +595,6 @@ class R3XAFile:
         include_description: bool = True,
         **kwargs: Any,
     ) -> Path:
-        """Render the document's item graph to a file and return its path.
-
-        `backend` selects the renderer: "graphviz" (SVG), "pyvis" (interactive
-        HTML) or "matplotlib" (PNG). Each needs its optional dependency, so the
-        import happens here rather than at module import time. The extension is
-        supplied by the backend; the returned path is the file actually written.
-
-        `palette` selects the colours, identically for every backend: "default",
-        or "document" for J-C. Passieux's ochre/crimson/teal scheme.
-        """
-
         from .webcore import graph as _graph
 
         renderers: Dict[str, Callable[..., Path]] = {
@@ -712,35 +603,87 @@ class R3XAFile:
             "matplotlib": _graph.render_networkx_matplotlib_file,
         }
         if backend not in renderers:
-            raise ValueError(
-                f"Unknown graph backend {backend!r}. "
-                f"Available: {', '.join(sorted(renderers))}"
-            )
-
+            raise ValueError(f"Unknown graph backend {backend!r}. Available: {', '.join(sorted(renderers))}")
         output = Path(path)
         output.parent.mkdir(parents=True, exist_ok=True)
         if backend == "graphviz" and output.suffix == ".svg":
-            # Graphviz appends the format itself, so `g.svg` would become
-            # `g.svg.svg`. The other backends normalise the suffix themselves.
             output = output.with_suffix("")
-
         return renderers[backend](
-            self.to_dict(),
-            output,
-            include_description=include_description,
-            palette=palette,
-            **kwargs,
+            self.to_dict(), output, include_description=include_description, palette=palette, **kwargs
         )
 
-    def save(self, path: str | Path, indent: int = 4, validate: bool = True) -> Path:
-        """Validate optionally, then serialize payload as JSON to disk."""
 
-        if validate:
-            self.validate()
+class _GeneratedHeaderProxy(MutableMapping[str, Any]):
+    """Mapping view over the generated document's direct header attributes."""
 
-        path = Path(path)
-        path.write_text(self.dump(indent=indent) + "\n", encoding="utf-8")
-        return path
+    _collections = {"settings", "data_sources", "data_sets"}
+
+    def __init__(self, document: Any) -> None:
+        self.document = document
+
+    def __getitem__(self, key: str) -> Any:
+        if key not in type(self.document).model_fields or key in self._collections:
+            raise KeyError(key)
+        return getattr(self.document, key)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        if key not in type(self.document).model_fields or key in self._collections:
+            raise KeyError(key)
+        setattr(self.document, key, value)
+
+    def __delitem__(self, key: str) -> None:
+        if key not in type(self.document).model_fields or key in self._collections:
+            raise KeyError(key)
+        setattr(self.document, key, None)
+
+    def __iter__(self):
+        return (
+            key
+            for key in type(self.document).model_fields
+            if key not in self._collections and getattr(self.document, key, None) is not None
+        )
+
+    def __len__(self) -> int:
+        return sum(1 for _ in self)
+
+
+from . import models as _generated_models
+
+
+class R3XAFile(_generated_models.R3XADocument):
+    """The generated Pydantic R3XA document model.
+
+    The public document API is now the same object-first model family as the
+    item API. Instances may be edited while incomplete and become valid only
+    after the explicit schema validation boundary.
+    """
+
+    @property
+    def header(self) -> MutableMapping[str, Any]:
+        """Return a mapping view over the document's direct attributes."""
+
+        return _GeneratedHeaderProxy(self)
+
+    def set_header(self, **fields: Any) -> "R3XAFile":
+        """Set several top-level document fields and return this document."""
+
+        for field, value in fields.items():
+            setattr(self, field, value)
+        return self
+
+    def to_model(self) -> "R3XAFile":
+        """Return this document; it is already the generated Pydantic model."""
+
+        self.validate()
+        return self
+
+    @classmethod
+    def from_model(cls, model: Any) -> "R3XAFile":
+        """Create this document type from another generated model."""
+
+        if isinstance(model, R3XAItem):
+            return cls.model_validate(model.to_dict())
+        raise TypeError("R3XAFile.from_model expects a generated Pydantic model")
 
 
 def _make_standalone_builder(function_name: str, kind: str, required_fields: Sequence[str]) -> Callable[..., R3XAItem]:

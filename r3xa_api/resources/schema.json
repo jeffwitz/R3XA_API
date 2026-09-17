@@ -24,7 +24,7 @@
       "title": "Version",
       "description": "Version of the schema used.",
       "type": "string",
-      "const": "2026.9.17"
+      "const": "2026.9.18"
     },
     "authors": {
       "title": "Authors",
@@ -2008,8 +2008,11 @@
         },
         "required": [
           "filename",
-          "kind"
-        ]
+          "kind",
+          "col",
+          "rows"
+        ],
+        "additionalProperties": false
       },
       "unit": {
         "type": "object",

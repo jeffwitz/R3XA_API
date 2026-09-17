@@ -65,11 +65,11 @@ For `2.x`, the project guarantees:
 
 The internal implementation may change in a future major version.
 
-## Optional typed models
+## Object-first models
 
-When the `typed` extra is installed, schema-generated models are available through
-`r3xa_api.models`. The stable public model names and the common helpers are part
-of the optional typed API:
+Schema-generated Pydantic models are part of the standard `r3xa_api` installation
+and are available through `r3xa_api.models` or directly from `r3xa_api`. The
+stable public model names and common helpers are part of the object-first API:
 
 - `to_dict()` / `to_json()`
 - `from_dict()` / `load()`
@@ -81,6 +81,8 @@ Document models additionally expose `add_setting()`, `add_data_source()`,
 `add_data_set()`, `find()`, `link_output()`, `link_input()`, and
 `validate_integrity()`.
 
-The generated file must not be edited manually. Its implementation may be
-regenerated from the schema during the `2.x` series, while these stable names
-and behaviors remain the compatibility surface.
+References are objects while a model is used in memory and become IDs at the
+JSON boundary. `to_dict()` is the explicit serialization boundary. The
+generated file must not be edited manually; regenerate it from `R3XA_SPEC` after
+schema changes while these stable names and behaviors remain the public
+compatibility surface.

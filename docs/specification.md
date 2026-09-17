@@ -5,7 +5,7 @@
 
 # R3XA Specification
 
-> Version : `2026.9.17`
+> Version : `2026.9.18`
 
 Yet another metadata file format whose goal is to provide a data representation scheme compatible with the variety of data types encountered in experimental and computational photomechanics, and to provide a convenient framework for software coupling and data fusion.
 
@@ -24,7 +24,7 @@ Yet another metadata file format whose goal is to provide a data representation 
 |---|---|---|---|
 | `title` | string | ✅ | Title of the data sets. |
 | `description` | string | ✅ | Description of the data sets. |
-| `version` | "2026.9.17" (fixed) | ✅ | Version of the schema used. |
+| `version` | "2026.9.18" (fixed) | ✅ | Version of the schema used. |
 | `authors` | array[Author] | ✅ | Authors of the experiment or analysis. |
 | `date` | string | ✅ | Global date of the experiment (YYYY-MM-DD). |
 | `repository` | string |  | URL to the repository where the dataset is stored. |
@@ -466,8 +466,8 @@ ID of a data source. Identifiers share one flat namespace: a prefix such as `stg
 | `filename` | string | ✅ |  |
 | `file_type` | string |  | MIME type of the (CSV-like) file containing the data. |
 | `delimiter` | string |  |  |
-| `col` | integer \| string |  | Non-negative index (0-based) or non-empty name of the column containing the data. |
-| `rows` | array |  | Range of rows containing the data, header excluded (0-based), expressed as [first_row, last_row]. Both bounds are inclusive; set last_row to null to read through the end of the file. |
+| `col` | integer \| string | ✅ | Non-negative index (0-based) or non-empty name of the column containing the data. |
+| `rows` | array | ✅ | Range of rows containing the data, header excluded (0-based), expressed as [first_row, last_row]. Both bounds are inclusive; set last_row to null to read through the end of the file. |
 | `kind` | "data_set_file" (fixed) | ✅ | Only required for specs implementation purposes |
 
 ### Unit

@@ -54,7 +54,7 @@ images = models.ImageSetList(
     description="raw images from CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera.id],
+    parent_data_sources=[camera],
     timestamps=timestamps,
     values=image_files,
 )
@@ -65,7 +65,7 @@ dic_source = models.GenericSource(
     kind="data_sources/generic",
     title="DIC processing (pyxel)",
     description="2D DIC using pyxel",
-    input_data_sets=[images.id],
+    input_data_sets=[images],
     output_components=2,
     output_dimension="surface",
     output_units=[
@@ -84,7 +84,7 @@ dic_data = models.ImageSetList(
     description="ux, uy per frame",
     path="dic/",
     data_type="text/csv",
-    parent_data_sources=[dic_source.id],
+    parent_data_sources=[dic_source],
     timestamps=timestamps,
     values=dic_files,
 )

@@ -4,7 +4,7 @@ Python SDK and WebUI for creating and validating R3XA metadata files.
 
 > **Documentation:** [current documentation](https://r3xa-api.readthedocs.io/en/latest/)
 
-> **Release candidate:** `2.0.0rc2` targets schema `2026.9.17` and is not
+> **Release candidate:** `2.0.0rc3` targets schema `2026.9.18` and is not
 > source-compatible with the stable `1.x` releases.
 
 ## Install from PyPI
@@ -64,8 +64,8 @@ Bootstrap the full contributor environment with one command:
 python scripts/dev.py setup-dev
 ```
 
-This installs the editable contributor stack (`dev`, `docs`, `typed`, `web`,
-`notebook`, `graph_nx`) and regenerates the schema-derived artifacts tracked in
+This installs the editable contributor stack (`dev`, `docs`, `web`, `notebook`,
+`graph_nx`) and regenerates the schema-derived artifacts tracked in
 the repository. The bootstrap uses `pip install --no-build-isolation -e ...`
 so it works cleanly inside an already-created project `.venv` without trying to
 re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
@@ -117,7 +117,7 @@ images = r3xa.add_list_data_set(
     description="images taken by the CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
     values=["zoom-0050_1.tif", "zoom-0070_1.tif"],
@@ -165,10 +165,10 @@ For most users, the public API now boils down to three entry points:
    - `save(...)`
 
 3. **Load, edit, and save a reusable registry item**
-   - `Registry.load(...)` for plain dict access
+   - `Registry.load(...)` for a schema-generated object
+   - `R3XAItem.merge(...)` / `R3XAItem.save(...)`
    - `Registry.get_item(...)` for a `RegistryItem` wrapper
-   - `RegistryItem.merge(...)`
-   - `RegistryItem.validate()` / `RegistryItem.save(...)`
+   - `RegistryItem.merge(...)` / `RegistryItem.save(...)` when mapping or path binding is needed
 
 Example:
 
@@ -216,17 +216,12 @@ See `STABILITY.md` for the compact policy.
 - `docs/matlab.md`
 - `docs/engineering_contract.md`
 
-## IDE autocompletion (optional)
-Typed models are available as an optional extra:
-
-```bash
-pip install -e ".[typed]"
-```
-
-Models are generated from the JSON schema and keep the dict-based API unchanged:
+## IDE autocompletion
+The standard installation includes the schema-generated Pydantic object model.
+No additional extra is required:
 
 ```python
-from r3xa_api import R3XAFile, from_model, models
+from r3xa_api import R3XAFile, models
 
 camera = models.CameraSource(
     title="CCD Camera",
@@ -237,7 +232,7 @@ camera = models.CameraSource(
 )
 
 r3xa = R3XAFile(title="...", description="...", authors=[{"name": "..."}], date="2026-02-19")
-r3xa.data_sources.append(from_model(camera))
+r3xa.data_sources.append(camera)
 r3xa.validate()
 ```
 
@@ -268,7 +263,7 @@ python scripts/dev.py notebook-dic-export
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc2?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc3?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.
@@ -314,7 +309,7 @@ Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 - Qi Hu from scratch: `examples/python/qi_hu_from_scratch.py`
 - Registry discovery and merge: `examples/python/registry_discovery.py`
 - Registry loading and override basics: `examples/python/registry_usage.py`
-- Typed (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
+- Object-first (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
 - Validate all: `examples/python/validate_all.py`
 - Validate static example JSON: `examples/python/validate_examples.py`
 
@@ -344,7 +339,7 @@ python examples/python/graph_r3xa.py \
 
 ## Developer workflow (local)
 - Bootstrap the full contributor environment: `python scripts/dev.py setup-dev`
-- Generate typed models after schema updates: `python scripts/dev.py generate-models`
+- Generate schema models after schema updates: `python scripts/dev.py generate-models`
 - Regenerate IDE/type-checker stubs for guided helpers: `python scripts/dev.py generate-stubs`
 - Regenerate schema spec markdown: `python scripts/dev.py generate-spec`
 - Build the HTML docs: `python scripts/dev.py build-docs`
@@ -358,13 +353,13 @@ python examples/python/graph_r3xa.py \
 only want the dependencies without the regeneration steps, the equivalent install is:
 
 ```bash
-pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
+pip install -e ".[dev,docs,web,notebook,graph_nx]"
 ```
 
 Test totals depend on installed extras:
 - `.[dev]` covers the core SDK suite
 - `.[docs]` adds the Sphinx documentation toolchain
-- `.[typed]` adds typed-model tests
+- Pydantic object-model tests run as part of the standard test suite
 - `.[web]` adds web/API tests
 - `.[graph_nx]` adds the NetworkX static graph backend tests
 

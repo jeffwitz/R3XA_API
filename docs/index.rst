@@ -36,8 +36,8 @@ Bootstrap the full contributor environment with one command:
 
    python scripts/dev.py setup-dev
 
-This installs the editable contributor stack (``dev``, ``docs``, ``typed``,
-``web``, ``notebook``, ``graph_nx``) and regenerates the schema-derived
+This installs the editable contributor stack (``dev``, ``docs``, ``web``,
+``notebook``, ``graph_nx``) and regenerates the schema-derived
 artifacts tracked in the repository.
 
 .. raw:: html
@@ -70,7 +70,7 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
+     pip install -e ".[dev,docs,web,notebook,graph_nx]"
 
   The standard SDK dependency set already includes the Python ``graphviz``
   wrapper. The system Graphviz executable (``dot``) must still be installed
@@ -95,11 +95,11 @@ Choose one profile from the project root, inside ``.venv``:
   run ``r3xa-ensure-graphviz`` to install the system executable. On Linux, use
   the distribution package manager, for example ``sudo apt-get install graphviz``.
 
-- **Typed SDK** — add IDE autocompletion with generated Pydantic models:
+ - **Object-first SDK** — IDE autocompletion comes from generated Pydantic models:
 
   .. code-block:: bash
 
-     pip install -e ".[typed]"
+     pip install -e .
 
 - **Web UI** — run the FastAPI editor and validator:
 
@@ -131,7 +131,7 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,typed,web,notebook,graph_nx]"
+     pip install -e ".[dev,docs,web,notebook,graph_nx]"
 
 .. warning::
 

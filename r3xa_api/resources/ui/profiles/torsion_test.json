@@ -374,12 +374,16 @@
         "description": "Torque measured before torsion.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_rotation.csv",
           "file_type": "text/csv",
           "delimiter": ";"
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_rotation.csv",
           "file_type": "text/csv",
@@ -413,12 +417,16 @@
         "description": "Angle measured before torsion.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_rotation.csv",
           "file_type": "text/csv",
           "delimiter": ";"
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_rotation.csv",
           "file_type": "text/csv",
@@ -452,12 +460,16 @@
         "description": "Angle measured during torsion.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_torsion.csv",
           "file_type": "text/csv",
           "delimiter": ";"
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_torsion.csv",
           "file_type": "text/csv",
@@ -491,12 +503,16 @@
         "description": "Torque measured during torsion.",
         "path": "data/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_torsion.csv",
           "file_type": "text/csv",
           "delimiter": ";"
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "resultats_angle_couple_torsion.csv",
           "file_type": "text/csv",

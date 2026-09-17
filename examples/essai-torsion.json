@@ -1,5 +1,5 @@
 {
-  "version": "2026.9.17",
+  "version": "2026.9.18",
   "description": "Angle, couple",
   "title": "Essai torsion",
   "authors": [
@@ -167,12 +167,16 @@
         "filename": "resultats_angle&couple_rotation.csv",
         "file_type": "csv",
         "delimiter": ":",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       },
       "values": {
         "filename": "resultats_angle&couple_rotation.csv",
         "file_type": "csv",
         "delimiter": ":",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       }
     },
@@ -187,11 +191,15 @@
       "timestamps": {
         "filename": "resultats_angle&couple_rotation.csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       },
       "values": {
         "filename": "resultats_angle&couple_rotation.csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       }
     },
@@ -206,11 +214,15 @@
       "timestamps": {
         "filename": "resultats_angle&couple_torsion.csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       },
       "values": {
         "filename": "resultats_angle&couple_torsion.csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       }
     },
@@ -226,12 +238,16 @@
         "filename": "resultats_angle&couple_torsion.csv",
         "file_type": "csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       },
       "values": {
         "filename": "resultats_angle&couple_torsion.csv",
         "file_type": "csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       }
     }

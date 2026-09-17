@@ -6,13 +6,14 @@ import sys
 from pathlib import Path
 
 import pytest
+import jsonschema
 
 import r3xa_api
 from r3xa_api import R3XAFile, from_model, schema_version, validate
 
-pydantic = pytest.importorskip("pydantic")
-ValidationError = pydantic.ValidationError
-models = pytest.importorskip("r3xa_api.models")
+from pydantic import ValidationError
+
+models = r3xa_api.models
 
 
 def _valid_camera():
@@ -44,8 +45,9 @@ def test_unit_valid():
 
 
 def test_unit_invalid_missing_unit():
-    with pytest.raises(ValidationError):
-        models.Unit(kind="unit")
+    unit = models.Unit(kind="unit")
+    with pytest.raises(jsonschema.ValidationError):
+        unit.validate()
 
 
 def test_camera_source_valid():
@@ -78,6 +80,7 @@ def test_generated_models_expose_stable_public_aliases():
     }
     assert expected.issubset(set(models.__all__))
     assert all(issubclass(getattr(models, name), models.R3XAModel) for name in expected)
+    assert models.R3XAModel is models.R3XAItem
 
 
 def test_generated_model_common_helpers(tmp_path: Path):
@@ -146,14 +149,67 @@ def test_generated_models_fill_schema_constants():
         date="2026-09-07",
     )
     unit = models.Unit(unit="mm", value=2.0)
-    data_file = models.DataSetFile(filename="values.csv")
+    data_file = models.DataSetFile()
 
     assert document.version == schema_version()
     assert unit.kind == "unit"
     assert data_file.kind == "data_set_file"
     document.validate()
     unit.validate()
-    data_file.validate()
+    with pytest.raises(jsonschema.ValidationError):
+        data_file.validate()
+
+
+def test_generated_models_are_editable_drafts_with_strict_validation_boundary():
+    document = models.R3XADocument()
+    data_file = models.DataSetFile()
+
+    assert document.title is None
+    assert document.authors is None
+    assert document.settings == []
+    assert data_file.filename is None
+    assert data_file.col is None
+    assert data_file.rows is None
+
+    with pytest.raises(jsonschema.ValidationError):
+        document.validate()
+    with pytest.raises(jsonschema.ValidationError):
+        data_file.validate()
+
+    data_file.filename = "results.csv"
+    data_file.col = 1
+    data_file.rows = (0, None)
+    assert data_file.validate() is data_file
+
+
+def test_data_set_file_enforces_schema_fields_and_rejects_unknown_fields():
+    with pytest.raises(ValidationError):
+        models.DataSetFile(filename="results.csv", col=0, rows=[0, None], extra_field="nope")
+
+    data_file = models.DataSetFile.model_construct(
+        filename="results.csv",
+        col=0,
+        rows=(None, 2),
+        kind="data_set_file",
+    )
+    with pytest.raises(jsonschema.ValidationError):
+        data_file.validate()
+
+
+def test_document_collections_preserve_object_identity_and_bind_documents():
+    document = models.R3XADocument()
+    camera = models.CameraSource(id="camera_01", title="Camera")
+
+    document.data_sources.append(camera)
+
+    assert document.data_sources[0] is camera
+    assert camera._document is document
+
+    replacement = models.CameraSource(id="camera_02", title="Replacement")
+    document.data_sources = [replacement]
+
+    assert document.data_sources[0] is replacement
+    assert replacement._document is document
 
 
 def test_typed_document_adds_and_links_items():
@@ -179,9 +235,86 @@ def test_typed_document_adds_and_links_items():
 
     assert document.find(camera.id) is camera
     assert document.find(images.id) is images
-    assert [reference.root for reference in images.parent_data_sources] == [camera.id]
+    assert images.parent_data_sources == [camera]
     assert document.integrity_errors() == []
     document.validate_integrity().validate()
+
+
+def test_generated_models_keep_object_references_until_serialization():
+    camera = _valid_camera()
+    images = models.ListDataSet(
+        title="Camera images",
+        data_type="image/tiff",
+        parent_data_sources=[camera],
+        timestamps=[0.0],
+        values=["image_0000.tif"],
+    )
+
+    assert images.parent_data_sources == [camera]
+    assert images.parent_data_sources[0] is camera
+    assert images.to_dict()["parent_data_sources"] == [camera.id]
+
+
+def test_generated_reference_annotations_accept_ids_and_objects():
+    camera = _valid_camera()
+    images = models.ListDataSet(
+        title="Camera images",
+        timestamps=[0.0],
+        values=["image_0000.tif"],
+        parent_data_sources=[camera],
+    )
+
+    assert "R3XAItem" in str(
+        models.ListDataSet.model_fields["parent_data_sources"].annotation
+    )
+    assert images.to_dict()["parent_data_sources"] == [camera.id]
+
+
+def test_scalar_reference_preserves_the_object_until_serialization():
+    specimen = models.SpecimenSetting(title="Specimen")
+    camera = models.CameraSource(
+        title="Camera",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[models.Unit(unit="graylevel")],
+    )
+    dic = models.DicMeasurementSource(
+        title="DIC",
+        output_components=2,
+        output_dimension="surface",
+        output_units=[models.Unit(unit="mm"), models.Unit(unit="mm")],
+        mesh=specimen,
+        input_data_sets=[],
+    )
+
+    assert dic.mesh is specimen
+    assert dic.to_dict()["mesh"] == specimen.id
+
+
+def test_object_first_item_merge_returns_a_typed_copy():
+    camera = _valid_camera()
+    merged = camera.merge(title="Updated camera")
+
+    assert isinstance(merged, models.CameraSource)
+    assert merged is not camera
+    assert merged.title == "Updated camera"
+    assert merged.id == camera.id
+
+
+def test_generated_document_roundtrips_through_r3xafile():
+    document = models.R3XADocument(
+        title="Typed document",
+        description="A complete generated document",
+        authors=[{"name": "R3XA Team"}],
+        date="2026-09-17",
+        settings=[],
+        data_sources=[],
+        data_sets=[],
+    )
+
+    rebuilt = R3XAFile.from_model(document)
+
+    assert rebuilt.to_model().to_dict() == document.to_dict()
 
 
 def test_typed_document_links_inputs_and_reports_dangling_references():
@@ -204,7 +337,7 @@ def test_typed_document_links_inputs_and_reports_dangling_references():
     document.add_data_set(images)
     document.link_input(camera, images)
 
-    assert [reference.root for reference in camera.input_data_sets] == [images.id]
+    assert camera.input_data_sets == [images]
     assert document.integrity_errors() == []
 
     images.parent_data_sources = [*images.parent_data_sources, "missing-source"]
@@ -314,23 +447,8 @@ def test_generic_setting_uses_lowercase_documentation_field():
     assert setting.documentation == "https://example.org/lighting.pdf"
 
 
-def test_models_not_required(tmp_path: Path):
-    fake_pydantic = tmp_path / "pydantic.py"
-    fake_pydantic.write_text("raise ModuleNotFoundError(\"No module named 'pydantic'\")\n", encoding="utf-8")
-
-    repo_root = Path(__file__).resolve().parents[1]
-    env = os.environ.copy()
-    existing = env.get("PYTHONPATH", "")
-    env["PYTHONPATH"] = f"{tmp_path}:{repo_root}" + (f":{existing}" if existing else "")
-
-    code = (
-        "import r3xa_api\n"
-        "assert hasattr(r3xa_api, '_TYPED_AVAILABLE')\n"
-        "assert r3xa_api._TYPED_AVAILABLE is False\n"
-        "print('ok')\n"
-    )
-    proc = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True)
-    assert proc.returncode == 0, proc.stderr + proc.stdout
+def test_object_first_api_requires_pydantic():
+    assert r3xa_api.typed_available is True
 
 
 def test_typed_example_script_generates_valid_json():
@@ -360,9 +478,7 @@ def test_printing_an_item_directly_shows_its_summary():
 
     assert str(camera) == camera.summary()
     assert "1392 px" in str(camera)
-    # repr stays pydantic's compact form so a list of items remains readable.
-    assert repr(camera) != camera.summary()
-    assert "Camera(" in repr(camera)
+    assert repr(camera) == camera.summary()
 
 
 def test_legacy_class_names_alias_the_current_ones():

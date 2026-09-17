@@ -505,12 +505,16 @@
         "description": "Final 3D displacement-field file calculated from the stereo camera images by stereo-DIC.",
         "path": "stereo_dic/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "timestamps.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "displacement_fields.h5",
           "file_type": "application/x-hdf5"

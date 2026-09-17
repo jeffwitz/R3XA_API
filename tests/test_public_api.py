@@ -32,8 +32,7 @@ def test_public_api_surface() -> None:
     assert BASE_EXPORTS <= exports
 
     # Beyond the base surface, only two families are exported: the standalone
-    # item builders generated from the schema, and - when pydantic is
-    # installed - the generated model classes.
+    # item builders and the generated model classes.
     builders = set(r3xa_api.core.GUIDED_BUILDERS)
     models = set(r3xa_api.models.__all__) if r3xa_api.typed_available else set()
 
@@ -53,8 +52,6 @@ def test_standalone_builders_mirror_the_guided_helpers() -> None:
 
 
 def test_generated_models_are_exported_at_package_level() -> None:
-    pytest.importorskip("pydantic")
-
     # Reachable without going through the `models` module, which is where
     # users look for them first.
     for name in ("CameraSource", "SpecimenSetting", "FileDataSet", "R3XADocument"):

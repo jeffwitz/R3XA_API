@@ -43,7 +43,7 @@ async def test_api_schema_catalog() -> None:
         response = await client.get("/api/schema/catalog")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["schema_version"] == "2026.9.17"
+    assert payload["schema_version"] == "2026.9.18"
     assert "data_sources/camera" in payload["sections"]["data_sources"]["kinds"]
 
 
@@ -55,7 +55,7 @@ async def test_api_ui_catalog() -> None:
         response = await client.get("/api/ui")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["schema_version"] == "2026.9.17"
+    assert payload["schema_version"] == "2026.9.18"
     assert "dic_2d" in payload["profiles"]
 
 

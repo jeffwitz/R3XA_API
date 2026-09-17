@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.0rc3] - 2026-09-17
+
+- Adopt the generated Pydantic document model as the public `R3XAFile` API.
+- Preserve object identity in document collections and object references until JSON serialization.
+- Enforce the current schema contract for `data_set_file` selectors and regenerate affected models, examples, and documentation.
+
 ## [2.0.0rc2] - 2026-09-16
+- Object-first API: generated Pydantic models are now a standard runtime dependency; `R3XAFile` exposes document metadata as attributes and stores generated item objects in its collections.
+- Object references can be supplied as objects in memory and serialize as identifiers at the JSON boundary; `to_dict()` remains the explicit wire-format conversion.
+- `data_set_file` is strict against unknown legacy fields, so obsolete `data_range` input fails immediately instead of being silently discarded.
+- Remove the obsolete optional `typed` installation extra; object-model tests and generated models are part of the standard SDK.
 - Settings and data sources can be built on their own: `new_testing_machine_setting(...)` mirrors `document.add_testing_machine_setting(...)` for every schema kind, with no document to invent. Add one later with `document.settings += [item]`.
 - `new_item()` and `load_item()` return `R3XAItem` instead of a bare dictionary, so building, saving and loading an item all give the same object with `print()`, `validate()` and `save()`.
 - `document.print()` lists authors by name rather than dumping their affiliation and ORCID.
@@ -14,12 +24,14 @@ All notable changes to this project will be documented in this file.
 - **Breaking, schema `2026.9.16`**: `authors` is an array of `{name, affiliation, orcid}` objects and `author_orcids` is removed. The former parallel array could not express "one ORCID per author" in the schema, so the invariant lived in a Python check and any other consumer accepted a mismatched document. It is now structural, and an affiliation became representable.
 - Added the `author(name, affiliation=None, orcid=None)` helper, and `r3xa.author(...)` on the MATLAB side.
 - `integrity_errors()` no longer carries the author/ORCID length check: the schema enforces it.
-- Items returned by `R3XAFile` are now `R3XAItem` objects instead of bare dictionaries: they print, validate, save, load, and introspect their schema fields on their own. Collections retain the exact object returned by every `add_*` helper, so mutations preserve identity. `R3XAItem` subclasses `dict`, so existing code treating items as dictionaries is unaffected.
+- Items returned by `R3XAFile` are now generated `R3XAItem` objects instead of bare dictionaries: they print, validate, save, load, and introspect their schema fields on their own. Collections retain the exact object returned by every `add_*` helper, so mutations preserve identity. A temporary `item["field"]` bridge remains for migration, while attribute access is canonical.
 - Remove the redundant `add_image_set_list` / `add_image_set_file` aliases; use the canonical `add_list_data_set` / `add_file_data_set` helpers.
 - `R3XAFile` gains `summary()`/`print()` for the header and item titles, and `plot()` to render the item graph through the Graphviz, PyVis or NetworkX backends.
 - Graph rendering accepts a `palette` argument, applied identically by every backend: `"default"`, or `"document"` for J-C. Passieux's ochre/crimson/teal scheme.
 - `print(document)` and `print(item)` now show the same listing as `.print()`; `repr()` stays compact so collections remain readable.
-- Generated model classes carry a docstring built from the schema (field type, description, required flag, permitted values) and are exported from `r3xa_api` directly when the `typed` extra is installed.
+- Generated model classes carry a docstring built from the schema (field type, description, required flag, permitted values) and are exported from `r3xa_api` directly in the standard installation.
+- Generated reference annotations accept either wire identifiers or in-memory `R3XAItem` objects; `to_dict()` always serializes the identifiers required by JSON.
+- Generated items provide `merge(...)` for typed copies with overrides, including items loaded through `Registry.load(...)`.
 - `print()` renders values the way they read: units collapse to `1392 px`, constrained scalars and enumerations no longer leak their internal representation.
 - Tests: guard the vendored schema against drift from `R3XA_SPEC`, and check that `r3xa_api/models.py` still matches the schema it is generated from.
 - CI: add a `schema-sync` job that compares the packaged schema against a fresh `R3XA_SPEC` clone.

@@ -249,12 +249,16 @@
         "description": "Final CSV file containing force and displacement recorded during tensile loading.",
         "path": "machine/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "machine.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "machine.csv",
           "file_type": "text/csv",
@@ -405,12 +409,16 @@
         "description": "Final displacement-field file calculated from the in-situ camera images.",
         "path": "dic/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "timestamps.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "displacement_fields.h5",
           "file_type": "application/x-hdf5"

@@ -47,7 +47,7 @@ r3xa.add_list_data_set(
     description="images taken by the CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
     values=["zoom-0050_1.tif", "zoom-0070_1.tif"],

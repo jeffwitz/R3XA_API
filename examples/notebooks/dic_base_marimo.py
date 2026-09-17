@@ -210,7 +210,7 @@ def _(
         description="raw images from CCD camera",
         path=image_path,
         data_type="image/tiff",
-        parent_data_sources=[camera["id"]],
+        parent_data_sources=[camera],
         time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
         timestamps=timestamps,
         values=image_files,
@@ -228,7 +228,7 @@ def _(
         ],
         manufacturer="Pyxel",
         model="pyxel-2d",
-        input_data_sets=[images["id"]],
+        input_data_sets=[images],
     )
 
     dic_files = [f"dic_{index:04d}.csv" for index in range(num_frames)]
@@ -237,7 +237,7 @@ def _(
         description="ux, uy per frame",
         path=dic_path,
         data_type="text/csv",
-        parent_data_sources=[dic_source["id"]],
+        parent_data_sources=[dic_source],
         time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
         timestamps=timestamps,
         values=dic_files,

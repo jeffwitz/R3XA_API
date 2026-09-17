@@ -165,12 +165,16 @@
         "description": "Final CSV file containing the force and displacement channels recorded during the tensile test.",
         "path": "machine/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "test_machine.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "test_machine.csv",
           "file_type": "text/csv",

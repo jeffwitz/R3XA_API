@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .core import _guided_kind_specs
+from .schema import load_schema
 
 
 _CORE_STUB_PATH = Path(__file__).with_name("core.pyi")
@@ -34,6 +35,31 @@ def _helper_sort_key(item: tuple[str, dict[str, Any]]) -> tuple[int, str]:
     return section_order[section], str(spec["helper_name"])
 
 
+def _document_header_stubs() -> list[str]:
+    """Render direct document attributes from the schema's top-level fields."""
+
+    properties = load_schema().get("properties", {})
+    collections = {"settings", "data_sources", "data_sets"}
+    lines: list[str] = []
+    for name, field in properties.items():
+        if name in collections:
+            continue
+        if name == "authors":
+            annotation = "Optional[list[Author]]"
+        else:
+            field_type = field.get("type") if isinstance(field, dict) else None
+            annotation = {
+                "string": "Optional[str]",
+                "number": "Optional[float]",
+                "integer": "Optional[int]",
+                "boolean": "Optional[bool]",
+                "object": "Optional[Dict[str, Any]]",
+                "array": "Optional[list[Any]]",
+            }.get(field_type, "Any")
+        lines.append(f"    {name}: {annotation}")
+    return lines
+
+
 def render_core_stub() -> str:
     helper_specs = _guided_kind_specs()
     lines: list[str] = [
@@ -43,29 +69,65 @@ def render_core_stub() -> str:
         "# DO NOT EDIT MANUALLY.",
         "",
         "from pathlib import Path",
-        "from typing import Any, Dict, Optional",
+        "from typing import Any, Dict, Mapping, Optional, Union",
+        "from r3xa_api.models import (",
+        "    Author,",
+        "    CameraSource,",
+        "    DicMeasurementSource,",
+        "    FileDataSet,",
+        "    GenericDataSet,",
+        "    GenericSetting,",
+        "    GenericSource,",
+        "    IdentificationSource,",
+        "    InfraredSource,",
+        "    ListDataSet,",
+        "    LoadCellSource,",
+        "    MechanicalAnalysisSource,",
+        "    PointTemperatureSource,",
+        "    R3XADocument,",
+        "    SpecimenSetting,",
+        "    StrainComputationSource,",
+        "    StrainGaugeSource,",
+        "    StereorigSetting,",
+        "    TestingMachineSetting,",
+        "    TomographSource,",
+        ")",
         "",
-        "class R3XAItem(Dict[str, Any]):",
+        "SettingItem = Union[GenericSetting, SpecimenSetting, TestingMachineSetting, StereorigSetting]",
+        "DataSourceItem = Union[GenericSource, CameraSource, InfraredSource, TomographSource, LoadCellSource, StrainGaugeSource, PointTemperatureSource, DicMeasurementSource, MechanicalAnalysisSource, IdentificationSource, StrainComputationSource]",
+        "DataSetItem = Union[GenericDataSet, FileDataSet, ListDataSet]",
+        "",
+        "class R3XAItem:",
         "    @property",
         "    def kind(self) -> Optional[str]: ...",
-        "    def to_dict(self) -> Dict[str, Any]: ...",
+        "    def __getitem__(self, field: str) -> Any: ...",
+        "    def __setitem__(self, field: str, value: Any) -> None: ...",
+        "    def merge(self, **overrides: Any) -> R3XAItem: ...",
+        "    def to_dict(self, *, exclude_none: bool = ...) -> Dict[str, Any]: ...",
+        "    def to_json(self, *, exclude_none: bool = ..., indent: Optional[int] = ...) -> str: ...",
+        "    def dump(self, *, exclude_none: bool = ..., indent: Optional[int] = ...) -> str: ...",
+        "    @classmethod",
+        "    def from_dict(cls, payload: Mapping[str, Any], *, validate: bool = ...) -> R3XAItem: ...",
         "    def required_fields(self) -> list[str]: ...",
         "    def optional_fields(self) -> list[str]: ...",
         "    def missing_fields(self) -> list[str]: ...",
         "    def field_descriptions(self) -> Dict[str, str]: ...",
         "    def summary(self) -> str: ...",
         "    def print(self) -> None: ...",
-        "    def validate(self, schema: Optional[Dict[str, Any]] = ...) -> R3XAItem: ...",
+        "    def validate(self, *, schema: Optional[Dict[str, Any]] = ...) -> R3XAItem: ...",
         "    @classmethod",
-        "    def load(cls, path: str | Path) -> R3XAItem: ...",
-        "    def save(self, path: str | Path, *, validate: bool = ..., indent: int = ...) -> Path: ...",
+        "    def load(cls, path: str | Path, *, validate: bool = ...) -> R3XAItem: ...",
+        "    @classmethod",
+        "    def loads(cls, text: str, *, validate: bool = ...) -> R3XAItem: ...",
+        "    def save(self, path: str | Path, *, validate: bool = ..., exclude_none: bool = ..., indent: Optional[int] = ...) -> Path: ...",
+        "    def plot(self, path: str | Path, *, backend: str = ..., palette: Optional[str] = ..., include_description: bool = ..., **kwargs: Any) -> Path: ...",
         "",
         "def author(",
         "    name: str,",
         "    affiliation: Optional[str] = ...,",
         "    orcid: Optional[str] = ...,",
         "    **extra: Any,",
-        ") -> Dict[str, Any]: ...",
+        ") -> R3XAItem: ...",
         "",
         "def new_item(kind: str, **fields: Any) -> R3XAItem: ...",
         "",
@@ -75,40 +137,52 @@ def render_core_stub() -> str:
         "    unit: Optional[str] = ...,",
         "    scale: Optional[float] = ...,",
         "    **extra: Any,",
-        ") -> Dict[str, Any]: ...",
+        ") -> R3XAItem: ...",
         "",
         "def data_set_file(",
-        "    filename: str,",
+        "    filename: Optional[str] = ...,",
         "    file_type: Optional[str] = ...,",
         "    delimiter: Optional[str] = ...,",
         "    col: Optional[int | str] = ...,",
         "    rows: Optional[list[int | None]] = ...,",
         "    **extra: Any,",
-        ") -> Dict[str, Any]: ...",
+        ") -> R3XAItem: ...",
         "",
-        "class R3XAFile:",
+        "class R3XAFile(R3XADocument):",
         "    header: Dict[str, Any]",
-        "    settings: list[R3XAItem]",
-        "    data_sources: list[R3XAItem]",
-        "    data_sets: list[R3XAItem]",
+        *_document_header_stubs(),
+        "    settings: list[SettingItem]",
+        "    data_sources: list[DataSourceItem]",
+        "    data_sets: list[DataSetItem]",
         "",
-        "    def __init__(self, version: Optional[str] = ..., **header: Any) -> None: ...",
-        "",
-        "    @classmethod",
-        "    def from_dict(cls, payload: Dict[str, Any]) -> R3XAFile: ...",
+        "    def __init__(self, **data: Any) -> None: ...",
         "",
         "    @classmethod",
-        "    def load(cls, path: str | Path) -> R3XAFile: ...",
+        "    def from_dict(cls, payload: Mapping[str, Any], *, validate: bool = ...) -> R3XAFile: ...",
         "",
         "    @classmethod",
-        "    def loads(cls, text: str) -> R3XAFile: ...",
+        "    def load(cls, path: str | Path, *, validate: bool = ...) -> R3XAFile: ...",
+        "",
+        "    @classmethod",
+        "    def from_model(cls, model: R3XADocument) -> R3XAFile: ...",
+        "",
+        "    @classmethod",
+        "    def loads(cls, text: str, *, validate: bool = ...) -> R3XAFile: ...",
         "",
         "    def set_header(self, **fields: Any) -> R3XAFile: ...",
         "",
-        "    def add_item(self, kind: str, **fields: Any) -> R3XAItem: ...",
-        "    def add_setting(self, kind: str, **fields: Any) -> R3XAItem: ...",
-        "    def add_data_source(self, kind: str, **fields: Any) -> R3XAItem: ...",
-        "    def add_data_set(self, kind: str, **fields: Any) -> R3XAItem: ...",
+        "    def add_item(self, item: Any = ..., *, section: Optional[str] = ..., **fields: Any) -> R3XAItem: ...",
+        "    def add_setting(self, item: Any = ..., **fields: Any) -> R3XAItem: ...",
+        "    def add_data_source(self, item: Any = ..., **fields: Any) -> R3XAItem: ...",
+        "    def add_data_set(self, item: Any = ..., **fields: Any) -> R3XAItem: ...",
+        "    def find(self, item_id: str) -> Optional[R3XAItem]: ...",
+        "    @classmethod",
+        "    def required_fields(cls) -> list[str]: ...",
+        "    @classmethod",
+        "    def optional_fields(cls) -> list[str]: ...",
+        "    def missing_fields(self) -> list[str]: ...",
+        "    @classmethod",
+        "    def field_descriptions(cls) -> Dict[str, str]: ...",
         "",
     ]
 
@@ -135,9 +209,10 @@ def render_core_stub() -> str:
     lines.extend(
         [
             "    def to_dict(self) -> Dict[str, Any]: ...",
-            "    def validate(self) -> None: ...",
-            "    def dump(self, indent: int = ...) -> str: ...",
-            "    def save(self, path: str | Path, indent: int = ..., validate: bool = ...) -> Path: ...",
+            "    def validate(self) -> R3XAFile: ...",
+            "    def to_model(self) -> R3XAFile: ...",
+            "    def dump(self, *, exclude_none: bool = ..., indent: Optional[int] = ...) -> str: ...",
+            "    def save(self, path: str | Path, *, validate: bool = ..., exclude_none: bool = ..., indent: Optional[int] = ...) -> Path: ...",
             "    def summary(self) -> str: ...",
             "    def print(self) -> None: ...",
             "    def plot(",

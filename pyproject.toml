@@ -1,12 +1,13 @@
 [project]
 name = "r3xa-api"
-version = "2.0.0rc2"
+version = "2.0.0rc3"
 description = "Python SDK and WebUI for creating and validating R3XA metadata files"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
   "jsonschema>=4.21.1",
   "graphviz>=0.20",
+  "pydantic>=2.0",
 ]
 license = "GPL-2.0-or-later"
 
@@ -25,7 +26,6 @@ docs = [
   "myst-parser>=2.0",
   "sphinxcontrib-mermaid>=0.9",
 ]
-typed = ["pydantic>=2.0"]
 notebook = ["marimo>=0.11"]
 graph_nx = ["networkx>=3.2", "matplotlib>=3.8"]
 web = [

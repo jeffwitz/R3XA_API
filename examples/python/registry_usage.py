@@ -9,7 +9,7 @@ ARTIFACTS = Path(__file__).resolve().parents[1] / "artifacts"
 
 registry = Registry(ROOT / "registry")
 
-camera_base = registry.get_item("data_sources/camera/avt_dolphin_f145b")
+camera_base = registry.load_validated("data_sources/camera/avt_dolphin_f145b")
 
 # Override ID and description for a specific experiment
 camera = camera_base.merge(id="ds_cam_exp01", description="CCD Camera (exp01)")
@@ -27,10 +27,10 @@ r3xa.settings.append(specimen)
 r3xa.data_sources.append(camera)
 
 # Minimal dataset (filled by user later)
-image_template = registry.get_item("data_sets/list/camera_images_template")
+image_template = registry.load_validated("data_sets/list/camera_images_template")
 image_dataset = image_template.merge(
     id="dset_images_exp01",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     timestamps=[0.0, 1.0, 2.0],
     values=["img_0001.tif", "img_0002.tif", "img_0003.tif"],
 )

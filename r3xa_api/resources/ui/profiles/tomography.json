@@ -291,12 +291,16 @@
         "description": "Final three-dimensional volume reconstructed from the X-ray projections.",
         "path": "tomography/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "timestamps.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "reconstructed_volume.h5",
           "file_type": "application/x-hdf5"
@@ -406,12 +410,16 @@
         "description": "Final three-dimensional displacement field calculated from the reconstructed volumes.",
         "path": "tomography/dvc/",
         "timestamps": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "timestamps.csv",
           "file_type": "text/csv",
           "delimiter": ","
         },
         "values": {
+          "col": 0,
+          "rows": [0, null],
           "kind": "data_set_file",
           "filename": "dvc_displacement.h5",
           "file_type": "application/x-hdf5"

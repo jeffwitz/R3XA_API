@@ -46,7 +46,7 @@ images = r3xa.add_list_data_set(
     description="raw images from CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=image_files,
@@ -65,7 +65,7 @@ dic = r3xa.add_data_source(
     ],
     manufacturer="Pyxel",
     model="pyxel-2d",
-    input_data_sets=[images["id"]],
+    input_data_sets=[images],
 )
 
 # DIC result dataset (list of result files)
@@ -76,7 +76,7 @@ r3xa.add_list_data_set(
     description="ux, uy per frame",
     path="dic/",
     data_type="text/csv",
-    parent_data_sources=[dic["id"]],
+    parent_data_sources=[dic],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=dic_files,

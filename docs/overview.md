@@ -145,8 +145,8 @@ Example (tabular files):
   "description": "force vs time",
   "path": "data/",
   "parent_data_sources": ["id3"],
-  "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv"},
-  "values": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv"}
+  "timestamps": {"kind": "data_set_file", "filename": "timestamps.csv", "file_type": "text/csv", "col": 0, "rows": [0, null]},
+  "values": {"kind": "data_set_file", "filename": "force.csv", "file_type": "text/csv", "col": 1, "rows": [0, null]}
 }
 ```
 
@@ -188,7 +188,7 @@ r3xa.add_list_data_set(
     description="images taken by the CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=[0.0, 1.0],
     values=["img_0001.tif", "img_0002.tif"],

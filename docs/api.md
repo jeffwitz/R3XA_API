@@ -12,8 +12,8 @@ For most user code, keep imports at the SDK level:
 from r3xa_api import R3XAFile, R3XAItem, Registry, RegistryItem, author, new_item, unit, validate
 ```
 
-When the `typed` extra is installed, the generated model classes are exported from the package
-as well, so they need not be reached through `r3xa_api.models`:
+The generated Pydantic model classes are part of the standard object-first API and are exported
+from the package as well, so they need not be reached through `r3xa_api.models`:
 
 ```python
 from r3xa_api import CameraSource, SpecimenSetting, FileDataSet, R3XADocument
@@ -54,18 +54,28 @@ R3XAFile(version: str | None = None, **header)
 - `version`: optional schema version, defaults to the embedded schema.
 - `header`: any header fields (`title`, `description`, `authors`, `date`, `repository`, ...).
 
+Header fields are exposed as direct attributes (`document.title`, `document.authors`, ...).
+`document.header` remains a mapping view for migration, but new code should use attributes.
+The document collections contain generated Pydantic object instances, not
+dictionaries. The document itself is already the generated object model and may
+remain incomplete while it is being assembled; call `validate()` before saving
+or exporting it.
+
 **Methods**
 ```python
 R3XAFile.from_dict(payload: dict) -> R3XAFile
 R3XAFile.load(path: str | Path) -> R3XAFile
 R3XAFile.loads(text: str) -> R3XAFile
+R3XAFile.from_model(model) -> R3XAFile
 ```
-Create a builder from an existing payload, JSON file, or JSON string.
+Create a generated document from an existing payload, JSON file, or JSON string.
+`from_model()` is a legacy integration bridge, not a separate authoring model.
 
 ```python
 set_header(**fields) -> R3XAFile
+to_model() -> R3XAFile
 ```
-Update header fields.
+Update header fields, or return the already-generated document after validation.
 
 ```python
 add_setting(kind: str, **fields) -> R3XAItem
@@ -197,9 +207,10 @@ r3xa.save("experiment_updated.json")
 ### `R3XAItem`
 An item held by an `R3XAFile` collection: a setting, a data source, or a data set.
 
-`R3XAItem` is a `dict` subclass, so `item["title"]`, `isinstance(item, dict)`, `json.dumps(item)`
-and comparison with a plain dictionary all behave as they always have. It adds the ergonomics
-without requiring the `typed` extra.
+`R3XAItem` is the common Pydantic base class for generated R3XA objects. Concrete objects such as
+`CameraSource`, `TestingMachineSetting`, and `FileDataSet` expose schema fields as attributes, so
+IDE completion and assignment validation work directly while the model remains JSON-compatible
+through `to_dict()`.
 
 ```python
 summary() -> str
@@ -207,7 +218,7 @@ print() -> None
 ```
 List every field the schema defines for the item's kind — including fields the item does not
 carry — with `*` on required ones and units collapsed to `30 mm`. `print(item)` prints the same
-listing; `repr(item)` stays the compact dictionary form so a whole collection remains readable.
+listing; `repr(item)` stays Pydantic's compact object representation.
 
 ```python
 validate(schema: dict | None = None) -> R3XAItem
@@ -253,17 +264,28 @@ assert camera is document.data_sources[0]
 document.data_sources[0].print()
 ```
 
-The three document collections (`settings`, `data_sources`, and `data_sets`) are
-lists of `R3XAItem`, not bare dictionaries. Items added through helpers, loaded
-from JSON, or assigned from dictionaries therefore keep `print()`, `validate()`,
-and `save()` ergonomics while remaining dictionary-compatible. A standalone item
-can be loaded with `R3XAItem.load()`.
+The three document collections (`settings`, `data_sources`, and `data_sets`) are lists of generated
+`R3XAItem` objects. References are object references in memory and become identifier arrays only
+when `to_dict()`, `save()`, or validation serializes the document:
+
+```python
+camera = document.data_sources[0]
+images = document.data_sets[0]
+images.parent_data_sources = [camera]
+assert document.to_dict()["data_sets"][0]["parent_data_sources"] == [camera.id]
+```
+
+`item.merge(...)` returns another typed item with the requested attribute overrides. This is useful
+when adapting an object loaded from the registry while keeping the object-first workflow.
+
+`R3XAFile.required_fields()`, `optional_fields()`, and `missing_fields()` provide the same
+top-level discovery helpers as item models. A standalone item can be loaded with `R3XAItem.load()`.
 
 ## Helper functions
 
 ### `author(...)`
 ```python
-author(name: str, affiliation: str | None = None, orcid: str | None = None, **extra) -> dict
+author(name: str, affiliation: str | None = None, orcid: str | None = None, **extra) -> R3XAItem
 ```
 Build a schema‑compliant author object. Only `name` is required.
 
@@ -283,28 +305,33 @@ array is gone.
 
 ### `unit(...)`
 ```python
-unit(title: str | None = None, value: float | None = None, unit: str | None = None, scale: float | None = 1.0, **extra) -> dict
+unit(title: str | None = None, value: float | None = None, unit: str | None = None, scale: float | None = 1.0, **extra) -> R3XAItem
 ```
 Build a schema‑compliant unit object. Only `unit` is required by the schema; `title`,
 `value`, and `scale` are optional metadata.
 
 ### `data_set_file(...)`
 ```python
-data_set_file(filename: str, file_type: str | None = None, delimiter: str | None = None, col: int | str | None = None, rows: list[int | None] | None = None, **extra) -> dict
+data_set_file(filename: str | None = None, file_type: str | None = None, delimiter: str | None = None, col: int | str | None = None, rows: list[int | None] | None = None, **extra) -> R3XAItem
 ```
-Build a schema‑compliant data_set_file object.
+Build an editable data_set_file object. `filename`, `col`, and `rows` may be
+filled after construction; the object is schema-valid only once all required
+fields are present.
+The former `data_range` argument is intentionally rejected in the 2.x API; use
+`col=` and `rows=[first_row, last_row]` instead.
 
 ## Registry utilities
 
-### `load_item(path) -> dict`
+### `load_item(path) -> R3XAItem`
 Load a registry JSON item from disk.
 
 ### `save_item(path, item, validate=True, kind=None) -> Path`
-Validate and save a single registry item JSON to disk. `item` can be a plain `dict`
-or a `RegistryItem`.
+Validate and save a single registry item JSON to disk. `item` can be an `R3XAItem`,
+a plain `dict`, or a `RegistryItem`.
 
-These helpers remain available for advanced use cases and backward compatibility. For day-to-day usage,
-prefer `Registry.get_item(...)`, `RegistryItem.merge(...)`, and `RegistryItem.save(...)`.
+These helpers remain available for advanced use cases and backward compatibility. For object-first usage,
+prefer `Registry.load(...)`, `R3XAItem.merge(...)`, and `R3XAItem.save(...)`; use
+`Registry.get_item(...)` when mapping semantics or registry binding are needed.
 
 ### `Registry`
 Helper class that encapsulates the registry root and provides loading, validation, discovery, merge, wrapping, and save methods.
@@ -336,14 +363,14 @@ registry.wrap(new_camera, tree_path="data_sources/camera/example_generated_camer
 Most useful instance methods:
 
 ```python
-load(tree_path: str) -> dict
-load_validated(tree_path: str, kind: str | None = None) -> dict
+load(tree_path: str) -> R3XAItem
+load_validated(tree_path: str, kind: str | None = None) -> R3XAItem
 get_item(tree_path: str, validated: bool = True, kind: str | None = None) -> RegistryItem
 wrap(item: Mapping[str, Any], tree_path: str | None = None) -> RegistryItem
 list(section: str | None = None, kind: str | None = None) -> list[str]
-iter_items(section: str | None = None, kind: str | None = None, validated: bool = False, wrapped: bool = False) -> Iterator[tuple[str, dict | RegistryItem]]
+iter_items(section: str | None = None, kind: str | None = None, validated: bool = False, wrapped: bool = False) -> Iterator[tuple[str, R3XAItem | RegistryItem]]
 merge(tree_path: str, **overrides) -> RegistryItem
-save(tree_path: str, item: dict | RegistryItem, validate: bool = True, kind: str | None = None) -> Path
+save(tree_path: str, item: R3XAItem | dict | RegistryItem, validate: bool = True, kind: str | None = None) -> Path
 ```
 
 Naming rule:
@@ -370,8 +397,9 @@ camera.save("camera_exp01.json")
 ### `RegistryItem`
 Dictionary-like wrapper returned by `Registry.get_item(...)`.
 
-It keeps the current dict-based design, but attaches the common item-level operations directly to the item:
-you can still use it anywhere a plain item `dict` is expected (for example `r3xa.data_sources.append(camera_item)`).
+`RegistryItem` is an explicit mapping wrapper for registry metadata and binding information.
+For the object-first SDK, prefer the `R3XAItem` returned by `Registry.load()`; use this wrapper
+when you need mapping semantics or a bound registry path.
 
 ```python
 validate(kind: str | None = None, schema: dict | None = None) -> RegistryItem
@@ -421,13 +449,13 @@ This function is part of the advanced compatibility helper layer. It remains sup
 and `Registry.validate(...)`.
 
 ### Advanced
-`load_item_path(root, tree_path) -> dict`  
+`load_item_path(root, tree_path) -> R3XAItem`  
 Internal/advanced helper to load a registry item by its tree path string, e.g. `settings/specimen/openhole_sample`.
 
 `save_item_path(root, tree_path, item, validate=True, kind=None) -> Path`  
 Validate then save a registry item using a `section/kind/name` tree path, e.g. `data_sources/camera/example_generated_camera`.
 
-### `load_registry(root) -> dict`
+### `load_registry(root) -> dict[str, dict[str, dict[str, R3XAItem]]]`
 Load a full registry tree into memory.
 
 ### `merge_item(base, **overrides) -> dict`
@@ -447,7 +475,7 @@ Extract the schema version.
 ### `validate(instance: dict, schema: dict | None = None) -> None`
 Validate a complete JSON instance against the schema and its semantic integrity rules.
 This includes duplicate identifiers, dangling dependency references, real calendar dates,
-and author/ORCID count consistency.
+and reference integrity.
 
 ### `integrity_errors(instance: Mapping[str, Any]) -> list[str]`
 Return semantic integrity errors without raising. Use this when an application needs to
@@ -460,7 +488,7 @@ Validate semantic integrity independently of JSON Schema validation.
 This page stays focused on the core SDK contract.
 
 For adjacent topics, use the dedicated pages:
-- `typed_models.md` for generated Pydantic models and `from_model(...)`
+- `typed_models.md` for generated Pydantic object models and `from_model(...)`
 - `examples.md` for runnable scripts, including `graph_r3xa.py`
 - `notebooks.md` for the Marimo notebook workflow
 - `web.md` for the FastAPI web UI/API

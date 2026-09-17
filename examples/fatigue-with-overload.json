@@ -1,5 +1,5 @@
 {
-  "version": "2026.9.17",
+  "version": "2026.9.18",
   "authors": [
     {
       "name": "G Bahaj Filali"
@@ -205,11 +205,15 @@
       "timestamps": {
         "filename": "time_stamps.csv",
         "delimiter": ";",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       },
       "values": {
         "filename": "data_OVL1.csv",
         "delimiter": ",",
+        "col": 0,
+        "rows": [0, null],
         "kind": "data_set_file"
       }
     },

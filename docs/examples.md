@@ -22,7 +22,7 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - {glsrc}`examples/python/qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
 - {glsrc}`examples/python/registry_discovery.py`: list registry entries, merge one item, and save the merged result.
 - {glsrc}`examples/python/registry_usage.py`: minimal registry loading and override example.
-- {glsrc}`examples/python/typed_dic_pipeline.py`: typed/Pydantic version of the DIC pipeline.
+- {glsrc}`examples/python/typed_dic_pipeline.py`: object-first/Pydantic version of the DIC pipeline.
 - {glsrc}`examples/python/qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
 - {glsrc}`examples/python/validate_all.py`: validate all example JSON.
 - {glsrc}`examples/python/validate_examples.py`: quick validation of example files.
@@ -88,7 +88,7 @@ images = r3xa.add_list_data_set(
     description="raw images from CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=image_files,
@@ -106,7 +106,7 @@ dic = r3xa.add_data_source(
     ],
     manufacturer="Pyxel",
     model="pyxel-2d",
-    input_data_sets=[images["id"]],
+    input_data_sets=[images],
 )
 
 dic_files = [f"dic_{i:04d}.csv" for i in range(num_frames)]
@@ -116,7 +116,7 @@ r3xa.add_list_data_set(
     description="ux, uy per frame",
     path="dic/",
     data_type="text/csv",
-    parent_data_sources=[dic["id"]],
+    parent_data_sources=[dic],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=dic_files,
@@ -167,7 +167,7 @@ images = r3xa.add_list_data_set(
     description="raw images from CCD camera",
     path="images/",
     data_type="image/tiff",
-    parent_data_sources=[camera["id"]],
+    parent_data_sources=[camera],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=image_files,
@@ -175,7 +175,7 @@ images = r3xa.add_list_data_set(
 
 dic = pyxel_base.merge(
     id="ds_dic_exp01",
-    input_data_sets=[images["id"]],
+    input_data_sets=[images],
 )
 r3xa.data_sources.append(dic)
 
@@ -185,7 +185,7 @@ r3xa.add_list_data_set(
     description="ux, uy per frame",
     path="dic/",
     data_type="text/csv",
-    parent_data_sources=[dic["id"]],
+    parent_data_sources=[dic],
     time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
     timestamps=timestamps,
     values=dic_files,
@@ -252,9 +252,9 @@ See also:
 Source: {glsrc}`examples/python/typed_dic_pipeline.py`
 
 Key ideas:
-- install the optional `typed` extra
+- use the standard installation with generated Pydantic models
 - build the same DIC pipeline using generated Pydantic models
-- append typed objects directly into `R3XAFile`
+- append generated objects directly into `R3XAFile`
 
 This example writes:
 - `examples/artifacts/dic_pipeline_typed.json`

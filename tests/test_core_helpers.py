@@ -1,9 +1,10 @@
 import jsonschema
 import pytest
+from pydantic import ValidationError
 
 import json
 
-from r3xa_api import R3XAFile, R3XAItem, data_set_file, load_schema, unit, validate
+from r3xa_api import R3XAFile, R3XAItem, author, data_set_file, load_schema, unit, validate
 from r3xa_api.core import format_json_value
 
 
@@ -37,10 +38,10 @@ def test_data_set_file_accepts_column_and_row_selection() -> None:
     timestamps = data_set_file(filename="timestamps.csv", file_type="text/csv", col="time", rows=[0, 98])
     values = data_set_file(filename="force.csv", file_type="text/csv", col=1, rows=[0, 98])
 
-    assert timestamps["col"] == "time"
-    assert timestamps["rows"] == [0, 98]
-    assert values["col"] == 1
-    assert values["rows"] == [0, 98]
+    assert timestamps["col"].root == "time"
+    assert [row.root for row in timestamps["rows"]] == [0, 98]
+    assert values["col"].root == 1
+    assert [row.root for row in values["rows"]] == [0, 98]
 
     r3xa.add_data_set(
         "data_sets/file",
@@ -59,6 +60,21 @@ def test_data_set_file_rejects_string_rows() -> None:
         data_set_file(filename="timestamps.csv", rows="0:100")  # type: ignore[arg-type]
 
 
+def test_data_set_file_is_editable_before_strict_validation() -> None:
+    selector = data_set_file()
+
+    assert selector.filename is None
+    assert selector.col is None
+    assert selector.rows is None
+    with pytest.raises(jsonschema.ValidationError):
+        selector.validate()
+
+    selector.filename = "results.csv"
+    selector.col = "force"
+    selector.rows = (0, None)
+    assert selector.validate() is selector
+
+
 def test_data_set_file_print_format_is_compact() -> None:
     payload = data_set_file(
         filename="example_files/tutorial3_file.csv",
@@ -73,7 +89,7 @@ def test_data_set_file_print_format_is_compact() -> None:
 
 def test_unit_accepts_minimal_schema_payload() -> None:
     payload = unit(unit="px")
-    assert payload == {"kind": "unit", "unit": "px", "scale": 1.0}
+    assert payload.to_dict() == {"kind": "unit", "unit": "px", "scale": 1.0}
 
 
 def test_unit_requires_unit_field() -> None:
@@ -150,46 +166,31 @@ def test_r3xafile_lists_accept_model_dump_objects() -> None:
         date="2026-03-01",
     )
 
-    source_id = "src_force_01"
+    setting = r3xa.add_setting(
+        "settings/generic", title="Experiment setting", description="Generic setting block"
+    )
+    source = r3xa.add_data_source(
+        "data_sources/generic",
+        title="Load cell",
+        description="Force measurement",
+        output_components=1,
+        output_dimension="point",
+        output_units=[unit(title="force", value=1.0, unit="N")],
+        manufacturer="Instron",
+        model="5800",
+    )
+    dataset = r3xa.add_data_set(
+        "data_sets/file",
+        title="Force over time",
+        description="Single-column force file",
+        parent_data_sources=[source],
+        timestamps=data_set_file(filename="timestamps.csv", col=0, rows=[0, 99]),
+        values=data_set_file(filename="force.csv", col=1, rows=[0, 99]),
+    )
 
-    r3xa.settings.append(
-        _FakeTypedModel(
-            {
-                "id": "set_generic_01",
-                "kind": "settings/generic",
-                "title": "Experiment setting",
-                "description": "Generic setting block",
-            }
-        )
-    )
-    r3xa.data_sources.append(
-        _FakeTypedModel(
-            {
-                "id": source_id,
-                "kind": "data_sources/generic",
-                "title": "Load cell",
-                "description": "Force measurement",
-                "output_components": 1,
-                "output_dimension": "point",
-                "output_units": [unit(title="force", value=1.0, unit="N")],
-                "manufacturer": "Instron",
-                "model": "5800",
-            }
-        )
-    )
-    r3xa.data_sets.append(
-        _FakeTypedModel(
-            {
-                "id": "ds_force_01",
-                "kind": "data_sets/file",
-                "title": "Force over time",
-                "description": "Single-column force file",
-                "parent_data_sources": [source_id],
-                "timestamps": data_set_file(filename="timestamps.csv", col=0, rows=[0, 99]),
-                "values": data_set_file(filename="force.csv", col=1, rows=[0, 99]),
-            }
-        )
-    )
+    assert r3xa.settings[0] is setting
+    assert r3xa.data_sources[0] is source
+    assert r3xa.data_sets[0] is dataset
 
     payload = r3xa.to_dict()
     assert isinstance(payload["settings"][0], dict)
@@ -217,8 +218,8 @@ def test_add_item_routes_to_expected_collection() -> None:
         title="D",
         description="Dataset",
         parent_data_sources=[source["id"]],
-        timestamps=data_set_file(filename="t.csv"),
-        values=data_set_file(filename="d.csv"),
+        timestamps=data_set_file(filename="t.csv", col=0, rows=[0, None]),
+        values=data_set_file(filename="d.csv", col=1, rows=[0, None]),
     )
 
     assert setting in r3xa.settings
@@ -261,8 +262,8 @@ def test_r3xafile_dump_save_and_load_roundtrip(tmp_path) -> None:
         title="Force",
         description="Force signal",
         parent_data_sources=[source["id"]],
-        timestamps=data_set_file(filename="t.csv"),
-        values=data_set_file(filename="d.csv"),
+        timestamps=data_set_file(filename="t.csv", col=0, rows=[0, None]),
+        values=data_set_file(filename="d.csv", col=1, rows=[0, None]),
     )
 
     dumped = r3xa.dump(indent=2)
@@ -375,10 +376,9 @@ def test_document_summary_lists_header_and_item_titles() -> None:
 
 def test_document_summary_shares_value_formatting_with_models() -> None:
     document = R3XAFile(title="t", description="d", authors=[{"name": "a"}], date="2026-01-01")
-    document.header["license"] = unit(title="w", value=1392, unit="px")
+    document.header["license"] = "CC-BY"
 
-    # The unit collapses exactly as it does in a model's summary().
-    assert "1392 px" in document.summary()
+    assert "CC-BY" in document.summary()
 
 
 def test_plot_lets_the_backend_choose_the_extension(tmp_path) -> None:
@@ -413,7 +413,7 @@ def test_printing_a_document_directly_shows_its_summary() -> None:
     # `print(document)` must work, not only `document.print()`.
     assert str(document) == document.summary()
     assert repr(document) == document.summary()
-    assert "R3XA File" in str(document)
+    assert "R3XAFile" in str(document)
     assert "object at 0x" not in repr(document)
 
 
@@ -427,8 +427,8 @@ def _document_with_every_section() -> R3XAFile:
         description="images",
         parent_data_sources=[source_id],
         time_reference=unit(title="t0", value=0.0, unit="s"),
-        timestamps=data_set_file(filename="timestamps.csv", file_type="text/csv"),
-        values=data_set_file(filename="images.csv", file_type="text/csv"),
+        timestamps=data_set_file(filename="timestamps.csv", file_type="text/csv", col=0, rows=[0, None]),
+        values=data_set_file(filename="images.csv", file_type="text/csv", col=0, rows=[0, None]),
     )
     return document
 
@@ -521,24 +521,21 @@ def test_added_items_are_objects_not_bare_dicts() -> None:
     # It prints like a typed model: every schema field, `*` on required ones,
     # units collapsed - including fields the item does not carry.
     summary = specimen.summary()
-    assert summary.splitlines()[0] == "settings/specimen"
+    assert summary.splitlines()[0] == "Specimen"
     assert "* title: Openhole sample" in summary
     assert "  sizes: [30 mm]" in summary
     assert "  cad: None" in summary
     assert str(specimen) == summary
 
 
-def test_items_stay_usable_as_plain_dictionaries(tmp_path) -> None:
+def test_items_are_objects_with_a_json_projection(tmp_path) -> None:
     document = _document_with_items()
     setting = document.settings[0]
 
-    # Nothing downstream may notice the wrapper.
-    assert isinstance(setting, dict)
-    assert setting == dict(setting)
-    assert json.loads(json.dumps(document.to_dict()))["settings"][0] == dict(setting)
-    assert "title" in {**setting}
-    # repr stays dict's compact form so a collection remains readable.
-    assert repr(setting).startswith("{")
+    assert isinstance(setting, R3XAItem)
+    assert not isinstance(setting, dict)
+    assert setting.title == setting["title"]
+    assert json.loads(json.dumps(document.to_dict()))["settings"][0] == setting.to_dict()
 
 
 def test_collection_assignment_keeps_r3xa_item_ergonomics(capsys) -> None:
@@ -551,6 +548,7 @@ def test_collection_assignment_keeps_r3xa_item_ergonomics(capsys) -> None:
         "title": "Force data",
         "description": "Force data file",
         "data_type": "text/csv",
+        "parent_data_sources": [source["id"]],
         "path": "force.csv",
     }
 
@@ -565,7 +563,7 @@ def test_collection_assignment_keeps_r3xa_item_ergonomics(capsys) -> None:
     assert document.data_sources[0].validate() is document.data_sources[0]
     document.data_sources[0].print()
     assert "data_sources/camera" in capsys.readouterr().out
-    assert json.loads(document.dump())["data_sources"][0] == source
+    assert json.loads(document.dump())["data_sources"][0] == document.data_sources[0].to_dict()
 
 
 def test_items_validate_save_and_reload_on_their_own(tmp_path) -> None:
@@ -583,6 +581,82 @@ def test_items_validate_save_and_reload_on_their_own(tmp_path) -> None:
 
     assert reloaded == camera
     assert isinstance(reloaded, R3XAItem)
+
+
+def test_object_first_document_api_resolves_references_and_serializes_ids() -> None:
+    document = R3XAFile(
+        title="Object API",
+        description="Object references are only converted at the wire boundary",
+        authors=[author("R3XA API")],
+        date="2026-09-17",
+    )
+    source = document.add_generic_source(
+        title="Camera",
+        description="Image acquisition",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[unit(unit="gl")],
+        manufacturer="ACME",
+        model="C1",
+    )
+    setting = document.add_generic_setting(
+        title="Lighting",
+        description="Experimental lighting",
+        attached_data_sources=[source],
+    )
+    dataset = document.add_file_data_set(
+        title="Images",
+        description="Raw camera images",
+        parent_data_sources=[source],
+        timestamps=data_set_file(filename="timestamps.csv", col=0, rows=[0, None]),
+        values=data_set_file(filename="images.csv", col=0, rows=[0, None]),
+    )
+
+    assert document.title == "Object API"
+    assert document.authors[0].name == "R3XA API"
+    assert setting.attached_data_sources == [source]
+    assert setting.attached_data_sources[0] is source
+    assert dataset.parent_data_sources == [source]
+    assert dataset.parent_data_sources[0] is source
+    assert document.settings[0] is setting
+    assert document.data_sets[0] is dataset
+    assert document.to_dict()["settings"][0]["attached_data_sources"] == [source.id]
+    assert document.to_dict()["data_sets"][0]["parent_data_sources"] == [source.id]
+    assert document.validate() is document
+
+
+def test_r3xafile_bridges_to_generated_document_model() -> None:
+    document = _document_with_items()
+
+    generated = document.to_model()
+    rebuilt = R3XAFile.from_model(generated)
+
+    assert generated.title == document.title
+    assert rebuilt.to_dict() == document.to_dict()
+    assert rebuilt.data_sources[0] is not document.data_sources[0]
+    assert rebuilt.data_sources[0].to_dict() == document.data_sources[0].to_dict()
+
+
+def test_document_metadata_diagnostics_are_available_on_r3xafile() -> None:
+    document = R3XAFile()
+
+    assert "title" in document.required_fields()
+    assert "repository" in document.optional_fields()
+    assert {"title", "description", "authors", "date"}.issubset(document.missing_fields())
+
+
+def test_document_header_attributes_and_compatibility_view_stay_in_sync() -> None:
+    document = R3XAFile()
+
+    document.title = "Direct attribute"
+    assert document.header["title"] == "Direct attribute"
+    document.header["description"] = "Compatibility mapping"
+    assert document.description == "Compatibility mapping"
+
+
+def test_data_set_file_rejects_unknown_legacy_fields() -> None:
+    with pytest.raises(TypeError, match="use col= and rows="):
+        data_set_file(filename="results.csv", data_range="A2:A63")
 
 
 def test_loaded_documents_expose_objects_too(tmp_path) -> None:

@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FULL_DEV_EXTRAS = ".[dev,docs,typed,web,notebook,graph_nx]"
+FULL_DEV_EXTRAS = ".[dev,docs,web,notebook,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
 SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
 MODELS_OUTPUT = "r3xa_api/models.py"
@@ -38,12 +38,13 @@ def model_codegen_command(python: str, output: str = MODELS_OUTPUT) -> tuple[str
         "--output-model-type",
         "pydantic_v2.BaseModel",
         "--base-class",
-        "r3xa_api.model_base.R3XAModel",
+        "r3xa_api.model_base.R3XAItem",
         "--class-name",
         "R3XADocument",
         "--disable-timestamp",
         "--no-use-union-operator",
         "--use-one-literal-as-default",
+        "--force-optional",
     )
 
 
