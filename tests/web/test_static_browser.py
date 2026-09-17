@@ -395,7 +395,7 @@ def test_static_schema_viewer_handles_an_invalid_saved_draft(static_site: str) -
         browser.close()
 
 
-def test_static_schema_viewer_falls_back_for_complex_drafts(static_site: str) -> None:
+def test_static_schema_viewer_renders_complex_drafts_interactively(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page()
@@ -406,6 +406,9 @@ def test_static_schema_viewer_falls_back_for_complex_drafts(static_site: str) ->
         tree_text = page.locator("#schema-tree").inner_text()
         assert "Failed to load draft" not in tree_text
         assert "Stereo DIC" in tree_text
+        assert page.locator("#schema-tree .jv-light-con").count() == 1
+        assert page.locator("#schema-tree .jv-folder").count() > 0
+        assert page.locator("#schema-tree pre").count() == 0
         browser.close()
 
 

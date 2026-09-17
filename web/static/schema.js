@@ -38,11 +38,20 @@ const getStoredDraft = () => {
   }
 };
 
+const viewerSafeValue = (value) => {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return value.map(viewerSafeValue);
+  if (typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, viewerSafeValue(nested)]));
+  }
+  return value;
+};
+
 const renderJsonViewer = (data, expand = false) => {
   treeEl.innerHTML = "";
   const container = document.createElement("div");
   treeEl.appendChild(container);
-  const serialized = JSON.stringify(data, null, 2);
+  const serialized = JSON.stringify(viewerSafeValue(data), null, 2);
   if (typeof JSONViewer === "undefined") {
     const pre = document.createElement("pre");
     pre.textContent = serialized;

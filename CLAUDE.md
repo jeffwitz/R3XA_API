@@ -93,8 +93,9 @@ WebUI initiative. The following work remains, in this order:
 - The static build requires Node.js and `npm ci --prefix web` at build time;
   the generated site does not require Node.js at runtime.
 - The static graph bundle is deliberately loaded only after `Generate graph`.
-- The static Schema viewer falls back to a native JSON `<pre>` when the bundled
-  JSON viewer cannot display a complex draft, including `null` values.
+- The static Schema viewer falls back to a native JSON `<pre>` only if the
+  bundled JSON viewer cannot display a draft; `null` values are normalized for
+  display so complex drafts remain interactive.
 - GitLab Pages publication is configured but still needs a successful GitLab
   pipeline and hosted smoke test. An explicit validation pipeline
   (`2859601291`, commit `161b6b8`) was created but all jobs were rejected with
