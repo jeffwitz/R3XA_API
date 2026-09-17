@@ -133,6 +133,14 @@ errors. The package job verifies the wheel contents and runs a smoke test from
 an environment where the installed wheel, rather than the source tree, is
 imported.
 
+### GitLab CI execution policy
+
+To avoid consuming CI minutes on every push, GitLab CI is created automatically
+only for release-candidate tags such as `v2.0.0rc2` or for commits whose
+message contains `[ci run]`. A complete pipeline can also be started explicitly
+from GitLab with **Run pipeline**, or with `glab pipeline run --branch main`.
+Ordinary pushes do not create a pipeline.
+
 ## Common developer commands
 
 From project root, use the Python task runner for a cross-platform workflow:
