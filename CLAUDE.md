@@ -29,9 +29,10 @@ Phase A is complete: `web/static/runtime.js` provides the server runtime
 adapter, and page scripts use `window.R3XARuntime` instead of direct `/api/*`
 calls. Phase B is complete: `python scripts/dev.py build-static-web` generates
 static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
-validator. Phase C is in progress: static document, Registry, and integrity
-validation work locally. Later phases cover report parity, local Graphviz
-WebAssembly, zero-API checks, and GitLab Pages publication.
+validator. Phase C is complete: static document, Registry, and integrity
+validation work locally. Phase D is in progress: Graphviz WebAssembly is
+bundled at build time and loaded lazily for local SVG rendering. Later phases
+cover report parity, zero-API checks, and GitLab Pages publication.
 
 ## Working rules
 

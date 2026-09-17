@@ -195,6 +195,7 @@ def build_static_web(output_dir: Path) -> Path:
     from jinja2 import Environment, FileSystemLoader
     from r3xa_api.schema import load_schema
     from r3xa_api.webcore import build_schema_catalog, build_schema_summary, build_ui_catalog
+    from r3xa_api.webcore._graph_core import PALETTES
 
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -203,7 +204,7 @@ def build_static_web(output_dir: Path) -> Path:
     shutil.copytree(
         WEB_STATIC,
         assets_dir,
-        ignore=shutil.ignore_patterns("runtime.js"),
+        ignore=shutil.ignore_patterns("runtime.js", "graph-core.mjs", "graph-runtime.mjs"),
         dirs_exist_ok=True,
     )
 
@@ -213,6 +214,7 @@ def build_static_web(output_dir: Path) -> Path:
     _write_json(assets_dir / "schema-catalog.json", schema_catalog)
     _write_json(assets_dir / "schema-summary.json", build_schema_summary(schema))
     _write_json(assets_dir / "ui-catalog.json", build_ui_catalog(schema_catalog))
+    _write_json(assets_dir / "graph-palettes.json", PALETTES)
     try:
         api_version = package_version("r3xa-api")
     except PackageNotFoundError:
@@ -237,6 +239,12 @@ def build_static_web(output_dir: Path) -> Path:
         "web/scripts/build-validator.mjs",
         SCHEMA_RESOURCE,
         str(assets_dir / "validator.generated.js"),
+    )
+    _run(
+        node,
+        "web/scripts/build-graph.mjs",
+        "web/static/graph-runtime.mjs",
+        str(assets_dir / "graph.generated.js"),
     )
 
     environment = Environment(loader=FileSystemLoader(str(WEB_TEMPLATES)))
@@ -268,6 +276,35 @@ def cmd_build_static_web(args: argparse.Namespace) -> None:
         output_dir = ROOT / output_dir
     build_static_web(output_dir)
     print(f"Static WebUI written to {output_dir}")
+
+
+def cmd_test_static_web(args: argparse.Namespace) -> None:
+    python = project_python()
+    tests = (
+        "tests/web/test_static_build.py",
+        "tests/web/test_static_graph.py",
+        "tests/web/test_static_browser.py",
+    )
+    _run(python, "-m", "pytest", *tests, *args.pytest_args)
+
+
+def cmd_serve_static_web(args: argparse.Namespace) -> None:
+    output_dir = Path(args.output)
+    if not output_dir.is_absolute():
+        output_dir = ROOT / output_dir
+    if not args.no_build:
+        build_static_web(output_dir)
+    python = project_python()
+    _run(
+        python,
+        "-m",
+        "http.server",
+        str(args.port),
+        "--bind",
+        args.host,
+        "--directory",
+        str(output_dir),
+    )
 
 
 def cmd_clean_artifacts(_: argparse.Namespace) -> None:
@@ -469,6 +506,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="output directory, relative to the project root by default",
     )
     static_web.set_defaults(func=cmd_build_static_web)
+
+    test_static_web = subparsers.add_parser(
+        "test-static-web",
+        help="run static build, graph, and browser tests",
+    )
+    test_static_web.add_argument(
+        "pytest_args",
+        nargs=argparse.REMAINDER,
+        help="additional arguments passed to pytest",
+    )
+    test_static_web.set_defaults(func=cmd_test_static_web)
+
+    serve_static_web = subparsers.add_parser(
+        "serve-static-web",
+        help="build and serve the static WebUI without FastAPI",
+    )
+    serve_static_web.add_argument(
+        "--output",
+        default="dist/r3xa-webui",
+        help="static site directory, relative to the project root by default",
+    )
+    serve_static_web.add_argument("--host", default="127.0.0.1", help="HTTP server bind address")
+    serve_static_web.add_argument("--port", type=int, default=8080, help="HTTP server port")
+    serve_static_web.add_argument(
+        "--no-build",
+        action="store_true",
+        help="serve an existing static site without rebuilding it",
+    )
+    serve_static_web.set_defaults(func=cmd_serve_static_web)
 
     ensure_graphviz_command = subparsers.add_parser(
         "ensure-graphviz",

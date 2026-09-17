@@ -126,3 +126,36 @@ def test_static_registry_validation_uses_local_validator(static_site: str) -> No
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.length > 0")
         assert "Valid registry item" in page.locator("#registry-validation-output").inner_text()
         browser.close()
+
+
+def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None:
+    requests: list[str] = []
+    payload = {
+        "title": "Browser graph",
+        "description": "Static graph test",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [{"id": "machine", "kind": "settings/generic", "title": "Machine"}],
+        "data_sources": [{"id": "camera", "kind": "data_sources/generic", "title": "Camera"}],
+        "data_sets": [{
+            "id": "images",
+            "kind": "data_sets/generic",
+            "title": "Images",
+            "parent_data_sources": ["camera"],
+        }],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.on("request", lambda request: requests.append(request.url))
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.wait_for_selector("#graph-backend")
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
+        assert page.locator("#graph-container svg").count() == 1
+        assert "Machine" in page.locator("#graph-container").inner_text()
+        assert not any("/api/" in url for url in requests)
+        browser.close()

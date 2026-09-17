@@ -12,7 +12,8 @@ runtime or adding build and CI jobs for the static distribution.
 
 Phase A is complete: page scripts use the shared server runtime adapter instead
 of calling `/api/*` directly. Phase B now generates static pages and
-schema-derived assets, and Phase C compiles the local browser validator.
+schema-derived assets. Phase C compiles the local browser validator and Phase
+D adds lazy Graphviz WebAssembly SVG rendering.
 
 To build the static distribution, install the JavaScript build dependency once:
 
@@ -28,6 +29,17 @@ Serve it for a local smoke test with:
 cd dist/r3xa-webui
 python -m http.server 8080
 ```
+
+The focused static qualification command is:
+
+```bash
+python scripts/dev.py test-static-web
+```
+
+For convenience, `python scripts/dev.py serve-static-web` builds the site and
+serves it with Python's plain static file server. The server is only a local
+test host: Graphviz rendering itself runs in the browser through the bundled
+WebAssembly runtime.
 
 ## Runtime model for graphs
 

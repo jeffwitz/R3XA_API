@@ -32,7 +32,9 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "schema-summary.json",
         "ui-catalog.json",
         "build-info.json",
+        "graph-palettes.json",
         "runtime-static.js",
+        "graph.generated.js",
         "validator.generated.js",
     ):
         assert (assets / name).is_file(), name
@@ -41,6 +43,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     static_runtime = (assets / "runtime-static.js").read_text(encoding="utf-8")
     assert "integrityErrors" in static_runtime
     assert "validateItem" in static_runtime
+    assert "graphBackends" in static_runtime
 
     catalog = json.loads((assets / "schema-catalog.json").read_text(encoding="utf-8"))
     assert catalog["schema_version"]

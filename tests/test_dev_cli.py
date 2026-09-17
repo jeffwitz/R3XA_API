@@ -55,6 +55,8 @@ def test_dev_cli_exposes_cross_platform_commands():
         "notebook-dic-export",
         "run-web",
         "build-static-web",
+        "test-static-web",
+        "serve-static-web",
         "ensure-graphviz",
         "clean-artifacts",
         "source-archive",

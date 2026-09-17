@@ -82,8 +82,8 @@ Explicitly out of scope:
 | --- | --- | --- |
 | A | Hide server API calls behind a runtime abstraction | **Completed** |
 | B | Build static pages and schema-derived JSON artefacts | **Completed** |
-| C | Add standalone JavaScript validation and integrity checks | **In progress** |
-| D | Add lazy Graphviz WebAssembly SVG rendering | Planned |
+| C | Add standalone JavaScript validation and integrity checks | **Completed** |
+| D | Add lazy Graphviz WebAssembly SVG rendering | **In progress** |
 | E | Test the generated `dist/` with parity and zero-API checks | Planned |
 | F | Publish the static site with GitLab Pages | Planned |
 | G | Complete documentation, deployment notes, and cleanup | Planned |
@@ -278,3 +278,22 @@ The initiative is complete only when all of the following are true:
   server, then applies local ID/reference/date integrity checks to documents.
 - Browser tests cover local document validation, duplicate-ID integrity errors,
   Registry validation, and absence of `/api/*` requests.
+
+### Phase D progress
+
+- Added the local `@viz-js/viz` Graphviz WebAssembly dependency and an esbuild
+  step that bundles it into `assets/graph.generated.js` during the static build.
+- Ported the shared graph model and DOT generation to browser JavaScript. The
+  browser uses the same node roles, relationship directions, labels, and
+  palettes as the Python Graphviz backend.
+- The Python palette table is exported as `graph-palettes.json`, so static
+  rendering does not maintain a second hand-written colour table.
+- Graphviz is loaded lazily by `runtime-static.js` only after the user requests
+  a graph. The static runtime exposes Graphviz SVG as its supported backend;
+  PyVis and Matplotlib remain available through the FastAPI runtime.
+- Added Node, static-build, and Chromium browser coverage for local SVG
+  rendering and the absence of `/api/*` requests.
+
+The next work in this phase is graceful feature messaging and final static
+qualification. A browser that cannot execute WebAssembly must still retain
+editing, validation, import, export, and Registry functionality.

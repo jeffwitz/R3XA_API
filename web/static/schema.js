@@ -392,10 +392,24 @@ const bindEvents = () => {
   });
 };
 
+const configureGraphBackends = () => {
+  if (!graphBackendSelect || !Array.isArray(window.R3XARuntime?.graphBackends)) return;
+  const supported = new Set(window.R3XARuntime.graphBackends);
+  Array.from(graphBackendSelect.options).forEach((option) => {
+    const enabled = supported.has(option.value);
+    option.hidden = !enabled;
+    option.disabled = !enabled;
+  });
+  if (!supported.has(graphBackendSelect.value)) {
+    graphBackendSelect.value = window.R3XARuntime.graphBackends[0] || "graphviz";
+  }
+};
+
 window.renderGraph = renderGraph;
 window.showFullscreenGraph = showFullscreenGraph;
 
 ensureServerStart();
+configureGraphBackends();
 bindEvents();
 if (getStoredDraft() && viewSelect) {
   viewSelect.value = "draft";

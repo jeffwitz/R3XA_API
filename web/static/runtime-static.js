@@ -18,6 +18,8 @@
 
   let validatorPromise;
   let catalogPromise;
+  let graphPalettePromise;
+  let graphPromise;
   const loadValidator = () => {
     validatorPromise ||= import(`${assetBase}/validator.generated.js`);
     return validatorPromise;
@@ -26,6 +28,16 @@
   const loadCatalog = () => {
     catalogPromise ||= loadAsset("schema-catalog.json");
     return catalogPromise;
+  };
+
+  const loadGraphPalettes = () => {
+    graphPalettePromise ||= loadAsset("graph-palettes.json");
+    return graphPalettePromise;
+  };
+
+  const loadGraph = () => {
+    graphPromise ||= import(`${assetBase}/graph.generated.js`);
+    return graphPromise;
   };
 
   const integrityErrors = (document) => {
@@ -107,6 +119,7 @@
 
   window.R3XARuntime = {
     mode: "static",
+    graphBackends: ["graphviz"],
     loadSchema: () => loadAsset("schema.json"),
     loadSchemaSummary: () => loadAsset("schema-summary.json"),
     loadSchemaCatalog: () => loadAsset("schema-catalog.json"),
@@ -152,7 +165,27 @@
       const valid = validate(document);
       return responseFromReport({valid, errors: reportFromErrors(validate.errors || [])});
     },
-    renderGraph: async () => unavailable("Static graph rendering is not available yet."),
+    renderGraph: async (payload, options = {}) => {
+      if ((options.backend || "graphviz") !== "graphviz") {
+        return unavailable("The static WebUI supports Graphviz SVG rendering in the browser. Select the Graphviz backend.");
+      }
+      try {
+        const [{renderGraph}, palettes] = await Promise.all([loadGraph(), loadGraphPalettes()]);
+        const svg = await renderGraph(payload, {
+          includeDescription: options.showDescription !== false,
+          palette: options.palette || "document",
+        }, palettes);
+        return new Response(svg, {
+          status: 200,
+          headers: {
+            "Content-Type": "image/svg+xml",
+            "X-R3XA-Graph-Backend": "graphviz",
+          },
+        });
+      } catch (error) {
+        return unavailable(`Graphviz WASM rendering failed: ${error.message || error}`);
+      }
+    },
     integrityErrors,
   };
 })();
