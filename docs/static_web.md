@@ -504,4 +504,6 @@ Policy. A host should configure the policy with only the deliberate
 renderer. No inline event handlers, inline page styles, CDN assets, or
 third-party telemetry are used. The policy still needs to be verified on the
 final GitLab Pages host, especially together with iframe headers and the
-browser's WebAssembly policy.
+browser's WebAssembly policy. Local Playwright coverage applies this policy as
+a response header and exercises the editor and Graphviz SVG path; hosted
+qualification remains separate.

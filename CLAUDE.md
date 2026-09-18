@@ -374,7 +374,9 @@ Implemented in the current lot:
   CSP policy for static hosts, with only the `wasm-unsafe-eval` allowance
   required by Graphviz WebAssembly;
 - added static-build assertions preventing inline handlers/styles and browser
-  coverage for the local translated controls.
+  coverage for the local translated controls;
+- added a Playwright smoke test that applies the documented strict CSP response
+  header and exercises editor loading plus local Graphviz WebAssembly/SVG.
 
 Remaining follow-up:
 

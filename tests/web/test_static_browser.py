@@ -229,6 +229,47 @@ def test_static_user_session_uses_no_remote_or_post_requests(static_site: str) -
     assert not any("/api/" in url for _, url in requests)
 
 
+def test_static_runtime_works_with_documented_strict_csp(static_site: str) -> None:
+    policy = (
+        "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; "
+        "style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; "
+        "frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"
+    )
+    payload = {
+        "title": "Strict CSP graph",
+        "description": "Browser CSP test",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        console_errors: list[str] = []
+        page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+
+        def add_csp(route):
+            response = route.fetch()
+            headers = dict(response.headers)
+            headers["content-security-policy"] = policy
+            route.fulfill(response=response, headers=headers)
+
+        page.route("**/*", add_csp)
+        page.goto(f"{static_site}/edit/")
+        page.locator("#schema-summary").wait_for(state="visible")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.goto(f"{static_site}/schema/")
+        page.locator("#schema-tree").wait_for(state="visible")
+        page.locator("#generate-graph-btn").click()
+        page.locator("#graph-container svg").wait_for(state="attached", timeout=30_000)
+        browser.close()
+
+    assert not any("Content Security Policy" in error for error in console_errors)
+
+
 def test_static_editor_preserves_one_document_across_modes(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
