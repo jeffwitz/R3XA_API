@@ -72,7 +72,7 @@ def test_data_set_file_is_editable_before_strict_validation() -> None:
     selector.filename = "results.csv"
     selector.col = "force"
     selector.rows = (0, None)
-    assert selector.validate() is selector
+    assert selector.validate() is None
 
 
 def test_data_set_file_print_format_is_compact() -> None:
@@ -374,6 +374,35 @@ def test_document_summary_lists_header_and_item_titles() -> None:
     assert "data_sets" in summary and "[]" in summary
 
 
+def test_summaries_use_author_and_reference_titles() -> None:
+    document = R3XAFile(
+        title="Summary labels",
+        description="Use short labels for nested objects",
+        authors=[author("Alice", "Materials Lab")],
+        date="2026-09-18",
+    )
+    camera = document.add_camera_source(
+        title="CCD Camera",
+        description="camera",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[unit(title="graylevel", value=1.0, unit="gl")],
+    )
+    dataset = document.add_generic_data_set(
+        title="Camera images",
+        parent_data_sources=[camera],
+        path="images/",
+    )
+
+    document_summary = document.summary()
+    dataset_summary = dataset.summary()
+
+    assert "authors: [Alice]" in document_summary
+    assert "Materials Lab" not in document_summary
+    assert "parent_data_sources: [CCD Camera]" in dataset_summary
+    assert "output_components" not in dataset_summary
+
+
 def test_document_summary_shares_value_formatting_with_models() -> None:
     document = R3XAFile(title="t", description="d", authors=[{"name": "a"}], date="2026-01-01")
     document.header["license"] = "CC-BY"
@@ -560,7 +589,7 @@ def test_collection_assignment_keeps_r3xa_item_ergonomics(capsys) -> None:
         assert isinstance(collection[0], R3XAItem)
         assert collection[0]._document is document
 
-    assert document.data_sources[0].validate() is document.data_sources[0]
+    assert document.data_sources[0].validate() is None
     document.data_sources[0].print()
     assert "data_sources/camera" in capsys.readouterr().out
     assert json.loads(document.dump())["data_sources"][0] == document.data_sources[0].to_dict()
@@ -570,7 +599,7 @@ def test_items_validate_save_and_reload_on_their_own(tmp_path) -> None:
     document = _document_with_items()
     camera = document.data_sources[0]
 
-    assert camera.validate() is camera
+    assert camera.validate() is None
     assert camera.required_fields()[:2] == ["id", "kind"]
     assert "description" in camera.optional_fields()
     assert camera.missing_fields() == []
@@ -622,7 +651,7 @@ def test_object_first_document_api_resolves_references_and_serializes_ids() -> N
     assert document.data_sets[0] is dataset
     assert document.to_dict()["settings"][0]["attached_data_sources"] == [source.id]
     assert document.to_dict()["data_sets"][0]["parent_data_sources"] == [source.id]
-    assert document.validate() is document
+    assert document.validate() is None
 
 
 def test_r3xafile_bridges_to_generated_document_model() -> None:

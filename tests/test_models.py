@@ -97,7 +97,7 @@ def test_generated_model_common_helpers(tmp_path: Path):
 
     assert output_path == tmp_path / "camera.json"
     assert loaded.to_dict() == camera.to_dict()
-    assert loaded.validate() is loaded
+    assert loaded.validate() is None
 
 
 def test_summary_renders_values_for_humans():
@@ -179,7 +179,7 @@ def test_generated_models_are_editable_drafts_with_strict_validation_boundary():
     data_file.filename = "results.csv"
     data_file.col = 1
     data_file.rows = (0, None)
-    assert data_file.validate() is data_file
+    assert data_file.validate() is None
 
 
 def test_data_set_file_enforces_schema_fields_and_rejects_unknown_fields():

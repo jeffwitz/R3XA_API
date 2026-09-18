@@ -222,7 +222,7 @@ carry — with `*` on required ones and units collapsed to `30 mm`. `print(item)
 listing; `repr(item)` stays Pydantic's compact object representation.
 
 ```python
-validate(schema: dict | None = None) -> R3XAItem
+validate(schema: dict | None = None) -> None
 save(path: str | Path, *, validate: bool = True, indent: int = 2) -> Path
 R3XAItem.load(path: str | Path) -> R3XAItem
 to_dict() -> dict
@@ -403,7 +403,7 @@ For the object-first SDK, prefer the `R3XAItem` returned by `Registry.load()`; u
 when you need mapping semantics or a bound registry path.
 
 ```python
-validate(kind: str | None = None, schema: dict | None = None) -> RegistryItem
+validate(kind: str | None = None, schema: dict | None = None) -> None
 merge(**overrides) -> RegistryItem
 save(path: str | Path | None = None, validate: bool = True, kind: str | None = None) -> Path
 save_to(registry: Registry | str | Path, tree_path: str | None = None, validate: bool = True, kind: str | None = None) -> Path
@@ -439,7 +439,8 @@ new_camera = registry.wrap(
     },
     tree_path="data_sources/camera/experiment_camera",
 )
-new_camera.validate().save()
+new_camera.validate()
+new_camera.save()
 ```
 
 ### `validate_item(item, kind=None, schema=None) -> None`

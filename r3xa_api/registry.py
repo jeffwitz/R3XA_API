@@ -240,11 +240,10 @@ class RegistryItem(MutableMapping[str, Any]):
             tree_path=self.tree_path if tree_path is None else tree_path,
         )
 
-    def validate(self, kind: Optional[str] = None, schema: Optional[Dict[str, Any]] = None) -> RegistryItem:
-        """Validate the current item payload and return `self`."""
+    def validate(self, kind: Optional[str] = None, schema: Optional[Dict[str, Any]] = None) -> None:
+        """Validate the current item payload and return ``None`` when valid."""
 
         validate_item(self._payload, kind=kind, schema=schema)
-        return self
 
     def merge(self, **overrides: Any) -> RegistryItem:
         """Return a shallow-merged copy while preserving registry binding."""

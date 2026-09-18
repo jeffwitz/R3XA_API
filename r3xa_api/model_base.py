@@ -608,8 +608,8 @@ class R3XAItem(BaseModel):
             raise TypeError("R3XA JSON root must be an object")
         return cls.from_dict(payload, validate=validate)
 
-    def validate(self: ModelT, *, schema: Dict[str, Any] | None = None) -> ModelT:
-        """Validate this model against the packaged R3XA JSON Schema."""
+    def validate(self, *, schema: Dict[str, Any] | None = None) -> None:
+        """Validate this model and return ``None`` when it is valid."""
 
         from .registry import validate_item
         from .validate import validate as validate_document
@@ -620,7 +620,6 @@ class R3XAItem(BaseModel):
             validate_item(payload, kind=kind, schema=schema)
         else:
             validate_document(payload, schema=schema)
-        return self
 
     def save(
         self,
@@ -669,6 +668,38 @@ class R3XAItem(BaseModel):
 
         return format_json_value(R3XAItem._to_json_like(value))
 
+    @staticmethod
+    def _summary_label(value: Any, preferred: str) -> Any:
+        """Return the human label for an embedded object or reference."""
+
+        if isinstance(value, Mapping):
+            candidates = (preferred, "title", "name", "id", "root")
+            for key in candidates:
+                candidate = value.get(key)
+                if candidate is not None:
+                    return candidate
+            return value
+        candidates = (preferred, "title", "name", "id", "root")
+        for attribute in candidates:
+            candidate = getattr(value, attribute, None)
+            if candidate is not None:
+                return candidate
+        return value
+
+    @classmethod
+    def _summary_field_value(cls, name: str, value: Any) -> Any:
+        """Replace verbose embedded objects with labels in human summaries."""
+
+        if name == "authors":
+            if isinstance(value, list):
+                return [cls._summary_label(item, "name") for item in value]
+            return cls._summary_label(value, "name")
+        if name in reference_fields():
+            if isinstance(value, list):
+                return [cls._summary_label(item, "title") for item in value]
+            return cls._summary_label(value, "title")
+        return value
+
     def summary(self) -> str:
         """Return a readable listing of all model fields, including null values."""
 
@@ -676,7 +707,7 @@ class R3XAItem(BaseModel):
         required = set(self.required_fields())
         for name in type(self).model_fields:
             marker = "*" if name in required else " "
-            value = getattr(self, name, None)
+            value = self._summary_field_value(name, getattr(self, name, None))
             if name in {"settings", "data_sources", "data_sets"} and isinstance(value, list):
                 value = [getattr(item, "title", None) for item in value]
             lines.append(f"{marker} {name}: {self._format_value(value)}")

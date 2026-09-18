@@ -73,7 +73,7 @@ stable public model names and common helpers are part of the object-first API:
 
 - `to_dict()` / `to_json()`
 - `from_dict()` / `load()`
-- `validate()` / `save()`
+- `validate()` / `save()` (`validate()` returns `None` on success and raises on failure)
 - `required_fields()` / `optional_fields()`
 - `summary()` / `print()`
 

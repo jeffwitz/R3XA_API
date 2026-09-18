@@ -535,9 +535,8 @@ class _LegacyR3XAFile:
         payload["data_sets"] = [item.to_dict() for item in self.data_sets]
         return payload
 
-    def validate(self) -> "R3XAFile":
+    def validate(self) -> None:
         validate(self.to_dict())
-        return self
 
     def to_model(self) -> Any:
         """Return the complete generated Pydantic document model."""

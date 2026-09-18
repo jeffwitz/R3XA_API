@@ -49,7 +49,9 @@ def test_registry_wrap_and_save_creates_valid_registry_camera(tmp_path: Path):
     )
 
     registry = Registry(tmp_path)
-    output_path = registry.wrap(camera, tree_path=tree_path).validate().save()
+    wrapped = registry.wrap(camera, tree_path=tree_path)
+    assert wrapped.validate() is None
+    output_path = wrapped.save()
 
     assert output_path == tmp_path / "data_sources" / "camera" / "test_wrapped_camera.json"
     assert registry.get_item(tree_path)["id"] == "ds_cam_wrapped"

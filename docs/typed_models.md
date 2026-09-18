@@ -94,7 +94,7 @@ The following helpers are available on generated models:
 - `to_dict()` and `to_json()` for JSON-compatible representations
 - `merge(...)` for a typed copy with selected attribute overrides
 - `from_dict()` and `load()` for typed reconstruction
-- `validate()` for validation against the canonical R3XA schema
+- `validate()` for validation against the canonical R3XA schema; returns `None` on success and raises on failure
 - `save()` for validated JSON serialization
 - `required_fields()`, `optional_fields()`, and `field_descriptions()` for discovery
 - `summary()` and `print()` for readable inspection in a notebook or terminal

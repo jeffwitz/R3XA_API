@@ -125,7 +125,7 @@ def render_core_stub() -> str:
         "    def field_descriptions(self) -> Dict[str, str]: ...",
         "    def summary(self) -> str: ...",
         "    def print(self) -> None: ...",
-        "    def validate(self, *, schema: Optional[Dict[str, Any]] = ...) -> R3XAItem: ...",
+        "    def validate(self, *, schema: Optional[Dict[str, Any]] = ...) -> None: ...",
         "    @classmethod",
         "    def load(cls, path: str | Path, *, validate: bool = ...) -> R3XAItem: ...",
         "    @classmethod",
@@ -230,7 +230,7 @@ def render_core_stub() -> str:
     lines.extend(
         [
             "    def to_dict(self) -> Dict[str, Any]: ...",
-            "    def validate(self) -> R3XAFile: ...",
+            "    def validate(self) -> None: ...",
             "    def to_model(self) -> R3XAFile: ...",
             "    def dump(self, *, exclude_none: bool = ..., indent: Optional[int] = ...) -> str: ...",
             "    def save(self, path: str | Path, *, validate: bool = ..., exclude_none: bool = ..., indent: Optional[int] = ...) -> Path: ...",

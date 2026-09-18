@@ -86,7 +86,8 @@ def test_registry_item_workflow(tmp_path: Path):
         tree_path=tree_path,
     )
 
-    output_path = item.validate().save()
+    assert item.validate() is None
+    output_path = item.save()
 
     assert output_path == tmp_path / "data_sources" / "camera" / "test_camera.json"
 
