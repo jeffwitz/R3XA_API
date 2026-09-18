@@ -36,6 +36,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "graph-palettes.json",
         "runtime-static.js",
         "id-utils.js",
+        "registry-storage.js",
         "graph.generated.js",
         "validator.generated.js",
     ):

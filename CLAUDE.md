@@ -205,10 +205,15 @@ fix(web): harden JSON and graph rendering
 
 #### 5. Version and manage local Registry storage
 
-The current `r3xaLocalRegistryItems` value is a raw JSON array without a
-storage version. Corrupt JSON silently appears as an empty Registry,
-`localStorage` quota failures are not handled, and title uniqueness is too
-literal.
+Status: implemented in the current working tree. Local Registry data now uses
+a versioned envelope, migrates the legacy array format, reports corrupt
+storage, handles write failures, and normalizes title uniqueness. The remaining
+CRUD and collection import/export improvements can build on this format.
+
+The storage key `r3xaLocalRegistryItems` now contains the versioned envelope;
+legacy raw arrays are accepted only for one-time migration. Corrupt JSON is
+reported without replacement, write failures are surfaced, and title
+uniqueness is normalized.
 
 Use a versioned envelope such as:
 

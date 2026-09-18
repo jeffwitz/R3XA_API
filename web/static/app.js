@@ -809,15 +809,27 @@ const {
   relationshipFields,
 } = window.R3XAIdUtils;
 
-const localRegistryStorageKey = "r3xaLocalRegistryItems";
-
 const loadLocalRegistryItems = () => {
-  try {
-    const value = JSON.parse(localStorage.getItem(localRegistryStorageKey) || "[]");
-    return Array.isArray(value) ? value.filter((item) => item && typeof item === "object" && item.kind) : [];
-  } catch {
+  const stored = window.R3XARegistryStorage.read();
+  if (stored.corrupt) {
+    outputEl.textContent = stored.error;
     return [];
   }
+  const normalized = window.R3XAIdUtils.normalizeLocalRegistryItems(
+    stored.items.filter((item) => item && typeof item === "object" && item.kind),
+  );
+  if (normalized.conflicts.length) {
+    outputEl.textContent = t(
+      "registry.duplicate_ids",
+      "Local Registry migration was not applied because these IDs are duplicated: {ids}. Export or edit the affected items before continuing.",
+      {ids: normalized.conflicts.join(", ")},
+    );
+    return normalized.items;
+  }
+  if (stored.migrated || normalized.changed) {
+    window.R3XARegistryStorage.write(normalized.items, schemaCatalog?.schema_version);
+  }
+  return normalized.items;
 };
 
 const registrySectionForKind = (kind) => kind?.split("/", 1)[0] || "";

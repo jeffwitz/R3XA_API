@@ -22,6 +22,7 @@ def test_frontend_assets_are_wired() -> None:
     assert 'src="{{ static_base|default(\'/static\') }}/{{ runtime_name|default(\'runtime.js\') }}?v={{ app_start }}"' in template
     assert '{{ static_base|default(\'/static\') }}/app.js?v={{ app_start }}' in template
     assert '{{ static_base|default(\'/static\') }}/id-utils.js?v={{ app_start }}' in template
+    assert '{{ static_base|default(\'/static\') }}/registry-storage.js?v={{ app_start }}' in template
     assert '{{ static_base|default(\'/static\') }}/style.css?v={{ app_start }}' in template
     assert 'data-editor-surface="header"' in template
     assert 'data-editor-surface="data_sets"' in template

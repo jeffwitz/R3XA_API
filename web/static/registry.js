@@ -20,13 +20,12 @@ const addLocalButton = document.getElementById("registry-add-local-btn");
 const completeButton = document.getElementById("registry-complete-btn");
 const localItemsEl = document.getElementById("registry-local-items");
 
-const localRegistryStorageKey = "r3xaLocalRegistryItems";
-
 let schemaCatalog = null;
 let uiCatalog = null;
 let lintTimer = null;
 let registryBaseline = "";
 let lastStableProfile = "";
+let localRegistryStorageError = "";
 
 const {
   hasCanonicalId,
@@ -37,23 +36,26 @@ const {
 let localRegistryMigrationConflicts = [];
 
 const readLocalRegistryItems = () => {
-  try {
-    const value = JSON.parse(localStorage.getItem(localRegistryStorageKey) || "[]");
-    const items = Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
-    const normalized = normalizeLocalRegistryItems(items);
-    localRegistryMigrationConflicts = normalized.conflicts;
-    if (!normalized.conflicts.length && normalized.changed) {
-      localStorage.setItem(localRegistryStorageKey, JSON.stringify(normalized.items));
-    }
-    return normalized.items;
-  } catch {
+  const stored = window.R3XARegistryStorage.read();
+  localRegistryStorageError = stored.error;
+  if (stored.corrupt) {
     localRegistryMigrationConflicts = [];
     return [];
   }
+  const items = stored.items.filter((item) => item && typeof item === "object");
+  const normalized = normalizeLocalRegistryItems(items);
+  localRegistryMigrationConflicts = normalized.conflicts;
+  if (!normalized.conflicts.length && (stored.migrated || normalized.changed)) {
+    const result = window.R3XARegistryStorage.write(normalized.items, schemaCatalog?.schema_version);
+    if (!result.ok) localRegistryStorageError = result.error;
+  }
+  return normalized.items;
 };
 
 const writeLocalRegistryItems = (items) => {
-  localStorage.setItem(localRegistryStorageKey, JSON.stringify(items));
+  const result = window.R3XARegistryStorage.write(items, schemaCatalog?.schema_version);
+  localRegistryStorageError = result.error;
+  return result.ok;
 };
 
 const generateRegistryId = (kind) => {
@@ -71,10 +73,18 @@ const currentItem = () => {
   }
 };
 
+const normalizedTitle = (value) => String(value || "").trim().normalize("NFKC").toLocaleLowerCase();
+
 const renderLocalRegistryItems = () => {
   if (!localItemsEl) return;
   localItemsEl.replaceChildren();
   const items = readLocalRegistryItems();
+  if (localRegistryStorageError) {
+    const warning = document.createElement("p");
+    warning.className = "validation-warning";
+    warning.textContent = localRegistryStorageError;
+    localItemsEl.appendChild(warning);
+  }
   if (localRegistryMigrationConflicts.length) {
     const warning = document.createElement("p");
     warning.className = "validation-warning";
@@ -102,7 +112,7 @@ const renderLocalRegistryItems = () => {
     remove.className = "ghost";
     remove.textContent = "Remove";
     remove.addEventListener("click", () => {
-      writeLocalRegistryItems(items.filter((candidate) => candidate.id !== item.id));
+      if (!writeLocalRegistryItems(items.filter((candidate) => candidate.id !== item.id))) return;
       renderLocalRegistryItems();
     });
     row.appendChild(remove);
@@ -953,13 +963,19 @@ const addToLocalRegistry = async () => {
       outputEl.textContent = "Cannot save this item: its ID is already used by another local registry item. Generate a new ID first.";
       return;
     }
-    const sameTitle = items.find((candidate) => candidate.title === item.title && candidate.id !== item.id);
+    const sameTitle = items.find((candidate) => (
+      normalizedTitle(candidate.title) === normalizedTitle(item.title)
+      && candidate.id !== item.id
+    ));
     if (sameTitle) {
       outputEl.textContent = "Cannot save this item: its title is already used by another local registry item. Choose a different title.";
       return;
     }
     const updated = [...items.filter((candidate) => candidate.id !== item.id), item];
-    writeLocalRegistryItems(updated);
+    if (!writeLocalRegistryItems(updated)) {
+      outputEl.textContent = localRegistryStorageError || "Local Registry could not be saved.";
+      return;
+    }
     renderLocalRegistryItems();
     outputEl.textContent = "Valid registry item ✅ Saved in this browser's local registry.";
   } catch (error) {

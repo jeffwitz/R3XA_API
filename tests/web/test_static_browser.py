@@ -717,14 +717,14 @@ def test_static_registry_generates_unique_ids_and_rejects_duplicate_local_items(
         page.click("#registry-validate-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
         page.click("#registry-add-local-btn")
-        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '[]').length === 1")
+        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items.length === 1")
 
         page.locator("#registry-field-title").fill("Another camera")
         page.click("#registry-validate-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
         page.click("#registry-add-local-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('ID is already used')")
-        assert page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).length") == 1
+        assert page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items.length") == 1
 
         page.locator("[data-json-path='id']").get_by_role("button", name="Generate new ID").click()
         page.locator("#registry-field-title").fill("Local camera")
@@ -732,7 +732,7 @@ def test_static_registry_generates_unique_ids_and_rejects_duplicate_local_items(
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
         page.click("#registry-add-local-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('title is already used')")
-        assert page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).length") == 1
+        assert page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items.length") == 1
         browser.close()
 
 
@@ -751,10 +751,22 @@ def test_static_registry_migrates_legacy_local_ids(static_site: str) -> None:
             """
         )
         page.reload()
-        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems'))[0].id.startsWith('src-camera-')")
-        migrated = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems'))[0]")
+        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0].id.startsWith('src-camera-')")
+        migrated = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0]")
         assert migrated["id"].startswith("src-camera-")
         assert migrated["id"] != "ds_cam_legacy"
+        browser.close()
+
+
+def test_static_registry_reports_corrupt_local_storage(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/registry/")
+        page.evaluate("localStorage.setItem('r3xaLocalRegistryItems', '{broken json')")
+        page.reload()
+        page.wait_for_selector("#registry-local-items")
+        assert "corrupt" in page.locator("#registry-local-items").inner_text().lower()
         browser.close()
 
 
@@ -801,8 +813,8 @@ def test_static_valid_registry_item_is_available_only_as_a_local_editor_template
         page.click("#registry-validate-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
         page.click("#registry-add-local-btn")
-        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '[]').length === 1")
-        saved = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems'))[0]")
+        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items.length === 1")
+        saved = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0]")
         assert saved["title"] == "Local camera template"
 
         page.goto(f"{static_site}/edit?profile=generic&new=1")

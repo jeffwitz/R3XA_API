@@ -232,8 +232,9 @@ migration utility also refuses ambiguous duplicate-ID migrations and reports
 the conflicting IDs without rewriting their references. Dependency-closure
 insertion is also implemented: using a local template copies its local upstream
 objects, generates new IDs, and remaps the relationships. Missing and cyclic
-dependency paths are rejected. The remaining Registry qualification work is
-versioned local storage and direct per-kind static validation.
+dependency paths are rejected. Local Registry storage is now versioned, legacy
+arrays are migrated, and corrupt storage is reported without being overwritten.
+The remaining Registry qualification work is direct per-kind static validation.
 
 ## Phase F — GitLab Pages
 
