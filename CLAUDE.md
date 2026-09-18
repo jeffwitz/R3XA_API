@@ -499,7 +499,7 @@ failure is not evidence that the code passed or failed.
 
 The audit that produced the plan above established this local baseline:
 
-- `python scripts/dev.py test-static-web`: **33 passed** after running outside
+- `python scripts/dev.py test-static-web`: **36 passed** after running outside
   the restricted socket sandbox; this includes the static build, Ajv parity,
   local Graphviz/WASM, and 28 Playwright scenarios;
 - `python -m pytest -q tests/web/test_browser.py`: **22 passed** for the
@@ -508,18 +508,18 @@ The audit that produced the plan above established this local baseline:
 - the latest explicitly requested `develop` pipeline at the time was pipeline
   `2859601291` on commit `161b6b8`; every job was rejected before execution
   with `ci_quota_exceeded`, so it provides no code-test result;
-- local static runtime behavior is therefore verified, while hosted Pages,
-  strict CSP, cross-origin iframe behavior, reference-safe Registry insertion,
-  and non-destructive Registry imports remain unqualified.
+- local static runtime behavior is therefore verified, including strict CSP
+  response-header and two-origin iframe smoke tests. Hosted Pages headers and
+  the real deployment remain unqualified.
 
 The current overall assessment is:
 
 - **Static architecture:** approved; do not rewrite it.
 - **Static local feature set:** working and well covered for its current scope.
 - **Static production deployment:** not yet qualified.
-- **Registry editor:** useful, but not yet safe enough for unreviewed real
-  scientific metadata because of silent enrichment and incomplete dependency
-  cloning.
+- **Registry editor:** local imports, explicit example completion, duplicate-ID
+  handling, and dependency-closure insertion are now guarded by tests; final
+  user acceptance still benefits from real Registry examples.
 - **Recommended strategy:** finish the focused safety/parity lots above rather
   than introducing React, a second UI, or a new backend.
 
@@ -533,9 +533,8 @@ The current overall assessment is:
 - Example completion is now explicit and confirmed by the user; future changes
   must not reintroduce enrichment during import, reload, or initial draft
   loading.
-- Local Registry templates with dependencies are still cloned one item at a
-  time and may retain dangling references until dependency-closure insertion
-  is implemented.
+- Local Registry templates are inserted through a complete dependency closure,
+  with remapped IDs and rejection of missing, ambiguous, or cyclic paths.
 - The shared ID utility now prevents ambiguous duplicate-ID migrations and
   reports the conflicting IDs to the user.
 - Static Registry item validation uses generated per-kind Ajv validators.
