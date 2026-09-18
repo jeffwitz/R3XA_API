@@ -229,6 +229,74 @@ def test_static_editor_preserves_one_document_across_modes(static_site: str) -> 
         browser.close()
 
 
+def test_every_static_prefilled_profile_is_valid_and_survives_mode_changes(static_site: str) -> None:
+    profiles = (
+        "camera_images",
+        "dic_2d",
+        "fatigue_with_overload",
+        "in_situ_tensile",
+        "mechanical_test",
+        "stereo_dic",
+        "tabular_file",
+        "tomography",
+        "torsion_test",
+    )
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        for profile in profiles:
+            page = browser.new_page()
+            page_errors: list[str] = []
+            page.on("pageerror", lambda error: page_errors.append(str(error)))
+            page.goto(f"{static_site}/edit/?profile={profile}&prefill=1")
+            page.wait_for_selector("#schema-summary")
+            page.wait_for_function("Boolean(localStorage.getItem('r3xaDraft'))")
+            original = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+            report = page.evaluate(
+                "async payload => (await window.R3XARuntime.validateDocument(payload)).json()",
+                original,
+            )
+            assert report["valid"] is True, (profile, report["errors"])
+            assert any(original[section] for section in ("settings", "data_sources", "data_sets"))
+            for mode in ("advanced", "expert", "guided"):
+                page.locator(f"[data-editor-mode='{mode}']").click()
+                page.wait_for_function("mode => document.body.dataset.editorMode === mode", arg=mode)
+            assert page.evaluate("JSON.parse(document.querySelector('#json-input').value)") == original
+            assert page_errors == [], (profile, page_errors)
+            page.close()
+        browser.close()
+
+
+def test_static_advanced_editor_can_create_every_schema_kind(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page_errors: list[str] = []
+        page.on("pageerror", lambda error: page_errors.append(str(error)))
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("[data-editor-mode='advanced']").click()
+        expected_counts: dict[str, int] = {}
+        for section_id, section_name in (
+            ("settings-form", "settings"),
+            ("data-sources-form", "data_sources"),
+            ("data-sets-form", "data_sets"),
+        ):
+            actions = page.locator(f"#{section_id} .array-actions button")
+            expected_counts[section_name] = actions.count()
+            for index in range(expected_counts[section_name]):
+                actions.nth(index).click()
+                assert page.locator(f"#{section_id} .array-item").count() == index + 1
+        payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        assert {section: len(payload[section]) for section in expected_counts} == expected_counts
+        page.locator("[data-editor-mode='expert']").click()
+        page.locator("[data-editor-mode='advanced']").click()
+        assert page.evaluate(
+            "JSON.parse(document.querySelector('#json-input').value)"
+        ) == payload
+        assert page_errors == []
+        browser.close()
+
+
 def test_static_editor_imports_json_and_persists_it_locally(static_site: str) -> None:
     payload = {
         "title": "Imported static document",
@@ -258,6 +326,105 @@ def test_static_editor_imports_json_and_persists_it_locally(static_site: str) ->
         page.reload()
         page.wait_for_function("JSON.parse(document.querySelector('#json-input').value).title === 'Imported static document'")
         assert page.evaluate("JSON.parse(document.querySelector('#json-input').value).title") == payload["title"]
+        browser.close()
+
+
+def test_static_editor_adds_and_edits_author_objects(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        author_field = page.locator("#guided-document-authors")
+        author_field.get_by_role("button", name="Add object").click()
+        page.locator("#guided-document-authors-0-name").fill("Jean-Charles Passieux")
+        page.locator("#guided-document-authors-0-affiliation").fill("CNRS")
+        page.locator("#guided-document-authors-0-orcid").fill("https://orcid.org/0000-0000-0000-0000")
+
+        authors = page.evaluate("JSON.parse(document.querySelector('#json-input').value).authors")
+        assert authors == [{
+            "name": "Jean-Charles Passieux",
+            "affiliation": "CNRS",
+            "orcid": "https://orcid.org/0000-0000-0000-0000",
+        }]
+        page.locator("[data-editor-mode='advanced']").click()
+        page.locator("[data-editor-mode='guided']").click()
+        page.locator(".guided-step").filter(has_text="Document information").click()
+        assert page.locator("#guided-document-authors-0-name").input_value() == "Jean-Charles Passieux"
+        assert page.locator("#guided-document-authors-0-affiliation").input_value() == "CNRS"
+        browser.close()
+
+
+def test_static_advanced_editor_adds_and_removes_author_objects(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("[data-editor-mode='advanced']").click()
+        author_field = page.locator("#field-authors")
+        author_field.get_by_role("button", name="Add object").click()
+        page.locator("#field-authors-0-name").fill("First author")
+        author_field.get_by_role("button", name="Add object").click()
+        page.locator("#field-authors-1-name").fill("Second author")
+        page.locator("#field-authors .object-array-row").first.get_by_role("button", name="Remove").click()
+        assert page.evaluate("JSON.parse(document.querySelector('#json-input').value).authors") == [
+            {"name": "Second author"}
+        ]
+        assert page.locator("#field-authors-0-name").input_value() == "Second author"
+        browser.close()
+
+
+def test_static_advanced_item_validation_does_not_report_document_reference_errors(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=tabular_file&prefill=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("[data-editor-mode='advanced']").click()
+        data_set = page.locator("#data-sets-form .array-item").filter(has_text="Force time series")
+        data_set.get_by_role("button", name="Validate item").click()
+        page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
+        assert "Valid" in page.locator("#validation-output").inner_text()
+        browser.close()
+
+
+def test_static_nested_editors_preserve_sibling_values_and_numeric_types(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/edit/?profile=tabular_file&prefill=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("[data-editor-mode='advanced']").click()
+
+        unit = page.locator("#field-data_sources-0-output_units-0")
+        unit.locator(".unit-part").filter(has_text="Title").locator("input").fill("load")
+        unit.locator(".unit-part").filter(has_text="Value").locator("input").fill("12.5")
+        unit.locator(".unit-part").filter(has_text="Unit").locator("input").fill("kN")
+        unit.locator(".unit-part").filter(has_text="Scale").locator("input").fill("1000")
+
+        values = page.locator("#field-data_sets-0-values")
+        values.locator("#field-data_sets-0-values-filename").fill("measurements.csv")
+        values.locator("#field-data_sets-0-values-delimiter").fill(";")
+        values.locator("#field-data_sets-0-values-col").fill("2")
+        values.locator("#field-data_sets-0-values-rows").fill("[3, 42]")
+
+        payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        assert payload["data_sources"][0]["output_units"][0] == {
+            "kind": "unit",
+            "title": "load",
+            "value": 12.5,
+            "unit": "kN",
+            "scale": 1000,
+        }
+        assert payload["data_sets"][0]["values"] == {
+            "kind": "data_set_file",
+            "filename": "measurements.csv",
+            "file_type": "text/csv",
+            "delimiter": ";",
+            "col": 2,
+            "rows": [3, 42],
+        }
         browser.close()
 
 

@@ -1,13 +1,3 @@
-// Since schema 2026.9.16 an author is an object {name, affiliation?, orcid?}
-// rather than a bare string, and the document requires at least one.
-function normalizeAuthors(value) {
-  const entries = Array.isArray(value) ? value : value ? [value] : [];
-  const authors = entries
-    .map((entry) => (entry && typeof entry === "object" ? entry : { name: String(entry) }))
-    .filter((entry) => entry.name);
-  return authors.length ? authors : [{ name: "temp" }];
-}
-
 const defaultPayload = {
   title: "",
   description: "",
@@ -859,22 +849,33 @@ const createItem = (kind, meta, payload) => {
   return item;
 };
 
+const fieldTypes = (meta) => {
+  const declared = Array.isArray(meta?.type) ? meta.type : [meta?.type];
+  const alternatives = [...(meta?.oneOf || []), ...(meta?.anyOf || [])]
+    .flatMap((option) => Array.isArray(option.type) ? option.type : [option.type]);
+  return new Set([...declared, ...alternatives].filter(Boolean));
+};
+
 const fieldControlValue = (control, meta) => {
-  if (meta.type === "boolean") return control.checked;
-  if (meta.type === "number" || meta.type === "integer") {
+  const types = fieldTypes(meta);
+  if (types.has("boolean") && types.size === 1) return control.checked;
+  if ((types.has("number") || types.has("integer")) && types.size === 1) {
     return control.value === "" ? undefined : Number(control.value);
   }
-  if (Array.isArray(meta.type) && meta.type.includes("integer") && /^[-+]?\d+$/.test(control.value.trim())) {
+  if (types.has("integer") && /^[-+]?\d+$/.test(control.value.trim())) {
+    return Number(control.value);
+  }
+  if (types.has("number") && control.value !== "" && Number.isFinite(Number(control.value))) {
     return Number(control.value);
   }
   return control.value;
 };
 
 const primitiveValue = (value, meta) => {
-  const types = Array.isArray(meta?.type) ? meta.type : [meta?.type];
-  if (value === "null" && types.includes("null")) return null;
-  if (types.includes("integer") && /^[-+]?\d+$/.test(value)) return Number(value);
-  if (types.includes("number") && value !== "" && Number.isFinite(Number(value))) return Number(value);
+  const types = fieldTypes(meta);
+  if (value === "null" && types.has("null")) return null;
+  if (types.has("integer") && /^[-+]?\d+$/.test(value)) return Number(value);
+  if (types.has("number") && value !== "" && Number.isFinite(Number(value))) return Number(value);
   return value;
 };
 
@@ -1107,19 +1108,33 @@ const renderObjectArrayField = (container, key, meta, value, onChange, options) 
   values.forEach((item, index) => {
     const row = document.createElement("div");
     row.className = "object-array-row";
-    const control = document.createElement("textarea");
-    control.value = JSON.stringify(item, null, 2);
-    control.className = "json-field";
-    control.addEventListener("input", () => {
-      try {
-        values[index] = JSON.parse(control.value);
-        control.setCustomValidity("");
-        onChange(values);
-      } catch {
-        control.setCustomValidity(t("field.invalid_json", "Enter valid JSON"));
-      }
+    const itemMeta = meta.items || {};
+    const itemProperties = itemMeta.properties || {};
+    const required = new Set(itemMeta.required || []);
+    let itemValue = item && typeof item === "object" ? {...item} : {};
+    Object.entries(itemProperties).forEach(([field, fieldMeta]) => {
+      renderField(
+        row,
+        field,
+        fieldMeta,
+        itemValue[field],
+        (nextValue) => {
+          const nextItem = {...itemValue};
+          setObjectField(nextItem, field, nextValue, required.has(field));
+          itemValue = nextItem;
+          values[index] = nextItem;
+          onChange([...values]);
+        },
+        {
+          required: required.has(field),
+          forceVisible: true,
+          payload: options.payload,
+          refresh: options.refresh,
+          id: `${options.id || key}-${index}-${field}`,
+          path: options.path ? `${options.path}/${index}/${field}` : null,
+        }
+      );
     });
-    row.appendChild(control);
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "ghost";
@@ -1399,28 +1414,21 @@ const buildHeaderForm = (properties) => {
         saveDraft();
         refreshGuidedNavigation();
       },
-      { required: required.has(key), payload, path: key, id: `field-${key}` }
+      {
+        required: required.has(key),
+        payload,
+        path: key,
+        id: `field-${key}`,
+        refresh: () => buildHeaderForm(properties),
+      }
     );
   });
 };
 
 const validateItem = async (section, item, index) => {
-  const payload = readPayload();
-  if (!payload) return;
-  const copy = {
-    title: payload.title || "temp",
-    description: payload.description || "temp",
-    version: payload.version || schemaCatalog.schema_version,
-    authors: normalizeAuthors(payload.authors),
-    date: payload.date || "2024-01-01",
-    settings: [],
-    data_sources: [],
-    data_sets: [],
-  };
-  copy[section] = [item];
   const itemTitle = item.title || `${section} #${index + 1}`;
   try {
-    const response = await window.R3XARuntime.validateDocument(copy);
+    const response = await window.R3XARuntime.validateItem(item, item.kind || "");
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     if (report.valid) {

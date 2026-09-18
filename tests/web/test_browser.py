@@ -193,6 +193,32 @@ def test_individually_added_guided_item_requires_template_review(page: Page, web
     assert pending
 
 
+def test_advanced_editor_adds_and_edits_author_objects(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/edit?profile=generic&new=1")
+    page.wait_for_selector("#schema-summary")
+    page.locator("[data-editor-mode='advanced']").click()
+    author_field = page.locator("#field-authors")
+    author_field.get_by_role("button", name="Add object").click()
+    page.locator("#field-authors-0-name").fill("Jean-Charles Passieux")
+    page.locator("#field-authors-0-affiliation").fill("CNRS")
+    page.locator("#field-authors-0-orcid").fill("https://orcid.org/0000-0000-0000-0000")
+    assert _payload(page)["authors"] == [{
+        "name": "Jean-Charles Passieux",
+        "affiliation": "CNRS",
+        "orcid": "https://orcid.org/0000-0000-0000-0000",
+    }]
+
+
+def test_advanced_item_validation_uses_registry_validation(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/edit?profile=tabular_file&prefill=1")
+    page.wait_for_selector("#schema-summary")
+    page.locator("[data-editor-mode='advanced']").click()
+    data_set = page.locator("#data-sets-form .array-item").filter(has_text="Force time series")
+    data_set.get_by_role("button", name="Validate item").click()
+    page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
+    assert "Valid" in page.locator("#validation-output").inner_text()
+
+
 def test_adding_a_guided_item_does_not_overwrite_a_manual_relationship(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d")
     page.wait_for_selector(".guided-step")
