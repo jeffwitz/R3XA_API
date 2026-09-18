@@ -212,6 +212,12 @@ def test_document_collections_preserve_object_identity_and_bind_documents():
     assert replacement._document is document
 
 
+def test_typed_model_generates_kind_prefixed_ids():
+    camera = models.CameraSource(title="Camera")
+
+    assert camera.id.startswith("src-camera-")
+
+
 def test_typed_document_adds_and_links_items():
     camera = _valid_camera()
     images = models.ListDataSet(

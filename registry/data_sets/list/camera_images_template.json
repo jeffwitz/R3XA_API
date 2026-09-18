@@ -1,5 +1,5 @@
 {
-  "id": "set-camera-images",
+  "id": "set-list-camera-images",
   "kind": "data_sets/list",
   "title": "graylevel images",
   "description": "images taken by the CCD camera",

@@ -1,5 +1,5 @@
 {
-  "id": "ds_cam_registry_demo",
+  "id": "src-camera-registry-demo",
   "kind": "data_sources/camera",
   "title": "Registry camera clone",
   "description": "Merged from registry discovery example",
@@ -7,36 +7,36 @@
   "output_dimension": "surface",
   "output_units": [
     {
-      "kind": "unit",
       "title": "graylevel",
       "value": 1.0,
       "unit": "gl",
-      "scale": 1.0
+      "scale": 1.0,
+      "kind": "unit"
     }
   ],
   "manufacturer": "Allied Vision Technologies (AVT)",
   "model": "Dolphin F-145B",
   "image_size": [
     {
-      "kind": "unit",
       "title": "width",
-      "value": 1392,
+      "value": 1392.0,
       "unit": "px",
-      "scale": 1.0
+      "scale": 1.0,
+      "kind": "unit"
     },
     {
-      "kind": "unit",
       "title": "height",
-      "value": 1040,
+      "value": 1040.0,
       "unit": "px",
-      "scale": 1.0
+      "scale": 1.0,
+      "kind": "unit"
     }
   ],
   "focal_length": {
-    "kind": "unit",
     "title": "focal_length",
     "value": 25.0,
     "unit": "mm",
-    "scale": 1.0
+    "scale": 1.0,
+    "kind": "unit"
   }
 }

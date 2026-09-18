@@ -120,7 +120,7 @@ r3xa = R3XAFile(
 )
 
 specimen = models.SpecimenSetting(
-    id="set_specimen_01",
+    id="stg-specimen-01",
     kind="settings/specimen",
     title="Openhole sample",
     description="Glass-epoxy specimen",
@@ -133,7 +133,7 @@ specimen = models.SpecimenSetting(
 r3xa.settings.append(specimen)
 
 camera = models.CameraSource(
-    id="ds_camera_01",
+    id="src-camera-01",
     kind="data_sources/camera",
     title="CCD Camera",
     output_components=1,
@@ -154,7 +154,7 @@ image_files = [f"img_{i:04d}.tif" for i in range(num_frames)]
 dic_files = [f"dic_{i:04d}.csv" for i in range(num_frames)]
 
 images = models.ImageSetList(
-    id="ds_images_01",
+    id="set-list-images-01",
     kind="data_sets/list",
     title="graylevel images",
     description="raw images from CCD camera",
@@ -168,7 +168,7 @@ images = models.ImageSetList(
 r3xa.data_sets.append(images)
 
 dic_source = models.GenericSource(
-    id="src_dic_01",
+    id="src-generic-dic-01",
     kind="data_sources/generic",
     title="DIC processing (pyxel)",
     description="2D DIC using pyxel",
@@ -185,7 +185,7 @@ dic_source = models.GenericSource(
 r3xa.data_sources.append(dic_source)
 
 dic_data = models.ImageSetList(
-    id="ds_dic_01",
+    id="set-list-dic-fields-01",
     kind="data_sets/list",
     title="DIC displacement fields",
     description="ux, uy per frame",

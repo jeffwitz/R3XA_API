@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 import json
 
-from r3xa_api import R3XAFile, R3XAItem, author, data_set_file, load_schema, unit, validate
+from r3xa_api import R3XAFile, R3XAItem, author, data_set_file, load_schema, new_item, unit, validate
 from r3xa_api.core import format_json_value
 
 
@@ -95,6 +95,27 @@ def test_unit_accepts_minimal_schema_payload() -> None:
 def test_unit_requires_unit_field() -> None:
     with pytest.raises(TypeError):
         unit(title="width")
+
+
+def test_generated_item_ids_include_section_and_kind_prefixes() -> None:
+    camera = new_item(
+        "data_sources/camera",
+        title="Camera",
+        output_components=1,
+        output_dimension="surface",
+        output_units=[unit(unit="gl")],
+    )
+    specimen = new_item("settings/specimen", title="Specimen")
+    images = new_item(
+        "data_sets/list",
+        title="Images",
+        timestamps=[0.0],
+        values=["image_0001.tif"],
+    )
+
+    assert camera.id.startswith("src-camera-")
+    assert specimen.id.startswith("stg-specimen-")
+    assert images.id.startswith("set-list-")
 
 
 def test_generic_data_source_accepts_uncertainty() -> None:

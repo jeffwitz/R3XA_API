@@ -176,6 +176,22 @@ h1 {
   gap: 0.75rem;
 }
 
+.registry-id-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.registry-id-controls input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.registry-id-controls button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .registry-object-field {
   display: grid;
   gap: 0.65rem;

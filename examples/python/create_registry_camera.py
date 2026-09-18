@@ -7,7 +7,7 @@ tree_path = "data_sources/camera/example_generated_camera"
 
 camera = new_item(
     "data_sources/camera",
-    id="ds_cam_example_generated",
+    id="src-camera-example-generated",
     title="Example generated camera",
     description="Example registry camera generated with R3XA_API",
     output_components=1,

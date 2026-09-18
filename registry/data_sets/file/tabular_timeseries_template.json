@@ -1,5 +1,5 @@
 {
-  "id": "set-tabular-timeseries",
+  "id": "set-file-tabular-timeseries",
   "kind": "data_sets/file",
   "title": "force time series",
   "description": "force vs time",

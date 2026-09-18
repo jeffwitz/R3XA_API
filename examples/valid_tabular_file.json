@@ -10,7 +10,7 @@
   "date": "2024-10-30",
   "settings": [
     {
-      "id": "set_generic_01",
+      "id": "stg-generic-01",
       "kind": "settings/generic",
       "title": "Testing machine",
       "description": "Electromechanical tensile machine"
@@ -18,7 +18,7 @@
   ],
   "data_sources": [
     {
-      "id": "ds_generic_01",
+      "id": "src-generic-01",
       "kind": "data_sources/generic",
       "title": "Load cell",
       "description": "Force measurement",
@@ -39,13 +39,13 @@
   ],
   "data_sets": [
     {
-      "id": "dset_force_01",
+      "id": "set-file-force-01",
       "kind": "data_sets/file",
       "title": "Force time series",
       "description": "Force vs time",
       "path": "data/",
       "parent_data_sources": [
-        "ds_generic_01"
+        "src-generic-01"
       ],
       "timestamps": {
         "col": 0,

@@ -40,6 +40,12 @@ shows the affected JSON path when available.
 7. Click **Add to local registry** to make a valid item available as a template in this browser.
 8. Click **Save JSON** to export the updated item.
 
+The `id` field includes **Generate new ID**. It creates a unique identifier with
+the conventional section prefix (`stg-`, `src-`, or `set-`) and checks the
+templates already stored in this browser. Saving a local item is also refused
+when its identifier or title would duplicate another local item. Updating the
+same item with the same identifier and title remains allowed.
+
 The generated example fills scalar, unit, file and nested-object fields with
 domain-specific illustrative values (for example, a camera exposure is shown as
 `0.01 s`, a focal length as `25 mm`, and a load-cell capacity as `10 kN`). Older
@@ -59,6 +65,10 @@ does not send them to a server; the server-backed runtime may send the current
 item to its validation endpoint when **Validate item** is clicked. Adding a
 template to an R3XA document creates a new local copy with a new identifier, so
 the registry item itself is never modified.
+
+When local storage contains an older identifier such as `ds_cam_legacy`, the
+Registry editor migrates it to the canonical kind-specific form such as
+`src-camera-...` and updates local references where necessary.
 
 ## Relation to existing web docs
 

@@ -115,6 +115,44 @@ def test_generic_home_entry_starts_a_new_empty_document(page: Page, web_server: 
     assert payload["data_sets"] == []
 
 
+def test_guided_items_use_kind_prefixed_ids(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/edit?profile=stereo_dic&prefill=1")
+    page.wait_for_selector("#schema-summary")
+    payload = _payload(page)
+    prefixes = {"settings": "stg", "data_sources": "src", "data_sets": "set"}
+    for section, prefix in prefixes.items():
+        for item in payload[section]:
+            kind_name = item["kind"].split("/", 1)[1]
+            assert item["id"].startswith(f"{prefix}-{kind_name}-"), item["id"]
+
+
+def test_existing_document_ids_are_migrated_to_kind_prefixes(page: Page, web_server: str) -> None:
+    legacy = {
+        "title": "Legacy document",
+        "description": "Legacy document",
+        "version": "2026.9.18",
+        "authors": [],
+        "date": "2026-09-02",
+        "settings": [{"id": "id_specimen", "kind": "settings/specimen", "title": "Specimen"}],
+        "data_sources": [{"id": "id_camera", "kind": "data_sources/camera", "title": "Camera"}],
+        "data_sets": [{
+            "id": "id_images",
+            "kind": "data_sets/list",
+            "title": "Images",
+            "parent_data_sources": ["id_camera"],
+        }],
+    }
+    page.goto(web_server)
+    page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", legacy)
+    page.goto(f"{web_server}/edit?profile=generic")
+    page.wait_for_selector("#schema-summary")
+    payload = _payload(page)
+    assert payload["settings"][0]["id"].startswith("stg-specimen-")
+    assert payload["data_sources"][0]["id"].startswith("src-camera-")
+    assert payload["data_sets"][0]["id"].startswith("set-list-")
+    assert payload["data_sets"][0]["parent_data_sources"] == [payload["data_sources"][0]["id"]]
+
+
 def test_switching_to_generic_discards_existing_items_after_confirmation(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
     page.wait_for_selector(".template-review-control")
@@ -240,6 +278,20 @@ def test_registry_form_syncs_with_json_and_preserves_unknown_fields(page: Page, 
     updated = _payload_from_registry(page)
     assert updated["description"] == "Edited without losing extensions"
     assert updated["custom_extension"] == {"kept": True}
+
+
+def test_registry_id_generator_uses_kind_prefixes(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/registry")
+    page.wait_for_selector("#registry-form .registry-field")
+    for kind, prefix in [
+        ("settings/specimen", "stg-specimen-"),
+        ("data_sources/camera", "src-camera-"),
+        ("data_sets/list", "set-list-"),
+    ]:
+        page.locator("#registry-kind").select_option(kind)
+        assert page.locator("#registry-field-id").input_value().startswith(prefix)
+        page.locator("[data-json-path='id']").get_by_role("button", name="Generate new ID").click()
+        assert page.locator("#registry-field-id").input_value().startswith(prefix)
 
 
 def test_adding_a_guided_item_does_not_overwrite_a_manual_relationship(page: Page, web_server: str) -> None:

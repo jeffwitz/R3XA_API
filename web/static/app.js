@@ -304,7 +304,7 @@ const applyStepDefaults = (step, target, payload) => {
   Object.entries(stepProperties(step)).forEach(([key, meta]) => {
     const isGuidedQuestion = (step.questions || []).some((question) => question.field === key);
     if (!isGuidedQuestion || Object.prototype.hasOwnProperty.call(target, key)) return;
-    target[key] = defaultForField(key, meta, payload);
+    target[key] = defaultForField(key, meta, payload, step.kind);
   });
 };
 
@@ -801,7 +801,49 @@ const refreshGuidedNavigation = () => {
   });
 };
 
-const makeId = () => `id_${Math.random().toString(36).slice(2, 12)}`;
+const idPrefixForKind = (kind) => {
+  const [section, kindName] = String(kind || "").split("/");
+  const sectionPrefix = {settings: "stg", data_sources: "src", data_sets: "set"}[section] || "r3xa";
+  return `${sectionPrefix}-${kindName || "item"}-`;
+};
+
+const makeId = (kind, used = new Set()) => {
+  let identifier;
+  do {
+    const random = globalThis.crypto?.randomUUID?.().replaceAll("-", "").slice(0, 12)
+      || Math.random().toString(36).slice(2, 14);
+    identifier = `${idPrefixForKind(kind)}${random}`;
+  } while (used.has(identifier));
+  return identifier;
+};
+
+const hasCanonicalId = (item) => typeof item?.id === "string"
+  && item.id.startsWith(idPrefixForKind(item.kind));
+
+const normalizeDocumentIds = (payload) => {
+  const used = new Set();
+  const replacements = new Map();
+  ["settings", "data_sources", "data_sets"].forEach((section) => {
+    (payload[section] || []).forEach((item) => {
+      if (!hasCanonicalId(item) || used.has(item.id)) {
+        const oldId = item.id;
+        item.id = makeId(item.kind, used);
+        if (oldId) replacements.set(oldId, item.id);
+      }
+      used.add(item.id);
+    });
+  });
+  ["parent_data_sources", "attached_data_sources", "input_data_sets"].forEach((field) => {
+    ["settings", "data_sources", "data_sets"].forEach((section) => {
+      (payload[section] || []).forEach((item) => {
+        if (Array.isArray(item[field])) {
+          item[field] = item[field].map((reference) => replacements.get(reference) || reference);
+        }
+      });
+    });
+  });
+  return replacements;
+};
 
 const localRegistryStorageKey = "r3xaLocalRegistryItems";
 
@@ -818,7 +860,7 @@ const registrySectionForKind = (kind) => kind?.split("/", 1)[0] || "";
 
 const cloneLocalRegistryItem = (item) => {
   const clone = cloneJsonValue(item);
-  clone.id = makeId();
+  clone.id = makeId(clone.kind);
   return clone;
 };
 
@@ -836,11 +878,11 @@ const appendLocalRegistryItem = (sectionName, item, step = null) => {
   syncFormFromJson();
 };
 
-const defaultForField = (key, meta, payload) => {
+const defaultForField = (key, meta, payload, kind = "") => {
   if (meta.const !== undefined) return meta.const;
   if (meta.default !== undefined) return meta.default;
 
-  if (key === "id") return makeId();
+  if (key === "id") return makeId(kind);
   if (key === "title" || key === "description") return "";
   if (key === "file_type" || key === "path" || key === "folder" || key === "filename") return "";
   if (key === "output_components") return undefined;
@@ -865,7 +907,7 @@ const defaultForField = (key, meta, payload) => {
     Object.entries(meta.properties || {}).forEach(([propertyKey, propertyMeta]) => {
       const propertyRequired = (meta.required || []).includes(propertyKey);
       if (propertyRequired || propertyMeta.const !== undefined) {
-        object[propertyKey] = defaultForField(propertyKey, propertyMeta, payload);
+        object[propertyKey] = defaultForField(propertyKey, propertyMeta, payload, kind);
       }
     });
     return object;
@@ -880,7 +922,7 @@ const createItem = (kind, meta, payload) => {
 
   Object.entries(properties).forEach(([key, propertyMeta]) => {
     if (key === "id") {
-      item[key] = makeId();
+      item[key] = makeId(kind);
       return;
     }
     if (key === "kind") {
@@ -888,7 +930,7 @@ const createItem = (kind, meta, payload) => {
       return;
     }
     if (required.has(key)) {
-      item[key] = defaultForField(key, propertyMeta, payload);
+      item[key] = defaultForField(key, propertyMeta, payload, kind);
     }
   });
   return item;
@@ -1835,13 +1877,15 @@ const loadJsonFile = (file) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
+    let payload;
     try {
-      JSON.parse(reader.result);
+      payload = JSON.parse(reader.result);
     } catch (error) {
       outputEl.textContent = t("validation.parse_error_detail", "Parse error: {message}", {message: error.message});
       return;
     }
-    inputEl.value = reader.result;
+    normalizeDocumentIds(payload);
+    inputEl.value = JSON.stringify(payload, null, 2);
     guidedStepItems = {};
     saveGuidedStepItems();
     clearAllTemplateReviews();
@@ -1927,5 +1971,17 @@ inputEl.addEventListener("input", () => {
 ensureServerStart();
 updateEditorMode();
 inputEl.value = loadDraft();
+const loadedPayload = readPayload();
+const loadedIdReplacements = loadedPayload ? normalizeDocumentIds(loadedPayload) : new Map();
+if (loadedIdReplacements.size && loadedPayload) {
+  inputEl.value = JSON.stringify(loadedPayload, null, 2);
+  saveDraft();
+}
 guidedStepItems = loadGuidedStepItems();
+if (loadedIdReplacements.size) {
+  guidedStepItems = Object.fromEntries(
+    Object.entries(guidedStepItems).map(([stepId, itemId]) => [stepId, loadedIdReplacements.get(itemId) || itemId]),
+  );
+  saveGuidedStepItems();
+}
 renderSummary();

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import secrets
-import string
 from collections.abc import Iterable
 import re
 from enum import Enum
@@ -13,14 +11,11 @@ from pydantic import BaseModel, ConfigDict, PrivateAttr, RootModel
 
 from ._format import format_json_value
 from ._references import reference_fields, reference_id
+from ._ids import generate_id
 from .schema import load_schema
 
 
 ModelT = TypeVar("ModelT", bound="R3XAItem")
-
-
-def _random_id(length: int = 24) -> str:
-    return "".join(secrets.choice(string.ascii_lowercase) for _ in range(length))
 
 
 class R3XAItem(BaseModel):
@@ -33,7 +28,11 @@ class R3XAItem(BaseModel):
 
     def __init__(self, **data: Any) -> None:
         if "id" in self.__class__.model_fields and "id" not in data:
-            data["id"] = _random_id()
+            kind = data.get("kind")
+            if not isinstance(kind, str):
+                kind_field = self.__class__.model_fields.get("kind")
+                kind = getattr(kind_field, "default", "")
+            data["id"] = generate_id(kind if isinstance(kind, str) else "")
         reference_objects: dict[str, Any] = {}
         for field in reference_fields():
             if field not in data or data[field] is None:

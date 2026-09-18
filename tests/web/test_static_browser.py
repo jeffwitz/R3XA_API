@@ -257,6 +257,11 @@ def test_every_static_prefilled_profile_is_valid_and_survives_mode_changes(stati
             )
             assert report["valid"] is True, (profile, report["errors"])
             assert any(original[section] for section in ("settings", "data_sources", "data_sets"))
+            prefixes = {"settings": "stg", "data_sources": "src", "data_sets": "set"}
+            for section, items in ((name, original[name]) for name in prefixes):
+                for item in items:
+                    kind_name = item["kind"].split("/", 1)[1]
+                    assert item["id"].startswith(f"{prefixes[section]}-{kind_name}-"), item["id"]
             for mode in ("advanced", "expert", "guided"):
                 page.locator(f"[data-editor-mode='{mode}']").click()
                 page.wait_for_function("mode => document.body.dataset.editorMode === mode", arg=mode)
@@ -592,6 +597,9 @@ def test_static_registry_examples_fill_every_schema_field_with_realistic_values(
             page.locator("#registry-kind").select_option(kind)
             page.wait_for_function("expected => JSON.parse(document.querySelector('#registry-json-input').value).kind === expected", arg=kind)
             payload = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+            section, kind_name = kind.split("/")
+            prefix = {"settings": "stg", "data_sources": "src", "data_sets": "set"}[section]
+            assert payload["id"].startswith(f"{prefix}-{kind_name}-")
             placeholders = page.evaluate(
                 """
                 payload => {
@@ -643,6 +651,7 @@ def test_static_registry_upgrades_an_old_placeholder_draft(static_site: str) -> 
         page.reload()
         page.wait_for_function("document.querySelector('#registry-field-exposure-value')?.value === '0.01'")
         payload = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+        assert payload["id"].startswith("src-camera-")
         assert payload["exposure"] == {
             "kind": "unit",
             "title": "exposure time",
@@ -651,6 +660,95 @@ def test_static_registry_upgrades_an_old_placeholder_draft(static_site: str) -> 
             "scale": 1.0,
         }
         assert payload["output_units"][0]["unit"] == "gl"
+        browser.close()
+
+
+def test_static_registry_generates_unique_ids_and_rejects_duplicate_local_items(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/registry/")
+        page.evaluate("localStorage.removeItem('r3xaLocalRegistryItems')")
+        page.locator("#registry-kind").select_option("data_sources/camera")
+        page.locator("#registry-field-title").fill("Local camera")
+        current_id = page.locator("#registry-field-id").input_value()
+        page.locator("[data-json-path='id']").get_by_role("button", name="Generate new ID").click()
+        generated_id = page.locator("#registry-field-id").input_value()
+        assert generated_id != current_id
+        assert generated_id.startswith("src-camera-")
+
+        page.click("#registry-validate-btn")
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
+        page.click("#registry-add-local-btn")
+        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '[]').length === 1")
+
+        page.locator("#registry-field-title").fill("Another camera")
+        page.click("#registry-validate-btn")
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
+        page.click("#registry-add-local-btn")
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('ID is already used')")
+        assert page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).length") == 1
+
+        page.locator("[data-json-path='id']").get_by_role("button", name="Generate new ID").click()
+        page.locator("#registry-field-title").fill("Local camera")
+        page.click("#registry-validate-btn")
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
+        page.click("#registry-add-local-btn")
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('title is already used')")
+        assert page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).length") == 1
+        browser.close()
+
+
+def test_static_registry_migrates_legacy_local_ids(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/registry/")
+        page.evaluate(
+            """
+            () => localStorage.setItem('r3xaLocalRegistryItems', JSON.stringify([{
+              id: 'ds_cam_legacy',
+              kind: 'data_sources/camera',
+              title: 'Legacy camera'
+            }]))
+            """
+        )
+        page.reload()
+        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems'))[0].id.startsWith('src-camera-')")
+        migrated = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems'))[0]")
+        assert migrated["id"].startswith("src-camera-")
+        assert migrated["id"] != "ds_cam_legacy"
+        browser.close()
+
+
+def test_static_existing_document_ids_are_migrated_to_kind_prefixes(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        legacy = {
+            "title": "Legacy document",
+            "description": "Legacy document",
+            "version": "2026.9.18",
+            "authors": [],
+            "date": "2026-09-02",
+            "settings": [{"id": "id_specimen", "kind": "settings/specimen", "title": "Specimen"}],
+            "data_sources": [{"id": "id_camera", "kind": "data_sources/camera", "title": "Camera"}],
+            "data_sets": [{
+                "id": "id_images",
+                "kind": "data_sets/list",
+                "title": "Images",
+                "parent_data_sources": ["id_camera"],
+            }],
+        }
+        page.goto(static_site)
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", legacy)
+        page.goto(f"{static_site}/edit/?profile=generic")
+        page.wait_for_selector("#schema-summary")
+        payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        assert payload["settings"][0]["id"].startswith("stg-specimen-")
+        assert payload["data_sources"][0]["id"].startswith("src-camera-")
+        assert payload["data_sets"][0]["id"].startswith("set-list-")
+        assert payload["data_sets"][0]["parent_data_sources"] == [payload["data_sources"][0]["id"]]
         browser.close()
 
 

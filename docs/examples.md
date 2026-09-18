@@ -141,9 +141,9 @@ specimen_base = registry.get_item("settings/specimen/openhole_sample")
 camera_base = registry.get_item("data_sources/camera/avt_dolphin_f145b")
 pyxel_base = registry.get_item("data_sources/generic/pyxel_dic_2d")
 
-specimen = specimen_base.merge(id="set_spec_exp01")
+specimen = specimen_base.merge(id="stg-specimen-exp01")
 camera = camera_base.merge(
-    id="ds_cam_exp01",
+    id="src-camera-exp01",
     description="CCD Camera (exp01)",
     standoff_distance=unit(title="standoff", value=0.5, unit="m", scale=1.0),
 )
@@ -174,7 +174,7 @@ images = r3xa.add_list_data_set(
 )
 
 dic = pyxel_base.merge(
-    id="ds_dic_exp01",
+    id="src-generic-dic-exp01",
     input_data_sets=[images],
 )
 r3xa.data_sources.append(dic)

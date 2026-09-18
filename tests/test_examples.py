@@ -110,6 +110,25 @@ def test_examples_validate_all():
         _restore_paths(generated_snapshots)
 
 
+def test_registry_examples_use_kind_prefixed_ids() -> None:
+    root = Path(__file__).parents[1]
+    artifacts = root / "examples" / "artifacts"
+    prefixes = {"settings": "stg", "data_sources": "src", "data_sets": "set"}
+
+    documents = [
+        json.loads((artifacts / "dic_pipeline_registry.json").read_text(encoding="utf-8")),
+    ]
+    items = [
+        json.loads((artifacts / "registry_camera_merged.json").read_text(encoding="utf-8")),
+    ]
+    for document in documents:
+        items.extend(item for section in ("settings", "data_sources", "data_sets") for item in document[section])
+
+    for item in items:
+        section, kind_name = item["kind"].split("/", 1)
+        assert item["id"].startswith(f"{prefixes[section]}-{kind_name}-"), item["id"]
+
+
 def test_validation_scripts_run() -> None:
     root = Path(__file__).parents[1]
     examples = root / "examples"

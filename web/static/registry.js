@@ -1,5 +1,5 @@
 const defaultRegistryItem = {
-  id: "item_example",
+  id: "src-generic-example",
   kind: "data_sources/generic",
   title: "Test machine acquisition",
   description: "Acquisition channel recording force and displacement during the tensile test.",
@@ -25,10 +25,60 @@ let schemaCatalog = null;
 let uiCatalog = null;
 let lintTimer = null;
 
+const generatedIdPrefix = (kind) => {
+  const section = kind?.split("/", 1)[0];
+  return {settings: "stg", data_sources: "src", data_sets: "set"}[section] || "r3xa";
+};
+
+const canonicalIdPrefix = (kind) => {
+  const kindName = kind?.split("/").slice(-1)[0] || "item";
+  return `${generatedIdPrefix(kind)}-${kindName}-`;
+};
+
+const hasCanonicalId = (item) => typeof item?.id === "string"
+  && item.id.startsWith(canonicalIdPrefix(item.kind));
+
+const createGeneratedId = (kind, used) => {
+  let identifier;
+  do {
+    const random = globalThis.crypto?.randomUUID?.().replaceAll("-", "").slice(0, 12)
+      || Math.random().toString(36).slice(2, 14);
+    identifier = `${canonicalIdPrefix(kind)}${random}`;
+  } while (used.has(identifier));
+  return identifier;
+};
+
+const normalizeLocalRegistryItems = (items) => {
+  const used = new Set();
+  const replacements = new Map();
+  const normalized = items.map((item) => {
+    const copy = {...item};
+    if (!hasCanonicalId(copy) || used.has(copy.id)) {
+      const oldId = copy.id;
+      copy.id = createGeneratedId(copy.kind, used);
+      if (oldId) replacements.set(oldId, copy.id);
+    }
+    used.add(copy.id);
+    return copy;
+  });
+  normalized.forEach((item) => {
+    Object.entries(item).forEach(([key, value]) => {
+      if (!["parent_data_sources", "attached_data_sources", "input_data_sets"].includes(key)) return;
+      if (Array.isArray(value)) item[key] = value.map((reference) => replacements.get(reference) || reference);
+    });
+  });
+  return normalized;
+};
+
 const readLocalRegistryItems = () => {
   try {
     const value = JSON.parse(localStorage.getItem(localRegistryStorageKey) || "[]");
-    return Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
+    const items = Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
+    const normalized = normalizeLocalRegistryItems(items);
+    if (JSON.stringify(normalized) !== JSON.stringify(items)) {
+      localStorage.setItem(localRegistryStorageKey, JSON.stringify(normalized));
+    }
+    return normalized;
   } catch {
     return [];
   }
@@ -36,6 +86,13 @@ const readLocalRegistryItems = () => {
 
 const writeLocalRegistryItems = (items) => {
   localStorage.setItem(localRegistryStorageKey, JSON.stringify(items));
+};
+
+const generateRegistryId = (kind) => {
+  const used = new Set(readLocalRegistryItems().map((item) => item.id).filter(Boolean));
+  const current = currentItem();
+  if (current?.id) used.add(current.id);
+  return createGeneratedId(kind, used);
 };
 
 const currentItem = () => {
@@ -112,17 +169,17 @@ const fieldTypes = (meta) => {
   return new Set([...declared, ...alternatives].filter(Boolean));
 };
 
-const defaultForField = (key, meta) => {
+const defaultForField = (key, meta, context = {}) => {
   if (meta.const !== undefined) return meta.const;
   if (meta.default !== undefined) return meta.default;
-  if (key === "id") return `item_${Math.random().toString(36).slice(2, 14)}`;
+  if (key === "id") return createGeneratedId(context.kind || kindEl.value, new Set());
   const types = fieldTypes(meta);
   if (types.has("array")) return [];
   if (types.has("object")) {
     const object = {};
     Object.entries(meta.properties || {}).forEach(([propertyKey, propertyMeta]) => {
       if ((meta.required || []).includes(propertyKey) || propertyMeta.const !== undefined) {
-        object[propertyKey] = defaultForField(propertyKey, propertyMeta);
+        object[propertyKey] = defaultForField(propertyKey, propertyMeta, context);
       }
     });
     return object;
@@ -332,7 +389,7 @@ const exampleString = (key, meta, context = {}) => {
 const exampleForField = (key, meta, context = {}) => {
   if (meta.const !== undefined) return meta.const;
   if (meta.default !== undefined) return cloneJsonValue(meta.default);
-  if (key === "id") return `item_${Math.random().toString(36).slice(2, 14)}`;
+  if (key === "id") return createGeneratedId(context.kind || kindEl.value, new Set());
   if (["parent_data_sources", "attached_data_sources", "input_data_sets"].includes(key)) return [];
   const types = fieldTypes(meta);
   if (key === "col") return 0;
@@ -597,7 +654,25 @@ const createField = (container, key, meta, value, onChange, path, required = fal
       onChange(next);
     };
     control.addEventListener(meta.enum || control.type === "checkbox" ? "change" : "input", update);
-    wrapper.appendChild(control);
+    if (key === "id") {
+      const idControls = document.createElement("div");
+      idControls.className = "registry-id-controls";
+      idControls.appendChild(control);
+      const generate = document.createElement("button");
+      generate.type = "button";
+      generate.className = "ghost";
+      generate.textContent = "Generate new ID";
+      generate.title = "Generate a unique ID with the R3XA section prefix.";
+      generate.addEventListener("click", () => {
+        const next = generateRegistryId(kindEl.value);
+        control.value = next;
+        onChange(next);
+      });
+      idControls.appendChild(generate);
+      wrapper.appendChild(idControls);
+    } else {
+      wrapper.appendChild(control);
+    }
   }
   if (meta.description) {
     const description = document.createElement("small");
@@ -777,6 +852,7 @@ const loadJsonFile = (file) => {
   const reader = new FileReader();
   reader.onload = () => {
     inputEl.value = reader.result;
+    enrichLoadedDraft();
     syncFromJson();
   };
   reader.readAsText(file);
@@ -788,6 +864,7 @@ const enrichLoadedDraft = () => {
   const meta = selectedMeta(kind);
   if (!item || !meta) return;
   const enriched = {...item};
+  if (!hasCanonicalId(enriched)) enriched.id = generateRegistryId(kind);
   Object.entries(meta.properties || {}).forEach(([key, propertyMeta]) => {
     if (key !== "kind") enriched[key] = completeExampleValue(key, enriched[key], propertyMeta, {kind});
   });
@@ -812,6 +889,16 @@ const addToLocalRegistry = async () => {
       return;
     }
     const items = readLocalRegistryItems();
+    const sameId = items.find((candidate) => candidate.id === item.id);
+    if (sameId && (sameId.title !== item.title || sameId.kind !== item.kind)) {
+      outputEl.textContent = "Cannot save this item: its ID is already used by another local registry item. Generate a new ID first.";
+      return;
+    }
+    const sameTitle = items.find((candidate) => candidate.title === item.title && candidate.id !== item.id);
+    if (sameTitle) {
+      outputEl.textContent = "Cannot save this item: its title is already used by another local registry item. Choose a different title.";
+      return;
+    }
     const updated = [...items.filter((candidate) => candidate.id !== item.id), item];
     writeLocalRegistryItems(updated);
     renderLocalRegistryItems();

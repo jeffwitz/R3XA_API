@@ -90,8 +90,13 @@ add_<kind>_setting(...)
 add_<kind>_source(...)
 add_<kind>_data_set(...)
 ```
-Schema‑driven guided helpers exist for every supported kind. They expose the schema `required`
+Schema-driven guided helpers exist for every supported kind. They expose the schema `required`
 fields as explicit parameters and accept optional schema fields through `**extra`.
+
+When an item is created without an explicit `id`, the SDK generates a readable identifier using
+the section and kind prefix: `stg-<kind>-...` for settings, `src-<kind>-...` for data sources,
+and `set-<kind>-...` for data sets. Explicit identifiers remain supported when a stable project
+identifier is required.
 
 Examples:
 
@@ -389,7 +394,7 @@ for tree_path in registry.list(kind="data_sources/camera"):
     print(tree_path)
 
 camera = registry.get_item("data_sources/camera/avt_dolphin_f145b").merge(
-    id="cam_exp01",
+    id="src-camera-exp01",
     description="Camera used in experiment 01",
 )
 camera.save("camera_exp01.json")
@@ -426,7 +431,7 @@ camera.save("camera_exp01.json")
 # Build a new item, bind it to a registry key, and save it into the registry tree.
 new_camera = registry.wrap(
     {
-        "id": "ds_cam_exp02",
+        "id": "src-camera-exp02",
         "kind": "data_sources/camera",
         "title": "Experiment camera",
         "description": "Bound registry item",

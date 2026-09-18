@@ -1,5 +1,5 @@
 {
-  "id": "src-dic-pyxel-2d",
+  "id": "src-generic-pyxel-dic-2d",
   "kind": "data_sources/generic",
   "title": "DIC processing (pyxel)",
   "description": "2D DIC using pyxel",

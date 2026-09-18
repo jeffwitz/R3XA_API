@@ -14,7 +14,7 @@ def main() -> None:
         print(f"- {tree_path}")
 
     merged_camera = registry.get_item("data_sources/camera/avt_dolphin_f145b").merge(
-        id="ds_cam_registry_demo",
+        id="src-camera-registry-demo",
         title="Registry camera clone",
         description="Merged from registry discovery example",
     )

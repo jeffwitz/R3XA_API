@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import json
-import random
-import string
 from collections.abc import Mapping, MutableMapping
 from functools import lru_cache
 from pathlib import Path
@@ -13,13 +11,7 @@ from .validate import validate
 from ._format import format_json_value
 from .model_base import R3XAItem
 from ._references import reference_fields, reference_id
-
-
-def _random_id(n: int = 24) -> str:
-    """Generate a lowercase identifier suitable for JSON object ids."""
-
-    chars = string.ascii_lowercase
-    return "".join(random.choice(chars) for _ in range(n))
+from ._ids import generate_id
 
 
 def new_item(kind: str, **fields: Any) -> R3XAItem:
@@ -33,7 +25,7 @@ def new_item(kind: str, **fields: Any) -> R3XAItem:
         raise ValueError(f"Unsupported R3XA item kind: {kind}")
     payload = dict(fields)
     if "id" in model_class.model_fields:
-        payload.setdefault("id", _random_id())
+        payload.setdefault("id", generate_id(kind))
     payload.setdefault("kind", kind)
     return model_class(**payload)
 

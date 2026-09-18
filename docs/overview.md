@@ -271,7 +271,7 @@ registry = Registry("registry")
 
 camera = new_item(
     "data_sources/camera",
-    id="ds_cam_example_generated",
+    id="src-camera-example-generated",
     title="Example generated camera",
     description="Example registry camera generated with R3XA_API",
     output_components=1,
@@ -297,7 +297,7 @@ from r3xa_api import Registry
 registry = Registry("registry")
 
 camera = registry.get_item("data_sources/camera/avt_dolphin_f145b").merge(
-    id="ds_cam_exp01",
+    id="src-camera-exp01",
     description="Camera used in experiment 01",
 )
 

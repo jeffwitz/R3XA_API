@@ -14,6 +14,16 @@ def test_validate_registry_items():
         validate_item(item)
 
 
+def test_builtin_registry_ids_use_kind_prefixes():
+    root = Path(__file__).parents[1] / "registry"
+    prefixes = {"settings": "stg", "data_sources": "src", "data_sets": "set"}
+
+    for path in sorted(root.rglob("*.json")):
+        item = load_item(path)
+        section, kind_name = item["kind"].split("/", 1)
+        assert item["id"].startswith(f"{prefixes[section]}-{kind_name}-"), path
+
+
 def test_merge_item_overrides():
     root = Path(__file__).parents[1] / "registry"
     base = load_item(root / "data_sources" / "generic" / "pyxel_dic_2d.json")
