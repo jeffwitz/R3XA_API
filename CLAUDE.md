@@ -146,10 +146,15 @@ fix(web): make identifier migration reference-safe
 
 #### 3. Clone complete Registry dependency closures
 
-`cloneLocalRegistryItem()` currently clones one item, assigns a new ID, and
-leaves relationship fields such as `parent_data_sources`, `input_data_sets`,
-and `attached_data_sources` pointing to IDs from the local Registry. Inserting
-such a template can therefore create dangling references in the document.
+Status: implemented in the current working tree. Local template insertion now
+resolves dependencies, remaps cloned IDs, previews multi-object insertions, and
+rejects missing, ambiguous, or cyclic dependencies. Preserve the closure tests
+when changing Registry insertion behavior.
+
+The insertion code must keep the dependency graph intact. Relationship fields
+such as `parent_data_sources`, `input_data_sets`, and
+`attached_data_sources` must point to the newly cloned IDs rather than the
+local Registry IDs.
 
 Required behavior:
 

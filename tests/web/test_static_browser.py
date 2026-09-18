@@ -305,7 +305,7 @@ def test_static_advanced_editor_can_create_every_schema_kind(static_site: str) -
         page.on("pageerror", lambda error: page_errors.append(str(error)))
         page.goto(f"{static_site}/edit/?profile=generic&new=1")
         page.wait_for_selector("#schema-summary")
-        page.locator("[data-editor-mode='advanced']").click()
+        page.get_by_role("button", name="Advanced").click()
         expected_counts: dict[str, int] = {}
         for section_id, section_name in (
             ("settings-form", "settings"),
@@ -320,7 +320,7 @@ def test_static_advanced_editor_can_create_every_schema_kind(static_site: str) -
         payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
         assert {section: len(payload[section]) for section in expected_counts} == expected_counts
         page.locator("[data-editor-mode='expert']").click()
-        page.locator("[data-editor-mode='advanced']").click()
+        page.get_by_role("button", name="Advanced").click()
         assert page.evaluate(
             "JSON.parse(document.querySelector('#json-input').value)"
         ) == payload
@@ -378,7 +378,7 @@ def test_static_editor_adds_and_edits_author_objects(static_site: str) -> None:
             "affiliation": "CNRS",
             "orcid": "https://orcid.org/0000-0000-0000-0000",
         }]
-        page.locator("[data-editor-mode='advanced']").click()
+        page.get_by_role("button", name="Advanced").click()
         page.locator("[data-editor-mode='guided']").click()
         page.locator(".guided-step").filter(has_text="Document information").click()
         assert page.locator("#guided-document-authors-0-name").input_value() == "Jean-Charles Passieux"
@@ -817,6 +817,80 @@ def test_static_valid_registry_item_is_available_only_as_a_local_editor_template
         assert inserted["id"] != saved["id"]
         assert all(method == "GET" for method, _ in requests)
         assert not any("/api/" in url for _, url in requests)
+        browser.close()
+
+
+def test_static_local_registry_inserts_dependency_closure_with_remapped_ids(static_site: str) -> None:
+    local_items = [
+        {
+            "id": "src-camera-template",
+            "kind": "data_sources/camera",
+            "title": "Template camera",
+            "description": "Camera dependency.",
+        },
+        {
+            "id": "set-list-template",
+            "kind": "data_sets/list",
+            "title": "Template images",
+            "description": "Images dependent on the camera.",
+            "parent_data_sources": ["src-camera-template"],
+        },
+    ]
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(static_site)
+        page.evaluate("items => localStorage.setItem('r3xaLocalRegistryItems', JSON.stringify(items))", local_items)
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("[data-editor-mode='advanced']").click()
+        page.once("dialog", lambda dialog: dialog.accept())
+        page.locator("#data-sets-form .local-registry-add").click()
+        page.wait_for_function(
+            "() => JSON.parse(document.querySelector('#json-input').value).data_sets?.length === 1"
+        )
+        payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        assert len(payload["data_sources"]) == 1
+        inserted_dataset = payload["data_sets"][0]
+        inserted_source = payload["data_sources"][0]
+        assert inserted_source["id"] != local_items[0]["id"]
+        assert inserted_dataset["id"] != local_items[1]["id"]
+        assert inserted_dataset["parent_data_sources"] == [inserted_source["id"]]
+        browser.close()
+
+
+def test_static_local_registry_rejects_missing_and_cyclic_dependencies(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(static_site)
+        page.evaluate(
+            """() => localStorage.setItem('r3xaLocalRegistryItems', JSON.stringify([{
+              id: 'set-missing-template',
+              kind: 'data_sets/list',
+              title: 'Missing dependency',
+              parent_data_sources: ['src-does-not-exist']
+            }]))"""
+        )
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.get_by_role("button", name="Advanced").click()
+        page.locator("#data-sets-form .local-registry-add").click()
+        assert page.locator("#data-sets-form .array-item").count() == 0
+        assert "missing" in page.locator("#validation-output").inner_text()
+
+        page.evaluate(
+            """() => localStorage.setItem('r3xaLocalRegistryItems', JSON.stringify([
+              {id: 'src-cycle', kind: 'data_sources/camera', title: 'Cycle source', input_data_sets: ['set-cycle']},
+              {id: 'set-cycle', kind: 'data_sets/list', title: 'Cycle dataset', parent_data_sources: ['src-cycle']}
+            ]))"""
+        )
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.get_by_role("button", name="Advanced").click()
+        page.locator("#data-sources-form .local-registry-add").click()
+        assert page.locator("#data-sources-form .array-item").count() == 0
+        assert "cycle" in page.locator("#validation-output").inner_text()
         browser.close()
 
 

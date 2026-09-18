@@ -806,6 +806,7 @@ const {
   makeId,
   normalizeDocumentIds,
   prefixForKind: idPrefixForKind,
+  relationshipFields,
 } = window.R3XAIdUtils;
 
 const localRegistryStorageKey = "r3xaLocalRegistryItems";
@@ -821,19 +822,104 @@ const loadLocalRegistryItems = () => {
 
 const registrySectionForKind = (kind) => kind?.split("/", 1)[0] || "";
 
-const cloneLocalRegistryItem = (item) => {
-  const clone = cloneJsonValue(item);
-  clone.id = makeId(clone.kind);
-  return clone;
+const cloneLocalRegistryClosure = (rootItem, payload) => {
+  const localItems = loadLocalRegistryItems();
+  const localById = new Map();
+  const ambiguousLocalIds = new Set();
+  localItems.forEach((item) => {
+    if (!item.id) return;
+    if (localById.has(item.id)) ambiguousLocalIds.add(item.id);
+    else localById.set(item.id, item);
+  });
+
+  const existingDocumentIds = new Set([
+    ...(payload.settings || []),
+    ...(payload.data_sources || []),
+    ...(payload.data_sets || []),
+  ].map((item) => item.id).filter(Boolean));
+  const state = new Map();
+  const ordered = [];
+  const missing = new Set();
+  const cycles = new Set();
+
+  const visit = (item) => {
+    if (!item?.id) {
+      missing.add("<item without id>");
+      return;
+    }
+    if (ambiguousLocalIds.has(item.id)) {
+      missing.add(`${item.id} (ambiguous local dependency)`);
+      return;
+    }
+    if (state.get(item.id) === "visiting") {
+      cycles.add(item.id);
+      return;
+    }
+    if (state.get(item.id) === "visited") return;
+    state.set(item.id, "visiting");
+    relationshipFields.forEach((field) => {
+      (item[field] || []).forEach((reference) => {
+        const dependency = localById.get(reference);
+        if (dependency) visit(dependency);
+        else if (!existingDocumentIds.has(reference)) missing.add(reference);
+      });
+    });
+    state.set(item.id, "visited");
+    ordered.push(item);
+  };
+
+  visit(rootItem);
+  if (missing.size || cycles.size) {
+    const details = [
+      missing.size ? `missing: ${[...missing].join(", ")}` : "",
+      cycles.size ? `cycle: ${[...cycles].join(", ")}` : "",
+    ].filter(Boolean).join("; ");
+    return {error: details, items: [], rootId: null};
+  }
+
+  const used = new Set([
+    ...(payload.settings || []),
+    ...(payload.data_sources || []),
+    ...(payload.data_sets || []),
+  ].map((item) => item.id).filter(Boolean));
+  const replacements = new Map();
+  ordered.forEach((item) => replacements.set(item.id, makeId(item.kind, used)));
+  const clones = ordered.map((item) => {
+    const clone = cloneJsonValue(item);
+    clone.id = replacements.get(item.id);
+    relationshipFields.forEach((field) => {
+      if (Array.isArray(clone[field])) {
+        clone[field] = clone[field].map((reference) => replacements.get(reference) || reference);
+      }
+    });
+    return clone;
+  });
+  return {error: "", items: clones, rootId: replacements.get(rootItem.id)};
 };
 
 const appendLocalRegistryItem = (sectionName, item, step = null) => {
   const payload = readPayload();
   if (!payload || registrySectionForKind(item.kind) !== sectionName) return;
-  const clone = cloneLocalRegistryItem(item);
-  payload[sectionName] = payload[sectionName] || [];
-  payload[sectionName].push(clone);
-  if (step) selectGuidedStepItem(step.id, clone.id);
+  const closure = cloneLocalRegistryClosure(item, payload);
+  if (closure.error) {
+    outputEl.textContent = t(
+      "guided.local_dependency_error",
+      "Cannot use local Registry item: {details}",
+      {details: closure.error},
+    );
+    return;
+  }
+  if (closure.items.length > 1 && !window.confirm(t(
+    "guided.local_dependency_preview",
+    "This local template will add {count} objects, including its dependencies. Continue?",
+    {count: closure.items.length},
+  ))) return;
+  closure.items.forEach((clone) => {
+    const section = registrySectionForKind(clone.kind);
+    payload[section] = payload[section] || [];
+    payload[section].push(clone);
+  });
+  if (step) selectGuidedStepItem(step.id, closure.rootId);
   const profile = uiCatalog?.profiles?.[selectedProfile];
   if (step && profile) applyProfileLinks(profile, payload);
   inputEl.value = JSON.stringify(payload, null, 2);

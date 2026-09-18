@@ -229,9 +229,11 @@ confirmation. Resetting an item or changing its kind/profile also asks for
 confirmation when unsaved changes would be discarded. Browser regression tests
 cover imported partial items in the FastAPI and static runtimes. The shared ID
 migration utility also refuses ambiguous duplicate-ID migrations and reports
-the conflicting IDs without rewriting their references. The remaining Registry
-qualification work is dependency-closure cloning, versioned local storage, and
-direct per-kind static validation.
+the conflicting IDs without rewriting their references. Dependency-closure
+insertion is also implemented: using a local template copies its local upstream
+objects, generates new IDs, and remaps the relationships. Missing and cyclic
+dependency paths are rejected. The remaining Registry qualification work is
+versioned local storage and direct per-kind static validation.
 
 ## Phase F — GitLab Pages
 
