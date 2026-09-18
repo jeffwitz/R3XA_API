@@ -176,12 +176,18 @@ feat(web): clone local registry dependency closures
 
 #### 4. Remove unsafe rendering paths
 
-The bundled JSON viewer used by `web/static/schema.js` writes imported object
-keys through `innerHTML`. An untrusted R3XA document may therefore inject HTML
-into the application origin and gain access to drafts and local Registry data.
-Graph SVG and the server PyVis iframe also need explicit hostile-input tests.
+Status: implemented in the current working tree for the static/schema path.
+The third-party JSON viewer and its vendored runtime are removed. The Schema
+page now renders a collapsible JSON tree with `textContent`, and Graphviz SVG
+responses are parsed and sanitized before insertion. PyVis content is placed
+in a sandboxed iframe with scripts enabled but without same-origin access.
+Hostile JSON and SVG browser tests cover the static runtime.
 
-Required implementation:
+The server and static pages share this JavaScript renderer; keep the hostile
+input tests when changing graph or schema display behavior.
+
+Remaining work is to extend the hostile-input matrix to every backend and to
+audit any future HTML-producing feature before it is inserted into the DOM.
 
 - replace the third-party JSON viewer with a small internal tree renderer that
   writes all imported keys and values through `textContent`;

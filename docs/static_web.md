@@ -255,6 +255,12 @@ static assets, and build script. HTML, catalogue fetches, validator imports,
 and Graphviz imports all use that same version query. `build-info.json` exposes
 both the revision and the content-aware build ID for deployment diagnostics.
 
+The static Schema page no longer depends on the third-party JSON viewer. It
+uses an internal text-only collapsible tree, and Graphviz SVG is parsed through
+a local allowlist before being inserted into the page. Interactive PyVis output
+is sandboxed without `allow-same-origin`. Hostile JSON-key/value and SVG tests
+are included in the static browser qualification.
+
 ## Phase F — GitLab Pages
 
 The CI now has separate `static-web-build` and `static-web-test` jobs. The

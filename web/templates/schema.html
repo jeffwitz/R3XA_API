@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <title>R3XA Schema</title>
     <link rel="stylesheet" href="{{ static_base|default('/static') }}/style.css?v={{ app_start }}" />
-    <link rel="stylesheet" href="{{ static_base|default('/static') }}/vendor/json-viewer-js/json-viewer.css?v={{ app_start }}" />
   </head>
   <body data-app-start="{{ app_start }}">
     <header class="topbar">
@@ -12,12 +11,10 @@
         <img
           src="{{ static_base|default('/static') }}/photomeca-logo.png"
           alt="Photomeca"
-          onerror="this.style.display='none'"
         />
         <img
           src="{{ static_base|default('/static') }}/r3xa-logo.png"
           alt="R3XA"
-          onerror="this.style.display='none'"
         />
         <div>
           <div class="brand-title">Photomeca · R3XA</div>
@@ -82,13 +79,12 @@
             </select>
           </label>
           <button id="export-standalone-btn" class="ghost" type="button">Export standalone HTML</button>
-          <button id="fullscreen-graph-btn" class="ghost" type="button" style="display:none;">Fullscreen</button>
-          <button id="save-graph-btn" class="ghost" type="button" style="display:none;">Save graph</button>
+          <button id="fullscreen-graph-btn" class="ghost graph-action-hidden" type="button">Fullscreen</button>
+          <button id="save-graph-btn" class="ghost graph-action-hidden" type="button">Save graph</button>
         </div>
         <div id="graph-container" class="graph-container"></div>
       </section>
     </main>
-    <script src="{{ static_base|default('/static') }}/vendor/json-viewer-js/json-viewer.global.js?v={{ app_start }}"></script>
     <script src="{{ static_base|default('/static') }}/{{ runtime_name|default('runtime.js') }}?v={{ app_start }}" data-asset-base="{{ static_base|default('/static') }}" data-asset-version="{{ app_start }}"></script>
     <script src="{{ static_base|default('/static') }}/i18n.js?v={{ app_start }}"></script>
     <script src="{{ static_base|default('/static') }}/schema.js?v={{ app_start }}"></script>

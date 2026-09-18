@@ -652,6 +652,59 @@ body[data-editor-mode="expert"] .guided-panel {
   margin: 0.2rem 0;
 }
 
+.jv-light-con {
+  background: #fff;
+  color: #17202a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow: auto;
+  width: 100%;
+}
+
+.jv-light-current {
+  line-height: 1.8;
+  min-height: 1.8rem;
+  position: relative;
+}
+
+.jv-light-left {
+  display: inline-block;
+}
+
+.jv-light-rightObj {
+  display: block;
+  height: 0;
+  overflow: hidden;
+}
+
+.jv-light-rightObj.add-height {
+  height: auto;
+}
+
+.jv-light-folder {
+  display: inline-block;
+  width: 1rem;
+  margin-left: -1rem;
+  color: #2b587a;
+  cursor: pointer;
+}
+
+.jv-light-folder::before {
+  content: "▸";
+}
+
+.jv-light-folder.rotate90::before {
+  content: "▾";
+}
+
+.jv-light-rightString { color: #7a3e9d; }
+.jv-light-rightBoolean { color: #448c27; }
+.jv-light-rightNumber { color: #c04a1c; }
+.jv-light-rightNull { color: #9c5d27; }
+
+.graph-action-hidden {
+  display: none;
+}
+
 .schema-toolbar {
   display: flex;
   gap: 0.75rem;

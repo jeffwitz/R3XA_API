@@ -55,4 +55,4 @@ r3xa_api = [
   "py.typed",
   "*.pyi",
 ]
-web = ["templates/*.html", "static/*.js", "static/*.css", "static/*.png", "static/vendor/json-viewer-js/*"]
+web = ["templates/*.html", "static/*.js", "static/*.css", "static/*.png"]

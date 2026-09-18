@@ -972,6 +972,54 @@ def test_static_schema_viewer_renders_complex_drafts_interactively(static_site: 
         browser.close()
 
 
+def test_static_schema_viewer_renders_hostile_json_as_text(static_site: str) -> None:
+    hostile = {
+        "<img src=x onerror=alert(1)>": "<script>alert(1)</script>",
+        "nested": {"<svg onload=alert(2)>": "safe text"},
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", hostile)
+        page.reload()
+        page.wait_for_selector("#schema-tree .jv-light-con")
+        assert "<script>alert(1)</script>" in page.locator("#schema-tree").inner_text()
+        assert page.locator("#schema-tree img, #schema-tree script, #schema-tree svg").count() == 0
+        browser.close()
+
+
+def test_static_graph_sanitizes_hostile_svg(static_site: str) -> None:
+    payload = {
+        "title": "Safe graph test",
+        "description": "Graph sanitization",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.evaluate(
+            """() => {
+              window.R3XARuntime.renderGraph = async () => new Response(
+                '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><image href="javascript:alert(2)"/><rect width="10" height="10"/></svg>',
+                {status: 200, headers: {'Content-Type': 'image/svg+xml'}}
+              );
+            }"""
+        )
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container svg")
+        assert page.locator("#graph-container script, #graph-container image").count() == 0
+        assert page.locator("#graph-container rect").count() == 1
+        browser.close()
+
+
 def test_static_graph_failure_does_not_break_the_editor(static_site: str) -> None:
     payload = {
         "title": "WASM fallback",

@@ -38,39 +38,67 @@ const getStoredDraft = () => {
   }
 };
 
-const viewerSafeValue = (value) => {
-  if (value === null) return "null";
-  if (Array.isArray(value)) return value.map(viewerSafeValue);
-  if (typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, viewerSafeValue(nested)]));
-  }
-  return value;
+const jsonValueClass = (value) => {
+  if (value === null) return "jv-light-rightNull";
+  if (typeof value === "number") return "jv-light-rightNumber";
+  if (typeof value === "boolean") return "jv-light-rightBoolean";
+  return "jv-light-rightString";
 };
 
 const renderJsonViewer = (data, expand = false) => {
-  treeEl.innerHTML = "";
+  treeEl.replaceChildren();
   const container = document.createElement("div");
+  container.className = "jv-light-con";
   treeEl.appendChild(container);
-  const serialized = JSON.stringify(viewerSafeValue(data), null, 2);
-  if (typeof JSONViewer === "undefined") {
-    const pre = document.createElement("pre");
-    pre.textContent = serialized;
-    container.appendChild(pre);
-    return;
-  }
-  try {
-    new JSONViewer({
-      container,
-      data: serialized,
-      theme: "light",
-      expand,
-    });
-  } catch {
-    container.replaceChildren();
-    const pre = document.createElement("pre");
-    pre.textContent = serialized;
-    container.appendChild(pre);
-  }
+
+  const renderEntry = (key, value, parent, depth) => {
+    const row = document.createElement("div");
+    row.className = "jv-light-current";
+    row.style.paddingLeft = `${depth * 20 + 20}px`;
+    const left = document.createElement("span");
+    left.className = "jv-light-left";
+    const isObject = value !== null && typeof value === "object";
+    if (isObject) {
+      const toggle = document.createElement("span");
+      toggle.className = `jv-folder jv-light-folder${expand ? " rotate90" : ""}`;
+      toggle.setAttribute("role", "button");
+      toggle.setAttribute("tabindex", "0");
+      toggle.setAttribute("aria-label", `Toggle ${key}`);
+      left.appendChild(toggle);
+      const size = Array.isArray(value) ? value.length : Object.keys(value).length;
+      left.appendChild(document.createTextNode(`${String(key)}  ${Array.isArray(value) ? `[${size}]` : `{${size}}`}`));
+      row.appendChild(left);
+
+      const children = document.createElement("div");
+      children.className = `jv-light-rightObj${expand ? " add-height" : ""}`;
+      const toggleChildren = () => {
+        children.classList.toggle("add-height");
+        toggle.classList.toggle("rotate90");
+      };
+      toggle.addEventListener("click", toggleChildren);
+      toggle.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggleChildren();
+        }
+      });
+      const entries = Array.isArray(value)
+        ? value.map((entry, index) => [index, entry])
+        : Object.entries(value);
+      entries.forEach(([childKey, childValue]) => renderEntry(childKey, childValue, children, depth + 1));
+      row.appendChild(children);
+    } else {
+      left.textContent = `${String(key)}: `;
+      const right = document.createElement("span");
+      right.className = jsonValueClass(value);
+      right.textContent = JSON.stringify(value);
+      row.appendChild(left);
+      row.appendChild(right);
+    }
+    parent.appendChild(row);
+  };
+
+  renderEntry("$", data, container, 0);
 };
 
 const renderSummary = async () => {
@@ -111,6 +139,33 @@ const renderDraft = () => {
   } catch {
     treeEl.textContent = "Failed to load draft.";
   }
+};
+
+const sanitizeSvg = (content) => {
+  const parsed = new DOMParser().parseFromString(content, "image/svg+xml");
+  if (parsed.querySelector("parsererror") || parsed.documentElement?.nodeName.toLowerCase() !== "svg") {
+    throw new Error("Graph response is not a valid SVG document.");
+  }
+  const allowedElements = new Set([
+    "svg", "g", "path", "polygon", "polyline", "ellipse", "rect", "text", "tspan",
+    "title", "desc", "line", "circle", "clipPath", "defs", "use", "marker",
+  ]);
+  const elements = [parsed.documentElement, ...parsed.querySelectorAll("*")];
+  elements.forEach((element) => {
+    if (!allowedElements.has(element.tagName)) {
+      element.remove();
+      return;
+    }
+    [...element.attributes].forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value.trim().toLowerCase();
+      if (name.startsWith("on") || name === "src" || name === "href" || name.endsWith(":href")
+        || value.includes("javascript:") || value.includes("data:text/html")) {
+        element.removeAttribute(attribute.name);
+      }
+    });
+  });
+  return document.importNode(parsed.documentElement, true);
 };
 
 const renderGraph = async () => {
@@ -170,11 +225,12 @@ const renderGraph = async () => {
         const frame = document.createElement("iframe");
         frame.className = "graph-frame";
         frame.title = "Interactive R3XA graph";
+        frame.sandbox.add("allow-scripts");
         frame.srcdoc = content;
         graphContainer.replaceChildren(frame);
       } else {
-        graphContainer.innerHTML = content;
-        const svg = graphContainer.querySelector("svg");
+        const svg = sanitizeSvg(content);
+        graphContainer.replaceChildren(svg);
         if (svg) {
           svg.removeAttribute("width");
           svg.removeAttribute("height");
