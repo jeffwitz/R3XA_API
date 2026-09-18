@@ -105,12 +105,12 @@ const renderLocalRegistryItems = () => {
     const row = document.createElement("div");
     row.className = "registry-local-item";
     const label = document.createElement("span");
-    label.textContent = `${item.title || item.id || "Untitled item"} (${item.kind || "unknown kind"})`;
+    label.textContent = `${item.title || item.id || registryText("registry.untitled", "Untitled item")} (${item.kind || registryText("registry.unknown_kind", "unknown kind")})`;
     row.appendChild(label);
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "ghost";
-    remove.textContent = "Remove";
+    remove.textContent = registryText("registry.remove", "Remove");
     remove.addEventListener("click", () => {
       if (!writeLocalRegistryItems(items.filter((candidate) => candidate.id !== item.id))) return;
       renderLocalRegistryItems();
@@ -384,7 +384,7 @@ const renderProfileOptions = (kind, selectedProfile = "") => {
   profileEl.replaceChildren();
   const none = document.createElement("option");
   none.value = "";
-  none.textContent = "Schema defaults only";
+  none.textContent = registryText("registry.schema_defaults", "Schema defaults only");
   profileEl.appendChild(none);
   const seen = new Set();
   profileStepsForKind(kind).forEach(({profileId, profile}) => {
@@ -480,8 +480,8 @@ const createField = (container, key, meta, value, onChange, path, required = fal
         const empty = document.createElement("small");
         empty.className = "field-description";
         empty.textContent = ["parent_data_sources", "attached_data_sources", "input_data_sets"].includes(key)
-          ? "No dependency (optional)."
-          : "No example entries.";
+          ? registryText("registry.no_dependency", "No dependency (optional).")
+          : registryText("registry.no_examples", "No example entries.");
         list.appendChild(empty);
       }
       values.forEach((entry, index) => {
@@ -494,7 +494,7 @@ const createField = (container, key, meta, value, onChange, path, required = fal
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "ghost";
-        remove.textContent = "Remove";
+        remove.textContent = registryText("registry.remove", "Remove");
         remove.addEventListener("click", () => {
           values.splice(index, 1);
           onChange([...values]);
@@ -509,7 +509,7 @@ const createField = (container, key, meta, value, onChange, path, required = fal
     const add = document.createElement("button");
     add.type = "button";
     add.className = "ghost";
-    add.textContent = "Add value";
+      add.textContent = registryText("registry.add_value", "Add value");
     add.addEventListener("click", () => {
       values.push(exampleForField("item", meta.items || {}));
       onChange([...values]);
@@ -522,7 +522,7 @@ const createField = (container, key, meta, value, onChange, path, required = fal
       control = document.createElement("select");
       const blank = document.createElement("option");
       blank.value = "";
-      blank.textContent = "Select…";
+        blank.textContent = registryText("registry.select", "Select…");
       control.appendChild(blank);
       meta.enum.forEach((choice) => {
         const option = document.createElement("option");
@@ -568,8 +568,8 @@ const createField = (container, key, meta, value, onChange, path, required = fal
       const generate = document.createElement("button");
       generate.type = "button";
       generate.className = "ghost";
-      generate.textContent = "Generate new ID";
-      generate.title = "Generate a unique ID with the R3XA section prefix.";
+      generate.textContent = registryText("registry.generate_id", "Generate new ID");
+      generate.title = registryText("registry.generate_id_title", "Generate a unique ID with the R3XA section prefix.");
       generate.addEventListener("click", () => {
         const next = generateRegistryId(kindEl.value);
         control.value = next;
@@ -619,13 +619,13 @@ const renderForm = () => {
   try {
     item = JSON.parse(inputEl.value);
   } catch {
-    formEl.textContent = "Enter valid JSON to use the form editor.";
+    formEl.textContent = registryText("registry.invalid_json_form", "Enter valid JSON to use the form editor.");
     return;
   }
   const kind = kindEl.value || item.kind || "";
   const meta = selectedMeta(kind);
   if (!meta) {
-    formEl.textContent = "No schema definition is available for this kind. Use the expert JSON editor.";
+    formEl.textContent = registryText("registry.missing_schema", "No schema definition is available for this kind. Use the expert JSON editor.");
     return;
   }
   Object.entries(meta.properties || {}).forEach(([key, propertyMeta]) => {
@@ -645,7 +645,7 @@ const renderForm = () => {
 const formatError = (error) => {
   if (typeof error === "string") return error;
   const path = error.path ? `${error.path}: ` : "";
-  return `${path}${error.user_message || error.message || "Validation failed."}`;
+  return `${path}${error.user_message || error.message || registryText("registry.validation_failed", "Validation failed.")}`;
 };
 
 const lint = async () => {
@@ -653,22 +653,22 @@ const lint = async () => {
   try {
     item = JSON.parse(inputEl.value);
   } catch (error) {
-    outputEl.textContent = `JSON error: ${error.message}`;
+    outputEl.textContent = registryText("registry.json_error", "JSON error: {message}", {message: error.message});
     return;
   }
   try {
     const response = await window.R3XARuntime.validateItem(item, kindEl.value);
     const report = await response.json();
     if (report.valid) {
-      outputEl.textContent = "Valid registry item ✅";
+      outputEl.textContent = registryText("registry.valid", "Valid registry item ✅");
       if (addLocalButton) addLocalButton.disabled = false;
       return;
     }
     if (addLocalButton) addLocalButton.disabled = true;
-    outputEl.textContent = ["Invalid registry item ❌", "", ...(report.errors || []).map(formatError)].join("\n");
+    outputEl.textContent = [registryText("registry.invalid", "Invalid registry item ❌"), "", ...(report.errors || []).map(formatError)].join("\n");
   } catch (error) {
     if (addLocalButton) addLocalButton.disabled = true;
-    outputEl.textContent = `Validation unavailable: ${error.message}`;
+    outputEl.textContent = registryText("registry.validation_unavailable", "Validation unavailable: {message}", {message: error.message});
   }
 };
 
@@ -683,7 +683,7 @@ const syncFromJson = () => {
     item = JSON.parse(inputEl.value);
   } catch {
     updateHighlight();
-    formEl.textContent = "Enter valid JSON to use the form editor.";
+    formEl.textContent = registryText("registry.invalid_json_form", "Enter valid JSON to use the form editor.");
     return;
   }
   renderKindOptions(item.kind || kindEl.value || "");
@@ -697,7 +697,7 @@ const syncFromJson = () => {
 };
 
 const reset = () => {
-  if (!confirmRegistryReplacement("reset the item")) return;
+  if (!confirmRegistryReplacement(registryText("registry.action_reset", "reset the item"))) return;
   inputEl.value = JSON.stringify(defaultRegistryItem, null, 2);
   outputEl.textContent = "";
   syncFromJson();
@@ -707,7 +707,7 @@ const reset = () => {
 const changeKind = () => {
   const meta = selectedMeta(kindEl.value);
   if (!meta) return;
-  if (!confirmRegistryReplacement("change its kind")) {
+  if (!confirmRegistryReplacement(registryText("registry.action_kind", "change its kind"))) {
     const current = currentItem();
     renderKindOptions(current?.kind || "");
     renderProfileOptions(current?.kind || "", lastStableProfile);
@@ -720,7 +720,7 @@ const changeKind = () => {
 };
 
 const changeProfile = () => {
-  if (!confirmRegistryReplacement("change its example profile")) {
+  if (!confirmRegistryReplacement(registryText("registry.action_profile", "change its example profile"))) {
     profileEl.value = lastStableProfile;
     return;
   }
@@ -736,7 +736,7 @@ const downloadJson = () => {
   try {
     JSON.parse(inputEl.value);
   } catch (error) {
-    outputEl.textContent = `JSON error: ${error.message}`;
+    outputEl.textContent = registryText("registry.json_error", "JSON error: {message}", {message: error.message});
     return;
   }
   const blob = new Blob([inputEl.value], {type: "application/json"});
@@ -772,7 +772,7 @@ const loadJsonFile = (file) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    if (!confirmRegistryReplacement("load the selected JSON item")) return;
+    if (!confirmRegistryReplacement(registryText("registry.action_load", "load the selected JSON item"))) return;
     inputEl.value = reader.result;
     syncFromJson();
     setRegistryBaseline();
@@ -821,14 +821,14 @@ const addToLocalRegistry = async () => {
     const response = await window.R3XARuntime.validateItem(item, kindEl.value);
     const report = await response.json();
     if (!report.valid) {
-      outputEl.textContent = ["Invalid registry item ❌", "", ...(report.errors || []).map(formatError)].join("\n");
+      outputEl.textContent = [registryText("registry.invalid", "Invalid registry item ❌"), "", ...(report.errors || []).map(formatError)].join("\n");
       if (addLocalButton) addLocalButton.disabled = true;
       return;
     }
     const items = readLocalRegistryItems();
     const sameId = items.find((candidate) => candidate.id === item.id);
     if (sameId && (sameId.title !== item.title || sameId.kind !== item.kind)) {
-      outputEl.textContent = "Cannot save this item: its ID is already used by another local registry item. Generate a new ID first.";
+      outputEl.textContent = registryText("registry.save_duplicate_id", "Cannot save this item: its ID is already used by another local registry item. Generate a new ID first.");
       return;
     }
     const sameTitle = items.find((candidate) => (
@@ -836,18 +836,18 @@ const addToLocalRegistry = async () => {
       && candidate.id !== item.id
     ));
     if (sameTitle) {
-      outputEl.textContent = "Cannot save this item: its title is already used by another local registry item. Choose a different title.";
+      outputEl.textContent = registryText("registry.save_duplicate_title", "Cannot save this item: its title is already used by another local registry item. Choose a different title.");
       return;
     }
     const updated = [...items.filter((candidate) => candidate.id !== item.id), item];
     if (!writeLocalRegistryItems(updated)) {
-      outputEl.textContent = localRegistryStorageError || "Local Registry could not be saved.";
+      outputEl.textContent = localRegistryStorageError || registryText("registry.save_failed", "Local Registry could not be saved.");
       return;
     }
     renderLocalRegistryItems();
-    outputEl.textContent = "Valid registry item ✅ Saved in this browser's local registry.";
+    outputEl.textContent = registryText("registry.saved_local", "Valid registry item ✅ Saved in this browser's local registry.");
   } catch (error) {
-    outputEl.textContent = `Validation unavailable: ${error.message}`;
+    outputEl.textContent = registryText("registry.validation_unavailable", "Validation unavailable: {message}", {message: error.message});
   }
 };
 
@@ -859,7 +859,7 @@ const init = async () => {
       window.R3XARuntime.loadUiCatalog(),
     ]);
   } catch (error) {
-    outputEl.textContent = `Schema catalogue unavailable: ${error.message}`;
+    outputEl.textContent = registryText("registry.schema_unavailable", "Schema catalogue unavailable: {message}", {message: error.message});
     return;
   }
   inputEl.value = loadDraft();
@@ -888,7 +888,7 @@ inputEl.addEventListener("input", () => {
     JSON.parse(inputEl.value);
     syncFromJson();
   } catch {
-    formEl.textContent = "Enter valid JSON to use the form editor.";
+    formEl.textContent = registryText("registry.invalid_json_form", "Enter valid JSON to use the form editor.");
     scheduleLint();
   }
 });

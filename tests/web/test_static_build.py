@@ -69,6 +69,12 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert 'src="../assets/photomeca-logo.png"' in editor
     assert 'src="../assets/photomeca-logo.png"' in (output_dir / "schema" / "index.html").read_text(encoding="utf-8")
 
+    for page in output_dir.rglob("*.html"):
+        source = page.read_text(encoding="utf-8")
+        assert "onerror=" not in source
+        assert "onclick=" not in source
+        assert "style=" not in source
+
 
 def test_static_web_assets_do_not_use_fastapi_api_urls(tmp_path: Path) -> None:
     module = _load_dev_module()

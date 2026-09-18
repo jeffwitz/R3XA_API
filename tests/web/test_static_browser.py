@@ -178,6 +178,21 @@ def test_static_navigation_uses_only_same_origin_get_requests(static_site: str) 
     assert not any("/api/" in url for _, url in requests)
 
 
+def test_static_i18n_updates_registry_and_schema_controls(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(locale="en-US")
+        page.goto(f"{static_site}/registry/")
+        page.wait_for_function("document.querySelector('[data-i18n=\\\"registry.validation_target\\\"]').textContent.includes('Validation')")
+        page.select_option("[data-language-select]", "fr")
+        page.wait_for_function("document.querySelector('[data-i18n=\\\"registry.validation_target\\\"]').textContent.includes('validation')")
+        assert "Valider l’item" in page.locator("#registry-validate-btn").inner_text()
+        page.goto(f"{static_site}/schema/")
+        page.wait_for_function("document.querySelector('[data-i18n=\\\"schema.graph\\\"]').textContent === 'Graphe'")
+        assert page.locator("#generate-graph-btn").inner_text() == "Générer le graphe"
+        browser.close()
+
+
 def test_static_user_session_uses_no_remote_or_post_requests(static_site: str) -> None:
     requests: list[tuple[str, str]] = []
     payload = {

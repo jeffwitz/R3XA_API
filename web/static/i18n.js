@@ -20,6 +20,15 @@
     root.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
       element.placeholder = translate(element.dataset.i18nPlaceholder, element.placeholder);
     });
+    root.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+      element.setAttribute(
+        "aria-label",
+        translate(element.dataset.i18nAriaLabel, element.getAttribute("aria-label") || ""),
+      );
+    });
+    root.querySelectorAll("[data-i18n-title]").forEach((element) => {
+      element.title = translate(element.dataset.i18nTitle, element.title || "");
+    });
     root.querySelectorAll("[data-language-select]").forEach((select) => {
       select.value = language;
       select.onchange = () => {

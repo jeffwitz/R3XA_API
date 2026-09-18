@@ -489,3 +489,19 @@ the hosted smoke test.
   subpath hosting, iframe embedding and sandbox permissions, CSP/WebAssembly,
   privacy, local storage, and the distinction between browser and server graph
   backends. A hosted Pages smoke test remains before closing this phase.
+
+### Phase H: i18n, accessibility, and CSP
+
+The generated pages now carry the English/French UI catalogue and update the
+Registry and Schema viewer controls without a server round trip. Validation and
+graph containers use live status regions, schema tree folders are keyboard
+operable, and graph action buttons are hidden through CSS classes rather than
+inline styles.
+
+Static pages are designed for a restrictive same-origin Content Security
+Policy. A host should configure the policy with only the deliberate
+`wasm-unsafe-eval` relaxation required by the bundled Graphviz WebAssembly
+renderer. No inline event handlers, inline page styles, CDN assets, or
+third-party telemetry are used. The policy still needs to be verified on the
+final GitLab Pages host, especially together with iframe headers and the
+browser's WebAssembly policy.

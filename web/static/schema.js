@@ -1,3 +1,4 @@
+const t = (key, fallback, values) => window.R3XAI18N?.t(key, fallback, values) || fallback;
 const treeEl = document.getElementById("schema-tree");
 const filterEl = document.getElementById("schema-filter");
 const clearBtn = document.getElementById("schema-clear");
@@ -13,6 +14,10 @@ const graphBackendSelect = document.getElementById("graph-backend");
 let cachedSummary = null;
 let currentGraph = null;
 let graphObjectUrl = null;
+
+const setGraphActionVisible = (element, visible) => {
+  element?.classList.toggle("graph-action-hidden", !visible);
+};
 
 const ensureServerStart = () => {
   const appStart = document.body?.dataset?.appStart;
@@ -63,7 +68,7 @@ const renderJsonViewer = (data, expand = false) => {
       toggle.className = `jv-folder jv-light-folder${expand ? " rotate90" : ""}`;
       toggle.setAttribute("role", "button");
       toggle.setAttribute("tabindex", "0");
-      toggle.setAttribute("aria-label", `Toggle ${key}`);
+      toggle.setAttribute("aria-label", t("schema.toggle", `Toggle ${key}`, {key}));
       left.appendChild(toggle);
       const size = Array.isArray(value) ? value.length : Object.keys(value).length;
       left.appendChild(document.createTextNode(`${String(key)}  ${Array.isArray(value) ? `[${size}]` : `{${size}}`}`));
@@ -108,7 +113,7 @@ const renderSummary = async () => {
     }
     renderJsonViewer(cachedSummary, true);
   } catch {
-    treeEl.textContent = "Failed to load schema summary.";
+    treeEl.textContent = t("schema.failed_summary", "Failed to load schema summary.");
   }
 };
 
@@ -132,12 +137,12 @@ const renderDraft = () => {
   try {
     const payload = getStoredDraft();
     if (!payload) {
-      treeEl.textContent = "No draft found. Create one in the editor first.";
+      treeEl.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
       return;
     }
     renderJsonViewer(buildDisplayDraft(payload), true);
   } catch {
-    treeEl.textContent = "Failed to load draft.";
+    treeEl.textContent = t("schema.failed_draft", "Failed to load draft.");
   }
 };
 
@@ -171,16 +176,16 @@ const sanitizeSvg = (content) => {
 const renderGraph = async () => {
   const stored = getStoredDraftText();
   if (!graphContainer) return false;
-  graphContainer.textContent = "Generating graph…";
+  graphContainer.textContent = t("schema.generating", "Generating graph…");
   currentGraph = null;
   if (graphObjectUrl) {
     URL.revokeObjectURL(graphObjectUrl);
     graphObjectUrl = null;
   }
   if (!stored) {
-    graphContainer.textContent = "No draft found. Create one in the editor first.";
-    if (saveGraphBtn) saveGraphBtn.style.display = "none";
-    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = "none";
+    graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
+    setGraphActionVisible(saveGraphBtn, false);
+    setGraphActionVisible(fullscreenGraphBtn, false);
     return false;
   }
   try {
@@ -201,7 +206,7 @@ const renderGraph = async () => {
       } catch {
         // keep raw detail
       }
-      graphContainer.textContent = `Graph error: ${detail}`;
+      graphContainer.textContent = t("schema.graph_error", "Graph error: {message}", {message: detail});
       return false;
     }
     if (backend === "matplotlib") {
@@ -210,7 +215,7 @@ const renderGraph = async () => {
       const image = document.createElement("img");
       image.className = "graph-image";
       image.src = graphObjectUrl;
-      image.alt = "R3XA graph rendered with Matplotlib";
+      image.alt = t("schema.graph_alt", "R3XA graph rendered with Matplotlib");
       graphContainer.replaceChildren(image);
       currentGraph = {backend, data: blob, extension: "png", mediaType: "image/png"};
     } else {
@@ -224,7 +229,7 @@ const renderGraph = async () => {
       if (backend === "pyvis") {
         const frame = document.createElement("iframe");
         frame.className = "graph-frame";
-        frame.title = "Interactive R3XA graph";
+        frame.title = t("schema.interactive_graph", "Interactive R3XA graph");
         frame.sandbox.add("allow-scripts");
         frame.srcdoc = content;
         graphContainer.replaceChildren(frame);
@@ -238,17 +243,17 @@ const renderGraph = async () => {
         }
       }
     }
-    if (saveGraphBtn) saveGraphBtn.style.display = currentGraph ? "" : "none";
-    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = currentGraph ? "" : "none";
-    if (exportStandaloneBtn) exportStandaloneBtn.style.display = backend === "graphviz" ? "" : "none";
+    setGraphActionVisible(saveGraphBtn, !!currentGraph);
+    setGraphActionVisible(fullscreenGraphBtn, !!currentGraph);
+    setGraphActionVisible(exportStandaloneBtn, backend === "graphviz");
     localStorage.setItem("r3xaDraftLast", stored);
     return !!currentGraph;
   } catch (err) {
-    graphContainer.textContent = `Failed to generate graph: ${err.message || err}`;
+    graphContainer.textContent = t("schema.failed_graph", "Failed to generate graph: {message}", {message: err.message || err});
     currentGraph = null;
-    if (saveGraphBtn) saveGraphBtn.style.display = "none";
-    if (fullscreenGraphBtn) fullscreenGraphBtn.style.display = "none";
-    if (exportStandaloneBtn) exportStandaloneBtn.style.display = "none";
+    setGraphActionVisible(saveGraphBtn, false);
+    setGraphActionVisible(fullscreenGraphBtn, false);
+    setGraphActionVisible(exportStandaloneBtn, false);
     return false;
   }
 };
@@ -257,7 +262,7 @@ const showFullscreenGraph = () => {
   const svg = graphContainer?.querySelector("svg");
   const visual = svg || graphContainer?.querySelector("img, iframe");
   if (!visual) {
-    if (graphContainer) graphContainer.textContent = "No graph available. Generate it first.";
+    if (graphContainer) graphContainer.textContent = t("schema.no_graph", "No graph available. Generate it first.");
     return;
   }
 
@@ -271,7 +276,7 @@ const showFullscreenGraph = () => {
     inner.appendChild(visual.cloneNode(true));
     const closeBtn = document.createElement("button");
     closeBtn.className = "graph-overlay-close";
-    closeBtn.textContent = "Close";
+    closeBtn.textContent = t("schema.close", "Close");
     closeBtn.addEventListener("click", () => overlay.remove());
     inner.appendChild(closeBtn);
     overlay.appendChild(inner);
@@ -296,7 +301,7 @@ const showFullscreenGraph = () => {
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "graph-overlay-close";
-  closeBtn.textContent = "Close";
+  closeBtn.textContent = t("schema.close", "Close");
   closeBtn.addEventListener("click", () => overlay.remove());
   inner.appendChild(closeBtn);
 
@@ -376,7 +381,7 @@ const escapeHtml = (text) => {
 const exportStandaloneHtml = async () => {
   const payload = getStoredDraft();
   if (!payload) {
-    if (graphContainer) graphContainer.textContent = "No draft found. Create one in the editor first.";
+    if (graphContainer) graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
     return;
   }
 
@@ -387,7 +392,7 @@ const exportStandaloneHtml = async () => {
   }
 
   const svg = graphContainer?.querySelector("svg");
-  const svgMarkup = svg ? svg.outerHTML : "<p>No graph available.</p>";
+  const svgMarkup = svg ? svg.outerHTML : `<p>${t("schema.no_graph", "No graph available. Generate it first.")}</p>`;
   const prettyJson = escapeHtml(JSON.stringify(payload, null, 2));
   const generatedAt = new Date().toISOString();
 
@@ -396,7 +401,7 @@ const exportStandaloneHtml = async () => {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>R3XA Standalone Export</title>
+  <title>${t("schema.standalone_title", "R3XA Standalone Export")}</title>
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: #f5f7fa; color: #17202a; }
     main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
@@ -408,14 +413,14 @@ const exportStandaloneHtml = async () => {
 </head>
 <body>
   <main>
-    <h1>R3XA Standalone Export</h1>
-    <p class="muted">Generated at ${generatedAt}. This file is self-contained and does not require a server.</p>
+    <h1>${t("schema.standalone_title", "R3XA Standalone Export")}</h1>
+    <p class="muted">${t("schema.standalone_help", "Generated at {date}. This file is self-contained and does not require a server.", {date: generatedAt})}</p>
     <section class="panel graph">
-      <h2>Graph (SVG)</h2>
+      <h2>${t("schema.standalone_graph", "Graph (SVG)")}</h2>
       ${svgMarkup}
     </section>
     <section class="panel">
-      <h2>R3XA Draft JSON</h2>
+      <h2>${t("schema.standalone_json", "R3XA Draft JSON")}</h2>
       <pre>${prettyJson}</pre>
     </section>
   </main>
@@ -475,7 +480,7 @@ const configureGraphBackends = () => {
   const supported = new Set(window.R3XARuntime.graphBackends);
   const graphvizOption = graphBackendSelect.querySelector('option[value="graphviz"]');
   if (graphvizOption && window.R3XARuntime.mode === "static") {
-    graphvizOption.textContent = "Graphviz WebAssembly · SVG · browser";
+    graphvizOption.textContent = t("schema.graphviz_browser", "Graphviz WebAssembly · SVG · browser");
   }
   Array.from(graphBackendSelect.options).forEach((option) => {
     const enabled = supported.has(option.value);

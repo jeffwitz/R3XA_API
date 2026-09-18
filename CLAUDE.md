@@ -361,24 +361,28 @@ fix(web): make static assets cache-consistent
 
 #### 9. Complete i18n, accessibility, and strict CSP compatibility
 
-Registry controls, local-template notices, and static validation messages still
-contain English strings in JavaScript and templates. Templates also contain
-inline `onerror` handlers and inline styles, so the documented strict CSP is
-not currently achievable.
+Implemented in the current lot:
 
-Required implementation:
+- moved the Registry, Schema viewer, graph, validation, storage, and standalone
+  export UI strings into the bilingual UI message catalogue;
+- added English/French browser coverage for Registry and Schema viewer controls;
+- added translated placeholders, option labels, accessible status regions, and
+  keyboard labels for the schema tree;
+- removed template inline handlers/styles and replaced graph visibility changes
+  with CSS classes;
+- removed inline page handlers/styles and documented a restrictive same-origin
+  CSP policy for static hosts, with only the `wasm-unsafe-eval` allowance
+  required by Graphviz WebAssembly;
+- added static-build assertions preventing inline handlers/styles and browser
+  coverage for the local translated controls.
 
-- move every visible string into the existing UI message catalogue;
-- provide complete English and French text for Registry actions, validation,
-  storage errors, WebAssembly failure, embedding, and migration conflicts;
-- retain technical validator text separately from translated user messages;
-- remove inline event handlers and inline styles from all templates;
-- bind events from JavaScript and use CSS classes;
-- add `aria-live` validation/status regions, useful accessible labels, keyboard
-  focus on errors, and keyboard-operable controls;
-- run browser tests in English and French;
-- add a browser test served with a strict CSP, documenting only the narrow
-  WebAssembly allowance that remains necessary.
+Remaining follow-up:
+
+- audit less visible generated field labels and standalone-export markup for
+  complete translation coverage;
+- qualify the same CSP through a hosted GitLab Pages smoke test and document
+  any host-specific WebAssembly or iframe header requirements;
+- add focus management from every validation error to its corresponding field.
 
 Suggested commit:
 

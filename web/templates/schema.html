@@ -32,7 +32,7 @@
     <main>
       <section class="hero compact">
         <h1 data-i18n="schema.title">Schema viewer</h1>
-        <p>Browse the summarized R3XA JSON schema.</p>
+        <p data-i18n="schema.subtitle">Browse the summarized R3XA JSON schema.</p>
       </section>
 
       <section class="panel">
@@ -40,49 +40,50 @@
           <input
             id="schema-filter"
             type="search"
+            data-i18n-placeholder="schema.filter_placeholder"
             placeholder="Filter by field name or description…"
           />
-          <button id="schema-clear" class="ghost" type="button">Clear</button>
+          <button id="schema-clear" class="ghost" type="button" data-i18n="schema.clear">Clear</button>
           <label class="schema-toggle">
-            View:
+            <span data-i18n="schema.view">View:</span>
             <select id="schema-view">
-              <option value="draft">Current draft</option>
-              <option value="summary" selected>Schema summary</option>
+              <option value="draft" data-i18n="schema.current_draft">Current draft</option>
+              <option value="summary" selected data-i18n="schema.summary">Schema summary</option>
             </select>
           </label>
         </div>
-        <div id="schema-tree">Loading schema summary…</div>
+        <div id="schema-tree" role="status" aria-live="polite" data-i18n="schema.loading_summary">Loading schema summary…</div>
       </section>
 
       <section class="panel">
-        <h2>Graph</h2>
-        <p class="muted">Choose the rendering backend for the current draft.</p>
+        <h2 data-i18n="schema.graph">Graph</h2>
+        <p class="muted" data-i18n="schema.graph_help">Choose the rendering backend for the current draft.</p>
         <div class="actions">
-          <button id="generate-graph-btn" type="button">Generate graph</button>
+          <button id="generate-graph-btn" type="button" data-i18n="schema.generate_graph">Generate graph</button>
           <label class="schema-toggle" for="graph-backend">
-            Backend:
+            <span data-i18n="schema.backend">Backend:</span>
             <select id="graph-backend">
-              <option value="graphviz" selected>Graphviz · SVG · publication</option>
-              <option value="pyvis">PyVis · interactive HTML</option>
-              <option value="matplotlib">Matplotlib · PNG · static</option>
+              <option value="graphviz" selected data-i18n="schema.graphviz_browser">Graphviz · SVG · publication</option>
+              <option value="pyvis" data-i18n="schema.pyvis_browser">PyVis · interactive HTML</option>
+              <option value="matplotlib" data-i18n="schema.matplotlib_browser">Matplotlib · PNG · static</option>
             </select>
           </label>
           <label class="schema-toggle">
             <input id="graph-show-description" type="checkbox" checked />
-            Show descriptions
+            <span data-i18n="schema.show_descriptions">Show descriptions</span>
           </label>
           <label class="schema-toggle" for="graph-palette">
-            Palette:
+            <span data-i18n="schema.palette">Palette:</span>
             <select id="graph-palette">
-              <option value="document" selected>Document (recommended)</option>
-              <option value="classic">Classic (legacy)</option>
+              <option value="document" selected data-i18n="schema.document_palette">Document (recommended)</option>
+              <option value="classic" data-i18n="schema.classic_palette">Classic (legacy)</option>
             </select>
           </label>
-          <button id="export-standalone-btn" class="ghost" type="button">Export standalone HTML</button>
-          <button id="fullscreen-graph-btn" class="ghost graph-action-hidden" type="button">Fullscreen</button>
-          <button id="save-graph-btn" class="ghost graph-action-hidden" type="button">Save graph</button>
+          <button id="export-standalone-btn" class="ghost" type="button" data-i18n="schema.export_standalone">Export standalone HTML</button>
+          <button id="fullscreen-graph-btn" class="ghost graph-action-hidden" type="button" data-i18n="schema.fullscreen">Fullscreen</button>
+          <button id="save-graph-btn" class="ghost graph-action-hidden" type="button" data-i18n="schema.save_graph">Save graph</button>
         </div>
-        <div id="graph-container" class="graph-container"></div>
+        <div id="graph-container" class="graph-container" role="status" aria-live="polite"></div>
       </section>
     </main>
     <script src="{{ static_base|default('/static') }}/{{ runtime_name|default('runtime.js') }}?v={{ app_start }}" data-asset-base="{{ static_base|default('/static') }}" data-asset-version="{{ app_start }}"></script>

@@ -1669,11 +1669,11 @@ const buildArrayEditor = (container, sectionName) => {
   if (localItems.length) {
     const localHeading = document.createElement("small");
     localHeading.className = "field-description local-registry-heading";
-    localHeading.textContent = "Local registry templates (this browser)";
+    localHeading.textContent = t("registry.local_templates", "Local registry templates (this browser)");
     actions.appendChild(localHeading);
     localItems.forEach((item) => {
       const addButton = document.createElement("button");
-      addButton.textContent = `Use ${item.title || item.kind}`;
+      addButton.textContent = t("registry.use_local", "Use {item}", {item: item.title || item.kind});
       addButton.className = "ghost local-registry-add";
       addButton.type = "button";
       addButton.addEventListener("click", () => appendLocalRegistryItem(sectionName, item));

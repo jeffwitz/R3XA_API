@@ -55,7 +55,7 @@
 
       <section class="panel guided-panel">
         <h2 data-i18n="editor.checklist">Guided checklist</h2>
-        <p class="muted">Follow the profile steps. This view edits the same canonical JSON document as the other modes.</p>
+        <p class="muted" data-i18n="editor.guided_help">Follow the profile steps. This view edits the same canonical JSON document as the other modes.</p>
         <div class="actions">
           <button id="guided-prefill" class="ghost" type="button" hidden data-i18n="editor.prefill">Create prefilled workflow</button>
         </div>
@@ -68,32 +68,32 @@
       </section>
 
       <section class="panel editor-surface" data-editor-surface="header">
-        <h2>Header form</h2>
-        <p class="muted">Edit common header fields and sync with JSON.</p>
+        <h2 data-i18n="editor.header_form">Header form</h2>
+        <p class="muted" data-i18n="editor.header_help">Edit common header fields and sync with JSON.</p>
         <div id="header-form"></div>
       </section>
 
       <section class="panel editor-surface" data-editor-surface="settings">
-        <h2>Settings</h2>
-        <p class="muted">Array of settings items.</p>
+        <h2 data-i18n="editor.settings">Settings</h2>
+        <p class="muted" data-i18n="editor.settings_help">Array of settings items.</p>
         <div id="settings-form"></div>
       </section>
 
       <section class="panel editor-surface" data-editor-surface="data_sources">
-        <h2>Data sources</h2>
-        <p class="muted">Array of data source items.</p>
+        <h2 data-i18n="editor.data_sources">Data sources</h2>
+        <p class="muted" data-i18n="editor.data_sources_help">Array of data source items.</p>
         <div id="data-sources-form"></div>
       </section>
 
       <section class="panel editor-surface" data-editor-surface="data_sets">
-        <h2>Data sets</h2>
-        <p class="muted">Array of data set items.</p>
+        <h2 data-i18n="editor.data_sets">Data sets</h2>
+        <p class="muted" data-i18n="editor.data_sets_help">Array of data set items.</p>
         <div id="data-sets-form"></div>
       </section>
 
       <section class="panel document-actions">
         <h2 data-i18n="editor.document">Document</h2>
-        <p class="muted">Save, load, or validate the same document from any editor mode.</p>
+        <p class="muted" data-i18n="editor.document_help">Save, load, or validate the same document from any editor mode.</p>
         <div class="actions">
           <button id="save-json-btn" class="ghost" type="button" data-i18n="editor.save">Save JSON</button>
           <label class="file-btn ghost">
@@ -105,12 +105,12 @@
           <button id="validate-btn" data-i18n="editor.validate">Validate</button>
           <button id="reset-btn" class="ghost" data-i18n="editor.reset">Reset</button>
         </div>
-        <pre id="validation-output"></pre>
+        <pre id="validation-output" role="status" aria-live="polite"></pre>
       </section>
 
       <section class="panel expert-panel">
-        <h2>Expert JSON</h2>
-        <p class="muted">Inspect or edit the canonical R3XA JSON directly.</p>
+        <h2 data-i18n="editor.expert_json">Expert JSON</h2>
+        <p class="muted" data-i18n="editor.expert_json_help">Inspect or edit the canonical R3XA JSON directly.</p>
         <textarea id="json-input" spellcheck="false"></textarea>
       </section>
     </main>
