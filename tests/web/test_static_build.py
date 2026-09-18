@@ -54,9 +54,15 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     catalog = json.loads((assets / "schema-catalog.json").read_text(encoding="utf-8"))
     assert catalog["schema_version"]
     assert "data_sources" in catalog["sections"]
+    build_info = json.loads((assets / "build-info.json").read_text(encoding="utf-8"))
+    assert build_info["build_id"]
+    assert build_info["git_commit"]
+    assert "assetUrl" in static_runtime
+    assert "assetVersion" in static_runtime
     index = (output_dir / "index.html").read_text(encoding="utf-8")
     editor = (output_dir / "edit" / "index.html").read_text(encoding="utf-8")
     assert 'src="assets/runtime-static.js' in index
+    assert 'data-asset-version="' in index
     assert 'src="../assets/runtime-static.js' in editor
     assert 'href="./edit/"' in index
     assert 'href="../schema/"' in editor

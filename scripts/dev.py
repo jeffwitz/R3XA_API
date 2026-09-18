@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import shlex
 import shutil
 import subprocess
@@ -182,6 +184,42 @@ def _git_revision() -> str:
         return "unknown"
 
 
+def _project_version() -> str:
+    """Read the checkout version instead of trusting an installed distribution."""
+
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    match = re.search(r"^version\s*=\s*[\"']([^\"']+)[\"']\s*$", text, re.MULTILINE)
+    if match:
+        return match.group(1)
+    try:
+        return package_version("r3xa-api")
+    except PackageNotFoundError:
+        return "development"
+
+
+def _static_build_id() -> str:
+    """Return a cache key that changes with the checked-out WebUI inputs."""
+
+    digest = hashlib.sha256()
+    inputs = [
+        SCHEMA_RESOURCE,
+        "scripts/dev.py",
+        *sorted(str(path.relative_to(ROOT)) for path in WEB_STATIC.rglob("*" ) if path.is_file()),
+        *sorted(
+            str(path.relative_to(ROOT))
+            for path in (ROOT / "r3xa_api" / "resources" / "ui").rglob("*")
+            if path.is_file()
+        ),
+    ]
+    for relative_path in inputs:
+        path = ROOT / relative_path
+        digest.update(relative_path.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return f"{_git_revision()[:12]}-{digest.hexdigest()[:16]}"
+
+
 def _write_json(path: Path, payload: object) -> None:
     path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
@@ -215,14 +253,10 @@ def build_static_web(output_dir: Path) -> Path:
     _write_json(assets_dir / "schema-summary.json", build_schema_summary(schema))
     _write_json(assets_dir / "ui-catalog.json", build_ui_catalog(schema_catalog))
     _write_json(assets_dir / "graph-palettes.json", PALETTES)
-    try:
-        api_version = package_version("r3xa-api")
-    except PackageNotFoundError:
-        api_version = "development"
     _write_json(
         assets_dir / "build-info.json",
         {
-            "api_version": api_version,
+            "api_version": _project_version(),
             "schema_version": schema_catalog.get("schema_version"),
             "git_commit": _git_revision(),
             "build_id": _git_revision(),
@@ -254,7 +288,7 @@ def build_static_web(output_dir: Path) -> Path:
         "schema/index.html": ("schema.html", "..", ".."),
         "registry/index.html": ("registry.html", "..", ".."),
     }
-    build_id = _git_revision()
+    build_id = _static_build_id()
     for relative_path, (template_name, static_base, app_base) in pages.items():
         destination = output_dir / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)

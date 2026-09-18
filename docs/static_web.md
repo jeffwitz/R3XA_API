@@ -249,6 +249,12 @@ produce false Registry errors. The static parity test validates every checked-
 in Registry example against both the Python item validator and the generated
 JavaScript validators, plus an invalid type case.
 
+Static runtime-loaded assets are cache-consistent: the generated build ID is
+derived from the Git revision and a content digest of the schema, UI resources,
+static assets, and build script. HTML, catalogue fetches, validator imports,
+and Graphviz imports all use that same version query. `build-info.json` exposes
+both the revision and the content-aware build ID for deployment diagnostics.
+
 ## Phase F — GitLab Pages
 
 The CI now has separate `static-web-build` and `static-web-test` jobs. The

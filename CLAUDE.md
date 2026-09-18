@@ -325,10 +325,14 @@ feat(web): generate per-kind registry validators
 
 #### 8. Make static asset versioning atomic
 
-HTML currently cache-busts scripts and CSS with the Git SHA, but runtime
-fetches and dynamic imports can still retrieve stale schema catalogues,
-validators, or graph bundles after deployment. Build metadata may also report
-the installed package version instead of the checkout version.
+Status: implemented in the current working tree. Static runtime fetches and
+dynamic imports now carry the same build version as the HTML runtime script.
+The build ID combines the checked-out revision with a content digest of the
+schema, UI resources, static assets, and build script, so local dirty builds
+cannot accidentally reuse the cache key of a different WebUI.
+
+`build-info.json` records both the Git revision and the content-aware build
+ID. Keep this invariant when adding new runtime-loaded assets.
 
 Required implementation:
 

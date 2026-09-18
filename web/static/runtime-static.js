@@ -1,9 +1,11 @@
 (() => {
   const script = document.currentScript;
   const assetBase = String(script?.dataset?.assetBase || ".").replace(/\/$/, "");
+  const assetVersion = String(script?.dataset?.assetVersion || "");
+  const assetUrl = (name) => `${assetBase}/${name}${assetVersion ? `?v=${encodeURIComponent(assetVersion)}` : ""}`;
 
   const loadAsset = async (name) => {
-    const response = await fetch(`${assetBase}/${name}`);
+    const response = await fetch(assetUrl(name));
     if (!response.ok) throw new Error(`Unable to load ${name} (${response.status})`);
     return response.json();
   };
@@ -21,7 +23,7 @@
   let graphPalettePromise;
   let graphPromise;
   const loadValidator = () => {
-    validatorPromise ||= import(`${assetBase}/validator.generated.js`);
+    validatorPromise ||= import(assetUrl("validator.generated.js"));
     return validatorPromise;
   };
 
@@ -36,7 +38,7 @@
   };
 
   const loadGraph = () => {
-    graphPromise ||= import(`${assetBase}/graph.generated.js`);
+    graphPromise ||= import(assetUrl("graph.generated.js"));
     return graphPromise;
   };
 

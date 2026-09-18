@@ -19,7 +19,8 @@ def test_frontend_assets_are_wired() -> None:
     assert 'data-editor-mode="guided"' in template
     assert 'id="guided-prefill"' in template
     assert "Create prefilled workflow" in template
-    assert 'src="{{ static_base|default(\'/static\') }}/{{ runtime_name|default(\'runtime.js\') }}?v={{ app_start }}"' in template
+    assert 'data-asset-base="{{ static_base|default(\'/static\') }}"' in template
+    assert 'data-asset-version="{{ app_start }}"' in template
     assert '{{ static_base|default(\'/static\') }}/app.js?v={{ app_start }}' in template
     assert '{{ static_base|default(\'/static\') }}/id-utils.js?v={{ app_start }}' in template
     assert '{{ static_base|default(\'/static\') }}/registry-storage.js?v={{ app_start }}' in template

@@ -48,7 +48,7 @@
         </div>
       </section>
     </main>
-    <script src="{{ static_base|default('/static') }}/{{ runtime_name|default('runtime.js') }}?v={{ app_start }}" data-asset-base="{{ static_base|default('/static') }}"></script>
+    <script src="{{ static_base|default('/static') }}/{{ runtime_name|default('runtime.js') }}?v={{ app_start }}" data-asset-base="{{ static_base|default('/static') }}" data-asset-version="{{ app_start }}"></script>
     <script src="{{ static_base|default('/static') }}/i18n.js?v={{ app_start }}"></script>
     <script src="{{ static_base|default('/static') }}/home.js?v={{ app_start }}"></script>
   </body>
