@@ -1093,7 +1093,7 @@ def test_static_graph_failure_does_not_break_the_editor(static_site: str) -> Non
         page.goto(f"{static_site}/schema/")
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.reload()
-        page.route("**/assets/graph.generated.js", lambda route: route.abort())
+        page.route("**/assets/graph.generated.js*", lambda route: route.abort())
         page.locator("#generate-graph-btn").click()
         page.wait_for_function(
             "document.querySelector('#graph-container').textContent.includes('Graphviz WASM rendering failed')"

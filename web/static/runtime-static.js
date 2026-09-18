@@ -11,6 +11,7 @@
   };
 
   const unavailable = (message) => new Response(JSON.stringify({
+    detail: message,
     valid: false,
     errors: [message],
   }), {
