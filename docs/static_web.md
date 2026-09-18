@@ -222,6 +222,15 @@ SVG downloads, and English/French switching. One-shot `new=1` and `prefill=1`
 launch URLs are consumed after use so a browser reload does not recreate or
 discard the document unexpectedly.
 
+The first Registry safety lot is now implemented in both runtimes: loading a
+Registry JSON item preserves its values and identifier exactly, while example
+completion is an explicit action with a proposed-value preview and user
+confirmation. Resetting an item or changing its kind/profile also asks for
+confirmation when unsaved changes would be discarded. Browser regression tests
+cover imported partial items in the FastAPI and static runtimes. The remaining
+Registry qualification work is reference-safe ID migration, dependency-closure
+cloning, versioned local storage, and direct per-kind static validation.
+
 ## Phase F — GitLab Pages
 
 The CI now has separate `static-web-build` and `static-web-test` jobs. The

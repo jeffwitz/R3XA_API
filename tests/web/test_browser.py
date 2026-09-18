@@ -280,9 +280,38 @@ def test_registry_form_syncs_with_json_and_preserves_unknown_fields(page: Page, 
     assert updated["custom_extension"] == {"kept": True}
 
 
+def test_registry_import_preserves_item_until_explicit_example_completion(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/registry")
+    page.wait_for_selector("#registry-form .registry-field")
+    imported = {
+        "id": "legacy-camera",
+        "kind": "data_sources/camera",
+        "title": "Imported camera",
+        "description": "Only the information supplied by the user.",
+        "exposure": {"kind": "unit", "title": "Example Title", "unit": "unit", "scale": 1},
+    }
+    page.locator("#registry-load-input").set_input_files({
+        "name": "imported.json",
+        "mimeType": "application/json",
+        "buffer": json.dumps(imported).encode(),
+    })
+    page.wait_for_function(
+        "expected => JSON.stringify(JSON.parse(document.querySelector('#registry-json-input').value)) === JSON.stringify(expected)",
+        arg=imported,
+    )
+    assert _payload_from_registry(page) == imported
+    page.once("dialog", lambda dialog: dialog.accept())
+    page.locator("#registry-complete-btn").click()
+    page.wait_for_function("document.querySelector('#registry-field-exposure-value')?.value === '0.01'")
+    completed = _payload_from_registry(page)
+    assert completed["id"] == imported["id"]
+    assert completed["exposure"]["unit"] == "s"
+
+
 def test_registry_id_generator_uses_kind_prefixes(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/registry")
     page.wait_for_selector("#registry-form .registry-field")
+    page.on("dialog", lambda dialog: dialog.accept())
     for kind, prefix in [
         ("settings/specimen", "stg-specimen-"),
         ("data_sources/camera", "src-camera-"),

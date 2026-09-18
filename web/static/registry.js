@@ -17,6 +17,7 @@ const kindEl = document.getElementById("registry-kind");
 const profileEl = document.getElementById("registry-profile");
 const formEl = document.getElementById("registry-form");
 const addLocalButton = document.getElementById("registry-add-local-btn");
+const completeButton = document.getElementById("registry-complete-btn");
 const localItemsEl = document.getElementById("registry-local-items");
 
 const localRegistryStorageKey = "r3xaLocalRegistryItems";
@@ -24,6 +25,8 @@ const localRegistryStorageKey = "r3xaLocalRegistryItems";
 let schemaCatalog = null;
 let uiCatalog = null;
 let lintTimer = null;
+let registryBaseline = "";
+let lastStableProfile = "";
 
 const generatedIdPrefix = (kind) => {
   const section = kind?.split("/", 1)[0];
@@ -156,6 +159,37 @@ const ensureServerStart = () => {
 };
 
 const loadDraft = () => localStorage.getItem("r3xaRegistryDraft") || JSON.stringify(defaultRegistryItem, null, 2);
+
+const registryText = (key, fallback, variables = {}) => (
+  typeof t === "function" ? t(key, fallback, variables) : fallback
+);
+
+const canonicalRegistryText = (text) => {
+  try {
+    return JSON.stringify(JSON.parse(text));
+  } catch {
+    return String(text);
+  }
+};
+
+const setRegistryBaseline = () => {
+  registryBaseline = canonicalRegistryText(inputEl.value);
+  lastStableProfile = profileEl?.value || "";
+};
+
+const registryIsDirty = () => registryBaseline !== ""
+  && canonicalRegistryText(inputEl.value) !== registryBaseline;
+
+const confirmRegistryReplacement = (action) => {
+  const dirty = registryIsDirty();
+  return !dirty || window.confirm(
+  registryText(
+    "registry.confirm_replace",
+    `Replace the current Registry item and ${action}? Unsaved changes will be discarded.`,
+    {action},
+  ),
+  );
+};
 
 const saveDraft = () => {
   localStorage.setItem("r3xaRegistryDraft", inputEl.value);
@@ -466,6 +500,24 @@ const completeExampleValue = (key, value, meta, context = {}) => {
 };
 
 const cloneJsonValue = (value) => JSON.parse(JSON.stringify(value));
+
+const collectExampleChanges = (before, after, path = "", changes = []) => {
+  if (JSON.stringify(before) === JSON.stringify(after)) return changes;
+  const beforeObject = before && typeof before === "object";
+  const afterObject = after && typeof after === "object";
+  if (beforeObject && afterObject && !Array.isArray(before) && !Array.isArray(after)) {
+    const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+    keys.forEach((key) => collectExampleChanges(
+      before[key],
+      after[key],
+      path ? `${path}.${key}` : key,
+      changes,
+    ));
+    return changes;
+  }
+  changes.push({path: path || "item", value: after});
+  return changes;
+};
 
 const profileStepsForKind = (kind) => Object.entries(uiCatalog?.profiles || {})
   .flatMap(([profileId, profile]) => (profile.steps || [])
@@ -790,25 +842,39 @@ const syncFromJson = () => {
 };
 
 const reset = () => {
+  if (!confirmRegistryReplacement("reset the item")) return;
   inputEl.value = JSON.stringify(defaultRegistryItem, null, 2);
   outputEl.textContent = "";
   syncFromJson();
+  setRegistryBaseline();
 };
 
 const changeKind = () => {
   const meta = selectedMeta(kindEl.value);
   if (!meta) return;
+  if (!confirmRegistryReplacement("change its kind")) {
+    const current = currentItem();
+    renderKindOptions(current?.kind || "");
+    renderProfileOptions(current?.kind || "", lastStableProfile);
+    return;
+  }
   renderProfileOptions(kindEl.value);
   inputEl.value = JSON.stringify(itemForKind(kindEl.value, meta), null, 2);
   syncFromJson();
+  setRegistryBaseline();
 };
 
 const changeProfile = () => {
+  if (!confirmRegistryReplacement("change its example profile")) {
+    profileEl.value = lastStableProfile;
+    return;
+  }
   localStorage.setItem("r3xaRegistryProfile", profileEl.value);
   const meta = selectedMeta(kindEl.value);
   if (!meta) return;
   inputEl.value = JSON.stringify(itemForKind(kindEl.value, meta), null, 2);
   syncFromJson();
+  setRegistryBaseline();
 };
 
 const downloadJson = () => {
@@ -851,25 +917,41 @@ const loadJsonFile = (file) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
+    if (!confirmRegistryReplacement("load the selected JSON item")) return;
     inputEl.value = reader.result;
-    enrichLoadedDraft();
     syncFromJson();
+    setRegistryBaseline();
   };
   reader.readAsText(file);
 };
 
-const enrichLoadedDraft = () => {
+const completeCurrentItemWithExamples = () => {
   const item = currentItem();
   const kind = item?.kind || kindEl.value;
   const meta = selectedMeta(kind);
   if (!item || !meta) return;
   const enriched = {...item};
-  if (!hasCanonicalId(enriched)) enriched.id = generateRegistryId(kind);
   Object.entries(meta.properties || {}).forEach(([key, propertyMeta]) => {
     if (key !== "kind") enriched[key] = completeExampleValue(key, enriched[key], propertyMeta, {kind});
   });
   enriched.kind = meta.properties?.kind?.const || kind;
+  const changes = collectExampleChanges(item, enriched);
+  if (!changes.length) {
+    outputEl.textContent = registryText("registry.complete_none", "No missing or placeholder fields were found.");
+    return;
+  }
+  const preview = changes.map(({path, value}) => `${path}: ${JSON.stringify(value)}`).join("\n");
+  outputEl.textContent = `${registryText("registry.complete_preview", "Proposed example values:")}\n${preview}`;
+  if (!window.confirm(registryText(
+    "registry.confirm_complete",
+    `Apply ${changes.length} example value(s) to the current item?`,
+    {count: changes.length},
+  ))) {
+    outputEl.textContent = registryText("registry.complete_cancelled", "Example completion cancelled.");
+    return;
+  }
   inputEl.value = JSON.stringify(enriched, null, 2);
+  syncFromJson();
 };
 
 const validateItem = async () => {
@@ -925,11 +1007,12 @@ const init = async () => {
   } catch {
     inputEl.value = JSON.stringify(defaultRegistryItem, null, 2);
   }
-  enrichLoadedDraft();
   syncFromJson();
+  setRegistryBaseline();
 };
 
 document.getElementById("registry-validate-btn").addEventListener("click", validateItem);
+completeButton?.addEventListener("click", completeCurrentItemWithExamples);
 addLocalButton?.addEventListener("click", addToLocalRegistry);
 document.getElementById("registry-reset-btn").addEventListener("click", reset);
 document.getElementById("registry-save-btn").addEventListener("click", saveWithDialog);

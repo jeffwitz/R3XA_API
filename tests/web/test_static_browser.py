@@ -629,7 +629,7 @@ def test_static_registry_examples_fill_every_schema_field_with_realistic_values(
         browser.close()
 
 
-def test_static_registry_upgrades_an_old_placeholder_draft(static_site: str) -> None:
+def test_static_registry_preserves_imported_item_until_completion_is_requested(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page()
@@ -649,17 +649,28 @@ def test_static_registry_upgrades_an_old_placeholder_draft(static_site: str) -> 
             """
         )
         page.reload()
-        page.wait_for_function("document.querySelector('#registry-field-exposure-value')?.value === '0.01'")
+        page.wait_for_function("document.querySelector('#registry-field-exposure-value')?.value === ''")
         payload = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
-        assert payload["id"].startswith("src-camera-")
+        assert payload["id"] == "old_camera"
         assert payload["exposure"] == {
+            "kind": "unit",
+            "title": "Example Title",
+            "unit": "unit",
+            "scale": 1,
+        }
+        page.once("dialog", lambda dialog: dialog.accept())
+        page.locator("#registry-complete-btn").click()
+        page.wait_for_function("document.querySelector('#registry-field-exposure-value')?.value === '0.01'")
+        completed = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+        assert completed["id"] == "old_camera"
+        assert completed["exposure"] == {
             "kind": "unit",
             "title": "exposure time",
             "value": 0.01,
             "unit": "s",
             "scale": 1.0,
         }
-        assert payload["output_units"][0]["unit"] == "gl"
+        assert completed["output_units"][0]["unit"] == "gl"
         browser.close()
 
 
