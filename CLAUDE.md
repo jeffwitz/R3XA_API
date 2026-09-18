@@ -403,6 +403,14 @@ and graph-model construction are tested mainly through the browser.
 
 Required implementation:
 
+Progress in the current lot:
+
+- added a Node `node:test` suite for the browser graph model and DOT semantics;
+- made `npm test --prefix web` a required step of the static build CI job;
+- kept the existing static browser checks for no `/api/*`, no POST, no remote
+  assets, schema/integrity parity, hostile JSON/SVG, Registry validation, and
+  graph export.
+
 - use the built-in Node `node:test` runner unless a stronger dependency is
   justified;
 - split pure utilities into importable `.mjs` modules;

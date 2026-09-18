@@ -4,7 +4,7 @@
   "description": "Minimal FastAPI shell wired to the `r3xa_api.webcore` contracts.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No JavaScript test suite configured yet\"",
+    "test": "node --test test/*.test.mjs",
     "build-validator": "node scripts/build-validator.mjs"
   },
   "keywords": [],
