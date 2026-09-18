@@ -754,6 +754,18 @@ const renderGuidedSteps = () => {
         row.appendChild(addButton);
       });
     }
+    loadLocalRegistryItems()
+      .filter((item) => registrySectionForKind(item.kind) === step.section)
+      .filter((item) => !step.kind || item.kind === step.kind)
+      .forEach((item) => {
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "ghost local-registry-add";
+        addButton.textContent = t("guided.add_local", "Use local {item}", {item: item.title || item.kind});
+        addButton.addEventListener("click", (event) => event.stopPropagation());
+        addButton.addEventListener("click", () => appendLocalRegistryItem(step.section, item, step));
+        row.appendChild(addButton);
+      });
     const incomingLinks = (profile.links || []).filter((link) => link.to_step === step.id);
     if (incomingLinks.length) {
       const dependency = document.createElement("small");
@@ -790,6 +802,39 @@ const refreshGuidedNavigation = () => {
 };
 
 const makeId = () => `id_${Math.random().toString(36).slice(2, 12)}`;
+
+const localRegistryStorageKey = "r3xaLocalRegistryItems";
+
+const loadLocalRegistryItems = () => {
+  try {
+    const value = JSON.parse(localStorage.getItem(localRegistryStorageKey) || "[]");
+    return Array.isArray(value) ? value.filter((item) => item && typeof item === "object" && item.kind) : [];
+  } catch {
+    return [];
+  }
+};
+
+const registrySectionForKind = (kind) => kind?.split("/", 1)[0] || "";
+
+const cloneLocalRegistryItem = (item) => {
+  const clone = cloneJsonValue(item);
+  clone.id = makeId();
+  return clone;
+};
+
+const appendLocalRegistryItem = (sectionName, item, step = null) => {
+  const payload = readPayload();
+  if (!payload || registrySectionForKind(item.kind) !== sectionName) return;
+  const clone = cloneLocalRegistryItem(item);
+  payload[sectionName] = payload[sectionName] || [];
+  payload[sectionName].push(clone);
+  if (step) selectGuidedStepItem(step.id, clone.id);
+  const profile = uiCatalog?.profiles?.[selectedProfile];
+  if (step && profile) applyProfileLinks(profile, payload);
+  inputEl.value = JSON.stringify(payload, null, 2);
+  saveDraft();
+  syncFormFromJson();
+};
 
 const defaultForField = (key, meta, payload) => {
   if (meta.const !== undefined) return meta.const;
@@ -1517,6 +1562,21 @@ const buildArrayEditor = (container, sectionName) => {
     addButton.addEventListener("click", () => appendItem(sectionName, kind));
     actions.appendChild(addButton);
   });
+  const localItems = loadLocalRegistryItems().filter((item) => registrySectionForKind(item.kind) === sectionName);
+  if (localItems.length) {
+    const localHeading = document.createElement("small");
+    localHeading.className = "field-description local-registry-heading";
+    localHeading.textContent = "Local registry templates (this browser)";
+    actions.appendChild(localHeading);
+    localItems.forEach((item) => {
+      const addButton = document.createElement("button");
+      addButton.textContent = `Use ${item.title || item.kind}`;
+      addButton.className = "ghost local-registry-add";
+      addButton.type = "button";
+      addButton.addEventListener("click", () => appendLocalRegistryItem(sectionName, item));
+      actions.appendChild(addButton);
+    });
+  }
   container.appendChild(actions);
 
   const list = document.createElement("div");

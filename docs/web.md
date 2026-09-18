@@ -87,8 +87,10 @@ dot -V
   - Save/load JSON to/from disk.
   - Draft state is stored locally (browser storage) and survives a WebUI server restart.
 - **Registry editor** (`/registry`)
-  - Load, edit, validate, and save a single registry item JSON.
-  - Optional kind override for strict item-level validation.
+  - Choose a registry `kind` from the current schema catalogue.
+  - Edit the item through a schema-generated form or the synchronized Expert JSON view.
+  - Receive local JSON/schema lint feedback and save the item locally.
+  - Save valid items as browser-local templates reusable from the document editor; they are never published automatically. The static runtime keeps validation and storage local.
   - See dedicated page: [Registry Web Editor](registry_web.md).
 - **Schema viewer** (`/schema`)
   - Inspect the schema summary or the current draft.

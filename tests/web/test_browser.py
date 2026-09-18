@@ -72,6 +72,10 @@ def _payload(page: Page) -> dict:
     return json.loads(page.locator("#json-input").input_value())
 
 
+def _payload_from_registry(page: Page) -> dict:
+    return json.loads(page.locator("#registry-json-input").input_value())
+
+
 def _ui_catalog(web_server: str) -> dict:
     with urlopen(f"{web_server}/api/ui", timeout=5) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -217,6 +221,25 @@ def test_advanced_item_validation_uses_registry_validation(page: Page, web_serve
     data_set.get_by_role("button", name="Validate item").click()
     page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
     assert "Valid" in page.locator("#validation-output").inner_text()
+
+
+def test_registry_form_syncs_with_json_and_preserves_unknown_fields(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/registry")
+    page.wait_for_selector("#registry-form .registry-field")
+    page.locator("#registry-kind").select_option("data_sources/camera")
+    page.locator("#registry-field-title").fill("Camera from form")
+    payload = _payload_from_registry(page)
+    assert payload["kind"] == "data_sources/camera"
+    assert payload["title"] == "Camera from form"
+
+    payload["title"] = "Camera from JSON"
+    payload["custom_extension"] = {"kept": True}
+    page.locator("#registry-json-input").fill(json.dumps(payload, indent=2))
+    page.wait_for_function("document.querySelector('#registry-field-title')?.value === 'Camera from JSON'")
+    page.locator("#registry-field-description").fill("Edited without losing extensions")
+    updated = _payload_from_registry(page)
+    assert updated["description"] == "Edited without losing extensions"
+    assert updated["custom_extension"] == {"kept": True}
 
 
 def test_adding_a_guided_item_does_not_overwrite_a_manual_relationship(page: Page, web_server: str) -> None:

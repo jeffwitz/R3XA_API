@@ -513,6 +513,178 @@ def test_static_registry_validation_uses_local_validator(static_site: str) -> No
         browser.close()
 
 
+def test_static_registry_form_syncs_with_expert_json_and_lints(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        requests: list[tuple[str, str]] = []
+        page.on("request", lambda request: requests.append((request.method, request.url)))
+        page.goto(f"{static_site}/registry/")
+        page.wait_for_selector("#registry-form .registry-field")
+        page.locator("#registry-kind").select_option("data_sources/camera")
+        page.locator("#registry-profile").select_option("dic_2d")
+        page.wait_for_function("document.querySelector('#registry-field-title')?.value === 'Visible camera'")
+        page.locator("#registry-field-title").fill("Camera from form")
+        units = page.locator("[data-json-path='output_units']")
+        units.get_by_role("button", name="Add value").click()
+        page.locator("#registry-field-output_units-0-title").fill("width")
+        page.locator("#registry-field-output_units-0-value").fill("12.5")
+        page.locator("#registry-field-output_units-0-unit").fill("mm")
+        payload = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+        camera_properties = page.evaluate(
+            "async () => Object.keys((await window.R3XARuntime.loadSchemaCatalog()).sections.data_sources.kinds['data_sources/camera'].properties)"
+        )
+        assert payload["kind"] == "data_sources/camera"
+        assert payload["title"] == "Camera from form"
+        assert set(camera_properties).issubset(payload)
+        assert payload["documentation"] == "documentation/instrument-manual.pdf"
+        assert payload["manufacturer"] == "Allied Vision Technologies"
+        assert payload["model"] == "Dolphin F-145B"
+        assert payload["exposure"] == {
+            "kind": "unit",
+            "title": "exposure time",
+            "value": 0.01,
+            "unit": "s",
+            "scale": 1.0,
+        }
+        assert payload["input_data_sets"] == []
+        assert payload["output_units"][0]["value"] == 12.5
+        assert payload["output_units"][0]["unit"] == "mm"
+        empty_values = page.evaluate(
+            """payload => {
+              const empty = [];
+              const visit = (value, path) => {
+                if (value === undefined || value === '') empty.push(path);
+                else if (Array.isArray(value)) value.forEach((entry, index) => visit(entry, `${path}/${index}`));
+                else if (value && typeof value === 'object') Object.entries(value).forEach(([key, entry]) => visit(entry, `${path}/${key}`));
+              };
+              visit(payload, 'item');
+              return empty;
+            }""",
+            payload,
+        )
+        assert empty_values == []
+
+        payload["title"] = "Camera from JSON"
+        payload["custom_extension"] = {"kept": True}
+        page.locator("#registry-json-input").fill(json.dumps(payload, indent=2))
+        page.wait_for_function("document.querySelector('#registry-field-title')?.value === 'Camera from JSON'")
+        page.locator("#registry-field-description").fill("Edited without losing extensions")
+        updated = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+        assert updated["title"] == "Camera from JSON"
+        assert updated["description"] == "Edited without losing extensions"
+        assert updated["custom_extension"] == {"kept": True}
+        assert page.locator(".json-highlight .json-string").count() > 0
+
+        page.locator("#registry-json-input").fill(json.dumps({"kind": "data_sources/camera"}, indent=2))
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Invalid')")
+        browser.close()
+
+
+def test_static_registry_examples_fill_every_schema_field_with_realistic_values(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/registry/")
+        page.wait_for_selector("#registry-form .registry-field")
+        kinds = page.locator("#registry-kind option").evaluate_all("options => options.map(option => option.value).filter(Boolean)")
+        for kind in kinds:
+            page.locator("#registry-kind").select_option(kind)
+            page.wait_for_function("expected => JSON.parse(document.querySelector('#registry-json-input').value).kind === expected", arg=kind)
+            payload = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+            placeholders = page.evaluate(
+                """
+                payload => {
+                  const found = [];
+                  const visit = (value, path) => {
+                    if (typeof value === 'string' && !path.endsWith('/kind') && /^(example\\b|not specified$|unknown$|unit$|item$)/i.test(value.trim())) found.push(path);
+                    else if (Array.isArray(value)) value.forEach((entry, index) => visit(entry, `${path}/${index}`));
+                    else if (value && typeof value === 'object') Object.entries(value).forEach(([key, entry]) => visit(entry, `${path}/${key}`));
+                  };
+                  visit(payload, 'item');
+                  return found;
+                }
+                """,
+                payload,
+            )
+            assert placeholders == [], f"{kind} contains placeholder values: {placeholders}"
+            assert payload["kind"] == kind
+            assert "title" in payload and payload["title"]
+            assert "description" in payload and payload["description"]
+            report = page.evaluate(
+                """
+                async ({payload, kind}) => (await window.R3XARuntime.validateItem(payload, kind)).json()
+                """,
+                {"payload": payload, "kind": kind},
+            )
+            assert report["valid"], f"{kind} example is invalid: {report.get('errors')}"
+        browser.close()
+
+
+def test_static_registry_upgrades_an_old_placeholder_draft(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/registry/")
+        page.evaluate(
+            """
+            () => localStorage.setItem('r3xaRegistryDraft', JSON.stringify({
+              id: 'old_camera',
+              kind: 'data_sources/camera',
+              title: 'Visible camera',
+              description: 'Camera recording the test.',
+              output_components: 1,
+              output_dimension: 'surface',
+              output_units: [{kind: 'unit', title: 'gray level', unit: 'unit', scale: 1}],
+              exposure: {kind: 'unit', title: 'Example Title', unit: 'unit', scale: 1}
+            }))
+            """
+        )
+        page.reload()
+        page.wait_for_function("document.querySelector('#registry-field-exposure-value')?.value === '0.01'")
+        payload = page.evaluate("JSON.parse(document.querySelector('#registry-json-input').value)")
+        assert payload["exposure"] == {
+            "kind": "unit",
+            "title": "exposure time",
+            "value": 0.01,
+            "unit": "s",
+            "scale": 1.0,
+        }
+        assert payload["output_units"][0]["unit"] == "gl"
+        browser.close()
+
+
+def test_static_valid_registry_item_is_available_only_as_a_local_editor_template(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        requests: list[tuple[str, str]] = []
+        page.on("request", lambda request: requests.append((request.method, request.url)))
+        page.goto(f"{static_site}/registry/")
+        page.evaluate("localStorage.removeItem('r3xaLocalRegistryItems')")
+        page.locator("#registry-field-title").fill("Local camera template")
+        page.click("#registry-validate-btn")
+        page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
+        page.click("#registry-add-local-btn")
+        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '[]').length === 1")
+        saved = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems'))[0]")
+        assert saved["title"] == "Local camera template"
+
+        page.goto(f"{static_site}/edit?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("[data-editor-mode='advanced']").click()
+        page.locator("#data-sources-form .local-registry-add").click()
+        page.wait_for_function(
+            "payload => JSON.parse(document.querySelector('#json-input').value).data_sources?.some(item => item.title === payload.title)",
+            arg=saved,
+        )
+        inserted = page.evaluate("JSON.parse(document.querySelector('#json-input').value).data_sources.find(item => item.title === 'Local camera template')")
+        assert inserted["id"] != saved["id"]
+        assert all(method == "GET" for method, _ in requests)
+        assert not any("/api/" in url for _, url in requests)
+        browser.close()
+
+
 def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None:
     requests: list[tuple[str, str]] = []
     payload = {

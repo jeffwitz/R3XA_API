@@ -10,33 +10,55 @@ Registry work usually targets **single reusable items** (for example one camera 
 The `/registry` page focuses on that use case:
 
 - load a local JSON item,
-- edit it in-place,
+- choose its schema `kind`,
+- edit it through a schema-generated form or the Expert JSON view,
 - validate it against the item schema definition,
-- save it back locally.
+- save it back locally,
+- keep it as a browser-local template for reuse in the document editor.
 
 ## Route
 
 - `GET /registry`
 
-## Validation API
+## Validation
 
-- `POST /api/registry/validate`
-  - payload accepts:
-    - `{ "item": { ... } }`
-    - or `{ "item": { ... }, "kind": "data_sources/camera" }` to force schema target
-  - response:
-    - `{ "valid": true, "errors": [] }`
-    - or `{ "valid": false, "errors": ["..."] }`
+The server-backed page uses `POST /api/registry/validate`. The static WebUI uses
+the same schema catalogue and generated JavaScript validator locally, without
+uploading the item.
+
+The validation report distinguishes JSON syntax errors from schema errors and
+shows the affected JSON path when available.
 
 ## Local workflow
 
 1. Open `/registry`.
 2. Click **Load JSON** to import an existing registry item.
-3. Optionally set **Kind override** when a strict target is needed.
-4. Click **Validate item**.
-5. Click **Save JSON** to export the updated item.
+3. Choose the item kind from the schema catalogue if necessary.
+4. Choose an **Example profile** to populate the fields with realistic values from a Guided workflow.
+5. Edit common fields in the generated form, or use the highlighted Expert JSON view.
+6. Click **Validate item** to run the lint and schema validation.
+7. Click **Add to local registry** to make a valid item available as a template in this browser.
+8. Click **Save JSON** to export the updated item.
+
+The generated example fills scalar, unit, file and nested-object fields with
+domain-specific illustrative values (for example, a camera exposure is shown as
+`0.01 s`, a focal length as `25 mm`, and a load-cell capacity as `10 kN`). Older
+browser drafts containing generic placeholders are upgraded when the page opens.
+Relationship lists remain empty unless the selected profile provides real
+relationships, because inventing identifiers for other objects would make the
+example misleading.
+
+The form and JSON views share one document. Fields not exposed by the form are
+preserved when another form field is edited, so expert extensions are not
+silently discarded.
 
 Draft state is stored in browser local storage under a dedicated key (`r3xaRegistryDraft`).
+Local registry templates are stored under `r3xaLocalRegistryItems`. They remain on
+the current browser and are not published to `R3XA_REGISTRY`. The static runtime
+does not send them to a server; the server-backed runtime may send the current
+item to its validation endpoint when **Validate item** is clicked. Adding a
+template to an R3XA document creates a new local copy with a new identifier, so
+the registry item itself is never modified.
 
 ## Relation to existing web docs
 

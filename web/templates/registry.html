@@ -39,16 +39,27 @@
 
       <section class="panel">
         <h2>Validation target</h2>
-        <p class="muted">Set the kind explicitly to validate against a specific schema definition.</p>
+        <p class="muted">Choose the schema definition used to generate the form and validate this registry item.</p>
         <div class="form-row">
-          <label for="registry-kind" data-i18n="registry.kind">Kind override (optional)</label>
-          <input id="registry-kind" type="text" placeholder="e.g. data_sources/camera" />
+          <label for="registry-kind" data-i18n="registry.kind">Item kind</label>
+          <select id="registry-kind"></select>
+        </div>
+        <div class="form-row">
+          <label for="registry-profile">Example profile</label>
+          <select id="registry-profile"></select>
+          <small class="field-description">Choose a workflow profile to see realistic example values for this kind.</small>
         </div>
       </section>
 
       <section class="panel">
+        <h2>Form editor</h2>
+        <p class="muted">Edit the item through fields generated from the current R3XA schema.</p>
+        <div id="registry-form" class="registry-form"></div>
+      </section>
+
+      <section class="panel">
         <h2>Registry JSON item</h2>
-        <p class="muted">The JSON should contain one item object (setting, data source, or data set).</p>
+        <p class="muted">Use this expert view for extensions, precise JSON editing, or fields not currently exposed by the form.</p>
         <div class="actions">
           <button id="registry-save-btn" class="ghost" type="button" data-i18n="registry.save">Save JSON</button>
           <label class="file-btn ghost">
@@ -57,11 +68,19 @@
           </label>
         </div>
         <textarea id="registry-json-input" spellcheck="false"></textarea>
+        <pre id="registry-json-highlight" class="json-highlight" aria-label="Highlighted JSON preview"></pre>
         <div class="actions">
           <button id="registry-validate-btn" type="button" data-i18n="registry.validate">Validate item</button>
+          <button id="registry-add-local-btn" class="ghost" type="button" disabled>Add to local registry</button>
           <button id="registry-reset-btn" class="ghost" type="button" data-i18n="registry.reset">Reset</button>
         </div>
         <pre id="registry-validation-output"></pre>
+      </section>
+
+      <section class="panel">
+        <h2>Local registry items</h2>
+        <p class="muted">Items stored here remain only in this browser and are available as local templates in the editor. The stored local copy is never uploaded.</p>
+        <div id="registry-local-items" class="registry-local-items"></div>
       </section>
     </main>
 
