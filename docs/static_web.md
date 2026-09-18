@@ -368,14 +368,14 @@ uploaded.
 For a controlled static host, a restrictive starting policy is:
 
 ```text
-default-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'
+default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'
 ```
 
-Graphviz WebAssembly may require the host's documented WebAssembly CSP
-allowance. Keep that allowance limited to the static origin and verify it with
-the browser graph test. The static graph runtime is intentionally Graphviz
-WebAssembly/SVG only; PyVis and Matplotlib remain available in the FastAPI
-runtime.
+`wasm-unsafe-eval` is the only deliberate relaxation and should be retained
+only if the Graphviz WebAssembly graph is enabled. Verify the final policy on
+the deployed host with the browser graph test. The static graph runtime is
+intentionally Graphviz WebAssembly/SVG only; PyVis and Matplotlib remain
+available in the FastAPI runtime.
 
 ## Decisions and invariants
 

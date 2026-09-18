@@ -382,7 +382,9 @@ Remaining follow-up:
   complete translation coverage;
 - qualify the same CSP through a hosted GitLab Pages smoke test and document
   any host-specific WebAssembly or iframe header requirements;
-- add focus management from every validation error to its corresponding field.
+- the existing validation error controls already focus and scroll to the
+  corresponding field; keep that behavior covered when validation rendering
+  changes.
 
 Suggested commit:
 
@@ -512,8 +514,8 @@ The current overall assessment is:
 - The static build requires Node.js and `npm ci --prefix web` at build time;
   the generated site does not require Node.js at runtime.
 - The static graph bundle is deliberately loaded only after `Generate graph`.
-- The current bundled Schema viewer is not considered safe for untrusted JSON
-  until it is replaced by a `textContent`-only renderer as described above.
+- The Schema viewer uses a text-only JSON tree and sanitizes returned SVG before
+  inserting it; keep hostile JSON/SVG browser coverage in place.
 - Example completion is now explicit and confirmed by the user; future changes
   must not reintroduce enrichment during import, reload, or initial draft
   loading.
@@ -522,12 +524,11 @@ The current overall assessment is:
   is implemented.
 - The shared ID utility now prevents ambiguous duplicate-ID migrations and
   reports the conflicting IDs to the user.
-- Static Registry item validation currently uses a synthetic full document
-  rather than a generated per-kind validator.
-- Static asset cache busting does not yet cover every fetched catalogue and
-  dynamically imported bundle.
-- Cross-origin iframe behavior and strict CSP have not yet been qualified by
-  automated browser tests.
+- Static Registry item validation uses generated per-kind Ajv validators.
+- Static asset cache busting is tied to the content-aware build identifier for
+  catalogues and dynamically imported bundles.
+- Cross-origin iframe behavior and the final host's strict CSP headers still
+  require automated qualification on GitLab Pages or a PhotoMechanics host.
 - GitLab Pages publication is configured but still needs a successful GitLab
   pipeline and hosted smoke test. An explicit validation pipeline
   (`2859601291`, commit `161b6b8`) was created but all jobs were rejected with
