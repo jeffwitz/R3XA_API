@@ -412,7 +412,10 @@ Progress in the current lot:
 - made `npm test --prefix web` a required step of the static build CI job;
 - kept the existing static browser checks for no `/api/*`, no POST, no remote
   assets, schema/integrity parity, hostile JSON/SVG, Registry validation, and
-  graph export.
+  graph export;
+- added a local two-origin iframe test covering Guided loading, validation,
+  localStorage, Graphviz SVG rendering, sandbox attributes, and download
+  fallback.
 
 - use the built-in Node `node:test` runner unless a stronger dependency is
   justified;
@@ -424,8 +427,8 @@ Progress in the current lot:
   categories, initial/intermediate/final status, and palette style keys;
 - keep the full static acceptance test that rejects `/api/*`, POST requests,
   and third-party domains;
-- add a two-origin iframe test covering load, Guided editing, validation,
-  localStorage, graph rendering, and download fallback;
+- qualify the same iframe scenario against the real hosted origin once Pages is
+  available;
 - test the documented sandbox attributes separately;
 - run cache, CSP, malicious JSON, and local Registry dependency scenarios.
 

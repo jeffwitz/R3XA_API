@@ -270,6 +270,53 @@ def test_static_runtime_works_with_documented_strict_csp(static_site: str) -> No
     assert not any("Content Security Policy" in error for error in console_errors)
 
 
+def test_static_webui_works_inside_a_local_cross_origin_iframe(static_site: str, tmp_path: Path) -> None:
+    payload = {
+        "title": "Cross-origin iframe",
+        "description": "Local iframe qualification",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    host_dir = tmp_path / "iframe-host"
+    host_dir.mkdir()
+    (host_dir / "index.html").write_text(
+        f'''<!doctype html><html><body>
+        <iframe src="{static_site}/edit/?profile=generic&new=1"
+          title="R3XA Web Editor"
+          sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-modals">
+        </iframe>
+        </body></html>''',
+        encoding="utf-8",
+    )
+    with _serve_static_directory(host_dir) as host_url:
+        with sync_playwright() as runtime:
+            browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+            page = browser.new_page(accept_downloads=True)
+            page.goto(host_url)
+            frame = page.frame_locator("iframe")
+            frame.locator("#schema-summary").wait_for(state="visible")
+            frame.locator("button[data-editor-mode=guided]").click()
+            frame.locator("#guided-steps").wait_for(state="visible")
+            frame.locator("#validate-btn").click()
+            frame.locator("#validation-output").wait_for(state="visible")
+
+            child = next(frame for frame in page.frames if frame.url.startswith(static_site))
+            child.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+            child.goto(f"{static_site}/schema/")
+            child.locator("#generate-graph-btn").click()
+            child.locator("#graph-container svg").wait_for(state="attached", timeout=30_000)
+
+            child.goto(f"{static_site}/edit/")
+            with page.expect_download() as download_info:
+                child.locator("#save-json-btn").click()
+            assert download_info.value.suggested_filename == "r3xa.json"
+            browser.close()
+
+
 def test_static_editor_preserves_one_document_across_modes(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())

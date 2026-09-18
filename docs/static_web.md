@@ -429,6 +429,9 @@ The initiative is complete only when all of the following are true:
   launch-action URLs so `new=1` and `prefill=1` are applied only once.
 - Added browser parity coverage for schema and duplicate-ID integrity errors,
   and made Registry validation assert same-origin GET-only resource usage.
+- Added local two-origin iframe coverage for Guided loading, validation,
+  localStorage, Graphviz SVG rendering, sandbox attributes, and download
+  fallback. This does not replace the hosted Pages check.
 
 ### Phase B progress
 
