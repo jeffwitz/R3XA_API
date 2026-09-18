@@ -278,10 +278,15 @@ refactor(web): generate registry examples from UI resources
 
 #### 7. Compile real per-kind Registry validators
 
-The static `validateItem()` currently embeds a Registry item in a synthetic
-full document and invokes the document validator. The server runtime instead
-validates the matching schema definition directly. The synthetic approach can
-produce false document-level failures and drift as the schema evolves.
+Status: implemented in the current working tree. The static build now emits a
+standalone Ajv validator for every supported Registry `kind`, and
+`runtime-static.js` dispatches directly to that validator without creating a
+synthetic full document. The generated module also exposes the supported kind
+list and preserves Ajv's technical errors for report normalization.
+
+The server runtime continues to validate the matching schema definition
+directly through `r3xa_api.registry.validate_item`; both runtimes therefore
+exercise the same per-kind contract.
 
 Required implementation:
 
@@ -295,6 +300,10 @@ Required implementation:
 - keep the raw technical error available in Expert mode;
 - test all valid examples and invalid required/type/enum/const/range cases
   against both Python and JavaScript validators.
+
+The remaining qualification work is to expand report-parity cases for every
+schema keyword and to keep the generated validator synchronized with the
+schema build.
 
 Suggested commit:
 

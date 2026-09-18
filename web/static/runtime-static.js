@@ -187,26 +187,10 @@
       return responseFromReport({valid: errors.length === 0, errors});
     },
     validateItem: async (item, kind = "") => {
-      const {validate} = await loadValidator();
-      const catalog = await loadCatalog();
+      const {validateRegistryItem} = await loadValidator();
       const itemKind = kind || item?.kind;
-      const section = typeof itemKind === "string" ? itemKind.split("/", 1)[0] : "";
-      if (!["settings", "data_sources", "data_sets"].includes(section)) {
-        return unavailable("A Registry item kind must identify settings, data_sources, or data_sets.");
-      }
-      const document = {
-        title: "Registry item",
-        description: "Registry item validation",
-        version: catalog.schema_version,
-        authors: [{name: "Registry validator"}],
-        date: "2026-09-17",
-        settings: [],
-        data_sources: [],
-        data_sets: [],
-      };
-      document[section] = [item];
-      const valid = validate(document);
-      return responseFromReport({valid, errors: reportFromErrors(validate.errors || [])});
+      const valid = validateRegistryItem(item, itemKind);
+      return responseFromReport({valid, errors: reportFromErrors(validateRegistryItem.errors || [])});
     },
     renderGraph: async (payload, options = {}) => {
       if ((options.backend || "graphviz") !== "graphviz") {

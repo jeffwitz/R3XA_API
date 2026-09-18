@@ -42,7 +42,10 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     ):
         assert (assets / name).is_file(), name
     assert not (assets / "runtime.js").exists()
-    assert "export" in (assets / "validator.generated.js").read_text(encoding="utf-8")
+    validator_source = (assets / "validator.generated.js").read_text(encoding="utf-8")
+    assert "export" in validator_source
+    assert "validateRegistryItem" in validator_source
+    assert "registryKinds" in validator_source
     static_runtime = (assets / "runtime-static.js").read_text(encoding="utf-8")
     assert "integrityErrors" in static_runtime
     assert "validateItem" in static_runtime

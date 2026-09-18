@@ -234,7 +234,14 @@ insertion is also implemented: using a local template copies its local upstream
 objects, generates new IDs, and remaps the relationships. Missing and cyclic
 dependency paths are rejected. Local Registry storage is now versioned, legacy
 arrays are migrated, and corrupt storage is reported without being overwritten.
-The remaining Registry qualification work is direct per-kind static validation.
+Registry validation is now direct per-kind validation in the static runtime.
+The build compiles an Ajv standalone validator for every `settings/*`,
+`data_sources/*`, and `data_sets/*` definition and exposes a dispatcher keyed
+by the item `kind`. A Registry fragment is no longer embedded in a synthetic
+full R3XA document, so document-level fields and integrity checks cannot
+produce false Registry errors. The static parity test validates every checked-
+in Registry example against both the Python item validator and the generated
+JavaScript validators, plus an invalid type case.
 
 ## Phase F — GitLab Pages
 
