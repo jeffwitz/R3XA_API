@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "completion_strategy": "schema-driven",
+  "kinds": {
+    "settings/generic": {
+      "title": "Lighting setup",
+      "description": "LED illumination used to light the specimen during image acquisition."
+    },
+    "settings/specimen": {
+      "title": "316L tensile specimen",
+      "description": "Flat dog-bone specimen prepared for a uniaxial tensile test."
+    },
+    "settings/testing_machine": {
+      "title": "Universal testing machine",
+      "description": "Electromechanical machine used to apply tensile loading to the specimen.",
+      "manufacturer": "Instron",
+      "model": "5985"
+    },
+    "settings/stereorig": {
+      "title": "Stereo rig",
+      "description": "Rigid mount carrying two synchronized cameras for stereo-DIC acquisition."
+    },
+    "data_sources/generic": {
+      "title": "Test machine acquisition",
+      "description": "Acquisition channel recording force and displacement during the test.",
+      "manufacturer": "Instron",
+      "model": "Bluehill Universal"
+    },
+    "data_sources/camera": {
+      "title": "Visible camera",
+      "description": "Monochrome camera recording the specimen surface during the tensile test.",
+      "manufacturer": "Allied Vision Technologies",
+      "model": "Dolphin F-145B"
+    },
+    "data_sources/infrared": {
+      "title": "Infrared camera",
+      "description": "Infrared camera recording the specimen temperature field during loading.",
+      "manufacturer": "FLIR",
+      "model": "A655sc"
+    },
+    "data_sources/tomograph": {
+      "title": "Laboratory X-ray tomograph",
+      "description": "Cone-beam X-ray tomograph used to reconstruct the internal specimen volume.",
+      "manufacturer": "Nikon Metrology",
+      "model": "XT H 225"
+    },
+    "data_sources/load_cell": {
+      "title": "Tension load cell",
+      "description": "Force transducer measuring the tensile load applied to the specimen.",
+      "manufacturer": "HBM",
+      "model": "U10M 10 kN"
+    },
+    "data_sources/strain_gauge": {
+      "title": "Foil strain gauge",
+      "description": "Bonded foil gauge measuring the longitudinal strain of the specimen.",
+      "manufacturer": "HBK",
+      "model": "LY11-6/120"
+    },
+    "data_sources/point_temperature": {
+      "title": "Specimen temperature sensor",
+      "description": "Non-contact sensor measuring the temperature at the specimen surface.",
+      "manufacturer": "Optris",
+      "model": "CTlaser 3MH"
+    },
+    "data_sources/dic_measurement": {
+      "title": "2D DIC processing",
+      "description": "Digital image correlation processing measuring the in-plane displacement field.",
+      "manufacturer": "Pyxel",
+      "model": "2.0"
+    },
+    "data_sources/mechanical_analysis": {
+      "title": "Finite element analysis",
+      "description": "Mechanical analysis producing a displacement or strain field from the experiment.",
+      "manufacturer": "Abaqus",
+      "model": "2024"
+    },
+    "data_sources/identification": {
+      "title": "Material parameter identification",
+      "description": "Inverse analysis identifying material parameters from measured force and displacement.",
+      "manufacturer": "MFront",
+      "model": "TFEL 3.2"
+    },
+    "data_sources/strain_computation": {
+      "title": "Strain computation",
+      "description": "Computation of strain fields from the measured displacement field.",
+      "manufacturer": "Pyxel",
+      "model": "2.0"
+    },
+    "data_sets/generic": {
+      "title": "Experimental data file",
+      "description": "Data file containing measurements associated with the experiment."
+    },
+    "data_sets/file": {
+      "title": "Force and displacement data",
+      "description": "CSV file containing synchronized force and displacement measurements."
+    },
+    "data_sets/list": {
+      "title": "Raw camera images",
+      "description": "Ordered image sequence recorded during the experiment."
+    }
+  },
+  "unit_examples": {
+    "exposure": ["exposure time", 0.01, "s"],
+    "image_scale": ["pixel size", 0.05, "mm/px"],
+    "focal_length": ["focal length", 25, "mm"],
+    "standoff_distance": ["standoff distance", 500, "mm"],
+    "uncertainty": ["measurement uncertainty", 0.01, "mm"],
+    "capacity": ["capacity", 10, "kN"],
+    "stereo_angle": ["stereo angle", 25, "deg"],
+    "patterning_feature_size": ["pattern feature size", 0.5, "mm"],
+    "step_size": ["DIC step size", 5, "px"],
+    "regularisation_length": ["regularisation length", 2, "mm"],
+    "virtual_strain_gauge_size": ["virtual gauge length", 5, "mm"],
+    "voltage": ["tube voltage", 150, "kV"],
+    "current": ["tube current", 2, "mA"],
+    "scan_duration": ["scan duration", 12, "min"],
+    "tube_to_detector_distance": ["tube-detector distance", 800, "mm"],
+    "source_to_object_distance": ["source-object distance", 600, "mm"],
+    "angular_amplitude": ["angular amplitude", 360, "deg"],
+    "emissivity": ["emissivity", 0.95, "1"],
+    "transmissivity": ["transmissivity", 1, "1"],
+    "time_reference": ["time reference", 0, "s"]
+  },
+  "array_unit_examples": {
+    "image_size": {"labels": ["width", "height"], "values": [1392, 1040], "units": ["px", "px"]},
+    "field_of_view": {"labels": ["width", "height"], "values": [70, 50], "units": ["mm", "mm"]},
+    "calibration_target_size": {"labels": ["width", "height"], "values": [300, 200], "units": ["mm", "mm"]},
+    "sizes": {"labels": ["width", "height", "thickness"], "values": [30, 12, 1], "units": ["mm", "mm", "mm"]},
+    "subset_size": {"labels": ["width", "height"], "values": [31, 31], "units": ["px", "px"]}
+  },
+  "output_unit_examples": {
+    "default": ["measurement", 1, "mm"],
+    "contains": {
+      "camera": ["gray level", 1, "gl"],
+      "load_cell": ["force", 1, "N"],
+      "temperature": ["temperature", 1, "degC"],
+      "strain": ["strain", 1, "%"],
+      "dic": ["displacement", 1, "mm"],
+      "mechanical": ["displacement", 1, "mm"]
+    }
+  },
+  "field_examples": {
+    "file_type": {"default": "text/csv", "kinds": {"data_sets/list": "image/tiff"}},
+    "data_type": {"default": "number", "kinds": {"data_sets/list": "image/tiff"}},
+    "delimiter": ";",
+    "path": {"default": "experiment/data/", "kinds": {"data_sets/list": "experiment/images/"}},
+    "filename": {"default": "machine_force_displacement.csv", "kinds": {"data_sets/list": "camera_000001.tif"}},
+    "documentation": "documentation/instrument-manual.pdf",
+    "lens": "Schneider-Kreuznach Xenoplan 1.4/23",
+    "filter": {"default": "No optical filter", "kinds": {"data_sources/infrared": "8-14 um long-pass filter"}},
+    "aperture": "f/8",
+    "source": "Tungsten target, 150 kV microfocus tube",
+    "detector": "Flat-panel detector, 200 um pixel pitch",
+    "target": "Aluminium calibration target",
+    "type": {"default": "tensile", "kinds": {"data_sources/load_cell": "strain-gauge bridge"}},
+    "calibration_target_type": "Checkerboard calibration plate",
+    "image_filtering": "Gaussian filter, sigma 1 px",
+    "interpolant": "cubic spline",
+    "matching_criterion": "ZNSSD",
+    "shape_function": "affine",
+    "camera_model": "pinhole with Brown-Conrady distortion",
+    "camera_parameters": "calibration/camera_intrinsics.json",
+    "regularization_type": "weak elastic regularization",
+    "displacement_filtering": "Gaussian filter, sigma 1 px",
+    "strain_filtering": "Gaussian filter, sigma 1 px",
+    "nuc_file": "calibration/nuc_file.json",
+    "calibration_file": "calibration/calibration_file.json",
+    "aquisition_param_file": "calibration/aquisition_param_file.json",
+    "reconstruction_param_file": "calibration/reconstruction_param_file.json",
+    "unit": "mm"
+  },
+  "array_examples": {
+    "values": {"default": ["machine_force_displacement.csv"], "kinds": {"data_sets/list": ["camera_000001.tif", "camera_000002.tif", "camera_000003.tif"]}},
+    "timestamps": [0, 0.1, 0.2],
+    "keywords": ["tensile test", "calibration", "measurement"]
+  },
+  "numeric_examples": {
+    "output_components": {"default": 1, "contains": {"dic": 2}},
+    "number_of_projections": 1440,
+    "default": 1
+  }
+}

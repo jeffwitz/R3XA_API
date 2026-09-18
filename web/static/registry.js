@@ -210,129 +210,9 @@ const defaultForField = (key, meta, context = {}) => {
   return "";
 };
 
-const kindExamples = {
-  "settings/generic": {
-    title: "Lighting setup",
-    description: "LED illumination used to light the specimen during image acquisition.",
-  },
-  "settings/specimen": {
-    title: "316L tensile specimen",
-    description: "Flat dog-bone specimen prepared for a uniaxial tensile test.",
-  },
-  "settings/testing_machine": {
-    title: "Universal testing machine",
-    description: "Electromechanical machine used to apply tensile loading to the specimen.",
-    manufacturer: "Instron",
-    model: "5985",
-  },
-  "settings/stereorig": {
-    title: "Stereo rig",
-    description: "Rigid mount carrying two synchronized cameras for stereo-DIC acquisition.",
-  },
-  "data_sources/generic": {
-    title: "Test machine acquisition",
-    description: "Acquisition channel recording force and displacement during the test.",
-    manufacturer: "Instron",
-    model: "Bluehill Universal",
-  },
-  "data_sources/camera": {
-    title: "Visible camera",
-    description: "Monochrome camera recording the specimen surface during the tensile test.",
-    manufacturer: "Allied Vision Technologies",
-    model: "Dolphin F-145B",
-  },
-  "data_sources/infrared": {
-    title: "Infrared camera",
-    description: "Infrared camera recording the specimen temperature field during loading.",
-    manufacturer: "FLIR",
-    model: "A655sc",
-  },
-  "data_sources/tomograph": {
-    title: "Laboratory X-ray tomograph",
-    description: "Cone-beam X-ray tomograph used to reconstruct the internal specimen volume.",
-    manufacturer: "Nikon Metrology",
-    model: "XT H 225",
-  },
-  "data_sources/load_cell": {
-    title: "Tension load cell",
-    description: "Force transducer measuring the tensile load applied to the specimen.",
-    manufacturer: "HBM",
-    model: "U10M 10 kN",
-  },
-  "data_sources/strain_gauge": {
-    title: "Foil strain gauge",
-    description: "Bonded foil gauge measuring the longitudinal strain of the specimen.",
-    manufacturer: "HBK",
-    model: "LY11-6/120",
-  },
-  "data_sources/point_temperature": {
-    title: "Specimen temperature sensor",
-    description: "Non-contact sensor measuring the temperature at the specimen surface.",
-    manufacturer: "Optris",
-    model: "CTlaser 3MH",
-  },
-  "data_sources/dic_measurement": {
-    title: "2D DIC processing",
-    description: "Digital image correlation processing measuring the in-plane displacement field.",
-    manufacturer: "Pyxel",
-    model: "2.0",
-  },
-  "data_sources/mechanical_analysis": {
-    title: "Finite element analysis",
-    description: "Mechanical analysis producing a displacement or strain field from the experiment.",
-    manufacturer: "Abaqus",
-    model: "2024",
-  },
-  "data_sources/identification": {
-    title: "Material parameter identification",
-    description: "Inverse analysis identifying material parameters from measured force and displacement.",
-    manufacturer: "MFront",
-    model: "TFEL 3.2",
-  },
-  "data_sources/strain_computation": {
-    title: "Strain computation",
-    description: "Computation of strain fields from the measured displacement field.",
-    manufacturer: "Pyxel",
-    model: "2.0",
-  },
-  "data_sets/generic": {
-    title: "Experimental data file",
-    description: "Data file containing measurements associated with the experiment.",
-  },
-  "data_sets/file": {
-    title: "Force and displacement data",
-    description: "CSV file containing synchronized force and displacement measurements.",
-  },
-  "data_sets/list": {
-    title: "Raw camera images",
-    description: "Ordered image sequence recorded during the experiment.",
-  },
-};
+const registryExamples = () => uiCatalog?.registry_examples || {};
 
-const unitExamples = {
-  exposure: ["exposure time", 0.01, "s"],
-  image_scale: ["pixel size", 0.05, "mm/px"],
-  focal_length: ["focal length", 25, "mm"],
-  standoff_distance: ["standoff distance", 500, "mm"],
-  uncertainty: ["measurement uncertainty", 0.01, "mm"],
-  capacity: ["capacity", 10, "kN"],
-  stereo_angle: ["stereo angle", 25, "deg"],
-  patterning_feature_size: ["pattern feature size", 0.5, "mm"],
-  step_size: ["DIC step size", 5, "px"],
-  regularisation_length: ["regularisation length", 2, "mm"],
-  virtual_strain_gauge_size: ["virtual gauge length", 5, "mm"],
-  voltage: ["tube voltage", 150, "kV"],
-  current: ["tube current", 2, "mA"],
-  scan_duration: ["scan duration", 12, "min"],
-  tube_to_detector_distance: ["tube-detector distance", 800, "mm"],
-  source_to_object_distance: ["source-object distance", 600, "mm"],
-  angular_amplitude: ["angular amplitude", 360, "deg"],
-  emissivity: ["emissivity", 0.95, "1"],
-  transmissivity: ["transmissivity", 1, "1"],
-  time_reference: ["time reference", 0, "s"],
-};
-
-const itemExample = (context = {}) => kindExamples[context.kind] || {};
+const itemExample = (context = {}) => registryExamples().kinds?.[context.kind] || {};
 
 const isPlaceholder = (value) => typeof value === "string" && (
   !value.trim()
@@ -345,63 +225,43 @@ const isPlaceholder = (value) => typeof value === "string" && (
 
 const unitExample = (key, context = {}) => {
   const field = context.parentKey || key;
-  const named = unitExamples[field];
+  const examples = registryExamples();
+  const named = examples.unit_examples?.[field];
   if (named) {
     return {kind: "unit", title: named[0], value: named[1], unit: named[2], scale: 1.0};
   }
   const arrayPosition = context.arrayPosition;
-  if (["image_size", "field_of_view", "calibration_target_size", "sizes", "subset_size"].includes(field)) {
-    const labels = field === "sizes" ? ["width", "height", "thickness"] : ["width", "height"];
-    const values = field === "image_size" ? [1392, 1040] : field === "field_of_view" ? [70, 50] : field === "calibration_target_size" ? [300, 200] : field === "subset_size" ? [31, 31] : [30, 12, 1];
-    const units = field === "image_size" ? ["px", "px"] : field === "subset_size" ? ["px", "px"] : ["mm", "mm", "mm"];
-    const index = Math.min(arrayPosition || 0, labels.length - 1);
-    return {kind: "unit", title: labels[index], value: values[index], unit: units[index], scale: 1.0};
+  const arrayExample = examples.array_unit_examples?.[field];
+  if (arrayExample) {
+    const index = Math.min(arrayPosition || 0, arrayExample.labels.length - 1);
+    return {
+      kind: "unit",
+      title: arrayExample.labels[index],
+      value: arrayExample.values[index],
+      unit: arrayExample.units[index],
+      scale: 1.0,
+    };
   }
   if (field === "output_units") {
     const kind = context.kind || "";
-    if (kind.includes("camera")) return {kind: "unit", title: "gray level", value: 1, unit: "gl", scale: 1.0};
-    if (kind.includes("load_cell")) return {kind: "unit", title: "force", value: 1, unit: "N", scale: 1.0};
-    if (kind.includes("temperature")) return {kind: "unit", title: "temperature", value: 1, unit: "degC", scale: 1.0};
-    if (kind.includes("strain")) return {kind: "unit", title: "strain", value: 1, unit: "%", scale: 1.0};
-    if (kind.includes("dic") || kind.includes("mechanical")) return {kind: "unit", title: "displacement", value: 1, unit: "mm", scale: 1.0};
-    return {kind: "unit", title: "measurement", value: 1, unit: "mm", scale: 1.0};
+    const outputExamples = examples.output_unit_examples || {};
+    const selected = Object.entries(outputExamples.contains || {})
+      .find(([fragment]) => kind.includes(fragment))?.[1] || outputExamples.default;
+    return {kind: "unit", title: selected[0], value: selected[1], unit: selected[2], scale: 1.0};
   }
-  return {kind: "unit", title: "measurement", value: 1, unit: "mm", scale: 1.0};
+  const fallback = examples.output_unit_examples?.default || ["measurement", 1, "mm"];
+  return {kind: "unit", title: fallback[0], value: fallback[1], unit: fallback[2], scale: 1.0};
 };
 
 const exampleString = (key, meta, context = {}) => {
   if (meta.enum?.length) return meta.enum[0];
   const item = itemExample(context);
   if (["title", "description", "manufacturer", "model"].includes(key) && item[key]) return item[key];
-  if (["file_type", "data_type"].includes(key)) {
-    return context.kind === "data_sets/list" ? "image/tiff" : "text/csv";
+  const fieldExample = registryExamples().field_examples?.[key];
+  if (fieldExample !== undefined) {
+    if (typeof fieldExample === "string") return fieldExample;
+    return fieldExample.kinds?.[context.kind] ?? fieldExample.default ?? "";
   }
-  if (key === "delimiter") return ";";
-  if (key === "path") {
-    if (context.kind === "data_sets/list") return "experiment/images/";
-    if (context.kind === "data_sets/file") return "experiment/data/";
-    return "experiment/data/";
-  }
-  if (key === "filename") return context.kind === "data_sets/list" ? "camera_000001.tif" : "machine_force_displacement.csv";
-  if (key === "documentation") return "documentation/instrument-manual.pdf";
-  if (key === "lens") return "Schneider-Kreuznach Xenoplan 1.4/23";
-  if (key === "filter") return context.kind === "data_sources/infrared" ? "8-14 um long-pass filter" : "No optical filter";
-  if (key === "aperture") return "f/8";
-  if (key === "source") return "Tungsten target, 150 kV microfocus tube";
-  if (key === "detector") return "Flat-panel detector, 200 um pixel pitch";
-  if (key === "target") return "Aluminium calibration target";
-  if (key === "type") return context.kind === "data_sources/load_cell" ? "strain-gauge bridge" : "tensile";
-  if (key === "calibration_target_type") return "Checkerboard calibration plate";
-  if (key === "image_filtering") return "Gaussian filter, sigma 1 px";
-  if (key === "interpolant") return "cubic spline";
-  if (key === "matching_criterion") return "ZNSSD";
-  if (key === "shape_function") return "affine";
-  if (key === "camera_model") return "pinhole with Brown-Conrady distortion";
-  if (key === "camera_parameters") return "calibration/camera_intrinsics.json";
-  if (key === "regularization_type") return "weak elastic regularization";
-  if (["displacement_filtering", "strain_filtering"].includes(key)) return "Gaussian filter, sigma 1 px";
-  if (["nuc_file", "calibration_file", "aquisition_param_file", "reconstruction_param_file"].includes(key)) return `calibration/${key}.json`;
-  if (key === "unit") return "mm";
   if (key === "description") return `Recorded ${String(meta.title || "measurement").toLowerCase()} for the experiment.`;
   if (key === "title") return "Experimental measurement";
   return `Measured ${String(meta.title || key).toLowerCase()}`;
@@ -418,14 +278,16 @@ const exampleForField = (key, meta, context = {}) => {
   if (meta.properties?.unit && meta.properties?.value) return unitExample(key, context);
   if (types.has("array")) {
     const itemMeta = meta.items || {};
-    if (context.kind === "data_sources/camera" && key === "image_size") return [unitExample(key, {...context, arrayPosition: 0}), unitExample(key, {...context, arrayPosition: 1})];
-    if (["field_of_view", "calibration_target_size", "sizes", "subset_size", "bandwidth", "range"].includes(key)) {
+    const arrayExamples = registryExamples().array_examples || {};
+    if (registryExamples().array_unit_examples?.[key]) {
       return [unitExample(key, {...context, arrayPosition: 0}), unitExample(key, {...context, arrayPosition: 1})];
     }
     if (key === "output_units") return [unitExample(key, context)];
-    if (key === "values") return context.kind === "data_sets/list" ? ["camera_000001.tif", "camera_000002.tif", "camera_000003.tif"] : ["machine_force_displacement.csv"];
-    if (key === "timestamps") return [0.0, 0.1, 0.2];
-    if (key === "keywords") return ["tensile test", "calibration", "measurement"];
+    const arrayExample = arrayExamples[key];
+    if (arrayExample !== undefined) {
+      if (Array.isArray(arrayExample)) return cloneJsonValue(arrayExample);
+      return cloneJsonValue(arrayExample.kinds?.[context.kind] ?? arrayExample.default ?? []);
+    }
     const itemContext = {...context, parentKey: key};
     return [exampleForField("item", itemMeta, itemContext)];
   }
@@ -438,10 +300,16 @@ const exampleForField = (key, meta, context = {}) => {
     return object;
   }
   if (types.has("number") || types.has("integer")) {
-    if (key === "output_components") return context.kind?.includes("dic") ? 2 : 1;
-    if (key === "number_of_projections") return 1440;
+    const numericExamples = registryExamples().numeric_examples || {};
+    const configured = numericExamples[key];
+    if (configured !== undefined) {
+      if (typeof configured === "number") return configured;
+      const selected = Object.entries(configured.contains || {})
+        .find(([fragment]) => (context.kind || "").includes(fragment))?.[1];
+      return selected ?? configured.default;
+    }
     if (Number.isFinite(meta.minimum)) return Math.max(1, meta.minimum);
-    return 1;
+    return numericExamples.default ?? 1;
   }
   if (types.has("boolean")) return false;
   return exampleString(key, meta, context);

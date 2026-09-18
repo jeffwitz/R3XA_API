@@ -234,6 +234,12 @@ insertion is also implemented: using a local template copies its local upstream
 objects, generates new IDs, and remaps the relationships. Missing and cyclic
 dependency paths are rejected. Local Registry storage is now versioned, legacy
 arrays are migrated, and corrupt storage is reported without being overwritten.
+Registry examples are now loaded from the shared UI catalogue rather than
+hard-coded in `registry.js`. The build validates that every schema kind has a
+meaningful example summary, that configured example fields exist in the
+schema-derived catalogue, and that the declared completion strategy is
+explicit. The FastAPI and static runtimes therefore use the same examples.
+
 Registry validation is now direct per-kind validation in the static runtime.
 The build compiles an Ajv standalone validator for every `settings/*`,
 `data_sources/*`, and `data_sets/*` definition and exposes a dispatcher keyed

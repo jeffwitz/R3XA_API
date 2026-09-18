@@ -249,9 +249,17 @@ feat(web): version and manage local registry storage
 
 #### 6. Generate Registry examples from UI resources
 
-`registry.js` still contains a hand-maintained `kindExamples` catalogue,
-`unitExamples`, and field-name mappings. This duplicates schema taxonomy in the
-frontend and means a new schema kind requires JavaScript edits.
+Status: implemented in the current working tree. Registry kind summaries,
+unit examples, field examples, array examples, and numeric examples now live
+in `r3xa_api/resources/ui/registry_examples.json`. The Python UI catalogue
+loads and validates this resource, and both server and static runtimes expose
+it through the same `ui-catalog` payload. `registry.js` now consumes the
+resource and keeps only schema-driven completion logic.
+
+The resource declares an explicit `schema-driven` completion strategy: every
+known kind must have a meaningful item summary, while the remaining fields are
+filled from the schema and the shared example tables. Unknown kinds or example
+field names fail the catalogue build instead of silently falling back.
 
 Required implementation:
 
@@ -269,6 +277,10 @@ Required implementation:
 - make `registry.js` consume the catalogue without knowing individual kinds;
 - test meaningful example values for each kind, not merely that values are
   nonempty.
+
+The remaining qualification work is to expand the resource validation to
+schema-valid complete payload snapshots if the Registry example policy later
+requires examples to be independently loadable without completion.
 
 Suggested commit:
 

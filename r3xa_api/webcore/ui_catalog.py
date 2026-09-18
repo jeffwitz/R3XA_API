@@ -174,6 +174,71 @@ def _validate_profile_links(
             )
 
 
+def _registry_fields(schema_catalog: Dict[str, Any]) -> set[str]:
+    fields: set[str] = set()
+
+    def visit(node: Any) -> None:
+        if not isinstance(node, dict):
+            return
+        properties = node.get("properties")
+        if isinstance(properties, dict):
+            fields.update(properties)
+            for child in properties.values():
+                visit(child)
+        for key in ("items", "prefixItems", "oneOf", "anyOf", "allOf"):
+            child = node.get(key)
+            if isinstance(child, list):
+                for entry in child:
+                    visit(entry)
+            else:
+                visit(child)
+
+    for section in ("settings", "data_sources", "data_sets"):
+        for kind in schema_catalog["sections"][section].get("kinds", {}).values():
+            visit(kind)
+    return fields
+
+
+def _validate_registry_examples(
+    examples: Dict[str, Any], schema_catalog: Dict[str, Any]
+) -> None:
+    known_kinds = _profile_kinds(schema_catalog)
+    kinds = examples.get("kinds")
+    if not isinstance(kinds, dict):
+        raise ValueError("Registry examples must define a kinds object")
+    missing = known_kinds - set(kinds)
+    unknown = set(kinds) - known_kinds
+    if missing:
+        raise ValueError(f"Registry examples are missing kinds: {', '.join(sorted(missing))}")
+    if unknown:
+        raise ValueError(f"Registry examples reference unknown kinds: {', '.join(sorted(unknown))}")
+    if examples.get("completion_strategy") != "schema-driven":
+        raise ValueError("Registry examples must declare the schema-driven completion strategy")
+
+    all_fields = _registry_fields(schema_catalog)
+    for table_name in ("unit_examples", "array_unit_examples", "field_examples", "array_examples", "numeric_examples"):
+        table = examples.get(table_name, {})
+        if not isinstance(table, dict):
+            raise ValueError(f"Registry examples {table_name} must be an object")
+        unknown_fields = set(table) - all_fields - {"default", "contains"}
+        if unknown_fields:
+            raise ValueError(
+                f"Registry examples {table_name} reference unknown fields: {', '.join(sorted(unknown_fields))}"
+            )
+
+    def validate_text(value: Any, path: str) -> None:
+        if isinstance(value, str) and not value.strip():
+            raise ValueError(f"Registry example {path} must not be empty")
+        if isinstance(value, dict):
+            for key, child in value.items():
+                validate_text(child, f"{path}.{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                validate_text(child, f"{path}[{index}]")
+
+    validate_text(examples, "registry_examples")
+
+
 def build_ui_catalog(
     schema_catalog: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
@@ -199,11 +264,14 @@ def build_ui_catalog(
 
     messages = _load_json_resource("ui/messages.json")
     _validate_messages(messages)
+    registry_examples = _load_json_resource("ui/registry_examples.json")
+    _validate_registry_examples(registry_examples, schema_catalog)
 
     return {
         "version": 1,
         "schema_version": schema_catalog.get("schema_version"),
         "default": _load_json_resource("ui/default.json"),
         "messages": messages,
+        "registry_examples": registry_examples,
         "profiles": profiles,
     }

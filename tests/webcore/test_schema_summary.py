@@ -4,7 +4,12 @@ import pytest
 
 from r3xa_api.webcore import build_schema_catalog, build_schema_summary, build_ui_catalog
 from r3xa_api.webcore._graph_core import build_graph_model
-from r3xa_api.webcore.ui_catalog import _validate_messages, _validate_profile_links, _validate_profile_questions
+from r3xa_api.webcore.ui_catalog import (
+    _validate_messages,
+    _validate_profile_links,
+    _validate_profile_questions,
+    _validate_registry_examples,
+)
 from r3xa_api.validate import validate
 
 
@@ -195,6 +200,8 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
     assert catalog["profiles"]["dic_2d"]["steps"][0]["defaults"]["title"] == "Tensile test with 2D DIC"
     assert catalog["profiles"]["dic_2d"]["steps"][-1]["kind"] == "data_sets/file"
     assert catalog["profiles"]["dic_2d"]["steps"][-1]["defaults"]["values"]["filename"] == "displacement_fields.h5"
+    assert catalog["registry_examples"]["completion_strategy"] == "schema-driven"
+    assert len(catalog["registry_examples"]["kinds"]) == 18
     assert {
         (link["from_step"], link["to_step"], link["to_field"])
         for link in catalog["profiles"]["dic_2d"]["links"]
@@ -204,6 +211,14 @@ def test_ui_catalog_profiles_reference_schema_kinds() -> None:
         ("images", "dic", "input_data_sets"),
         ("dic", "displacement_fields", "parent_data_sources"),
     }
+
+
+def test_registry_examples_reject_unknown_fields() -> None:
+    catalog = build_ui_catalog()
+    examples = deepcopy(catalog["registry_examples"])
+    examples["field_examples"]["not_a_schema_field"] = "invalid"
+    with pytest.raises(ValueError, match="unknown fields"):
+        _validate_registry_examples(examples, build_schema_catalog())
 
 
 def test_ui_messages_require_complete_string_translations() -> None:
