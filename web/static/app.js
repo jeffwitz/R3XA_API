@@ -801,49 +801,12 @@ const refreshGuidedNavigation = () => {
   });
 };
 
-const idPrefixForKind = (kind) => {
-  const [section, kindName] = String(kind || "").split("/");
-  const sectionPrefix = {settings: "stg", data_sources: "src", data_sets: "set"}[section] || "r3xa";
-  return `${sectionPrefix}-${kindName || "item"}-`;
-};
-
-const makeId = (kind, used = new Set()) => {
-  let identifier;
-  do {
-    const random = globalThis.crypto?.randomUUID?.().replaceAll("-", "").slice(0, 12)
-      || Math.random().toString(36).slice(2, 14);
-    identifier = `${idPrefixForKind(kind)}${random}`;
-  } while (used.has(identifier));
-  return identifier;
-};
-
-const hasCanonicalId = (item) => typeof item?.id === "string"
-  && item.id.startsWith(idPrefixForKind(item.kind));
-
-const normalizeDocumentIds = (payload) => {
-  const used = new Set();
-  const replacements = new Map();
-  ["settings", "data_sources", "data_sets"].forEach((section) => {
-    (payload[section] || []).forEach((item) => {
-      if (!hasCanonicalId(item) || used.has(item.id)) {
-        const oldId = item.id;
-        item.id = makeId(item.kind, used);
-        if (oldId) replacements.set(oldId, item.id);
-      }
-      used.add(item.id);
-    });
-  });
-  ["parent_data_sources", "attached_data_sources", "input_data_sets"].forEach((field) => {
-    ["settings", "data_sources", "data_sets"].forEach((section) => {
-      (payload[section] || []).forEach((item) => {
-        if (Array.isArray(item[field])) {
-          item[field] = item[field].map((reference) => replacements.get(reference) || reference);
-        }
-      });
-    });
-  });
-  return replacements;
-};
+const {
+  hasCanonicalId,
+  makeId,
+  normalizeDocumentIds,
+  prefixForKind: idPrefixForKind,
+} = window.R3XAIdUtils;
 
 const localRegistryStorageKey = "r3xaLocalRegistryItems";
 
@@ -1884,13 +1847,20 @@ const loadJsonFile = (file) => {
       outputEl.textContent = t("validation.parse_error_detail", "Parse error: {message}", {message: error.message});
       return;
     }
-    normalizeDocumentIds(payload);
+    const normalization = normalizeDocumentIds(payload);
     inputEl.value = JSON.stringify(payload, null, 2);
     guidedStepItems = {};
     saveGuidedStepItems();
     clearAllTemplateReviews();
     saveDraft();
     syncFormFromJson();
+    if (normalization.conflicts.length) {
+      outputEl.textContent = t(
+        "validation.duplicate_ids_migration",
+        "ID migration was not applied because these IDs are duplicated: {ids}. Resolve the duplicates before continuing.",
+        {ids: normalization.conflicts.join(", ")},
+      );
+    }
   };
   reader.readAsText(file);
 };
@@ -1972,16 +1942,25 @@ ensureServerStart();
 updateEditorMode();
 inputEl.value = loadDraft();
 const loadedPayload = readPayload();
-const loadedIdReplacements = loadedPayload ? normalizeDocumentIds(loadedPayload) : new Map();
-if (loadedIdReplacements.size && loadedPayload) {
+const loadedNormalization = loadedPayload
+  ? normalizeDocumentIds(loadedPayload)
+  : {replacements: new Map(), conflicts: []};
+if (loadedNormalization.changed && loadedPayload) {
   inputEl.value = JSON.stringify(loadedPayload, null, 2);
   saveDraft();
 }
 guidedStepItems = loadGuidedStepItems();
-if (loadedIdReplacements.size) {
+if (loadedNormalization.replacements.size) {
   guidedStepItems = Object.fromEntries(
-    Object.entries(guidedStepItems).map(([stepId, itemId]) => [stepId, loadedIdReplacements.get(itemId) || itemId]),
+    Object.entries(guidedStepItems).map(([stepId, itemId]) => [stepId, loadedNormalization.replacements.get(itemId) || itemId]),
   );
   saveGuidedStepItems();
 }
 renderSummary();
+if (loadedNormalization.conflicts.length) {
+  outputEl.textContent = t(
+    "validation.duplicate_ids_migration",
+    "ID migration was not applied because these IDs are duplicated: {ids}. Resolve the duplicates before continuing.",
+    {ids: loadedNormalization.conflicts.join(", ")},
+  );
+}

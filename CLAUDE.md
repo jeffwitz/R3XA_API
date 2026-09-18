@@ -117,6 +117,11 @@ fix(web): stop mutating imported registry items
 
 #### 2. Make ID migration reference-safe
 
+Status: implemented in the current working tree. The shared browser utility
+now leaves documents containing duplicate IDs unchanged and reports the
+ambiguity instead of guessing a reference target. Keep the duplicate-ID tests
+when changing migration behavior.
+
 `normalizeDocumentIds()` in `web/static/app.js` and the local Registry
 normalization currently build a simple `old ID -> new ID` map. If two objects
 share the same old ID, the second replacement wins and references can silently
@@ -467,9 +472,11 @@ The current overall assessment is:
 - Example completion is now explicit and confirmed by the user; future changes
   must not reintroduce enrichment during import, reload, or initial draft
   loading.
-- Local Registry templates with dependencies are cloned one item at a time and
-  may retain dangling references until dependency-closure insertion is
-  implemented.
+- Local Registry templates with dependencies are still cloned one item at a
+  time and may retain dangling references until dependency-closure insertion
+  is implemented.
+- The shared ID utility now prevents ambiguous duplicate-ID migrations and
+  reports the conflicting IDs to the user.
 - Static Registry item validation currently uses a synthetic full document
   rather than a generated per-kind validator.
 - Static asset cache busting does not yet cover every fetched catalogue and

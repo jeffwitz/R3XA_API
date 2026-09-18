@@ -229,6 +229,32 @@ def test_static_editor_preserves_one_document_across_modes(static_site: str) -> 
         browser.close()
 
 
+def test_static_duplicate_ids_are_not_migrated_ambiguously(static_site: str) -> None:
+    duplicate_id = "legacy-duplicate"
+    payload = {
+        "title": "Duplicate ID fixture",
+        "description": "Fixture for ambiguous identifier migration.",
+        "authors": [{"name": "Test author"}],
+        "date": "2026-09-18",
+        "version": "2026.9.17",
+        "settings": [{"id": duplicate_id, "kind": "settings/specimen", "title": "Specimen"}],
+        "data_sources": [{"id": duplicate_id, "kind": "data_sources/camera", "title": "Camera"}],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(static_site)
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.goto(f"{static_site}/edit/?profile=generic")
+        page.wait_for_selector("#schema-summary")
+        loaded = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        assert loaded["settings"][0]["id"] == duplicate_id
+        assert loaded["data_sources"][0]["id"] == duplicate_id
+        assert "duplicated" in page.locator("#validation-output").inner_text()
+        browser.close()
+
+
 def test_every_static_prefilled_profile_is_valid_and_survives_mode_changes(static_site: str) -> None:
     profiles = (
         "camera_images",

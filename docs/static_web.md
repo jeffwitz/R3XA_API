@@ -227,9 +227,11 @@ Registry JSON item preserves its values and identifier exactly, while example
 completion is an explicit action with a proposed-value preview and user
 confirmation. Resetting an item or changing its kind/profile also asks for
 confirmation when unsaved changes would be discarded. Browser regression tests
-cover imported partial items in the FastAPI and static runtimes. The remaining
-Registry qualification work is reference-safe ID migration, dependency-closure
-cloning, versioned local storage, and direct per-kind static validation.
+cover imported partial items in the FastAPI and static runtimes. The shared ID
+migration utility also refuses ambiguous duplicate-ID migrations and reports
+the conflicting IDs without rewriting their references. The remaining Registry
+qualification work is dependency-closure cloning, versioned local storage, and
+direct per-kind static validation.
 
 ## Phase F — GitLab Pages
 

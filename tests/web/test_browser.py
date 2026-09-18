@@ -153,6 +153,27 @@ def test_existing_document_ids_are_migrated_to_kind_prefixes(page: Page, web_ser
     assert payload["data_sets"][0]["parent_data_sources"] == [payload["data_sources"][0]["id"]]
 
 
+def test_duplicate_ids_are_not_migrated_ambiguously(page: Page, web_server: str) -> None:
+    duplicate_id = "legacy-duplicate"
+    payload = {
+        "title": "Duplicate ID fixture",
+        "description": "Fixture for ambiguous identifier migration.",
+        "authors": [{"name": "Test author"}],
+        "date": "2026-09-18",
+        "version": "2026.9.17",
+        "settings": [{"id": duplicate_id, "kind": "settings/specimen", "title": "Specimen"}],
+        "data_sources": [{"id": duplicate_id, "kind": "data_sources/camera", "title": "Camera"}],
+        "data_sets": [],
+    }
+    page.goto(web_server)
+    page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+    page.goto(f"{web_server}/edit?profile=generic")
+    loaded = _payload(page)
+    assert loaded["settings"][0]["id"] == duplicate_id
+    assert loaded["data_sources"][0]["id"] == duplicate_id
+    assert "duplicated" in page.locator("#validation-output").inner_text()
+
+
 def test_switching_to_generic_discards_existing_items_after_confirmation(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
     page.wait_for_selector(".template-review-control")

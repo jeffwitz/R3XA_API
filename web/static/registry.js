@@ -28,61 +28,26 @@ let lintTimer = null;
 let registryBaseline = "";
 let lastStableProfile = "";
 
-const generatedIdPrefix = (kind) => {
-  const section = kind?.split("/", 1)[0];
-  return {settings: "stg", data_sources: "src", data_sets: "set"}[section] || "r3xa";
-};
-
-const canonicalIdPrefix = (kind) => {
-  const kindName = kind?.split("/").slice(-1)[0] || "item";
-  return `${generatedIdPrefix(kind)}-${kindName}-`;
-};
-
-const hasCanonicalId = (item) => typeof item?.id === "string"
-  && item.id.startsWith(canonicalIdPrefix(item.kind));
-
-const createGeneratedId = (kind, used) => {
-  let identifier;
-  do {
-    const random = globalThis.crypto?.randomUUID?.().replaceAll("-", "").slice(0, 12)
-      || Math.random().toString(36).slice(2, 14);
-    identifier = `${canonicalIdPrefix(kind)}${random}`;
-  } while (used.has(identifier));
-  return identifier;
-};
-
-const normalizeLocalRegistryItems = (items) => {
-  const used = new Set();
-  const replacements = new Map();
-  const normalized = items.map((item) => {
-    const copy = {...item};
-    if (!hasCanonicalId(copy) || used.has(copy.id)) {
-      const oldId = copy.id;
-      copy.id = createGeneratedId(copy.kind, used);
-      if (oldId) replacements.set(oldId, copy.id);
-    }
-    used.add(copy.id);
-    return copy;
-  });
-  normalized.forEach((item) => {
-    Object.entries(item).forEach(([key, value]) => {
-      if (!["parent_data_sources", "attached_data_sources", "input_data_sets"].includes(key)) return;
-      if (Array.isArray(value)) item[key] = value.map((reference) => replacements.get(reference) || reference);
-    });
-  });
-  return normalized;
-};
+const {
+  hasCanonicalId,
+  makeId: createGeneratedId,
+  normalizeLocalRegistryItems,
+  prefixForKind: canonicalIdPrefix,
+} = window.R3XAIdUtils;
+let localRegistryMigrationConflicts = [];
 
 const readLocalRegistryItems = () => {
   try {
     const value = JSON.parse(localStorage.getItem(localRegistryStorageKey) || "[]");
     const items = Array.isArray(value) ? value.filter((item) => item && typeof item === "object") : [];
     const normalized = normalizeLocalRegistryItems(items);
-    if (JSON.stringify(normalized) !== JSON.stringify(items)) {
-      localStorage.setItem(localRegistryStorageKey, JSON.stringify(normalized));
+    localRegistryMigrationConflicts = normalized.conflicts;
+    if (!normalized.conflicts.length && normalized.changed) {
+      localStorage.setItem(localRegistryStorageKey, JSON.stringify(normalized.items));
     }
-    return normalized;
+    return normalized.items;
   } catch {
+    localRegistryMigrationConflicts = [];
     return [];
   }
 };
@@ -110,8 +75,20 @@ const renderLocalRegistryItems = () => {
   if (!localItemsEl) return;
   localItemsEl.replaceChildren();
   const items = readLocalRegistryItems();
+  if (localRegistryMigrationConflicts.length) {
+    const warning = document.createElement("p");
+    warning.className = "validation-warning";
+    warning.textContent = registryText(
+      "registry.duplicate_ids",
+      "Local Registry migration was not applied because these IDs are duplicated: {ids}. Export or edit the affected items before continuing.",
+      {ids: localRegistryMigrationConflicts.join(", ")},
+    );
+    localItemsEl.appendChild(warning);
+  }
   if (!items.length) {
-    localItemsEl.textContent = "No local registry item has been saved yet.";
+    const empty = document.createElement("p");
+    empty.textContent = registryText("registry.empty", "No local registry item has been saved yet.");
+    localItemsEl.appendChild(empty);
     return;
   }
   items.forEach((item) => {
