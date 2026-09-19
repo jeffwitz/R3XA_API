@@ -479,8 +479,12 @@ const configureGraphBackends = () => {
   if (!graphBackendSelect || !Array.isArray(window.R3XARuntime?.graphBackends)) return;
   const supported = new Set(window.R3XARuntime.graphBackends);
   const graphvizOption = graphBackendSelect.querySelector('option[value="graphviz"]');
-  if (graphvizOption && window.R3XARuntime.mode === "static") {
-    graphvizOption.textContent = t("schema.graphviz_browser", "Graphviz WebAssembly · SVG · browser");
+  if (graphvizOption) {
+    const graphvizLabel = window.R3XARuntime.mode === "static"
+      ? ["schema.graphviz_browser", "Graphviz WebAssembly · SVG · browser"]
+      : ["schema.graphviz_native", "Graphviz · SVG · system dot"];
+    graphvizOption.dataset.i18n = graphvizLabel[0];
+    graphvizOption.textContent = t(graphvizLabel[0], graphvizLabel[1]);
   }
   Array.from(graphBackendSelect.options).forEach((option) => {
     const enabled = supported.has(option.value);

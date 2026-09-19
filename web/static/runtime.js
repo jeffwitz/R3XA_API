@@ -27,6 +27,7 @@
 
   window.R3XARuntime = {
     mode: "server",
+    graphBackends: ["graphviz", "graphviz-wasm", "pyvis", "matplotlib"],
     request,
     loadSchema: () => getJson("/schema"),
     loadSchemaSummary: () => getJson("/schema/summary"),

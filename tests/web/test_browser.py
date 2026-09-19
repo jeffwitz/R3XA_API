@@ -419,8 +419,11 @@ def test_graph_backend_selector_renders_interactive_and_static_views(page: Page,
     }
     page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
 
+    graph_urls: list[str] = []
+
     def fulfill_graph(route) -> None:
         url = route.request.url
+        graph_urls.append(url)
         if "backend=pyvis" in url:
             route.fulfill(status=200, content_type="text/html", body="<html><body>interactive</body></html>")
         elif "backend=matplotlib" in url:
@@ -445,6 +448,10 @@ def test_graph_backend_selector_renders_interactive_and_static_views(page: Page,
     page.locator("#graph-backend").select_option("matplotlib")
     page.wait_for_selector("#graph-container img.graph-image")
     assert page.locator("#save-graph-btn").is_visible()
+
+    page.locator("#graph-backend").select_option("graphviz-wasm")
+    page.wait_for_selector("#graph-container svg")
+    assert "backend=graphviz-wasm" in graph_urls[-1]
 
 
 def test_reloaded_renamed_items_are_recovered_from_dependencies(page: Page, web_server: str) -> None:
