@@ -155,10 +155,12 @@ Readable listing of the header followed by each collection's item titles. Field 
 plot(path: str | Path, *, backend: str = "graphviz", palette: str | None = None, include_description: bool = True) -> Path
 ```
 Render the item graph and return the file written. `backend` is `"graphviz"` (SVG),
-`"pyvis"` (interactive HTML) or `"matplotlib"` (PNG); each requires its optional extra.
+`"graphviz-wasm"` (SVG without a system `dot` executable), `"pyvis"` (interactive HTML)
+or `"matplotlib"` (PNG). The WebAssembly backend requires the optional `graph_wasm` extra;
+the other non-native backends require their corresponding extras.
 The extension comes from the backend, so pass a path without one.
 
-**Colour palettes.** `palette` selects the colour scheme and applies identically to all three
+**Colour palettes.** `palette` selects the colour scheme and applies identically to all graph
 backends. Two are available, `"document"` being the default:
 
 | `palette` | Settings | Data sources | Data sets | Look |
@@ -181,6 +183,7 @@ document = R3XAFile.load("experiment.json")
 
 document.plot("graph")                                  # graph.svg, document palette
 document.plot("graph-classic", palette="classic")       # the older outlined scheme
+document.plot("graph-wasm", backend="graphviz-wasm")   # SVG without system dot
 document.plot("graph", backend="pyvis")                 # interactive HTML
 document.plot("graph", backend="matplotlib")            # PNG
 ```
@@ -189,9 +192,15 @@ The same argument exists on the lower-level renderers, for a payload that is not
 `R3XAFile`:
 
 ```python
-from r3xa_api.webcore.graph import render_graphviz_file, render_pyvis_html, render_networkx_matplotlib_file
+from r3xa_api.webcore.graph import (
+    render_graphviz_file,
+    render_graphviz_wasm_file,
+    render_pyvis_html,
+    render_networkx_matplotlib_file,
+)
 
 render_graphviz_file(payload, Path("graph"), palette="classic")
+render_graphviz_wasm_file(payload, Path("graph-wasm"))
 ```
 
 and on the example script:

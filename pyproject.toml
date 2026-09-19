@@ -28,6 +28,7 @@ docs = [
 ]
 notebook = ["marimo>=0.11"]
 graph_nx = ["networkx>=3.2", "matplotlib>=3.8"]
+graph_wasm = ["wasmtime>=27"]
 web = [
   "fastapi>=0.110",
   "httpx>=0.26",
@@ -52,6 +53,9 @@ r3xa_api = [
   "resources/schema.json",
   "resources/ui/*.json",
   "resources/ui/profiles/*.json",
+  "resources/graphviz/*.wasm",
+  "resources/graphviz/*.md",
+  "resources/graphviz/*.txt",
   "py.typed",
   "*.pyi",
 ]

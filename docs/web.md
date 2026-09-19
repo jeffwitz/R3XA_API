@@ -44,10 +44,15 @@ python scripts/dev.py run-web --ensure-graphviz --port 8002
 
 Open: `http://127.0.0.1:8002/`
 
-The `web` extra installs the Python dependencies for all three graph backends:
-Graphviz SVG, interactive PyVis HTML, and static NetworkX/Matplotlib images.
+The `web` extra installs the Python dependencies for the native Graphviz SVG,
+interactive PyVis HTML, and static NetworkX/Matplotlib backends. To render SVG
+without installing the system `dot` executable, install the optional
+WebAssembly runtime with `pip install -e ".[graph_wasm]"` and select the
+`graphviz-wasm` backend.
 
-> Note: SVG graph generation requires the **Graphviz executable** (`dot`) to be installed on your system.
+> Note: the default native SVG backend requires the **Graphviz executable** (`dot`).
+> The optional `graphviz-wasm` backend uses the bundled Graphviz WASI module and
+> does not require `dot`.
 > The schema viewer JS is vendored; **no `npm install` is required** for normal usage.
 
 ### Graphviz requirement
@@ -61,7 +66,7 @@ The base package installation includes the Python `graphviz` wrapper, but
 > for administrator approval. On macOS, it uses Homebrew; install Homebrew
 > first if necessary. Verify the result with `dot -V`.
 
-For `POST /api/graph` and the SVG viewer/export to work, `dot` must be available on the system:
+For `POST /api/graph?backend=graphviz` and native SVG viewer/export to work, `dot` must be available on the system:
 
 - Linux: `sudo apt-get install graphviz`
 - macOS: `r3xa-ensure-graphviz` installs it through Homebrew
@@ -236,6 +241,7 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 - `GET /api/profiles` → experience profiles only
 - `GET /api/graph/backends` → supported graph backend names.
 - `POST /api/graph?backend=graphviz&show_description=true&palette=document` → Graphviz SVG.
+- `POST /api/graph?backend=graphviz-wasm&show_description=true&palette=document` → Graphviz WebAssembly SVG (optional `graph_wasm` extra; no system `dot`).
 - `POST /api/graph?backend=pyvis&show_description=true&palette=document` → interactive PyVis HTML.
 - `POST /api/graph?backend=matplotlib&show_description=true&palette=document` → static Matplotlib PNG.
 - `backend` defaults to `graphviz`; `palette` accepts `document` (recommended) or `classic` (legacy).

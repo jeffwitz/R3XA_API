@@ -28,7 +28,7 @@ test:
     - apt-get update
     - apt-get install -y --no-install-recommends graphviz
     - python -m pip install --upgrade pip
-    - python -m pip install -e ".[dev,web,graph_nx]"
+    - python -m pip install -e ".[dev,web,graph_nx,graph_wasm]"
   script:
     - python -m pytest -q --ignore=tests/web/test_browser.py --junitxml=pytest.xml
   artifacts:
@@ -147,6 +147,7 @@ package:
           "web/static/home.js",
           "web/static/i18n.js",
           "r3xa_api/resources/ui/messages.json",
+          "r3xa_api/resources/graphviz/graphviz-12.2.1.wasm",
           "web/static/vendor/json-viewer-js/json-viewer.global.js",
       }
       missing = required - names
@@ -157,11 +158,13 @@ package:
     - python -m venv .wheel-venv
     - .wheel-venv/bin/python -m pip install --upgrade pip
     - .wheel-venv/bin/python -m pip install dist/*.whl
+    - .wheel-venv/bin/python -m pip install "wasmtime>=27"
     - |
       cd /tmp
       "$CI_PROJECT_DIR/.wheel-venv/bin/python" - <<'PY'
       import r3xa_api
       from r3xa_api import R3XAFile, validate
+      from r3xa_api.webcore.graph import generate_svg_wasm
 
       assert ".wheel-venv" in r3xa_api.__file__
       payload = R3XAFile(
@@ -171,6 +174,8 @@ package:
           date="2026-01-01",
       ).to_dict()
       validate(payload)
+      svg = generate_svg_wasm(payload)
+      assert b"<svg" in svg
       print("Validated an R3XA payload with the installed wheel")
       PY
   artifacts:

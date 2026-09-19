@@ -72,7 +72,7 @@ python scripts/dev.py setup-dev
 ```
 
 This installs the editable contributor stack (`dev`, `docs`, `web`, `notebook`,
-`graph_nx`) and regenerates the schema-derived artifacts tracked in
+`graph_nx`, `graph_wasm`) and regenerates the schema-derived artifacts tracked in
 the repository. The bootstrap uses `pip install --no-build-isolation -e ...`
 so it works cleanly inside an already-created project `.venv` without trying to
 re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
@@ -294,7 +294,7 @@ Notes:
   - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
   - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
-- The WebUI graph selector supports Graphviz SVG, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. The `web` extra installs the Python packages for all three; Graphviz `dot` remains a system dependency.
+- The WebUI graph selector supports Graphviz SVG, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. The `web` extra installs the Python packages for the native backends; Graphviz `dot` remains a system dependency for native SVG. Install `.[graph_wasm]` to use the optional bundled Graphviz WebAssembly SVG backend without `dot`.
 
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
@@ -361,7 +361,7 @@ python examples/python/graph_r3xa.py \
 only want the dependencies without the regeneration steps, the equivalent install is:
 
 ```bash
-pip install -e ".[dev,docs,web,notebook,graph_nx]"
+pip install -e ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
 ```
 
 Test totals depend on installed extras:

@@ -12,7 +12,7 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FULL_DEV_EXTRAS = ".[dev,docs,web,notebook,graph_nx]"
+FULL_DEV_EXTRAS = ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
 SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
 MODELS_OUTPUT = "r3xa_api/models.py"

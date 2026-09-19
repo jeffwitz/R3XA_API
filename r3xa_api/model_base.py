@@ -744,6 +744,7 @@ class R3XAItem(BaseModel):
 
         renderers: Dict[str, Any] = {
             "graphviz": _graph.render_graphviz_file,
+            "graphviz-wasm": _graph.render_graphviz_wasm_file,
             "pyvis": _graph.render_pyvis_html,
             "matplotlib": _graph.render_networkx_matplotlib_file,
         }
@@ -753,7 +754,7 @@ class R3XAItem(BaseModel):
             )
         output = Path(path)
         output.parent.mkdir(parents=True, exist_ok=True)
-        if backend == "graphviz" and output.suffix == ".svg":
+        if backend in {"graphviz", "graphviz-wasm"} and output.suffix == ".svg":
             output = output.with_suffix("")
         return renderers[backend](
             self.to_dict(),

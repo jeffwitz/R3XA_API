@@ -87,7 +87,7 @@ async def test_api_graph_backends() -> None:
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/api/graph/backends")
     assert response.status_code == 200
-    assert response.json() == {"backends": ["graphviz", "pyvis", "matplotlib"]}
+    assert response.json() == {"backends": ["graphviz", "graphviz-wasm", "pyvis", "matplotlib"]}
 
 
 @pytest.mark.anyio
@@ -306,6 +306,20 @@ async def test_api_graph_supports_non_svg_backends(
     assert response.headers.get("content-type", "").startswith(media_type)
     assert response.headers.get("x-r3xa-graph-backend") == backend
     assert response.content == payload
+
+
+@pytest.mark.anyio
+async def test_api_graph_supports_graphviz_wasm_when_extra_is_installed() -> None:
+    pytest.importorskip("wasmtime")
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph?backend=graphviz-wasm", json=_load_example())
+
+    assert response.status_code == 200
+    assert response.headers.get("content-type", "").startswith("image/svg+xml")
+    assert response.headers.get("x-r3xa-graph-backend") == "graphviz-wasm"
+    assert b"<svg" in response.content
 
 
 @pytest.mark.anyio

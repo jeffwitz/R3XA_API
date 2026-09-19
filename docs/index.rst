@@ -37,7 +37,7 @@ Bootstrap the full contributor environment with one command:
    python scripts/dev.py setup-dev
 
 This installs the editable contributor stack (``dev``, ``docs``, ``web``,
-``notebook``, ``graph_nx``) and regenerates the schema-derived
+``notebook``, ``graph_nx``, ``graph_wasm``) and regenerates the schema-derived
 artifacts tracked in the repository.
 
 .. raw:: html
@@ -70,7 +70,7 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,web,notebook,graph_nx]"
+     pip install -e ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
 
   The standard SDK dependency set already includes the Python ``graphviz``
   wrapper. The system Graphviz executable (``dot``) must still be installed
@@ -84,6 +84,16 @@ Choose one profile from the project root, inside ``.venv``:
      - Linux: ``sudo apt-get install graphviz``
      - macOS: ``r3xa-ensure-graphviz`` (Homebrew)
      - Windows: ``r3xa-ensure-graphviz`` (WinGet or Chocolatey)
+
+  If installing a system ``dot`` executable is not possible, add the optional
+  Python WebAssembly runtime instead:
+
+  .. code-block:: bash
+
+     pip install -e ".[graph_wasm]"
+
+  Then select the ``graphviz-wasm`` backend. It uses the bundled Graphviz WASI
+  module and does not invoke a system executable.
 
 - **Core SDK** — create and validate JSON files:
 
@@ -131,7 +141,7 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,web,notebook,graph_nx]"
+     pip install -e ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
 
 .. warning::
 
