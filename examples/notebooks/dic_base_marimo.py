@@ -126,9 +126,9 @@ def _():
     import json
 
     from r3xa_api import R3XAFile, author, unit, validate
-    from r3xa_api.webcore.graph import generate_svg
+    from r3xa_api.webcore.graph import generate_svg_wasm
 
-    return R3XAFile, author, generate_svg, json, unit, validate
+    return R3XAFile, author, generate_svg_wasm, json, unit, validate
 
 
 @app.cell
@@ -399,7 +399,7 @@ def _(
     Path,
     active_payload,
     generate_graph_button,
-    generate_svg,
+    generate_svg_wasm,
     mo,
 ):
     # Cell 14 — Build, display, and export the Graphviz SVG graph.
@@ -409,7 +409,7 @@ def _(
 
     if generate_graph_button.value:
         try:
-            svg_bytes = generate_svg(active_payload)
+            svg_bytes = generate_svg_wasm(active_payload)
             svg_text = svg_bytes.decode("utf-8")
             svg_path.parent.mkdir(parents=True, exist_ok=True)
             svg_path.write_bytes(svg_bytes)
@@ -417,7 +417,7 @@ def _(
         except Exception as exc:
             graph_status_view = mo.callout(
                 f"Graph generation error: {exc}\n\n"
-                "Install Python package `graphviz` and ensure `dot` is available.",
+                "The standard `wasmtime` dependency and bundled Graphviz module are required.",
                 kind="danger",
             )
     if view is None and svg_path.exists():

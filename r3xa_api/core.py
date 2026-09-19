@@ -581,7 +581,7 @@ class _LegacyR3XAFile:
         self,
         path: str | Path,
         *,
-        backend: str = "graphviz",
+        backend: str = "graphviz-wasm",
         palette: str | None = None,
         include_description: bool = True,
         **kwargs: Any,

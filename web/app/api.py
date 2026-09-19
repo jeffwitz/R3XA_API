@@ -48,7 +48,7 @@ async def validate_registry_item(request: Request) -> Dict[str, Any]:
 @router.post("/graph")
 async def graph_svg(
     request: Request,
-    backend: str = Query(default="graphviz"),
+    backend: str = Query(default="graphviz-wasm"),
     show_description: bool = Query(default=True),
     palette: Optional[str] = Query(default=None),
 ) -> Response:

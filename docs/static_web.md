@@ -457,7 +457,7 @@ The initiative is complete only when all of the following are true:
 
 - The static graph runtime now uses the exact same
   `r3xa_api/resources/graphviz/graphviz-12.2.1.wasm` WASI module as the
-  optional Python `graphviz-wasm` backend. The static build copies this binary
+  Python `graphviz-wasm` backend. The static build copies this binary
   into `assets/` and the browser adapter provides the minimal WASI imports
   needed by the exported Graphviz ABI.
 - Ported the shared graph model and DOT generation to browser JavaScript. The

@@ -13,10 +13,10 @@ _WASM_RESOURCE = "resources/graphviz/graphviz-12.2.1.wasm"
 def _load_wasmtime() -> Any:
     try:
         import wasmtime
-    except ImportError as exc:  # pragma: no cover - depends on optional dependency
+    except ImportError as exc:  # pragma: no cover - broken/incomplete installation
         raise RuntimeError(
-            "Graphviz WebAssembly is not available. Install the optional "
-            "dependency with 'pip install r3xa-api[graph_wasm]'."
+            "Graphviz WebAssembly is not available. Reinstall r3xa-api with its "
+            "standard dependencies."
         ) from exc
     return wasmtime
 

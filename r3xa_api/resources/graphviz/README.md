@@ -4,13 +4,10 @@
 `dot` layout engine and SVG renderer through the small R3XA wrapper ABI used by
 `r3xa_api.webcore._graph_graphviz_wasm`.
 
-The module is an optional runtime resource. The native `graphviz` backend still
-uses the system `dot` executable and remains the default. Install the optional
-Python runtime with:
-
-```bash
-pip install "r3xa-api[graph_wasm]"
-```
+The module is a standard runtime resource. The `graphviz-wasm` backend uses it
+through the standard `wasmtime` dependency and is the default. The native
+`graphviz` backend remains available when the system `dot` executable is
+installed.
 
 The Graphviz source is available from the [Graphviz source repository](https://gitlab.com/graphviz/graphviz),
 and Graphviz is distributed under the Eclipse Public License 1.0. The bundled

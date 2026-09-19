@@ -39,19 +39,18 @@ From a source checkout, the repository runner is also available:
 
 ```bash
 python -m pip install -e ".[web,dev]"
-python scripts/dev.py run-web --ensure-graphviz --port 8002
+python scripts/dev.py run-web --port 8002
 ```
 
 Open: `http://127.0.0.1:8002/`
 
-The `web` extra installs the Python dependencies for the native Graphviz SVG,
-interactive PyVis HTML, and static NetworkX/Matplotlib backends. To render SVG
-without installing the system `dot` executable, install the optional
-WebAssembly runtime with `pip install -e ".[graph_wasm]"` and select the
-`graphviz-wasm` backend.
+The standard installation includes the Python dependencies for the bundled
+Graphviz WebAssembly SVG backend. The `web` extra adds FastAPI, interactive
+PyVis HTML, and static NetworkX/Matplotlib support. Select `graphviz-wasm` to
+render SVG without installing the system `dot` executable.
 
-> Note: the default native SVG backend requires the **Graphviz executable** (`dot`).
-> The optional `graphviz-wasm` backend uses the bundled Graphviz WASI module and
+> Note: the native `graphviz` SVG backend requires the **Graphviz executable** (`dot`).
+> The default `graphviz-wasm` backend uses the bundled Graphviz WASI module and
 > does not require `dot`.
 > The schema viewer JS is vendored; **no `npm install` is required** for normal usage.
 
@@ -60,11 +59,11 @@ WebAssembly runtime with `pip install -e ".[graph_wasm]"` and select the
 The base package installation includes the Python `graphviz` wrapper, but
 `pip install -e ".[web]"` does **not** install the Graphviz executable itself.
 
-> **Windows and macOS users:** this system installation is required before
-> generating SVG graphs. Run `r3xa-ensure-graphviz` from the activated virtual
-> environment. On Windows, the command uses WinGet or Chocolatey and may ask
-> for administrator approval. On macOS, it uses Homebrew; install Homebrew
-> first if necessary. Verify the result with `dot -V`.
+> **Windows and macOS users:** no system installation is required for the
+> default WebAssembly SVG backend. Install Graphviz only if you explicitly
+> select the native `graphviz` backend. Run `r3xa-ensure-graphviz` from the
+> activated virtual environment; on Windows it uses WinGet or Chocolatey and
+> on macOS it uses Homebrew. Verify the result with `dot -V`.
 
 For `POST /api/graph?backend=graphviz` and native SVG viewer/export to work, `dot` must be available on the system:
 
@@ -240,8 +239,8 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 - `GET /api/ui` → presentation rules and experience profiles
 - `GET /api/profiles` → experience profiles only
 - `GET /api/graph/backends` → supported graph backend names.
-- `POST /api/graph?backend=graphviz&show_description=true&palette=document` → Graphviz SVG.
-- `POST /api/graph?backend=graphviz-wasm&show_description=true&palette=document` → Graphviz WebAssembly SVG (optional `graph_wasm` extra; no system `dot`).
+- `POST /api/graph?backend=graphviz&show_description=true&palette=document` → native Graphviz SVG using `dot`.
+- `POST /api/graph?backend=graphviz-wasm&show_description=true&palette=document` → Graphviz WebAssembly SVG (standard dependency; no system `dot`).
 - `POST /api/graph?backend=pyvis&show_description=true&palette=document` → interactive PyVis HTML.
 - `POST /api/graph?backend=matplotlib&show_description=true&palette=document` → static Matplotlib PNG.
-- `backend` defaults to `graphviz`; `palette` accepts `document` (recommended) or `classic` (legacy).
+- `backend` defaults to `graphviz-wasm`; `palette` accepts `document` (recommended) or `classic` (legacy).

@@ -437,6 +437,7 @@ def test_graph_backend_selector_renders_interactive_and_static_views(page: Page,
 
     page.route("**/api/graph**", fulfill_graph)
     page.goto(f"{web_server}/schema")
+    assert page.locator("#graph-backend").input_value() == "graphviz-wasm"
     page.locator("#generate-graph-btn").click()
     page.wait_for_selector("#graph-container svg")
 

@@ -152,12 +152,12 @@ Readable listing of the header followed by each collection's item titles. Field 
 `*` required markers come from the schema. `print(document)` prints the same listing.
 
 ```python
-plot(path: str | Path, *, backend: str = "graphviz", palette: str | None = None, include_description: bool = True) -> Path
+plot(path: str | Path, *, backend: str = "graphviz-wasm", palette: str | None = None, include_description: bool = True) -> Path
 ```
-Render the item graph and return the file written. `backend` is `"graphviz"` (SVG),
-`"graphviz-wasm"` (SVG without a system `dot` executable), `"pyvis"` (interactive HTML)
-or `"matplotlib"` (PNG). The WebAssembly backend requires the optional `graph_wasm` extra;
-the other non-native backends require their corresponding extras.
+Render the item graph and return the file written. `backend` is `"graphviz-wasm"` (SVG,
+the default, without a system `dot` executable), `"graphviz"` (native SVG using `dot`),
+`"pyvis"` (interactive HTML) or `"matplotlib"` (PNG). The WebAssembly runtime is part
+of the standard installation; the other non-native backends require their corresponding extras.
 The extension comes from the backend, so pass a path without one.
 
 **Colour palettes.** `palette` selects the colour scheme and applies identically to all graph

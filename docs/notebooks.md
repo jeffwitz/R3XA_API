@@ -24,32 +24,14 @@ python -m pip install -r requirements-notebook.txt
 
 ### Graphviz requirement
 
-The notebook renders graphs as SVG with Graphviz.
-The Python requirements include the `graphviz` wrapper, but they are **not
-enough** on their own: the Graphviz executable `dot` must also be installed on
-the system.
-
-> **Windows and macOS users:** run `r3xa-ensure-graphviz` from the activated
-> virtual environment before starting the notebook. On Windows it uses WinGet
-> or Chocolatey and may ask for administrator approval. On macOS it uses
-> Homebrew; install Homebrew first if necessary. Verify with `dot -V`.
-
-- Linux: `sudo apt-get install graphviz`
-- macOS: `r3xa-ensure-graphviz` installs it through Homebrew
-- Windows: `r3xa-ensure-graphviz` installs it through WinGet, or Chocolatey when WinGet is unavailable
-
-From a source checkout, use `python scripts/dev.py ensure-graphviz`. The command is explicit:
-it does not install system software as a side effect of a normal Python package installation.
-
-Quick check:
-
-```bash
-dot -V
-```
+The notebook uses the bundled Graphviz WebAssembly module through the standard
+`wasmtime` dependency, so no system installation is required. The native
+`dot` executable remains optional if you want to use the explicit native
+`graphviz` backend elsewhere.
 
 ### Start Marimo
 ```bash
-python scripts/dev.py notebook-dic --ensure-graphviz
+python scripts/dev.py notebook-dic
 ```
 
 Then open the URL printed by Marimo (usually `http://127.0.0.1:2718`).

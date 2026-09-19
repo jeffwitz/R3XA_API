@@ -87,7 +87,7 @@ async def test_api_graph_backends() -> None:
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         response = await client.get("/api/graph/backends")
     assert response.status_code == 200
-    assert response.json() == {"backends": ["graphviz", "graphviz-wasm", "pyvis", "matplotlib"]}
+    assert response.json() == {"backends": ["graphviz-wasm", "graphviz", "pyvis", "matplotlib"]}
 
 
 @pytest.mark.anyio
@@ -209,7 +209,7 @@ async def test_api_graph_svg_can_hide_descriptions(monkeypatch: pytest.MonkeyPat
     app = create_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post("/api/graph?show_description=false", json=_load_example())
+        response = await client.post("/api/graph?backend=graphviz&show_description=false", json=_load_example())
 
     assert response.status_code == 200
     assert response.headers.get("content-type", "").startswith("image/svg+xml")
@@ -234,7 +234,7 @@ async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
     app = create_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post("/api/graph", json=_load_example())
+        response = await client.post("/api/graph?backend=graphviz", json=_load_example())
 
     assert response.status_code == 200
     assert response.headers.get("content-type", "").startswith("image/svg+xml")
@@ -260,7 +260,7 @@ async def test_api_graph_svg_passes_palette(monkeypatch: pytest.MonkeyPatch) -> 
     app = create_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post("/api/graph?palette=classic", json=_load_example())
+        response = await client.post("/api/graph?backend=graphviz&palette=classic", json=_load_example())
 
     assert response.status_code == 200
     assert response.content == svg_payload
@@ -309,8 +309,33 @@ async def test_api_graph_supports_non_svg_backends(
 
 
 @pytest.mark.anyio
-async def test_api_graph_supports_graphviz_wasm_when_extra_is_installed() -> None:
-    pytest.importorskip("wasmtime")
+async def test_api_graph_defaults_to_graphviz_wasm(monkeypatch: pytest.MonkeyPatch) -> None:
+    svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
+
+    def _fake_render_graph_content(
+        document: dict,
+        backend: str = "graphviz-wasm",
+        include_description: bool = True,
+        palette: str | None = None,
+    ) -> tuple[bytes, str, str]:
+        assert document == _load_example()
+        assert backend == "graphviz-wasm"
+        return svg_payload, "image/svg+xml", "svg"
+
+    monkeypatch.setattr(api_module, "render_graph_content", _fake_render_graph_content)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph", json=_load_example())
+
+    assert response.status_code == 200
+    assert response.headers.get("x-r3xa-graph-backend") == "graphviz-wasm"
+    assert response.content == svg_payload
+
+
+@pytest.mark.anyio
+async def test_api_graph_supports_graphviz_wasm() -> None:
     app = create_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -367,7 +392,7 @@ async def test_api_graph_svg_unavailable(monkeypatch: pytest.MonkeyPatch) -> Non
     app = create_app()
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post("/api/graph", json=_load_example())
+        response = await client.post("/api/graph?backend=graphviz", json=_load_example())
 
     assert response.status_code == 503
     assert response.json()["detail"] == "Graph feature not available (graphviz not installed)."

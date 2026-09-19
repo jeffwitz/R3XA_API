@@ -3,8 +3,6 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("wasmtime")
-
 from r3xa_api.webcore.graph import generate_svg_wasm, render_graph_content, render_graphviz_wasm_file
 
 

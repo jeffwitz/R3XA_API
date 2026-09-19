@@ -16,8 +16,8 @@ python -m uvicorn web.app.asgi:app --host 0.0.0.0 --port $PORT
 
 If the build system does not install web extras, the included `railway.toml`
 and `requirements.txt` force a minimal install of the web dependencies.
-Graph generation requires the `graphviz` system package; the start command
-installs it at runtime if missing (`apt-get install -y graphviz`).
+The default Graphviz WebAssembly backend does not require a system package;
+the native `graphviz` backend remains available when `dot` is installed.
 
 ## 2) Environment variables
 
@@ -45,11 +45,11 @@ You can find the public URL in the Railway project dashboard.
 
 ```bash
 pip install -e ".[web]"
-python scripts/dev.py run-web --ensure-graphviz --app web.app.asgi:app --port 8000
+python scripts/dev.py run-web --app web.app.asgi:app --port 8000
 ```
 
 ## Notes
 
-- SVG graph generation requires the Graphviz **`dot`** executable on the server
-  (installed automatically at startup on Railway; locally, install `graphviz` via your OS).
+- The default SVG graph generation uses the bundled WebAssembly backend. Install
+  the Graphviz **`dot`** executable only when using the native `graphviz` backend.
 - WebSocket endpoints are planned but not enabled yet.

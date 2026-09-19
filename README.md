@@ -22,15 +22,14 @@ python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API
 ```
 
 Graph support is part of the standard SDK installation: the Python `graphviz`
-wrapper is installed automatically. The system Graphviz executable (`dot`) is
-separate; after installation, run `r3xa-ensure-graphviz` on macOS or Windows,
-or install it with your Linux package manager.
+wrapper, the bundled Graphviz WebAssembly module, and `wasmtime` are installed
+automatically. The system Graphviz executable (`dot`) is optional and is only
+needed when the native `graphviz` backend is selected.
 
-**Windows and macOS warning:** `pip install r3xa-api` cannot install system
-software. On Windows, run `r3xa-ensure-graphviz` from the activated virtual
-environment; it uses WinGet or Chocolatey and may request administrator
-approval. On macOS, run the same command after installing Homebrew if needed;
-it installs Graphviz with Homebrew. Verify with `dot -V`.
+**Optional native backend on Windows and macOS:** `pip install r3xa-api` cannot
+install system software. If you select native `graphviz`, run
+`r3xa-ensure-graphviz` from the activated virtual environment; it uses WinGet
+or Chocolatey on Windows and Homebrew on macOS. Verify with `dot -V`.
 
 ## Install from source (development)
 ```bash
@@ -72,7 +71,7 @@ python scripts/dev.py setup-dev
 ```
 
 This installs the editable contributor stack (`dev`, `docs`, `web`, `notebook`,
-`graph_nx`, `graph_wasm`) and regenerates the schema-derived artifacts tracked in
+`graph_nx`) and regenerates the schema-derived artifacts tracked in
 the repository. The bootstrap uses `pip install --no-build-isolation -e ...`
 so it works cleanly inside an already-created project `.venv` without trying to
 re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
@@ -259,10 +258,11 @@ pip install -r requirements-notebook.txt
 
 Run the notebook:
 ```bash
-python scripts/dev.py notebook-dic --ensure-graphviz
+python scripts/dev.py notebook-dic
 ```
 
-Notebook graph output uses Graphviz SVG (`dot` executable required).
+Notebook graph output uses the bundled Graphviz WebAssembly SVG backend by default;
+the native `dot` executable is optional.
 
 Optional static export (no backend):
 ```bash
@@ -285,16 +285,16 @@ python -m uvicorn web.app.asgi:app --host 127.0.0.1 --port 8002
 Then open `http://127.0.0.1:8002/`.
 
 For a source checkout, use `python -m pip install -e ".[web,dev]"` and
-`python scripts/dev.py run-web --ensure-graphviz --port 8002` instead.
+`python scripts/dev.py run-web --port 8002` instead.
 
 Notes:
-- SVG graph generation requires the **Graphviz executable** (`dot`) installed on the system:
+- The native SVG backend requires the optional **Graphviz executable** (`dot`) installed on the system:
   - Linux: `sudo apt-get install graphviz` (or your distro equivalent), then `dot -V`
   - macOS: run `r3xa-ensure-graphviz` (uses Homebrew), then `dot -V`
   - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
   - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
-- The WebUI graph selector supports native Graphviz SVG, bundled Graphviz WebAssembly SVG, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. The `web` extra installs the Python packages for the native backends; Graphviz `dot` remains a system dependency for native SVG. Install `.[graph_wasm]`, then select **Graphviz WebAssembly · SVG · Python** in the Schema viewer to render without `dot`.
+- The WebUI graph selector supports bundled Graphviz WebAssembly SVG by default, native Graphviz SVG when `dot` is installed, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. `wasmtime` is part of the standard installation, so the WebAssembly backend works without `dot`.
 
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
@@ -361,7 +361,7 @@ python examples/python/graph_r3xa.py \
 only want the dependencies without the regeneration steps, the equivalent install is:
 
 ```bash
-pip install -e ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
+pip install -e ".[dev,docs,web,notebook,graph_nx]"
 ```
 
 Test totals depend on installed extras:

@@ -37,7 +37,7 @@ Bootstrap the full contributor environment with one command:
    python scripts/dev.py setup-dev
 
 This installs the editable contributor stack (``dev``, ``docs``, ``web``,
-``notebook``, ``graph_nx``, ``graph_wasm``) and regenerates the schema-derived
+``notebook``, ``graph_nx``) and regenerates the schema-derived
 artifacts tracked in the repository.
 
 .. raw:: html
@@ -70,30 +70,26 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
+     pip install -e ".[dev,docs,web,notebook,graph_nx]"
 
-  The standard SDK dependency set already includes the Python ``graphviz``
-  wrapper. The system Graphviz executable (``dot``) must still be installed
-  separately:
+  The standard SDK dependency set includes the Python ``graphviz`` wrapper,
+  the bundled Graphviz WebAssembly module, and ``wasmtime``. The system
+  Graphviz executable (``dot``) is optional and is only needed by the native
+  ``graphviz`` backend:
 
   .. warning::
 
-     This installs all Python extras, but it does **not** install the Graphviz executable ``dot``.
-     If you want SVG graph generation in the web UI or notebook, install Graphviz at system level too:
+     This installs all Python extras, but it does **not** install the optional Graphviz executable ``dot``.
+     Install it only if you explicitly select the native ``graphviz`` backend:
 
      - Linux: ``sudo apt-get install graphviz``
      - macOS: ``r3xa-ensure-graphviz`` (Homebrew)
      - Windows: ``r3xa-ensure-graphviz`` (WinGet or Chocolatey)
 
-  If installing a system ``dot`` executable is not possible, add the optional
-  Python WebAssembly runtime instead:
-
-  .. code-block:: bash
-
-     pip install -e ".[graph_wasm]"
-
-  Then select the ``graphviz-wasm`` backend. It uses the bundled Graphviz WASI
-  module and does not invoke a system executable.
+  The standard installation includes the Python WebAssembly runtime. Select
+  the ``graphviz-wasm`` backend when a system ``dot`` executable is not
+  available; it uses the bundled Graphviz WASI module and does not invoke a
+  system executable.
 
 - **Core SDK** — create and validate JSON files:
 
@@ -101,9 +97,9 @@ Choose one profile from the project root, inside ``.venv``:
 
      pip install -e .
 
-  Graph support is included in this default installation. On macOS or Windows,
-  run ``r3xa-ensure-graphviz`` to install the system executable. On Linux, use
-  the distribution package manager, for example ``sudo apt-get install graphviz``.
+  Graph support is included in this default installation through the bundled
+  WebAssembly backend. The system executable is optional; install it only for
+  the native ``graphviz`` backend.
 
  - **Object-first SDK** — IDE autocompletion comes from generated Pydantic models:
 
@@ -116,14 +112,14 @@ Choose one profile from the project root, inside ``.venv``:
   .. code-block:: bash
 
      pip install -e ".[web]"
-     python scripts/dev.py run-web --ensure-graphviz --port 8002
+     python scripts/dev.py run-web --port 8002
 
 - **Notebook** — run the Marimo notebook example:
 
   .. code-block:: bash
 
      pip install -e ".[notebook]"
-     python scripts/dev.py notebook-dic --ensure-graphviz
+     python scripts/dev.py notebook-dic
 
 - **Static graph rendering** — enable the optional NetworkX/Matplotlib renderer outside the WebUI:
 
@@ -141,16 +137,14 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,web,notebook,graph_nx,graph_wasm]"
+     pip install -e ".[dev,docs,web,notebook,graph_nx]"
 
-.. warning::
+.. note::
 
-   **Windows and macOS users:** ``pip install r3xa-api`` installs the Python
-   wrapper but cannot install system software. From the activated virtual
-   environment, run ``r3xa-ensure-graphviz``. On Windows it uses WinGet or
-   Chocolatey and may request administrator approval. On macOS it uses
-   Homebrew; install Homebrew first if it is not available. Verify with
-   ``dot -V``. The Python package ``graphviz`` alone is **not sufficient**.
+   The default WebAssembly backend needs no system Graphviz installation.
+   ``pip install r3xa-api`` cannot install system software, so if you select
+   the native ``graphviz`` backend, install ``dot`` with
+   ``r3xa-ensure-graphviz`` on Windows/macOS or your Linux package manager.
    See :doc:`web` and :doc:`notebooks` for details.
 
 Web UI

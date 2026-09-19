@@ -45,9 +45,9 @@ WebAssembly runtime.
 
 ## Runtime model for graphs
 
-- **Primary engine:** Graphviz (`dot`) is the reference layout engine for SVG output.
-- **Optional Python fallback:** `graphviz-wasm` uses the bundled Graphviz WASI module
-  through `wasmtime`, so it does not require a system `dot` executable.
+- **Default Python engine:** `graphviz-wasm` uses the bundled Graphviz WASI module
+  through the standard `wasmtime` dependency, so it does not require a system `dot` executable.
+- **Native Python backend:** `graphviz` uses the system `dot` executable when it is installed.
 - **Interactive HTML:** PyVis is generated from the same graph model.
 - **Fallback behavior:** if Graphviz is unavailable, PyVis falls back to a manual layered layout.
 - **Static backend:** NetworkX + Matplotlib can generate static `png/svg/pdf` artifacts and is included in the WebUI extra.
@@ -62,17 +62,17 @@ pip install -e ".[docs]"           # Sphinx + doc extensions
 pip install -e ".[web]"            # FastAPI UI/API + all three graph backends
 pip install -e ".[notebook]"       # Marimo notebooks
 pip install -e ".[graph_nx]"       # NetworkX + Matplotlib for non-WebUI use
-pip install -e ".[graph_wasm]"     # Graphviz WebAssembly SVG without system dot
 pip install -e ".[dev]"            # pytest and developer tools
 ```
 
-The base installation includes the Python `graphviz` wrapper because graph
-generation is used by the SDK, notebook, and web workflows. It cannot install
-the system Graphviz executable (`dot`) through `pip`; install that executable
-with `r3xa-ensure-graphviz` on macOS/Windows or with the Linux package manager.
+The base installation includes the Python `graphviz` wrapper, the bundled WASI
+module, and `wasmtime` because graph generation is used by the SDK, notebook,
+and web workflows. It cannot install the optional system Graphviz executable
+(`dot`) through `pip`; install it with `r3xa-ensure-graphviz` on macOS/Windows
+or with the Linux package manager only for the native backend.
 
-Graphviz (`dot`) remains a **system dependency** for the native `graphviz` SVG
-backend; use `graphviz-wasm` when installing system software is not possible.
+Graphviz (`dot`) is only a **system dependency** for the native `graphviz` SVG
+backend. The default `graphviz-wasm` backend is included in the standard package.
 
 ## Bootstrap a contributor environment
 
@@ -85,7 +85,7 @@ python scripts/dev.py setup-dev
 This command:
 
 - bootstraps `pip`, `setuptools`, and `wheel` inside `.venv`
-- installs the editable contributor stack `.[dev,docs,web,notebook,graph_nx,graph_wasm]`
+- installs the editable contributor stack `.[dev,docs,web,notebook,graph_nx]`
   with `--no-build-isolation`
 - regenerates `r3xa_api/models.py`
 - regenerates `r3xa_api/core.pyi` and `r3xa_api/__init__.pyi`
@@ -161,19 +161,17 @@ The exact number of collected tests depends on the optional extras installed in 
   Adds web/API tests and all graph backend dependencies.
 - `pip install -e ".[dev,graph_nx]"`  
   Adds NetworkX + Matplotlib graph backend tests.
-- `pip install -e ".[dev,graph_wasm]"`
-  Adds the optional Graphviz WebAssembly backend tests without requiring `dot`.
-- `pip install -e ".[dev,web,graph_nx,graph_wasm]"`
+- `pip install -e ".[dev,web,graph_nx]"`
   Gives the full local matrix used for repository maintenance.
 
-For local graph support, run `r3xa-ensure-graphviz` after installing the package.
-In a source checkout, `python scripts/dev.py ensure-graphviz` provides the same
-cross-platform helper.
+For the optional native graph backend, run `r3xa-ensure-graphviz` after
+installing the package. In a source checkout,
+`python scripts/dev.py ensure-graphviz` provides the same cross-platform helper.
 
 If two contributors report different totals, check the installed extras before comparing raw pytest counts.
 
-GitLab CI runs the full test suite with the `dev`, `web`, `graph_nx`, and
-`graph_wasm` extras on Python 3.9 through 3.13, and installs the Graphviz
+GitLab CI runs the full test suite with the `dev`, `web`, and `graph_nx`
+extras on Python 3.9 through 3.13, and installs the Graphviz
 `dot` executable to keep the native reference backend covered as well.
 A separate quality job builds the documentation with warnings treated as
 errors. The package job verifies the wheel contents and runs a smoke test from

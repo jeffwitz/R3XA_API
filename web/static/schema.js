@@ -190,7 +190,9 @@ const renderGraph = async () => {
   }
   try {
     const payload = JSON.parse(stored);
-    const backend = graphBackendSelect ? graphBackendSelect.value : "graphviz";
+    const backend = graphBackendSelect
+      ? graphBackendSelect.value
+      : (window.R3XARuntime?.graphBackends?.[0] || "graphviz");
     const showDescription = graphDescriptionToggle ? graphDescriptionToggle.checked : true;
     const palette = graphPaletteSelect ? graphPaletteSelect.value : "document";
     const response = await window.R3XARuntime.renderGraph(payload, {

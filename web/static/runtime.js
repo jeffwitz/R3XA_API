@@ -20,14 +20,14 @@
     const query = new URLSearchParams({
       show_description: options.showDescription === false ? "false" : "true",
       palette: options.palette || "document",
-      backend: options.backend || "graphviz",
+      backend: options.backend || "graphviz-wasm",
     });
     return postJson(`/graph?${query.toString()}`, payload);
   };
 
   window.R3XARuntime = {
     mode: "server",
-    graphBackends: ["graphviz", "graphviz-wasm", "pyvis", "matplotlib"],
+    graphBackends: ["graphviz-wasm", "graphviz", "pyvis", "matplotlib"],
     request,
     loadSchema: () => getJson("/schema"),
     loadSchemaSummary: () => getJson("/schema/summary"),

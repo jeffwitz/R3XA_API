@@ -32,7 +32,7 @@ __all__ = [
     "render_graph_content",
 ]
 
-GRAPH_BACKENDS = ("graphviz", "graphviz-wasm", "pyvis", "matplotlib")
+GRAPH_BACKENDS = ("graphviz-wasm", "graphviz", "pyvis", "matplotlib")
 
 
 def render_graphviz_file(
@@ -106,7 +106,7 @@ def render_networkx_matplotlib_file(
 
 def render_graph_content(
     data: Dict[str, Any],
-    backend: str = "graphviz",
+    backend: str = "graphviz-wasm",
     include_description: bool = True,
     palette: str | None = None,
 ) -> tuple[bytes, str, str]:
