@@ -32,16 +32,15 @@ static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
 validator. Phase C is complete: static document, Registry, and integrity
 validation work locally. Phase D is complete: Graphviz WebAssembly is bundled
 at build time, loaded lazily, and covered by successful and failure-path browser
-tests. Phase E is now in progress. A separate Python Graphviz WebAssembly
-backend is implemented as an optional `backend="graphviz-wasm"` using the
-bundled Graphviz 12.2.1 WASI module and the optional `wasmtime` runtime. It
-must not be confused with the browser
-bundle: `@viz-js/viz` is an Emscripten JavaScript wrapper, not a standalone
-WASI module that can be passed directly to Wasmer. The native
+tests. The static browser runtime and the optional Python
+`backend="graphviz-wasm"` now use the same bundled Graphviz 12.2.1 WASI binary.
+The browser supplies a small local WASI adapter; Python uses the optional
+`wasmtime` runtime. The native
 `backend="graphviz"` remains the reference backend. Do not implement this by
-spawning Node or by silently substituting another graph engine. The remaining
-work is qualification on all supported Python versions, wheel installation,
-and documentation of the optional runtime. The current HEAD includes the resilient
+spawning Node or by silently substituting another graph engine. The shared
+binary must be copied byte-for-byte into static build assets and loaded only on
+graph demand. The remaining work is qualification on all supported Python
+versions, wheel installation, and documentation of the optional runtime. The current HEAD includes the resilient
 schema viewer and the explicit
 `Graphviz WebAssembly` backend label, non-root subpath hosting, same-origin
 GET-only navigation, local-only asset checks, schema-validation parity cases,
@@ -359,7 +358,7 @@ Required implementation:
   different builds cannot share one cache key;
 - add a test proving that all dynamically loaded assets are tied to the same
   build identifier;
-- generate and include `THIRD_PARTY_NOTICES.txt` for Ajv, Graphviz/Viz.js, and
+- generate and include `THIRD_PARTY_NOTICES.txt` for Ajv, Graphviz, and
   all other shipped runtime assets.
 
 Suggested commit:

@@ -59,6 +59,16 @@ def test_static_graph_bundle_renders_svg_without_python_backend(tmp_path: Path) 
     payload = json.dumps(_payload())
     palettes = (output_dir / "assets" / "graph-palettes.json").read_text(encoding="utf-8")
     script = f"""
+import fs from 'node:fs/promises';
+const nativeFetch = globalThis.fetch;
+globalThis.fetch = async (resource, options) => {{
+  const url = new URL(resource);
+  if (url.protocol === 'file:') {{
+    const body = await fs.readFile(url);
+    return {{ok: true, status: 200, arrayBuffer: async () => body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)}};
+  }}
+  return nativeFetch(resource, options);
+}};
 import {{renderGraph}} from './assets/graph.generated.js';
 const payload = {payload};
 const palettes = {palettes};

@@ -245,6 +245,10 @@ def build_static_web(output_dir: Path) -> Path:
         ignore=shutil.ignore_patterns("runtime.js", "graph-core.mjs", "graph-runtime.mjs"),
         dirs_exist_ok=True,
     )
+    shutil.copy2(
+        ROOT / "r3xa_api" / "resources" / "graphviz" / "graphviz-12.2.1.wasm",
+        assets_dir / "graphviz-12.2.1.wasm",
+    )
 
     schema = load_schema()
     schema_catalog = build_schema_catalog(schema)

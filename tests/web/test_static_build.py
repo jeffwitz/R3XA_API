@@ -34,6 +34,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "ui-catalog.json",
         "build-info.json",
         "graph-palettes.json",
+        "graphviz-12.2.1.wasm",
         "runtime-static.js",
         "id-utils.js",
         "registry-storage.js",
@@ -50,6 +51,15 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert "integrityErrors" in static_runtime
     assert "validateItem" in static_runtime
     assert "graphBackends" in static_runtime
+    assert (assets / "graphviz-12.2.1.wasm").stat().st_size > 1_000_000
+    source_wasm = (
+        Path(__file__).resolve().parents[2]
+        / "r3xa_api"
+        / "resources"
+        / "graphviz"
+        / "graphviz-12.2.1.wasm"
+    )
+    assert (assets / "graphviz-12.2.1.wasm").read_bytes() == source_wasm.read_bytes()
 
     catalog = json.loads((assets / "schema-catalog.json").read_text(encoding="utf-8"))
     assert catalog["schema_version"]

@@ -455,8 +455,11 @@ The initiative is complete only when all of the following are true:
 
 ### Phase D progress
 
-- Added the local `@viz-js/viz` Graphviz WebAssembly dependency and an esbuild
-  step that bundles it into `assets/graph.generated.js` during the static build.
+- The static graph runtime now uses the exact same
+  `r3xa_api/resources/graphviz/graphviz-12.2.1.wasm` WASI module as the
+  optional Python `graphviz-wasm` backend. The static build copies this binary
+  into `assets/` and the browser adapter provides the minimal WASI imports
+  needed by the exported Graphviz ABI.
 - Ported the shared graph model and DOT generation to browser JavaScript. The
   browser uses the same node roles, relationship directions, labels, and
   palettes as the Python Graphviz backend.
@@ -464,13 +467,17 @@ The initiative is complete only when all of the following are true:
   rendering does not maintain a second hand-written colour table.
 - Graphviz is loaded lazily by `runtime-static.js` only after the user requests
   a graph. The static runtime exposes Graphviz SVG as its supported backend;
-  PyVis and Matplotlib remain available through the FastAPI runtime.
+  PyVis and Matplotlib remain available through the FastAPI runtime. The npm
+  package `@viz-js/viz` is no longer required: there is one versioned Graphviz
+  WebAssembly binary shared by Python and the browser build.
 - Added Node, static-build, and Chromium browser coverage for local SVG
   rendering and the absence of `/api/*` requests.
 
-Phase D acceptance is complete: Graphviz is loaded lazily, local SVG rendering
-works in Chromium, palette data comes from the Python source, and a failed
-WebAssembly load produces a graph-specific error without disabling the editor.
+Phase D acceptance is complete: the shared Graphviz WASI binary is copied
+byte-for-byte into the static artefact, Graphviz is loaded lazily, local SVG
+rendering works in Chromium, palette data comes from the Python source, and a
+failed WebAssembly load produces a graph-specific error without disabling the
+editor.
 Phase E browser qualification, zero-network checks, and schema/integrity status
 parity are now covered by the local test suite. The remaining Phase E work is
 the final normalized user-facing error wording review and any gaps found during
