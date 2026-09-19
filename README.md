@@ -294,7 +294,7 @@ Notes:
   - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
   - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
-- The WebUI graph selector supports Graphviz SVG, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. The `web` extra installs the Python packages for the native backends; Graphviz `dot` remains a system dependency for native SVG. Install `.[graph_wasm]` to use the optional bundled Graphviz WebAssembly SVG backend without `dot`.
+- The WebUI graph selector supports native Graphviz SVG, bundled Graphviz WebAssembly SVG, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. The `web` extra installs the Python packages for the native backends; Graphviz `dot` remains a system dependency for native SVG. Install `.[graph_wasm]`, then select **Graphviz WebAssembly · SVG · Python** in the Schema viewer to render without `dot`.
 
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
