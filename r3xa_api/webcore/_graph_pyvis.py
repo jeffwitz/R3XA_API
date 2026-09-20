@@ -110,6 +110,9 @@ function r3xaHexagonRenderer({ctx, id, x, y, state, style, label}) {
 }
 """.strip()
 
+PYVIS_HEXAGON_WIDTH_PADDING = 28.0
+PYVIS_HEXAGON_HEIGHT_PADDING = 4.0
+
 
 def _patch_pyvis_custom_shapes(html: str) -> str:
     """Install the JavaScript renderer used for anisotropic settings."""
@@ -185,8 +188,8 @@ def render_pyvis_html(
         if setting.get("id")
     }
     for setting_id in setting_ids:
-        label_widths[setting_id] = label_widths.get(setting_id, 220.0) + 28.0
-        label_heights[setting_id] = label_heights.get(setting_id, 64.0) + 28.0
+        label_widths[setting_id] = label_widths.get(setting_id, 220.0) + PYVIS_HEXAGON_WIDTH_PADDING
+        label_heights[setting_id] = label_heights.get(setting_id, 64.0) + PYVIS_HEXAGON_HEIGHT_PADDING
     graphviz_layout = compute_graphviz_positions(
         node_ids=model.node_ids,
         edges=edge_pairs,

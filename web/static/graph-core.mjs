@@ -152,6 +152,23 @@ const dotAttributes = (attributes) => Object.entries(attributes)
 
 const nodeAttributes = (style, label) => ({...style, label});
 
+const compactHexagonStyle = (style, label) => {
+  if (style?.shape !== "hexagon") return style;
+  const lineCount = Math.max(1, String(label ?? "").split(/\r?\n/).length);
+  const height = Math.max(0.5, lineCount * 0.2333 + 0.06);
+  const longestLine = Math.max(
+    1,
+    ...String(label ?? "").split(/\r?\n/).map((line) => line.length),
+  );
+  const width = Math.max(0.75, longestLine * 0.11 + 0.5);
+  return {
+    ...style,
+    fixedsize: "shape",
+    height: height.toFixed(3),
+    width: width.toFixed(3),
+  };
+};
+
 export const buildDot = (document, {includeDescription = true} = {}, styles) => {
   if (!styles) throw new Error("Graph palette styles are required.");
   const model = buildGraphModel(document);
@@ -166,10 +183,11 @@ export const buildDot = (document, {includeDescription = true} = {}, styles) => 
 
   asItems(document, "settings").forEach((setting) => {
     if (!setting?.id) return;
+    const label = formatNodeLabel(setting.title, setting.description, includeDescription);
     addNode(
       setting.id,
-      formatNodeLabel(setting.title, setting.description, includeDescription),
-      styles.settings.root,
+      label,
+      compactHexagonStyle(styles.settings.root, label),
     );
   });
   asItems(document, "data_sources").forEach((source) => {

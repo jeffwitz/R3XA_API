@@ -3,7 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict
 
-from ._graph_core import build_graph_model, format_node_label, resolve_styles
+from ._graph_core import (
+    build_graph_model,
+    compact_hexagon_style,
+    format_node_label,
+    resolve_styles,
+)
 
 
 def build_graphviz_dot(
@@ -33,7 +38,7 @@ def build_graphviz_dot(
             setting.get("description", ""),
             include_description=include_description,
         )
-        dot.node(setting_id, label, **styles["settings"]["root"])
+        dot.node(setting_id, label, **compact_hexagon_style(styles["settings"]["root"], label))
 
     for source in data.get("data_sources", []):
         is_intermediate = source.get("id") in model.intermediate_sources

@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from r3xa_api.webcore.graph import generate_svg_wasm, render_graph_content, render_graphviz_wasm_file
+from r3xa_api.webcore._graph_core import compute_graphviz_positions
 
 
 def _load_payload() -> dict:
@@ -25,6 +26,22 @@ def test_graphviz_wasm_backend_returns_svg_content() -> None:
     assert b"<svg" in content
     assert media_type == "image/svg+xml"
     assert extension == "svg"
+
+
+def test_graphviz_wasm_layout_is_available_without_system_dot(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("PATH", "")
+    positions = compute_graphviz_positions(
+        ["source", "dataset", "result"],
+        [("source", "dataset"), ("dataset", "result")],
+        {"source": 220.0, "dataset": 220.0, "result": 220.0},
+        {"source": 64.0, "dataset": 64.0, "result": 64.0},
+    )
+
+    assert positions is not None
+    node_positions, node_widths = positions
+    assert set(node_positions) == {"source", "dataset", "result"}
+    assert set(node_widths) == set(node_positions)
+    assert node_positions["source"][1] < node_positions["dataset"][1] < node_positions["result"][1]
 
 
 def test_render_graphviz_wasm_file_exports_svg_and_dot(tmp_path: Path) -> None:

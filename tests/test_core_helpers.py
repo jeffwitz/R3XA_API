@@ -530,6 +530,8 @@ def test_document_palette_is_solid_with_white_text(tmp_path) -> None:
         document["data_sets"]["final"]["color"]
         != document["data_sets"]["final"]["fillcolor"]
     )
+    assert PALETTES["classic"]["settings"]["root"]["margin"] == "0.2,0.0"
+    assert PALETTES["document"]["settings"]["root"]["margin"] == "0.2,0.0"
 
 
 def test_palette_font_colour_reaches_pyvis(tmp_path) -> None:

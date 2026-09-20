@@ -28,7 +28,7 @@ test("graph model preserves R3XA dependency roles", () => {
 
 test("graph DOT output uses node labels and palette styles", () => {
   const dot = buildDot(document, {includeDescription: false}, {
-    settings: {root: {shape: "hexagon", color: "ochre"}},
+    settings: {root: {shape: "hexagon", color: "ochre", margin: "0.2,0.0"}},
     data_sources: {
       initial: {shape: "ellipse", color: "crimson"},
       intermediate: {shape: "ellipse", color: "crimson-dark"},
@@ -44,6 +44,10 @@ test("graph DOT output uses node labels and palette styles", () => {
   assert.match(dot, /"stg-rig"/);
   assert.match(dot, /label="Stereo rig"/);
   assert.match(dot, /shape="hexagon"/);
+  assert.match(dot, /margin="0.2,0.0"/);
+  assert.match(dot, /fixedsize="shape"/);
+  assert.match(dot, /height="0.500"/);
+  assert.match(dot, /width="1.600"/);
   assert.match(dot, /"src-camera"/);
   assert.match(dot, /"set-images"/);
 });

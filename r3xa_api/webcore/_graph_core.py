@@ -10,6 +10,7 @@ STYLES = {
     "settings": {
         "root": {
             "shape": "hexagon",
+            "margin": "0.2,0.0",
             "fillcolor": "#e8f1fb",
             "color": "#2b587a",
             "style": "filled",
@@ -76,10 +77,11 @@ def _solid(
     *,
     border: str | None = None,
     penwidth: str = "1",
+    margin: str | None = None,
 ) -> Dict[str, Any]:
     """A filled node with an optional contrasting outline and white text."""
 
-    return {
+    style = {
         "shape": shape,
         "fillcolor": fill,
         "color": border or fill,
@@ -87,10 +89,13 @@ def _solid(
         "style": "filled",
         "penwidth": penwidth,
     }
+    if margin is not None:
+        style["margin"] = margin
+    return style
 
 
 DOCUMENT_STYLES = {
-    "settings": {"root": _solid("hexagon", _OCHRE)},
+    "settings": {"root": _solid("hexagon", _OCHRE, margin="0.2,0.0")},
     "data_sources": {
         "initial": _solid("ellipse", _CRIMSON, border=_CRIMSON_DEEP, penwidth="4"),
         "intermediate": _solid("ellipse", _CRIMSON),
@@ -326,6 +331,24 @@ def format_node_label(title: Any, description: Any, include_description: bool = 
     return title_text
 
 
+def compact_hexagon_style(style: Dict[str, Any], label: str) -> Dict[str, Any]:
+    """Keep a hexagon as close to its label height as Graphviz allows."""
+
+    if style.get("shape") != "hexagon":
+        return style
+
+    line_count = max(1, len(label.splitlines()))
+    height = max(0.5, line_count * 0.2333 + 0.06)
+    longest_line = max((len(line) for line in label.splitlines()), default=1)
+    width = max(0.75, longest_line * 0.11 + 0.5)
+    return {
+        **style,
+        "fixedsize": "shape",
+        "height": f"{height:.3f}",
+        "width": f"{width:.3f}",
+    }
+
+
 def estimate_label_width(label: str) -> float:
     """Estimate node width in pixels from wrapped label text."""
 
@@ -432,45 +455,18 @@ def compute_graphviz_positions(
     label_widths: Dict[str, float],
     label_heights: Dict[str, float],
 ) -> tuple[Dict[str, tuple[float, float]], Dict[str, float]] | None:
-    """Compute node positions from Graphviz layout when dot is available."""
+    """Compute node positions with the bundled Graphviz WebAssembly engine."""
 
     try:
-        from graphviz import Digraph
-        from graphviz.backend import ExecutableNotFound
+        from ._graph_graphviz_wasm import compute_graphviz_positions_wasm
+
+        wasm_layout = compute_graphviz_positions_wasm(node_ids, edges, label_widths)
     except Exception:
         return None
 
-    dot = Digraph(comment="R3XA pyvis layout")
-    dot.attr("graph", rankdir="TB", nodesep="0.55", ranksep="0.95")
-    dot.attr("node", margin="0.2,0.1")
-
-    for node_id in node_ids:
-        width_in = max(1.8, label_widths.get(node_id, 220.0) / 96.0)
-        dot.node(node_id, label=node_id, width=f"{width_in:.3f}")
-
-    for src, dst in edges:
-        dot.edge(src, dst)
-
-    try:
-        plain = dot.pipe(format="plain").decode("utf-8")
-    except (ExecutableNotFound, RuntimeError):
+    if wasm_layout is None:
         return None
-
-    raw_positions: Dict[str, tuple[float, float]] = {}
-    widths: Dict[str, float] = {}
-
-    for line in plain.splitlines():
-        if not line.startswith("node "):
-            continue
-        parts = line.split()
-        if len(parts) < 6:
-            continue
-        node_id = parts[1]
-        x_coord = float(parts[2])
-        y_coord = float(parts[3])
-        width_in = float(parts[4])
-        raw_positions[node_id] = (x_coord, y_coord)
-        widths[node_id] = width_in * 96.0
+    raw_positions, widths = wasm_layout
 
     if not raw_positions:
         return None

@@ -31,7 +31,7 @@ class NetworkXLayoutConfig:
     hexagon_max_inset_ratio: float = 0.22
     ellipse_draw_height_scale: float = 1.10
     box_draw_height_scale: float = 1.16
-    hexagon_draw_height_scale: float = 1.16
+    hexagon_draw_height_scale: float = 1.08
     figure_padding_x: float = 120.0
     figure_padding_y: float = 120.0
     min_dpi: int = 90

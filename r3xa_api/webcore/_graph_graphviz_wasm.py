@@ -3,7 +3,9 @@ from __future__ import annotations
 from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
-from typing import Any, Dict
+import re
+from typing import Any, Dict, Iterable
+from xml.etree import ElementTree
 
 from ._graph_graphviz import build_graphviz_dot
 
@@ -67,6 +69,77 @@ def _render_dot(dot_source: str) -> bytes:
     finally:
         free(store, source_ptr)
         free(store, length_ptr)
+
+
+def compute_graphviz_positions_wasm(
+    node_ids: Iterable[str],
+    edges: Iterable[tuple[str, str]],
+    label_widths: Dict[str, float],
+) -> tuple[Dict[str, tuple[float, float]], Dict[str, float]] | None:
+    """Return Graphviz positions using the bundled WebAssembly layout engine."""
+
+    node_ids = list(node_ids)
+    edges = list(edges)
+    try:
+        from graphviz import Digraph
+
+        dot = Digraph(comment="R3XA pyvis layout")
+        dot.attr("graph", rankdir="TB", nodesep="0.55", ranksep="0.95")
+        dot.attr("node", margin="0.2,0.1")
+        for node_id in node_ids:
+            width_in = max(1.8, label_widths.get(node_id, 220.0) / 96.0)
+            dot.node(node_id, label=node_id, width=f"{width_in:.3f}")
+        for src, dst in edges:
+            dot.edge(src, dst)
+
+        root = ElementTree.fromstring(_render_dot(dot.source))
+    except Exception:
+        return None
+
+    raw_positions: Dict[str, tuple[float, float]] = {}
+    widths: Dict[str, float] = {}
+    for group in root.iter():
+        if group.tag.rsplit("}", 1)[-1] != "g" or group.attrib.get("class") != "node":
+            continue
+        title = next(
+            (child.text for child in group if child.tag.rsplit("}", 1)[-1] == "title"),
+            None,
+        )
+        shape = next(
+            (
+                child
+                for child in group
+                if child.tag.rsplit("}", 1)[-1] in {"ellipse", "polygon"}
+            ),
+            None,
+        )
+        if not title or shape is None:
+            continue
+
+        shape_name = shape.tag.rsplit("}", 1)[-1]
+        if shape_name == "ellipse":
+            center_x = float(shape.attrib["cx"])
+            center_y = float(shape.attrib["cy"])
+            width_points = 2.0 * float(shape.attrib["rx"])
+        else:
+            points = [
+                (float(x), float(y))
+                for x, y in re.findall(r"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)", shape.attrib["points"])
+            ]
+            if not points:
+                continue
+            center_x = sum(x for x, _ in points) / len(points)
+            center_y = sum(y for _, y in points) / len(points)
+            width_points = max(x for x, _ in points) - min(x for x, _ in points)
+
+        # SVG coordinates are points (72 per inch) and grow downwards. The
+        # existing layout post-processing expects Graphviz plain-output units.
+        raw_positions[title] = (center_x / 72.0, -center_y / 72.0)
+        widths[title] = width_points * (96.0 / 72.0)
+
+    if set(raw_positions) != set(node_ids):
+        return None
+    return raw_positions, widths
 
 
 def generate_svg_wasm(

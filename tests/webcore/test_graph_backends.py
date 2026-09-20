@@ -50,6 +50,8 @@ def test_graph_renderers_can_hide_descriptions(tmp_path: Path) -> None:
     assert "raw images from CCD camera" not in html_text
     assert "graylevel images" in dot_text
     assert "graylevel images" in html_text
+    assert 'margin="0.2,0.0"' in dot_text
+    assert "fixedsize=shape" in dot_text
 
 
 @pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
@@ -240,6 +242,7 @@ def test_each_shape_gets_its_own_drawing_margins():
     assert _width_scale("hexagon", config) > _width_scale("box", config)
     assert _width_scale("box", config) > _width_scale("ellipse", config)
     assert _height_scale("hexagon", config) == config.hexagon_draw_height_scale
+    assert _height_scale("hexagon", config) < _height_scale("box", config)
     # An unknown shape falls back to the box margins rather than failing.
     assert _width_scale("diamond", config) == _width_scale("box", config)
 
