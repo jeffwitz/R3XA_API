@@ -23,15 +23,16 @@ def _load_example_payload(filename: str) -> dict:
 
 
 @pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)
-def test_render_networkx_matplotlib_png(case_name: str, filename: str, tmp_path: Path) -> None:
+def test_render_networkx_matplotlib_defaults_to_svg(case_name: str, filename: str, tmp_path: Path) -> None:
     payload = _load_example_payload(filename)
     output_base = tmp_path / f"graph_{case_name}_nx"
 
-    output_path = render_networkx_matplotlib_file(payload, output_base, format="png", dpi=120)
+    output_path = render_networkx_matplotlib_file(payload, output_base, dpi=120)
 
-    assert output_path.suffix == ".png"
+    assert output_path.suffix == ".svg"
     assert output_path.exists()
     assert output_path.stat().st_size > 0
+    assert output_path.read_text(encoding="utf-8").lstrip().startswith("<?xml")
 
 
 def test_render_networkx_matplotlib_can_hide_descriptions(tmp_path: Path) -> None:

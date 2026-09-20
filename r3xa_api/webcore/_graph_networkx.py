@@ -227,7 +227,7 @@ DEFAULT_LAYOUT_CONFIG = NetworkXLayoutConfig()
 def render_networkx_matplotlib_file(
     data: Dict[str, Any],
     output_path: Path,
-    format: str = "png",
+    format: str = "svg",
     dpi: int = 220,
     layout_config: NetworkXLayoutConfig | None = None,
     include_description: bool = True,

@@ -271,10 +271,10 @@ async def test_api_graph_svg_passes_palette(monkeypatch: pytest.MonkeyPatch) -> 
     ("backend", "media_type", "payload"),
     [
         ("pyvis", "text/html", b"<html>interactive</html>"),
-        ("matplotlib", "image/png", b"PNG"),
+        ("matplotlib", "image/svg+xml", b"<svg"),
     ],
 )
-async def test_api_graph_supports_non_svg_backends(
+async def test_api_graph_supports_pyvis_and_matplotlib_backends(
     monkeypatch: pytest.MonkeyPatch,
     backend: str,
     media_type: str,
@@ -290,7 +290,7 @@ async def test_api_graph_supports_non_svg_backends(
         assert backend in {"pyvis", "matplotlib"}
         assert include_description is False
         assert palette == "classic"
-        return payload, media_type, "html" if backend == "pyvis" else "png"
+        return payload, media_type, "html" if backend == "pyvis" else "svg"
 
     monkeypatch.setattr(api_module, "render_graph_content", _fake_render_graph_content)
 

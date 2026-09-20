@@ -376,7 +376,16 @@ def test_graph_backend_selector_renders_interactive_and_static_views(page: Page,
         if "backend=pyvis" in url:
             route.fulfill(status=200, content_type="text/html", body="<html><body>interactive</body></html>")
         elif "backend=matplotlib" in url:
-            route.fulfill(status=200, content_type="image/png", body=b"\x89PNG\r\n\x1a\n")
+            route.fulfill(
+                status=200,
+                content_type="image/svg+xml",
+                body=(
+                    '<svg xmlns="http://www.w3.org/2000/svg" '
+                    'xmlns:xlink="http://www.w3.org/1999/xlink">'
+                    '<defs><path id="glyph" d="M 0 0"/></defs>'
+                    '<use xlink:href="#glyph"/></svg>'
+                ),
+            )
         else:
             route.fulfill(
                 status=200,
@@ -396,7 +405,8 @@ def test_graph_backend_selector_renders_interactive_and_static_views(page: Page,
     assert page.locator("#export-standalone-btn").is_hidden()
 
     page.locator("#graph-backend").select_option("matplotlib")
-    page.wait_for_selector("#graph-container img.graph-image")
+    page.wait_for_selector("#graph-container svg")
+    assert page.locator("#graph-container svg use").get_attribute("xlink:href") == "#glyph"
     assert page.locator("#save-graph-btn").is_visible()
 
     page.locator("#graph-backend").select_option("graphviz-wasm")

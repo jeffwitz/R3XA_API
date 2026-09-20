@@ -50,7 +50,7 @@ WebAssembly runtime.
 - **Native Python backend:** `graphviz` uses the system `dot` executable when it is installed.
 - **Interactive HTML:** PyVis is generated from the same graph model.
 - **Fallback behavior:** if Graphviz is unavailable, PyVis falls back to a manual layered layout.
-- **Static backend:** NetworkX + Matplotlib can generate static `png/svg/pdf` artifacts and is included in the WebUI extra.
+- **Static backend:** NetworkX + Matplotlib generates SVG by default and can also produce `png/pdf` artifacts; it is included in the WebUI extra.
 
 ## Optional dependency sets
 

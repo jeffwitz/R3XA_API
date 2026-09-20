@@ -98,7 +98,7 @@ dot -V
   - See dedicated page: [Registry Web Editor](registry_web.md).
 - **Schema viewer** (`/schema`)
   - Inspect the schema summary or the current draft.
-  - Generate a graph from the current draft with Graphviz (SVG), PyVis (interactive HTML), or Matplotlib (PNG).
+  - Generate a graph from the current draft with Graphviz (SVG), PyVis (interactive HTML), or Matplotlib (SVG).
   - Optional: hide node descriptions and keep titles only.
   - Choose the graph palette: **Document** (the R3XA document palette) or **Classic** (the legacy palette).
   - Export a fully inlined standalone HTML report (Graphviz SVG + JSON) shareable without server.
@@ -242,5 +242,5 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 - `POST /api/graph?backend=graphviz&show_description=true&palette=document` → native Graphviz SVG using `dot`.
 - `POST /api/graph?backend=graphviz-wasm&show_description=true&palette=document` → Graphviz WebAssembly SVG (standard dependency; no system `dot`).
 - `POST /api/graph?backend=pyvis&show_description=true&palette=document` → interactive PyVis HTML.
-- `POST /api/graph?backend=matplotlib&show_description=true&palette=document` → static Matplotlib PNG.
+- `POST /api/graph?backend=matplotlib&show_description=true&palette=document` → static Matplotlib SVG.
 - `backend` defaults to `graphviz-wasm`; `palette` accepts `document` (recommended) or `classic` (legacy).

@@ -294,7 +294,7 @@ Notes:
   - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
   - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
 - The web viewer JS is vendored; **no `npm install` is required** for normal use.
-- The WebUI graph selector supports bundled Graphviz WebAssembly SVG by default, native Graphviz SVG when `dot` is installed, interactive PyVis HTML, and static NetworkX/Matplotlib PNG output. `wasmtime` is part of the standard installation, so the WebAssembly backend works without `dot`.
+- The WebUI graph selector supports bundled Graphviz WebAssembly SVG by default, native Graphviz SVG when `dot` is installed, interactive PyVis HTML, and static NetworkX/Matplotlib SVG output. `wasmtime` is part of the standard installation, so the WebAssembly backend works without `dot`.
 
 ## MATLAB (minimal binding)
 MATLAB helpers live in `matlab/` and focus on **JSON generation only**.

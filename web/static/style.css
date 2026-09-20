@@ -724,13 +724,6 @@ body[data-editor-mode="expert"] .guided-panel {
   cursor: zoom-in;
 }
 
-.graph-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  cursor: zoom-in;
-}
-
 .graph-frame {
   display: block;
   width: 100%;

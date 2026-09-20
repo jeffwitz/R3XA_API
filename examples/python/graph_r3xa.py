@@ -41,9 +41,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--networkx-format",
-        default="png",
+        default="svg",
         choices=["png", "svg", "pdf"],
-        help="Output format for the NetworkX backend (default: png).",
+        help="Output format for the NetworkX backend (default: svg).",
     )
     parser.add_argument(
         "--networkx-dpi",

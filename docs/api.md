@@ -156,7 +156,7 @@ plot(path: str | Path, *, backend: str = "graphviz-wasm", palette: str | None = 
 ```
 Render the item graph and return the file written. `backend` is `"graphviz-wasm"` (SVG,
 the default, without a system `dot` executable), `"graphviz"` (native SVG using `dot`),
-`"pyvis"` (interactive HTML) or `"matplotlib"` (PNG). The WebAssembly runtime is part
+`"pyvis"` (interactive HTML) or `"matplotlib"` (SVG). The WebAssembly runtime is part
 of the standard installation; the other non-native backends require their corresponding extras.
 The extension comes from the backend, so pass a path without one.
 
@@ -185,7 +185,7 @@ document.plot("graph")                                  # graph.svg, document pa
 document.plot("graph-classic", palette="classic")       # the older outlined scheme
 document.plot("graph-wasm", backend="graphviz-wasm")   # SVG without system dot
 document.plot("graph", backend="pyvis")                 # interactive HTML
-document.plot("graph", backend="matplotlib")            # PNG
+document.plot("graph", backend="matplotlib")            # SVG
 ```
 
 The same argument exists on the lower-level renderers, for a payload that is not held by an

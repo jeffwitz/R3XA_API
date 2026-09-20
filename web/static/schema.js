@@ -13,7 +13,6 @@ const graphBackendSelect = document.getElementById("graph-backend");
 
 let cachedSummary = null;
 let currentGraph = null;
-let graphObjectUrl = null;
 
 const setGraphActionVisible = (element, visible) => {
   element?.classList.toggle("graph-action-hidden", !visible);
@@ -164,7 +163,11 @@ const sanitizeSvg = (content) => {
     [...element.attributes].forEach((attribute) => {
       const name = attribute.name.toLowerCase();
       const value = attribute.value.trim().toLowerCase();
-      if (name.startsWith("on") || name === "src" || name === "href" || name.endsWith(":href")
+      const isLocalUseReference = element.tagName.toLowerCase() === "use"
+        && (name === "href" || name.endsWith(":href"))
+        && value.startsWith("#");
+      if (name.startsWith("on") || name === "src"
+        || ((name === "href" || name.endsWith(":href")) && !isLocalUseReference)
         || value.includes("javascript:") || value.includes("data:text/html")) {
         element.removeAttribute(attribute.name);
       }
@@ -178,10 +181,6 @@ const renderGraph = async () => {
   if (!graphContainer) return false;
   graphContainer.textContent = t("schema.generating", "Generating graph…");
   currentGraph = null;
-  if (graphObjectUrl) {
-    URL.revokeObjectURL(graphObjectUrl);
-    graphObjectUrl = null;
-  }
   if (!stored) {
     graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
     setGraphActionVisible(saveGraphBtn, false);
@@ -211,38 +210,28 @@ const renderGraph = async () => {
       graphContainer.textContent = t("schema.graph_error", "Graph error: {message}", {message: detail});
       return false;
     }
-    if (backend === "matplotlib") {
-      const blob = await response.blob();
-      graphObjectUrl = URL.createObjectURL(blob);
-      const image = document.createElement("img");
-      image.className = "graph-image";
-      image.src = graphObjectUrl;
-      image.alt = t("schema.graph_alt", "R3XA graph rendered with Matplotlib");
-      graphContainer.replaceChildren(image);
-      currentGraph = {backend, data: blob, extension: "png", mediaType: "image/png"};
+    const content = await response.text();
+    const isPyvis = backend === "pyvis";
+    currentGraph = {
+      backend,
+      data: content,
+      extension: isPyvis ? "html" : "svg",
+      mediaType: isPyvis ? "text/html" : "image/svg+xml",
+    };
+    if (isPyvis) {
+      const frame = document.createElement("iframe");
+      frame.className = "graph-frame";
+      frame.title = t("schema.interactive_graph", "Interactive R3XA graph");
+      frame.sandbox.add("allow-scripts");
+      frame.srcdoc = content;
+      graphContainer.replaceChildren(frame);
     } else {
-      const content = await response.text();
-      currentGraph = {
-        backend,
-        data: content,
-        extension: backend === "pyvis" ? "html" : "svg",
-        mediaType: backend === "pyvis" ? "text/html" : "image/svg+xml",
-      };
-      if (backend === "pyvis") {
-        const frame = document.createElement("iframe");
-        frame.className = "graph-frame";
-        frame.title = t("schema.interactive_graph", "Interactive R3XA graph");
-        frame.sandbox.add("allow-scripts");
-        frame.srcdoc = content;
-        graphContainer.replaceChildren(frame);
-      } else {
-        const svg = sanitizeSvg(content);
-        graphContainer.replaceChildren(svg);
-        if (svg) {
-          svg.removeAttribute("width");
-          svg.removeAttribute("height");
-          svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-        }
+      const svg = sanitizeSvg(content);
+      graphContainer.replaceChildren(svg);
+      if (svg) {
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
       }
     }
     setGraphActionVisible(saveGraphBtn, !!currentGraph);

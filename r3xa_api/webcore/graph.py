@@ -87,7 +87,7 @@ def render_pyvis_html(
 def render_networkx_matplotlib_file(
     data: Dict[str, Any],
     output_path: Path,
-    format: str = "png",
+    format: str = "svg",
     dpi: int = 220,
     include_description: bool = True,
     palette: str | None = None,
@@ -141,8 +141,8 @@ def render_graph_content(
         output_path = render_networkx_matplotlib_file(
             data,
             output_base,
-            format="png",
+            format="svg",
             include_description=include_description,
             palette=palette,
         )
-        return output_path.read_bytes(), "image/png", "png"
+        return output_path.read_bytes(), "image/svg+xml", "svg"
