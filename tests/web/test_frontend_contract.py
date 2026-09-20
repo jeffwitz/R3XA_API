@@ -33,7 +33,10 @@ def test_frontend_assets_are_wired() -> None:
     assert 'body[data-editor-mode="guided"] .editor-surface' in stylesheet
     assert 'body[data-editor-mode="advanced"] .expert-panel' in stylesheet
     assert ".profile-cards" in stylesheet
-    assert ".template-review-control" in stylesheet
+    assert ".template-review-control" not in stylesheet
+    assert "requireTemplateReview" not in source
+    assert "pendingTemplateReview" not in source
+    assert ".example-values-heading" in stylesheet
     assert ".data-set-list-field" in stylesheet
     assert "renderDataSetListField" in source
     schema_template = (root / "web" / "templates" / "schema.html").read_text(encoding="utf-8")

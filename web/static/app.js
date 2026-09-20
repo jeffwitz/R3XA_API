@@ -33,7 +33,6 @@ let editorMode = localStorage.getItem("r3xaEditorMode") || "guided";
 let selectedProfile = launchParams.get("profile") || localStorage.getItem("r3xaProfile") || "generic";
 let guidedStepIndex = Number(localStorage.getItem("r3xaGuidedStep")) || 0;
 let guidedStepItems = {};
-let pendingTemplateReview = new Set();
 let syncing = false;
 let prefillRequested = launchParams.get("prefill") === "1";
 let newDocumentRequested = launchParams.get("new") === "1";
@@ -51,71 +50,6 @@ const loadGuidedStepItems = () => {
 
 const saveGuidedStepItems = () => {
   localStorage.setItem(guidedStepItemsStorageKey(), JSON.stringify(guidedStepItems));
-};
-
-const pendingTemplateReviewStorageKey = () => `r3xaPendingTemplateReview:${selectedProfile}`;
-
-const loadPendingTemplateReview = () => {
-  try {
-    const value = JSON.parse(localStorage.getItem(pendingTemplateReviewStorageKey()) || "[]");
-    return new Set(Array.isArray(value) ? value : []);
-  } catch {
-    return new Set();
-  }
-};
-
-const savePendingTemplateReview = () => {
-  localStorage.setItem(pendingTemplateReviewStorageKey(), JSON.stringify([...pendingTemplateReview]));
-};
-
-const clearAllTemplateReviews = () => {
-  Object.keys(localStorage)
-    .filter((key) => key.startsWith("r3xaPendingTemplateReview:"))
-    .forEach((key) => localStorage.removeItem(key));
-  pendingTemplateReview = new Set();
-};
-
-pendingTemplateReview = loadPendingTemplateReview();
-
-const guidedTemplateFieldKey = (step, target, field) => `${step.id}:${target?.id || "header"}:${field}`;
-
-const clearTemplateReviewField = (step, target, field) => {
-  const key = guidedTemplateFieldKey(step, target, field);
-  pendingTemplateReview.delete(key);
-  savePendingTemplateReview();
-  document.querySelectorAll("[data-template-review-key]").forEach((control) => {
-    if (control.dataset.templateReviewKey === key) control.remove();
-  });
-};
-
-const templateDefaultFields = (step) => Object.keys(step.defaults || {})
-  .filter((field) => !["id", "kind", "version"].includes(field));
-
-const markStepDefaultsForReview = (step, target) => {
-  templateDefaultFields(step).forEach((field) => {
-    pendingTemplateReview.add(guidedTemplateFieldKey(step, target, field));
-  });
-  savePendingTemplateReview();
-};
-
-const markProfileDefaultsForReview = (profile, payload) => {
-  pendingTemplateReview = new Set();
-  (profile?.steps || []).forEach((step) => {
-    const target = step.section === "header" ? payload : profileStepItem(step, payload);
-    if (target) markStepDefaultsForReview(step, target);
-  });
-  savePendingTemplateReview();
-};
-
-const templateReviewComplete = () => pendingTemplateReview.size === 0;
-
-const templateFieldNeedsReview = (step, target, field) =>
-  pendingTemplateReview.has(guidedTemplateFieldKey(step, target, field));
-
-const requireTemplateReview = () => {
-  if (templateReviewComplete()) return true;
-  outputEl.textContent = t("guided.review_before_save", "Review the {count} listed template value(s) in Guided mode before saving.", {count: pendingTemplateReview.size});
-  return false;
 };
 
 const selectGuidedStepItem = (stepId, itemId) => {
@@ -349,7 +283,6 @@ const appendGuidedItem = (step, selectedKind = step.kind) => {
   applyStepDefaults(step, item, payload);
   payload[step.section].push(item);
   selectGuidedStepItem(step.id, item.id);
-  markStepDefaultsForReview(step, item);
   applyProfileLinks(profile, payload);
   inputEl.value = JSON.stringify(payload, null, 2);
   saveDraft();
@@ -371,7 +304,6 @@ const createPrefilledWorkflow = () => {
 
   const payload = cloneJsonValue(defaultPayload);
   guidedStepItems = {};
-  clearAllTemplateReviews();
   profile.steps.forEach((step) => {
     if (step.section === "header") {
       applyStepDefaults(step, payload, payload);
@@ -388,7 +320,6 @@ const createPrefilledWorkflow = () => {
   });
   payload.version = schemaCatalog?.schema_version || payload.version;
   applyProfileLinks(profile, payload, {overwrite: true});
-  markProfileDefaultsForReview(profile, payload);
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
   inputEl.value = JSON.stringify(payload, null, 2);
@@ -455,27 +386,6 @@ const conditionMatches = (condition, payload) => {
     if (condition.equals !== undefined && value !== condition.equals) return false;
   }
   return true;
-};
-
-const appendTemplateReviewControl = (rendered, step, target, field) => {
-  if (!templateFieldNeedsReview(step, target, field)) return;
-  const wrapper = rendered?.classList?.contains("form-row")
-    ? rendered
-    : rendered?.closest?.(".form-row");
-  if (!wrapper) return;
-  const key = guidedTemplateFieldKey(step, target, field);
-  const acknowledgement = document.createElement("label");
-  acknowledgement.className = "template-review-control";
-  acknowledgement.dataset.templateReviewKey = key;
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.addEventListener("change", () => {
-    if (checkbox.checked) clearTemplateReviewField(step, target, field);
-  });
-  const text = document.createElement("span");
-  text.textContent = t("guided.confirm_template", "I confirm this value for this experiment.");
-  acknowledgement.append(checkbox, text);
-  wrapper.appendChild(acknowledgement);
 };
 
 const renderGuidedCollectionItems = (step, payload, container) => {
@@ -563,7 +473,6 @@ const renderGuidedQuestions = (step, payload, container) => {
         const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
         if (!currentTarget) return;
         setObjectField(currentTarget, question.field, value, required);
-        clearTemplateReviewField(step, currentTarget, question.field);
         inputEl.value = JSON.stringify(currentPayload, null, 2);
         saveDraft();
         refreshGuidedNavigation();
@@ -577,7 +486,6 @@ const renderGuidedQuestions = (step, payload, container) => {
         path: guidedFieldPath(step, payload, target, question.field),
       }
     );
-    appendTemplateReviewControl(rendered, step, target, question.field);
   });
   if (!step.kind) {
     renderGuidedCollectionItems(step, payload, container);
@@ -612,7 +520,6 @@ const renderGuidedQuestions = (step, payload, container) => {
         const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
         if (!currentTarget) return;
         setObjectField(currentTarget, key, value, false);
-        clearTemplateReviewField(step, currentTarget, key);
         inputEl.value = JSON.stringify(currentPayload, null, 2);
         saveDraft();
         refreshGuidedNavigation();
@@ -626,7 +533,6 @@ const renderGuidedQuestions = (step, payload, container) => {
         path: guidedFieldPath(step, payload, target, key),
       }
     );
-    appendTemplateReviewControl(rendered, step, target, key);
   });
 
   const templateFields = Object.keys(step.defaults || {}).filter((key) =>
@@ -637,12 +543,12 @@ const renderGuidedQuestions = (step, payload, container) => {
   );
   if (templateFields.length) {
     const heading = document.createElement("strong");
-    heading.className = "template-review-heading";
-    heading.textContent = t("guided.template_values", "Additional template values (review before saving)");
+    heading.className = "example-values-heading";
+    heading.textContent = t("guided.example_values", "Additional example values");
     container.appendChild(heading);
     const help = document.createElement("small");
-    help.className = "field-description template-review-help";
-    help.textContent = t("guided.template_help", "These values come from the example profile. Check that paths, files, dimensions, and experimental parameters match your experiment.");
+    help.className = "field-description example-values-help";
+    help.textContent = t("guided.example_help", "These illustrative values come from the example profile. Edit them when they do not match your experiment.");
     container.appendChild(help);
     templateFields.forEach((key) => {
       const rendered = renderField(
@@ -656,7 +562,6 @@ const renderGuidedQuestions = (step, payload, container) => {
           const currentTarget = step.section === "header" ? currentPayload : profileStepItem(step, currentPayload);
           if (!currentTarget) return;
           setObjectField(currentTarget, key, value, false);
-          clearTemplateReviewField(step, currentTarget, key);
           inputEl.value = JSON.stringify(currentPayload, null, 2);
           saveDraft();
           refreshGuidedNavigation();
@@ -670,7 +575,6 @@ const renderGuidedQuestions = (step, payload, container) => {
           path: guidedFieldPath(step, payload, target, key),
         }
       );
-      appendTemplateReviewControl(rendered, step, target, key);
     });
   }
 };
@@ -1811,7 +1715,6 @@ const renderSummary = async () => {
     ]);
     window.R3XAI18N?.installCatalog(uiCatalog);
     populateProfiles();
-    pendingTemplateReview = loadPendingTemplateReview();
     updateEditorMode();
     const sections = Object.entries(schemaCatalog.sections || {})
       .map(([name, section]) => `${name}: ${Object.keys(section.kinds || {}).length || "header"}`)
@@ -1849,7 +1752,6 @@ const reset = () => {
   inputEl.value = JSON.stringify(payload, null, 2);
   guidedStepItems = {};
   saveGuidedStepItems();
-  clearAllTemplateReviews();
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
   outputEl.textContent = "";
@@ -1892,7 +1794,6 @@ const validateDocumentForSave = async (payload) => {
 };
 
 const downloadJson = () => {
-  if (!requireTemplateReview()) return;
   if (!readPayload()) {
     outputEl.textContent = t("validation.parse_error", "Parse error: invalid JSON");
     return;
@@ -1909,7 +1810,6 @@ const downloadJson = () => {
 };
 
 const saveWithDialog = async () => {
-  if (!requireTemplateReview()) return;
   const payload = readPayload();
   if (!payload) {
     outputEl.textContent = t("validation.parse_error", "Parse error: invalid JSON");
@@ -1949,7 +1849,6 @@ const loadJsonFile = (file) => {
     inputEl.value = JSON.stringify(payload, null, 2);
     guidedStepItems = {};
     saveGuidedStepItems();
-    clearAllTemplateReviews();
     saveDraft();
     syncFormFromJson();
     if (normalization.conflicts.length) {
@@ -2004,7 +1903,6 @@ if (profileSelectEl) {
     selectedProfile = nextProfile;
     guidedStepIndex = 0;
     guidedStepItems = loadGuidedStepItems();
-    pendingTemplateReview = loadPendingTemplateReview();
     localStorage.setItem("r3xaProfile", selectedProfile);
     localStorage.setItem("r3xaGuidedStep", "0");
     if (selectedProfile === "generic" && hasItems) reset();

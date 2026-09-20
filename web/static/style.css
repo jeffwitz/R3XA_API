@@ -528,27 +528,14 @@ body[data-editor-mode="expert"] .guided-panel {
   padding: 0.6rem 0.8rem 0.2rem;
 }
 
-.template-review-heading,
-.template-review-help {
+.example-values-heading,
+.example-values-help {
   grid-column: 1 / -1;
 }
 
-.template-review-heading {
+.example-values-heading {
   margin-top: 0.5rem;
-  color: #9a6700;
-}
-
-.template-review-control {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.45rem;
-  color: #7a4f00;
-  font-size: 0.85rem;
-}
-
-.template-review-control input {
-  width: auto;
+  color: var(--text);
 }
 
 .data-set-file-field {

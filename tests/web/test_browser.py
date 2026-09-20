@@ -76,11 +76,6 @@ def _payload_from_registry(page: Page) -> dict:
     return json.loads(page.locator("#registry-json-input").input_value())
 
 
-def _ui_catalog(web_server: str) -> dict:
-    with urlopen(f"{web_server}/api/ui", timeout=5) as response:
-        return json.loads(response.read().decode("utf-8"))
-
-
 def test_home_starts_from_experiment_profiles(page: Page) -> None:
     page.wait_for_selector(".profile-card")
     assert page.locator(".profile-card").count() >= 3
@@ -176,7 +171,9 @@ def test_duplicate_ids_are_not_migrated_ambiguously(page: Page, web_server: str)
 
 def test_switching_to_generic_discards_existing_items_after_confirmation(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
-    page.wait_for_selector(".template-review-control")
+    page.wait_for_selector(".guided-step")
+    print("GUIDED DEBUG", page.locator("#guided-steps").inner_text())
+    print("JSON DEBUG", page.locator("#json-input").input_value()[:300])
     page.once("dialog", lambda dialog: dialog.accept())
     page.locator("#profile-select").select_option("generic")
     page.wait_for_function(
@@ -195,65 +192,17 @@ def test_language_switch_translates_the_home_page(page: Page) -> None:
     assert page.get_by_text("Outils avancés").count() == 1
 
 
-def test_prefilled_values_require_individual_confirmation(page: Page, web_server: str) -> None:
+def test_prefilled_values_are_editable_without_confirmation(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
-    page.wait_for_selector(".template-review-control")
-    assert page.locator("#guided-review").count() == 0
-    page.locator("#save-json-btn").click()
-    assert "Review the" in page.locator("#validation-output").inner_text()
-    assert page.locator(".template-review-control input[type=checkbox]").count() > 0
-
-
-def test_every_prefilled_profile_marks_all_template_defaults_for_review(page: Page, web_server: str) -> None:
-    for profile_id, profile in _ui_catalog(web_server)["profiles"].items():
-        expected = sum(
-            len(set(step.get("defaults", {})) - {"id", "kind", "version"})
-            for step in profile.get("steps", [])
-        )
-        if not expected:
-            continue
-        page.once("dialog", lambda dialog: dialog.accept())
-        page.goto(f"{web_server}/edit?profile={profile_id}&prefill=1")
-        page.wait_for_function(
-            """([profile, count]) =>
-              JSON.parse(localStorage.getItem(`r3xaPendingTemplateReview:${profile}`) || '[]').length === count""",
-            arg=[profile_id, expected],
-        )
-        pending = page.evaluate(
-            "profile => JSON.parse(localStorage.getItem(`r3xaPendingTemplateReview:${profile}`) || '[]')",
-            profile_id,
-        )
-        assert len(pending) == expected, profile_id
-
-
-def test_template_reviews_are_scoped_to_the_selected_profile(page: Page, web_server: str) -> None:
-    page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
-    page.wait_for_selector(".template-review-control")
-    pending = page.evaluate("JSON.parse(localStorage.getItem('r3xaPendingTemplateReview:dic_2d'))")
-    assert pending
-    page.locator("#profile-select").select_option("torsion_test")
-    assert page.evaluate("localStorage.getItem('r3xaPendingTemplateReview:torsion_test')") is None
-    assert page.evaluate("JSON.parse(localStorage.getItem('r3xaPendingTemplateReview:dic_2d'))") == pending
-
-
-def test_reset_clears_template_reviews_from_previous_workflows(page: Page, web_server: str) -> None:
-    page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
-    page.wait_for_selector(".template-review-control")
-    page.evaluate("localStorage.setItem('r3xaPendingTemplateReview:torsion_test', JSON.stringify(['stale']))")
-    page.locator("#reset-btn").click()
-    assert page.evaluate("localStorage.getItem('r3xaPendingTemplateReview:dic_2d')") is None
-    assert page.evaluate("localStorage.getItem('r3xaPendingTemplateReview:torsion_test')") is None
-
-
-def test_individually_added_guided_item_requires_template_review(page: Page, web_server: str) -> None:
-    page.goto(f"{web_server}/edit?profile=dic_2d")
     page.wait_for_selector(".guided-step")
-    camera_step = page.locator(".guided-step-block").filter(has_text="Camera").first
-    camera_step.locator(".guided-step").click()
-    camera_step.get_by_role("button").click()
-    page.wait_for_selector(".template-review-control")
-    pending = page.evaluate("JSON.parse(localStorage.getItem('r3xaPendingTemplateReview:dic_2d'))")
-    assert pending
+    page.locator("#guided-prefill").click()
+    page.locator(".guided-step-block").filter(has_text="Universal testing machine").first.locator(".guided-step").click()
+    page.wait_for_selector(".example-values-help")
+    assert page.locator(".template-review-control").count() == 0
+    page.evaluate("window.showSaveFilePicker = undefined")
+    with page.expect_download():
+        page.locator("#save-json-btn").click()
+    assert "Review the" not in page.locator("#validation-output").inner_text()
 
 
 def test_advanced_editor_adds_and_edits_author_objects(page: Page, web_server: str) -> None:

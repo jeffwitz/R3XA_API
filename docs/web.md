@@ -120,9 +120,9 @@ Profiles can expose a **Create prefilled workflow** action. It starts a complete
 example document whose Guided fields already have editable values, making it
 possible to inspect the workflow and validate it immediately before replacing
 the illustrative metadata with experimental values. Additional profile values
-are displayed for review. Each inherited value must be individually confirmed
-or edited before saving is allowed; adding a Guided item one at a time follows
-the same rule.
+are displayed as ordinary editable fields. They are examples only: the editor
+does not require acknowledgements or block saving, so users can freely adapt
+them for demonstrations, tests, or real experiments.
 
 The home page is the normal entry point: it presents the available experiment
 profiles before creating a document. Opening `/edit` directly starts with the
