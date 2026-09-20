@@ -10,6 +10,11 @@ and acceptance criteria are maintained in
 [`static_web.md`](static_web.md). Read that document before changing the WebUI
 runtime or adding build and CI jobs for the static distribution.
 
+The detailed Graphviz WebAssembly maintenance and ABI documentation is in
+[`graphviz_wasm_development.md`](graphviz_wasm_development.md). Read it before
+replacing the bundled WASI binary or changing either the Python or browser
+adapter.
+
 Phases A through D are complete: page scripts use the shared server runtime
 adapter, static pages and schema-derived assets are generated, browser
 validation runs locally, and lazy Graphviz WebAssembly SVG rendering is

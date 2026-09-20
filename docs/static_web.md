@@ -54,6 +54,10 @@ The Python Graphviz, PyVis, and NetworkX/Matplotlib backends remain available
 in the server/Python runtime. Reproducing every Python backend in the browser
 is not required for the first static release.
 
+For the binary provenance, wrapper ABI, Python/browser call sequence, packaging
+rules, and replacement checklist, see
+[`graphviz_wasm_development.md`](graphviz_wasm_development.md).
+
 ## Scope and non-goals
 
 In scope:

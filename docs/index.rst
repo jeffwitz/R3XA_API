@@ -202,3 +202,4 @@ If you do not want to read the whole documentation, start from one of these thre
    web.md
    static_web.md
    dev_workflow.md
+   graphviz_wasm_development.md
