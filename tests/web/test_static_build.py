@@ -40,6 +40,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "id-utils.js",
         "registry-storage.js",
         "graph.generated.js",
+        "cytoscape.generated.js",
         "validator.generated.js",
     ):
         assert (assets / name).is_file(), name
@@ -53,6 +54,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert "validateItem" in static_runtime
     assert "graphBackends" in static_runtime
     assert "graph-relations.json" in static_runtime
+    assert "cytoscape.generated.js" in static_runtime
     assert (assets / "graphviz-12.2.1.wasm").stat().st_size > 1_000_000
     source_wasm = (
         Path(__file__).resolve().parents[2]

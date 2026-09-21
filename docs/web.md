@@ -98,10 +98,16 @@ dot -V
   - See dedicated page: [Registry Web Editor](registry_web.md).
 - **Schema viewer** (`/schema`)
   - Inspect the schema summary or the current draft.
-  - Generate a graph from the current draft with Graphviz (SVG), PyVis (interactive HTML), or Matplotlib (SVG).
+  - Generate a graph from the current draft with Graphviz (SVG), Cytoscape.js (interactive browser view), PyVis (interactive HTML), or Matplotlib (SVG).
   - Optional: hide node descriptions and keep titles only.
   - Choose the graph palette: **Document** (the R3XA document palette) or **Classic** (the legacy palette).
   - Export a fully inlined standalone HTML report (Graphviz SVG + JSON) shareable without server.
+
+The Cytoscape.js view is currently a non-editable exploration view. It reuses
+the Graphviz WebAssembly SVG layout to place the nodes, then renders the same
+schema-driven graph in the browser with zoom, pan, and neighbourhood
+highlighting. Graphviz remains the reference backend for SVG export; the
+Cytoscape view is intended as a first step toward interactive graph editing.
 
 ## Editor modes
 

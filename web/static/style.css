@@ -724,6 +724,15 @@ body[data-editor-mode="expert"] .guided-panel {
   cursor: zoom-in;
 }
 
+.graph-container .cytoscape-graph {
+  width: 100%;
+  min-height: 520px;
+  height: min(75vh, 900px);
+  border: 1px solid #e4e8ee;
+  border-radius: 6px;
+  background: #fff;
+}
+
 .graph-frame {
   display: block;
   width: 100%;

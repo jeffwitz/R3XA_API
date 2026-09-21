@@ -20,9 +20,36 @@ test("graph model preserves R3XA dependency roles", () => {
   assert.deepEqual(model.intermediateSources, ["src-camera"]);
   assert.deepEqual(model.usedDatasets, ["set-images"]);
   assert.deepEqual(model.edgeRecords, [
-    {src: "stg-rig", dst: "src-camera", styleKey: "setting"},
-    {src: "set-images", dst: "src-camera", styleKey: "input"},
-    {src: "src-camera", dst: "set-images", styleKey: "data"},
+    {
+      src: "stg-rig",
+      dst: "src-camera",
+      styleKey: "setting",
+      relation: "attached_data_sources",
+      role: "context",
+      label: undefined,
+      ownerSection: "settings",
+      targetSection: "data_sources",
+    },
+    {
+      src: "set-images",
+      dst: "src-camera",
+      styleKey: "input",
+      relation: "input_data_sets",
+      role: "dataflow",
+      label: undefined,
+      ownerSection: "data_sources",
+      targetSection: "data_sets",
+    },
+    {
+      src: "src-camera",
+      dst: "set-images",
+      styleKey: "data",
+      relation: "parent_data_sources",
+      role: "dataflow",
+      label: undefined,
+      ownerSection: "data_sets",
+      targetSection: "data_sources",
+    },
   ]);
 });
 

@@ -24,6 +24,7 @@
   let graphPalettePromise;
   let graphRelationsPromise;
   let graphPromise;
+  let cytoscapePromise;
   const loadValidator = () => {
     validatorPromise ||= import(assetUrl("validator.generated.js"));
     return validatorPromise;
@@ -47,6 +48,11 @@
   const loadGraph = () => {
     graphPromise ||= import(assetUrl("graph.generated.js"));
     return graphPromise;
+  };
+
+  const loadCytoscapeGraph = () => {
+    cytoscapePromise ||= import(assetUrl("cytoscape.generated.js"));
+    return cytoscapePromise;
   };
 
   const integrityErrors = (document) => {
@@ -171,7 +177,7 @@
 
   window.R3XARuntime = {
     mode: "static",
-    graphBackends: ["graphviz"],
+    graphBackends: ["graphviz", "cytoscape"],
     loadSchema: () => loadAsset("schema.json"),
     loadSchemaSummary: () => loadAsset("schema-summary.json"),
     loadSchemaCatalog: () => loadAsset("schema-catalog.json"),
@@ -202,6 +208,22 @@
       return responseFromReport({valid, errors: reportFromErrors(validateRegistryItem.errors || [])});
     },
     renderGraph: async (payload, options = {}) => {
+      if ((options.backend || "graphviz") === "cytoscape") {
+        try {
+          const [{renderCytoscapeGraph}, palettes, relations] = await Promise.all([
+            loadCytoscapeGraph(),
+            loadGraphPalettes(),
+            loadGraphRelations(),
+          ]);
+          return renderCytoscapeGraph(payload, {
+            includeDescription: options.showDescription !== false,
+            palette: options.palette || "document",
+            relations: options.relations || "all",
+          }, palettes, relations);
+        } catch (error) {
+          return unavailable(`Cytoscape.js rendering failed: ${error.message || error}`);
+        }
+      }
       if ((options.backend || "graphviz") !== "graphviz") {
         return unavailable("The static WebUI supports Graphviz SVG rendering in the browser. Select the Graphviz backend.");
       }

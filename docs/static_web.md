@@ -50,9 +50,11 @@ The Python SDK, its validation API, and the FastAPI application remain
 supported for development, parity testing, and users who need a server.
 
 The static graph target is local Graphviz-compatible WebAssembly producing SVG.
-The Python Graphviz, PyVis, and NetworkX/Matplotlib backends remain available
-in the server/Python runtime. Reproducing every Python backend in the browser
-is not required for the first static release.
+It also provides a local Cytoscape.js exploration view: Graphviz WebAssembly
+computes the positions, while Cytoscape.js renders the same graph with browser
+zoom, pan, and neighbourhood highlighting. This first Cytoscape backend is
+deliberately non-editable. The Python Graphviz, PyVis, and NetworkX/Matplotlib
+backends remain available in the server/Python runtime.
 
 For the binary provenance, wrapper ABI, Python/browser call sequence, packaging
 rules, and replacement checklist, see
@@ -517,11 +519,15 @@ The initiative is complete only when all of the following are true:
   Static rendering therefore does not maintain second hand-written colour or
   relation-discovery tables. `relations="all"` is the default; the optional
   `dataflow` view is also supported by the shared graph model.
+- The static build bundles Cytoscape.js locally in `cytoscape.generated.js`.
+  It is loaded only when the Cytoscape backend is selected; no CDN request is
+  made. The backend first renders the document through the local Graphviz WASI
+  module and extracts its node positions before creating the Cytoscape view.
 - Graphviz is loaded lazily by `runtime-static.js` only after the user requests
-  a graph. The static runtime exposes Graphviz SVG as its supported backend;
-  PyVis and Matplotlib remain available through the FastAPI runtime. The npm
-  package `@viz-js/viz` is no longer required: there is one versioned Graphviz
-  WebAssembly binary shared by Python and the browser build.
+  a graph. The static runtime exposes Graphviz SVG and Cytoscape.js as browser
+  backends; PyVis and Matplotlib remain available through the FastAPI runtime.
+  The npm package `@viz-js/viz` is no longer required: there is one versioned
+  Graphviz WebAssembly binary shared by Python and the browser build.
 - Added Node, static-build, and Chromium browser coverage for local SVG
   rendering and the absence of `/api/*` requests.
 

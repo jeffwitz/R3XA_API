@@ -180,8 +180,9 @@ const sanitizeSvg = (content) => {
 const renderGraph = async () => {
   const stored = getStoredDraftText();
   if (!graphContainer) return false;
-  graphContainer.textContent = t("schema.generating", "Generating graph…");
+  currentGraph?.dispose?.();
   currentGraph = null;
+  graphContainer.textContent = t("schema.generating", "Generating graph…");
   if (!stored) {
     graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
     setGraphActionVisible(saveGraphBtn, false);
@@ -202,6 +203,19 @@ const renderGraph = async () => {
       backend,
       relations,
     });
+    if (response?.element && response?.interactive !== false) {
+      currentGraph = {
+        backend,
+        interactive: true,
+        dispose: response.dispose,
+      };
+      graphContainer.replaceChildren(response.element);
+      setGraphActionVisible(saveGraphBtn, false);
+      setGraphActionVisible(fullscreenGraphBtn, false);
+      setGraphActionVisible(exportStandaloneBtn, false);
+      localStorage.setItem("r3xaDraftLast", stored);
+      return true;
+    }
     if (!response.ok) {
       let detail = await response.text();
       try {

@@ -1045,6 +1045,42 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
         browser.close()
 
 
+def test_static_cytoscape_graph_uses_graphviz_positions(static_site: str) -> None:
+    payload = {
+        "title": "Cytoscape graph",
+        "description": "Interactive graph test",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [{"id": "machine", "kind": "settings/generic", "title": "Machine"}],
+        "data_sources": [{"id": "camera", "kind": "data_sources/generic", "title": "Camera"}],
+        "data_sets": [{
+            "id": "images",
+            "kind": "data_sets/generic",
+            "title": "Images",
+            "parent_data_sources": ["camera"],
+        }],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(locale="en-US")
+        requests: list[tuple[str, str]] = []
+        page.on("request", lambda request: requests.append((request.method, request.url)))
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#graph-backend").select_option("cytoscape")
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container .cytoscape-graph", state="attached", timeout=30_000)
+        assert page.locator("#graph-container .cytoscape-graph canvas").count() >= 1
+        assert page.locator("#graph-container .cytoscape-graph").get_attribute("data-node-count") == "3"
+        assert page.locator("#graph-container .cytoscape-graph").get_attribute("data-edge-count") == "1"
+        assert all(method == "GET" for method, _ in requests)
+        assert all(url.startswith(static_site) for _, url in requests)
+        assert not any("/api/" in url for _, url in requests)
+        browser.close()
+
+
 def test_static_schema_viewer_handles_an_invalid_saved_draft(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
