@@ -106,6 +106,22 @@ def test_dev_cli_can_resolve_a_fake_project_python(tmp_path: Path):
         module.ROOT = original_root
 
 
+def test_dev_cli_prefers_ci_virtual_environment(tmp_path: Path):
+    module = _load_dev_module()
+    original_root = module.ROOT
+    fake_root, _ = _fake_project_root(tmp_path)
+    ci_python = fake_root / ".ci-venv" / "bin" / "python"
+    ci_python.parent.mkdir(parents=True)
+    ci_python.write_text("", encoding="utf-8")
+    ci_python.chmod(0o755)
+    module.ROOT = fake_root
+
+    try:
+        assert Path(module.project_python()) == ci_python
+    finally:
+        module.ROOT = original_root
+
+
 def test_setup_dev_dry_run_prints_bootstrap_plan(tmp_path: Path):
     module = _load_dev_module()
     original_root = module.ROOT

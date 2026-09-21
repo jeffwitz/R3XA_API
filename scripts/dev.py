@@ -62,6 +62,8 @@ def _ensure_graphviz() -> Path:
 
 def _project_python() -> str:
     candidates = [
+        ROOT / ".ci-venv" / "Scripts" / "python.exe",
+        ROOT / ".ci-venv" / "bin" / "python",
         ROOT / ".venv" / "Scripts" / "python.exe",
         ROOT / ".venv" / "bin" / "python",
     ]
@@ -69,7 +71,7 @@ def _project_python() -> str:
         if candidate.exists():
             return str(candidate)
     raise RuntimeError(
-        "Project virtual environment not found at .venv. "
+        "Project virtual environment not found at .venv or .ci-venv. "
         "Create it first with `python -m venv .venv` and activate it."
     )
 
