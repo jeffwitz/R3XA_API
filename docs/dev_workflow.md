@@ -112,12 +112,16 @@ r3xa_api/models.py
 scripts/postprocess_models.py
 ```
 
-`datamodel-code-generator` is an external generator pinned to `0.54.0` so that
-the checked-in generated output is reproducible across contributor machines.
-It is configured to emit Pydantic v2 models. Pydantic provides runtime validation and serialization; it is not the
-tool that generates the models from JSON Schema. Pydantic is a runtime dependency
-of the object-first SDK, not an optional feature. The generated classes inherit
-the shared `R3XAItem` behavior from {glsrc}`r3xa_api/model_base.py`.
+`datamodel-code-generator` is pinned to `0.54.0` on Python 3.10 and newer so
+that the checked-in generated output is reproducible across contributor
+machines. Python 3.9 uses the last compatible release, `0.45.0`; model
+regeneration is intentionally skipped there because that release predates one
+of the generator flags used by the project. It is configured to emit Pydantic
+v2 models. Pydantic provides runtime validation and serialization; it is not
+the tool that generates the models from JSON Schema. Pydantic is a runtime
+dependency of the object-first SDK, not an optional feature. The generated
+classes inherit the shared `R3XAItem` behavior from
+{glsrc}`r3xa_api/model_base.py`.
 
 Never edit {glsrc}`r3xa_api/models.py` by hand. After a schema change, update the
 source schema in `R3XA_SPEC`, propagate it to the API repository, then run:
