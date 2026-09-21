@@ -65,7 +65,12 @@ reproduce consistently with a hand-written layout:
 The shared Python graph model first creates the R3XA relationships and DOT
 labels. `compute_graphviz_positions()` then asks the bundled WASM engine for
 positions. NetworkX/Matplotlib and PyVis use those positions, while the
-Graphviz backends use the same DOT representation to produce SVG directly.
+Graphviz backends use the same DOT representation to produce SVG directly. The DOT
+model now includes all schema-declared semantic relations by default: solid gray
+edges represent dataflow, while dashed ochre edges represent setting/context
+relations such as `attached_data_sources` and `mesh`. This semantic graph model is
+shared by Graphviz, Graphviz WASM, PyVis, and Matplotlib; `relations="dataflow"`
+selects the reduced pipeline view.
 Consequently, removing `dot` from the layout path would not merely change the
 appearance of one backend: it would make the backends disagree about the
 geometry of the same experiment.

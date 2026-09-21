@@ -146,6 +146,7 @@ def generate_svg_wasm(
     data: Dict[str, Any],
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> bytes:
     """Generate an SVG with the bundled Graphviz WASI module.
 
@@ -158,6 +159,7 @@ def generate_svg_wasm(
         format="svg",
         include_description=include_description,
         palette=palette,
+        relations=relations,
     )
     return _render_dot(dot.source)
 
@@ -168,6 +170,7 @@ def render_graphviz_wasm_file(
     export_dot: bool = False,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render a Graphviz WebAssembly SVG file and optionally export DOT."""
 
@@ -178,6 +181,7 @@ def render_graphviz_wasm_file(
         format="svg",
         include_description=include_description,
         palette=palette,
+        relations=relations,
     )
     if export_dot:
         dot.save(str(out_base.with_suffix(".dot")))

@@ -15,6 +15,27 @@ const getInputDataSets = (source) => nonEmptyReferences(source?.input_data_sets)
 const getDataSources = (dataset) => nonEmptyReferences(dataset?.parent_data_sources);
 const getAttachedDataSources = (setting) => nonEmptyReferences(setting?.attached_data_sources);
 
+const FALLBACK_REFERENCE_FIELDS = {
+  attached_data_sources: "data_sources",
+  input_data_sets: "data_sets",
+  parent_data_sources: "data_sources",
+  mesh: "settings",
+};
+
+const FALLBACK_RELATION_SEMANTICS = {
+  parent_data_sources: {direction: "target_to_owner", role: "dataflow", style_key: "data"},
+  input_data_sets: {direction: "target_to_owner", role: "dataflow", style_key: "input"},
+  attached_data_sources: {direction: "owner_to_target", role: "context", style_key: "setting"},
+  mesh: {direction: "target_to_owner", role: "context", style_key: "setting", label: "mesh"},
+};
+
+const referenceValues = (value) => nonEmptyReferences(value).filter((item) => typeof item === "string");
+
+const referenceFieldsFor = (item, relationCatalog) => {
+  if (item?.kind && relationCatalog?.fields?.[item.kind]) return relationCatalog.fields[item.kind];
+  return FALLBACK_REFERENCE_FIELDS;
+};
+
 const computeUsedDatasets = (document) => {
   const used = new Set();
   asItems(document, "data_sources").forEach((source) => {
@@ -56,7 +77,10 @@ const computeLevels = (nodes, edges) => {
   return levels;
 };
 
-export const buildGraphModel = (document) => {
+export const buildGraphModel = (document, {relations = "all"} = {}, relationCatalog = null) => {
+  if (!["all", "dataflow"].includes(relations)) {
+    throw new Error("Unknown graph relation view. Use 'all' or 'dataflow'.");
+  }
   const settings = asItems(document, "settings");
   const sources = asItems(document, "data_sources");
   const datasets = asItems(document, "data_sets");
@@ -72,26 +96,37 @@ export const buildGraphModel = (document) => {
       .filter(Boolean),
   );
   const edgeRecords = [];
-
-  settings.forEach((setting) => {
-    if (!setting?.id) return;
-    getAttachedDataSources(setting).forEach((sourceId) => {
-      edgeRecords.push({src: setting.id, dst: sourceId, styleKey: "setting"});
-    });
-  });
-  sources.forEach((source) => {
-    if (!source?.id) return;
-    getInputDataSets(source).forEach((datasetId) => {
-      edgeRecords.push({src: datasetId, dst: source.id, styleKey: "input"});
-    });
-  });
-  datasets.forEach((dataset) => {
-    if (!dataset?.id) return;
-    getDataSources(dataset).forEach((sourceId) => {
-      edgeRecords.push({
-        src: sourceId,
-        dst: dataset.id,
-        styleKey: intermediateSources.has(sourceId) ? "data" : "data_initial",
+  const semantics = relationCatalog?.semantics || FALLBACK_RELATION_SEMANTICS;
+  const sections = {settings, data_sources: sources, data_sets: datasets};
+  Object.entries(sections).forEach(([ownerSection, items]) => {
+    items.forEach((item) => {
+      if (!item?.id) return;
+      const fields = referenceFieldsFor(item, relationCatalog);
+      Object.entries(fields).forEach(([field, targetSection]) => {
+        if (!(field in item)) return;
+        const semantic = semantics[field] || {
+          direction: "owner_to_target",
+          role: "context",
+          style_key: "reference",
+        };
+        referenceValues(item[field]).forEach((targetId) => {
+          const targetToOwner = semantic.direction === "target_to_owner";
+          const edge = {
+            src: targetToOwner ? targetId : item.id,
+            dst: targetToOwner ? item.id : targetId,
+            styleKey: semantic.style_key || "reference",
+            relation: field,
+            role: semantic.role || "context",
+            label: semantic.label,
+            ownerSection,
+            targetSection,
+          };
+          if (field === "parent_data_sources") {
+            edge.styleKey = intermediateSources.has(targetId) ? "data" : "data_initial";
+          }
+          if (relations === "dataflow" && edge.role !== "dataflow") return;
+          edgeRecords.push(edge);
+        });
       });
     });
   });
@@ -169,9 +204,14 @@ const compactHexagonStyle = (style, label) => {
   };
 };
 
-export const buildDot = (document, {includeDescription = true} = {}, styles) => {
+export const buildDot = (
+  document,
+  {includeDescription = true, relations = "all"} = {},
+  styles,
+  relationCatalog = null,
+) => {
   if (!styles) throw new Error("Graph palette styles are required.");
-  const model = buildGraphModel(document);
+  const model = buildGraphModel(document, {relations}, relationCatalog);
   const lines = [
     "digraph \"R3XA graph\" {",
     "  graph [rankdir=TB, bgcolor=transparent];",
@@ -209,8 +249,9 @@ export const buildDot = (document, {includeDescription = true} = {}, styles) => 
     );
   });
   model.edgeRecords.forEach((edge) => {
-    const style = styles.edges[edge.styleKey] || {};
-    lines.push(`  ${dotQuote(edge.src)} -> ${dotQuote(edge.dst)} [${dotAttributes(style)}];`);
+    const style = styles.edges[edge.styleKey] || styles.edges.reference || styles.edges.setting || {};
+    const edgeAttributes = edge.label ? {...style, label: edge.label} : style;
+    lines.push(`  ${dotQuote(edge.src)} -> ${dotQuote(edge.dst)} [${dotAttributes(edgeAttributes)}];`);
   });
   lines.push("}");
   return lines.join("\n");

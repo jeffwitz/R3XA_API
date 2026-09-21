@@ -9,6 +9,7 @@ const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const exportStandaloneBtn = document.getElementById("export-standalone-btn");
 const graphDescriptionToggle = document.getElementById("graph-show-description");
 const graphPaletteSelect = document.getElementById("graph-palette");
+const graphRelationSelect = document.getElementById("graph-relations");
 const graphBackendSelect = document.getElementById("graph-backend");
 
 let cachedSummary = null;
@@ -194,10 +195,12 @@ const renderGraph = async () => {
       : (window.R3XARuntime?.graphBackends?.[0] || "graphviz");
     const showDescription = graphDescriptionToggle ? graphDescriptionToggle.checked : true;
     const palette = graphPaletteSelect ? graphPaletteSelect.value : "document";
+    const relations = graphRelationSelect ? graphRelationSelect.value : "all";
     const response = await window.R3XARuntime.renderGraph(payload, {
       showDescription,
       palette,
       backend,
+      relations,
     });
     if (!response.ok) {
       let detail = await response.text();
@@ -456,6 +459,7 @@ const bindEvents = () => {
     else renderSummary();
   });
   graphPaletteSelect?.addEventListener("change", renderGraph);
+  graphRelationSelect?.addEventListener("change", renderGraph);
   graphBackendSelect?.addEventListener("change", renderGraph);
   document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
   saveGraphBtn?.addEventListener("click", saveGraph);

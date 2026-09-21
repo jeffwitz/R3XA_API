@@ -14,6 +14,7 @@ from ._graph_core import (
     estimate_label_width,
     format_node_label,
     graphviz_styles_to_pyvis,
+    resolve_edge_style,
 )
 
 
@@ -142,6 +143,7 @@ def render_pyvis_html(
     output_path: Path,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render an interactive PyVis HTML graph from an R3XA payload."""
 
@@ -151,7 +153,7 @@ def render_pyvis_html(
         raise RuntimeError("Graph feature not available (pyvis not installed).") from exc
 
     styles = graphviz_styles_to_pyvis(resolve_styles(palette))
-    model = build_graph_model(data)
+    model = build_graph_model(data, relations=relations)
 
     node_labels: Dict[str, str] = {}
     for setting in data.get("settings", []):
@@ -253,7 +255,10 @@ def render_pyvis_html(
         net.add_node(dataset_id, label=label, x=x_coord, y=y_coord, physics=False, **style)
 
     for edge in model.edge_records:
-        net.add_edge(edge.src, edge.dst, **styles["edges"][edge.style_key])
+        edge_style = dict(resolve_edge_style(styles, edge))
+        if edge.label:
+            edge_style["label"] = edge.label
+        net.add_edge(edge.src, edge.dst, **edge_style)
 
     out_html = Path(output_path).with_suffix(".html")
     out_html.parent.mkdir(parents=True, exist_ok=True)

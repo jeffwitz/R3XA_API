@@ -80,6 +80,13 @@
               <option value="classic" data-i18n="schema.classic_palette">Classic (legacy)</option>
             </select>
           </label>
+          <label class="schema-toggle" for="graph-relations">
+            <span data-i18n="schema.relations">Relations:</span>
+            <select id="graph-relations">
+              <option value="all" selected data-i18n="schema.all_relations">All semantic relations</option>
+              <option value="dataflow" data-i18n="schema.dataflow_relations">Dataflow only</option>
+            </select>
+          </label>
           <button id="export-standalone-btn" class="ghost" type="button" data-i18n="schema.export_standalone">Export standalone HTML</button>
           <button id="fullscreen-graph-btn" class="ghost graph-action-hidden" type="button" data-i18n="schema.fullscreen">Fullscreen</button>
           <button id="save-graph-btn" class="ghost graph-action-hidden" type="button" data-i18n="schema.save_graph">Save graph</button>

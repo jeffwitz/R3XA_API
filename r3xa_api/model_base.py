@@ -740,6 +740,7 @@ class R3XAItem(BaseModel):
         backend: str = "graphviz-wasm",
         palette: str | None = None,
         include_description: bool = True,
+        relations: str = "all",
         **kwargs: Any,
     ) -> Path:
         """Render a document model with one of the available graph backends."""
@@ -767,6 +768,7 @@ class R3XAItem(BaseModel):
             output,
             include_description=include_description,
             palette=palette,
+            relations=relations,
             **kwargs,
         )
 

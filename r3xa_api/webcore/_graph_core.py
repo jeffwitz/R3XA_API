@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from textwrap import wrap
 from typing import Any, Dict, Iterable
 
+from .._references import reference_fields
+
 
 STYLES = {
     "settings": {
@@ -51,6 +53,7 @@ STYLES = {
     },
     "edges": {
         "setting": {"color": "#2b587a", "style": "dashed"},
+        "reference": {"color": "#2b587a", "style": "dashed"},
         "data_initial": {"color": "black"},
         "data": {"color": "black"},
         "input": {"color": "black"},
@@ -106,6 +109,7 @@ DOCUMENT_STYLES = {
     },
     "edges": {
         "setting": {"color": _OCHRE, "style": "dashed"},
+        "reference": {"color": _OCHRE, "style": "dashed"},
         "data_initial": {"color": "#555555"},
         "data": {"color": "#555555"},
         "input": {"color": "#555555"},
@@ -119,6 +123,47 @@ PALETTES: Dict[str, Dict[str, Any]] = {
 }
 
 DEFAULT_PALETTE = "document"
+
+
+RELATION_SEMANTICS: Dict[str, Dict[str, Any]] = {
+    "parent_data_sources": {
+        "direction": "target_to_owner",
+        "role": "dataflow",
+        "style_key": "data",
+    },
+    "input_data_sets": {
+        "direction": "target_to_owner",
+        "role": "dataflow",
+        "style_key": "input",
+    },
+    "attached_data_sources": {
+        "direction": "owner_to_target",
+        "role": "context",
+        "style_key": "setting",
+    },
+    "mesh": {
+        "direction": "target_to_owner",
+        "role": "context",
+        "style_key": "setting",
+        "label": "mesh",
+    },
+}
+
+
+def build_graph_relation_catalog() -> Dict[str, Any]:
+    """Return schema-derived graph references and their drawing semantics."""
+
+    from ..schema import load_schema
+
+    schema = load_schema()
+    fields: Dict[str, Dict[str, str]] = {}
+    for section in ("settings", "data_sources", "data_sets"):
+        for name in schema.get("$defs", {}).get(section, {}):
+            kind = f"{section}/{name}"
+            references = reference_fields(kind)
+            if references:
+                fields[kind] = references
+    return {"fields": fields, "semantics": RELATION_SEMANTICS}
 
 
 def resolve_styles(
@@ -148,6 +193,9 @@ class EdgeRecord:
     src: str
     dst: str
     style_key: str
+    relation: str | None = None
+    role: str = "dataflow"
+    label: str | None = None
 
 
 @dataclass(frozen=True)
@@ -209,8 +257,72 @@ def compute_used_datasets(data: Dict[str, Any]) -> set[str]:
     return used
 
 
-def build_graph_model(data: Dict[str, Any]) -> GraphModel:
+def _reference_values(value: Any) -> Iterable[str]:
+    if not value:
+        return []
+    if isinstance(value, list):
+        return [item for item in value if isinstance(item, str) and item]
+    if isinstance(value, dict):
+        return [item for item in value.values() if isinstance(item, str) and item]
+    return [value] if isinstance(value, str) else []
+
+
+def _item_reference_fields(item: Dict[str, Any]) -> Dict[str, str]:
+    kind = item.get("kind")
+    if isinstance(kind, str):
+        return reference_fields(kind)
+    # A few programmatic callers build graph payloads before assigning kinds.
+    # Keep those payloads useful without making the actual kind-aware path
+    # depend on a hand-maintained global union.
+    return {
+        field: "data_sources" if field in {"attached_data_sources", "parent_data_sources"} else target
+        for field, target in {
+            "attached_data_sources": "data_sources",
+            "input_data_sets": "data_sets",
+            "parent_data_sources": "data_sources",
+            "mesh": "settings",
+        }.items()
+    }
+
+
+def _edge_for_reference(
+    owner_section: str,
+    owner_id: str,
+    field: str,
+    target_id: str,
+    intermediate_sources: set[str],
+) -> EdgeRecord:
+    semantic = RELATION_SEMANTICS.get(
+        field,
+        {
+            "direction": "owner_to_target",
+            "role": "context",
+            "style_key": "reference",
+        },
+    )
+    if semantic["direction"] == "target_to_owner":
+        src, dst = target_id, owner_id
+    else:
+        src, dst = owner_id, target_id
+
+    style_key = semantic["style_key"]
+    if field == "parent_data_sources":
+        style_key = "data" if target_id in intermediate_sources else "data_initial"
+    return EdgeRecord(
+        src=src,
+        dst=dst,
+        style_key=style_key,
+        relation=field,
+        role=semantic["role"],
+        label=semantic.get("label"),
+    )
+
+
+def build_graph_model(data: Dict[str, Any], relations: str = "all") -> GraphModel:
     """Build a normalized graph model reused across all rendering backends."""
+
+    if relations not in {"all", "dataflow"}:
+        raise ValueError("Unknown graph relation view. Use 'all' or 'dataflow'.")
 
     used_datasets = compute_used_datasets(data)
     intermediate_sources = {source.get("id") for source in data.get("data_sources", []) if get_input_data_sets(source)}
@@ -222,27 +334,30 @@ def build_graph_model(data: Dict[str, Any]) -> GraphModel:
 
     edge_records: list[EdgeRecord] = []
 
-    for setting in data.get("settings", []):
-        setting_id = setting.get("id")
-        if not setting_id:
-            continue
-        for source_id in get_associated_data_sources(setting):
-            edge_records.append(EdgeRecord(src=setting_id, dst=source_id, style_key="setting"))
-
-    for source in data.get("data_sources", []):
-        source_id = source.get("id")
-        if not source_id:
-            continue
-        for input_set in get_input_data_sets(source):
-            edge_records.append(EdgeRecord(src=input_set, dst=source_id, style_key="input"))
-
-    for dataset in data.get("data_sets", []):
-        dataset_id = dataset.get("id")
-        if not dataset_id:
-            continue
-        for src in get_data_sources(dataset):
-            style_key = "data_initial" if src not in intermediate_sources else "data"
-            edge_records.append(EdgeRecord(src=src, dst=dataset_id, style_key=style_key))
+    sections = {
+        "settings": data.get("settings", []),
+        "data_sources": data.get("data_sources", []),
+        "data_sets": data.get("data_sets", []),
+    }
+    for owner_section, items in sections.items():
+        for item in items:
+            owner_id = item.get("id")
+            if not owner_id:
+                continue
+            for field in _item_reference_fields(item):
+                if field not in item:
+                    continue
+                for target_id in _reference_values(item[field]):
+                    edge = _edge_for_reference(
+                        owner_section,
+                        owner_id,
+                        field,
+                        target_id,
+                        intermediate_sources,
+                    )
+                    if relations == "dataflow" and edge.role != "dataflow":
+                        continue
+                    edge_records.append(edge)
 
     edge_pairs = [(edge.src, edge.dst) for edge in edge_records]
     levels = compute_hierarchical_levels(node_ids, edge_pairs)
@@ -609,3 +724,13 @@ def graphviz_styles_to_pyvis(styles: Dict[str, Any] | None = None) -> Dict[str, 
         }
 
     return pyvis_styles
+
+
+def resolve_edge_style(styles: Dict[str, Any], edge: EdgeRecord) -> Dict[str, Any]:
+    """Resolve an edge style while tolerating older custom style tables."""
+
+    edge_styles = styles.get("edges", {})
+    return edge_styles.get(
+        edge.style_key,
+        edge_styles.get("reference", edge_styles.get("setting", {})),
+    )

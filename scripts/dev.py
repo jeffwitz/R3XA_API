@@ -233,7 +233,7 @@ def build_static_web(output_dir: Path) -> Path:
     from jinja2 import Environment, FileSystemLoader
     from r3xa_api.schema import load_schema
     from r3xa_api.webcore import build_schema_catalog, build_schema_summary, build_ui_catalog
-    from r3xa_api.webcore._graph_core import PALETTES
+    from r3xa_api.webcore._graph_core import PALETTES, build_graph_relation_catalog
 
     if output_dir.exists():
         shutil.rmtree(output_dir)
@@ -257,6 +257,7 @@ def build_static_web(output_dir: Path) -> Path:
     _write_json(assets_dir / "schema-summary.json", build_schema_summary(schema))
     _write_json(assets_dir / "ui-catalog.json", build_ui_catalog(schema_catalog))
     _write_json(assets_dir / "graph-palettes.json", PALETTES)
+    _write_json(assets_dir / "graph-relations.json", build_graph_relation_catalog())
     build_id = _static_build_id()
     _write_json(
         assets_dir / "build-info.json",

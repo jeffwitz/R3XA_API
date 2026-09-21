@@ -11,7 +11,7 @@ pytest.importorskip("pyvis")
 if shutil.which("dot") is None:
     pytest.skip("graphviz 'dot' executable is not available", allow_module_level=True)
 
-from r3xa_api.webcore.graph import generate_svg, render_graphviz_file, render_pyvis_html
+from r3xa_api.webcore.graph import build_graphviz_dot, generate_svg, render_graphviz_file, render_pyvis_html
 
 
 GRAPH_CASES = [
@@ -52,6 +52,25 @@ def test_graph_renderers_can_hide_descriptions(tmp_path: Path) -> None:
     assert "graylevel images" in html_text
     assert 'margin="0.2,0.0"' in dot_text
     assert "fixedsize=shape" in dot_text
+
+
+def test_graph_includes_mesh_context_relation_by_default() -> None:
+    payload = {
+        "settings": [{"id": "specimen", "kind": "settings/specimen", "title": "Specimen"}],
+        "data_sources": [{
+            "id": "dic",
+            "kind": "data_sources/dic_measurement",
+            "title": "DIC",
+            "mesh": "specimen",
+        }],
+        "data_sets": [],
+    }
+
+    dot = build_graphviz_dot(payload)
+    assert "specimen -> dic" in dot.source
+    assert "label=mesh" in dot.source
+    assert "style=dashed" in dot.source
+    assert "style=dashed" not in build_graphviz_dot(payload, relations="dataflow").source
 
 
 @pytest.mark.parametrize(("case_name", "filename"), GRAPH_CASES)

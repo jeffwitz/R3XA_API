@@ -43,6 +43,7 @@ def test_frontend_assets_are_wired() -> None:
     schema_source = (root / "web" / "static" / "schema.js").read_text(encoding="utf-8")
     assert 'id="graph-palette"' in schema_template
     assert 'id="graph-backend"' in schema_template
+    assert 'id="graph-relations"' in schema_template
     assert "palette," in schema_source
     assert "backend," in schema_source
     assert "graph-frame" in schema_source

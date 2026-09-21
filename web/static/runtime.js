@@ -21,6 +21,7 @@
       show_description: options.showDescription === false ? "false" : "true",
       palette: options.palette || "document",
       backend: options.backend || "graphviz-wasm",
+      relations: options.relations || "all",
     });
     return postJson(`/graph?${query.toString()}`, payload);
   };

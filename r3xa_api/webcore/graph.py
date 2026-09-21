@@ -4,7 +4,13 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 from typing import Any, Dict
 
-from ._graph_core import PALETTES, STYLES, graphviz_styles_to_pyvis, resolve_styles
+from ._graph_core import (
+    PALETTES,
+    STYLES,
+    graphviz_styles_to_pyvis,
+    resolve_edge_style,
+    resolve_styles,
+)
 from ._graph_graphviz import (
     build_graphviz_dot,
     generate_svg,
@@ -24,6 +30,7 @@ __all__ = [
     "generate_svg",
     "generate_svg_wasm",
     "graphviz_styles_to_pyvis",
+    "resolve_edge_style",
     "resolve_styles",
     "render_graphviz_file",
     "render_graphviz_wasm_file",
@@ -41,6 +48,7 @@ def render_graphviz_file(
     export_dot: bool = False,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render a Graphviz SVG file and optionally export the DOT source."""
 
@@ -50,6 +58,7 @@ def render_graphviz_file(
         export_dot=export_dot,
         include_description=include_description,
         palette=palette,
+        relations=relations,
     )
 
 
@@ -59,6 +68,7 @@ def render_graphviz_wasm_file(
     export_dot: bool = False,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render a Graphviz SVG with the bundled WebAssembly backend."""
 
@@ -68,6 +78,7 @@ def render_graphviz_wasm_file(
         export_dot=export_dot,
         include_description=include_description,
         palette=palette,
+        relations=relations,
     )
 
 
@@ -76,11 +87,16 @@ def render_pyvis_html(
     output_path: Path,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render an interactive PyVis HTML graph from an R3XA payload."""
 
     return _render_pyvis_html(
-        data, output_path, include_description=include_description, palette=palette
+        data,
+        output_path,
+        include_description=include_description,
+        palette=palette,
+        relations=relations,
     )
 
 
@@ -91,6 +107,7 @@ def render_networkx_matplotlib_file(
     dpi: int = 220,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render a static graph image with NetworkX + Matplotlib."""
 
@@ -101,6 +118,7 @@ def render_networkx_matplotlib_file(
         dpi=dpi,
         include_description=include_description,
         palette=palette,
+        relations=relations,
     )
 
 
@@ -109,6 +127,7 @@ def render_graph_content(
     backend: str = "graphviz-wasm",
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> tuple[bytes, str, str]:
     """Render a graph backend for HTTP delivery.
 
@@ -120,10 +139,20 @@ def render_graph_content(
         available = ", ".join(GRAPH_BACKENDS)
         raise ValueError(f"Unknown graph backend {backend!r}. Available: {available}")
     if backend == "graphviz":
-        return generate_svg(data, include_description=include_description, palette=palette), "image/svg+xml", "svg"
+        return generate_svg(
+            data,
+            include_description=include_description,
+            palette=palette,
+            relations=relations,
+        ), "image/svg+xml", "svg"
     if backend == "graphviz-wasm":
         return (
-            generate_svg_wasm(data, include_description=include_description, palette=palette),
+            generate_svg_wasm(
+                data,
+                include_description=include_description,
+                palette=palette,
+                relations=relations,
+            ),
             "image/svg+xml",
             "svg",
         )
@@ -136,6 +165,7 @@ def render_graph_content(
                 output_base,
                 include_description=include_description,
                 palette=palette,
+                relations=relations,
             )
             return output_path.read_bytes(), "text/html; charset=utf-8", "html"
         output_path = render_networkx_matplotlib_file(
@@ -144,5 +174,6 @@ def render_graph_content(
             format="svg",
             include_description=include_description,
             palette=palette,
+            relations=relations,
         )
         return output_path.read_bytes(), "image/svg+xml", "svg"

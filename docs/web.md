@@ -239,8 +239,12 @@ set `R3XA_CHROMIUM_EXECUTABLE` to its executable path.
 - `GET /api/ui` → presentation rules and experience profiles
 - `GET /api/profiles` → experience profiles only
 - `GET /api/graph/backends` → supported graph backend names.
-- `POST /api/graph?backend=graphviz&show_description=true&palette=document` → native Graphviz SVG using `dot`.
-- `POST /api/graph?backend=graphviz-wasm&show_description=true&palette=document` → Graphviz WebAssembly SVG (standard dependency; no system `dot`).
+- `POST /api/graph?backend=graphviz&show_description=true&palette=document&relations=all` → native Graphviz SVG using `dot`.
+- `POST /api/graph?backend=graphviz-wasm&show_description=true&palette=document&relations=all` → Graphviz WebAssembly SVG (standard dependency; no system `dot`).
+
+`relations=all` is the default and includes dataflow plus semantic context/configuration
+relations such as `attached_data_sources` and `mesh`. Use `relations=dataflow` for the
+compact pipeline-only view.
 - `POST /api/graph?backend=pyvis&show_description=true&palette=document` → interactive PyVis HTML.
 - `POST /api/graph?backend=matplotlib&show_description=true&palette=document` → static Matplotlib SVG.
 - `backend` defaults to `graphviz-wasm`; `palette` accepts `document` (recommended) or `classic` (legacy).

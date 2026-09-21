@@ -34,6 +34,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "ui-catalog.json",
         "build-info.json",
         "graph-palettes.json",
+        "graph-relations.json",
         "graphviz-12.2.1.wasm",
         "runtime-static.js",
         "id-utils.js",
@@ -51,6 +52,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert "integrityErrors" in static_runtime
     assert "validateItem" in static_runtime
     assert "graphBackends" in static_runtime
+    assert "graph-relations.json" in static_runtime
     assert (assets / "graphviz-12.2.1.wasm").stat().st_size > 1_000_000
     source_wasm = (
         Path(__file__).resolve().parents[2]
@@ -64,6 +66,9 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     catalog = json.loads((assets / "schema-catalog.json").read_text(encoding="utf-8"))
     assert catalog["schema_version"]
     assert "data_sources" in catalog["sections"]
+    graph_relations = json.loads((assets / "graph-relations.json").read_text(encoding="utf-8"))
+    assert graph_relations["fields"]["data_sources/dic_measurement"]["mesh"] == "settings"
+    assert graph_relations["semantics"]["mesh"]["role"] == "context"
     build_info = json.loads((assets / "build-info.json").read_text(encoding="utf-8"))
     assert build_info["build_id"] == module._static_build_id()
     assert build_info["git_commit"]

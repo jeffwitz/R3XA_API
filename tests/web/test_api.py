@@ -267,6 +267,33 @@ async def test_api_graph_svg_passes_palette(monkeypatch: pytest.MonkeyPatch) -> 
 
 
 @pytest.mark.anyio
+async def test_api_graph_accepts_dataflow_relation_view(monkeypatch: pytest.MonkeyPatch) -> None:
+    svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'></svg>"
+
+    def _fake_generate_svg(
+        payload: dict,
+        include_description: bool = True,
+        palette: str | None = None,
+        relations: str = "all",
+    ) -> bytes:
+        assert relations == "dataflow"
+        return svg_payload
+
+    monkeypatch.setattr(api_module, "generate_svg", _fake_generate_svg)
+
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/graph?backend=graphviz&relations=dataflow",
+            json=_load_example(),
+        )
+
+    assert response.status_code == 200
+    assert response.content == svg_payload
+
+
+@pytest.mark.anyio
 @pytest.mark.parametrize(
     ("backend", "media_type", "payload"),
     [

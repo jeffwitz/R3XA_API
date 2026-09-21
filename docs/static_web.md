@@ -512,8 +512,11 @@ The initiative is complete only when all of the following are true:
 - Ported the shared graph model and DOT generation to browser JavaScript. The
   browser uses the same node roles, relationship directions, labels, and
   palettes as the Python Graphviz backend.
-- The Python palette table is exported as `graph-palettes.json`, so static
-  rendering does not maintain a second hand-written colour table.
+- The Python palette table is exported as `graph-palettes.json`, and the
+  schema-derived graph reference catalogue is exported as `graph-relations.json`.
+  Static rendering therefore does not maintain second hand-written colour or
+  relation-discovery tables. `relations="all"` is the default; the optional
+  `dataflow` view is also supported by the shared graph model.
 - Graphviz is loaded lazily by `runtime-static.js` only after the user requests
   a graph. The static runtime exposes Graphviz SVG as its supported backend;
   PyVis and Matplotlib remain available through the FastAPI runtime. The npm

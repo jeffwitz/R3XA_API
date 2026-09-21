@@ -149,9 +149,9 @@ const renderDot = async (dot) => {
   }
 };
 
-export const renderGraph = async (document, options = {}, styles) => {
+export const renderGraph = async (document, options = {}, styles, relationCatalog = null) => {
   const paletteStyles = styles?.[options.palette || "document"] || styles?.document || styles;
-  const dot = buildDot(document, options, paletteStyles);
+  const dot = buildDot(document, options, paletteStyles, relationCatalog);
   return renderDot(dot);
 };
 

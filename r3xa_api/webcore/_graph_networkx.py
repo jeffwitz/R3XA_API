@@ -10,6 +10,7 @@ from ._graph_core import (
     compute_graphviz_positions,
     compute_manual_positions,
     wrap_label_text,
+    resolve_edge_style,
 )
 
 
@@ -232,6 +233,7 @@ def render_networkx_matplotlib_file(
     layout_config: NetworkXLayoutConfig | None = None,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render a static graph image with NetworkX + Matplotlib."""
 
@@ -253,7 +255,7 @@ def render_networkx_matplotlib_file(
 
     styles = resolve_styles(palette)
     font_colors: Dict[str, str] = {}
-    model = build_graph_model(data)
+    model = build_graph_model(data, relations=relations)
     node_ids = model.node_ids
     graph = nx.DiGraph()
     graph.add_nodes_from(node_ids)
@@ -835,7 +837,7 @@ def render_networkx_matplotlib_file(
         dst = edge.dst
         if src not in positions or dst not in positions:
             continue
-        style = styles["edges"][edge.style_key]
+        style = resolve_edge_style(styles, edge)
         level_delta = levels.get(dst, 0) - levels.get(src, 0)
         direct_hits = _count_direct_hits(src, dst)
         edge_kwargs: Dict[str, Any] = {
@@ -942,6 +944,20 @@ def render_networkx_matplotlib_file(
                 **edge_kwargs,
             )
         axis.add_patch(arrow)
+        if edge.label:
+            label_x = (positions[src][0] + positions[dst][0]) * 0.5
+            label_y = (positions[src][1] + positions[dst][1]) * 0.5
+            axis.text(
+                label_x,
+                label_y,
+                edge.label,
+                fontsize=8.5,
+                color=style.get("color", "black"),
+                ha="center",
+                va="center",
+                bbox={"facecolor": "white", "edgecolor": "none", "pad": 1.5, "alpha": 0.85},
+                zorder=2,
+            )
 
     for node_id, label in node_labels.items():
         if node_id not in positions:

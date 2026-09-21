@@ -22,6 +22,7 @@
   let validatorPromise;
   let catalogPromise;
   let graphPalettePromise;
+  let graphRelationsPromise;
   let graphPromise;
   const loadValidator = () => {
     validatorPromise ||= import(assetUrl("validator.generated.js"));
@@ -36,6 +37,11 @@
   const loadGraphPalettes = () => {
     graphPalettePromise ||= loadAsset("graph-palettes.json");
     return graphPalettePromise;
+  };
+
+  const loadGraphRelations = () => {
+    graphRelationsPromise ||= loadAsset("graph-relations.json");
+    return graphRelationsPromise;
   };
 
   const loadGraph = () => {
@@ -200,11 +206,16 @@
         return unavailable("The static WebUI supports Graphviz SVG rendering in the browser. Select the Graphviz backend.");
       }
       try {
-        const [{renderGraph}, palettes] = await Promise.all([loadGraph(), loadGraphPalettes()]);
+        const [{renderGraph}, palettes, relations] = await Promise.all([
+          loadGraph(),
+          loadGraphPalettes(),
+          loadGraphRelations(),
+        ]);
         const svg = await renderGraph(payload, {
           includeDescription: options.showDescription !== false,
           palette: options.palette || "document",
-        }, palettes);
+          relations: options.relations || "all",
+        }, palettes, relations);
         return new Response(svg, {
           status: 200,
           headers: {

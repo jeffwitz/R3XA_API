@@ -152,7 +152,7 @@ Readable listing of the header followed by each collection's item titles. Field 
 `*` required markers come from the schema. `print(document)` prints the same listing.
 
 ```python
-plot(path: str | Path, *, backend: str = "graphviz-wasm", palette: str | None = None, include_description: bool = True) -> Path
+plot(path: str | Path, *, backend: str = "graphviz-wasm", palette: str | None = None, include_description: bool = True, relations: str = "all") -> Path
 ```
 Render the item graph and return the file written. `backend` is `"graphviz-wasm"` (SVG,
 the default, without a system `dot` executable), `"graphviz"` (native SVG using `dot`),
@@ -186,7 +186,15 @@ document.plot("graph-classic", palette="classic")       # the older outlined sch
 document.plot("graph-wasm", backend="graphviz-wasm")   # SVG without system dot
 document.plot("graph", backend="pyvis")                 # interactive HTML
 document.plot("graph", backend="matplotlib")            # SVG
+document.plot("graph-dataflow", relations="dataflow")   # omit setting/context relations
 ```
+
+The default graph view, `relations="all"`, displays every schema-declared semantic
+reference that has a graph meaning. Dataflow relations use solid edges, while
+setting/context relations use dashed ochre edges; the `mesh` relation is labelled
+explicitly. The graph model discovers references from `reference_fields(kind)` and
+uses a small semantic table only for edge direction and visual role. Use
+`relations="dataflow"` when a compact processing pipeline is preferable.
 
 The same argument exists on the lower-level renderers, for a payload that is not held by an
 `R3XAFile`:

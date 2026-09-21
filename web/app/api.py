@@ -51,24 +51,26 @@ async def graph_svg(
     backend: str = Query(default="graphviz-wasm"),
     show_description: bool = Query(default=True),
     palette: Optional[str] = Query(default=None),
+    relations: str = Query(default="all"),
 ) -> Response:
     payload = await _read_json(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
     try:
+        graph_options = {
+            "include_description": show_description,
+            "palette": palette,
+        }
+        if relations != "all":
+            graph_options["relations"] = relations
         if backend == "graphviz":
-            content = generate_svg(
-                payload,
-                include_description=show_description,
-                palette=palette,
-            )
+            content = generate_svg(payload, **graph_options)
             media_type = "image/svg+xml"
         else:
             content, media_type, _extension = render_graph_content(
                 payload,
                 backend=backend,
-                include_description=show_description,
-                palette=palette,
+                **graph_options,
             )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

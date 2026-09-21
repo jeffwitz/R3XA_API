@@ -28,8 +28,39 @@ def test_graph_model_includes_settings_as_root_nodes() -> None:
     assert model.setting_ids == ["specimen", "machine"]
     assert model.levels["specimen"] == 0
     assert model.levels["machine"] == 0
-    assert EdgeRecord("machine", "machine_acquisition", "setting") in model.edge_records
-    assert EdgeRecord("machine_acquisition", "machine_data", "data_initial") in model.edge_records
-    assert EdgeRecord("camera", "images", "data_initial") in model.edge_records
-    assert EdgeRecord("images", "dic", "input") in model.edge_records
-    assert EdgeRecord("dic", "displacements", "data") in model.edge_records
+    assert any(
+        edge.src == "machine"
+        and edge.dst == "machine_acquisition"
+        and edge.style_key == "setting"
+        and edge.relation == "attached_data_sources"
+        and edge.role == "context"
+        for edge in model.edge_records
+    )
+    assert {edge.src for edge in model.edge_records if edge.style_key == "data_initial"} == {
+        "machine_acquisition",
+        "camera",
+    }
+    assert any((edge.src, edge.dst, edge.style_key) == ("images", "dic", "input") for edge in model.edge_records)
+    assert any((edge.src, edge.dst, edge.style_key) == ("dic", "displacements", "data") for edge in model.edge_records)
+
+
+def test_graph_model_includes_mesh_context_and_supports_dataflow_view() -> None:
+    payload = {
+        "settings": [{"id": "specimen", "kind": "settings/specimen", "title": "Specimen"}],
+        "data_sources": [{
+            "id": "dic",
+            "kind": "data_sources/dic_measurement",
+            "title": "DIC",
+            "mesh": "specimen",
+        }],
+        "data_sets": [],
+    }
+
+    complete = build_graph_model(payload)
+    mesh = next(edge for edge in complete.edge_records if edge.relation == "mesh")
+    assert (mesh.src, mesh.dst) == ("specimen", "dic")
+    assert mesh.style_key == "setting"
+    assert mesh.role == "context"
+    assert mesh.label == "mesh"
+
+    assert build_graph_model(payload, relations="dataflow").edge_records == []

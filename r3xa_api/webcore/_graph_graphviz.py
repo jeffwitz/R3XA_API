@@ -8,6 +8,7 @@ from ._graph_core import (
     compact_hexagon_style,
     format_node_label,
     resolve_styles,
+    resolve_edge_style,
 )
 
 
@@ -16,6 +17,7 @@ def build_graphviz_dot(
     format: str = "svg",
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Any:
     """Build a Graphviz Digraph from a full R3XA payload."""
 
@@ -27,7 +29,7 @@ def build_graphviz_dot(
     styles = resolve_styles(palette)
     dot = Digraph(comment="R3XA graph", format=format)
     dot.attr("node", margin="0.2,0.1")
-    model = build_graph_model(data)
+    model = build_graph_model(data, relations=relations)
 
     for setting in data.get("settings", []):
         setting_id = setting.get("id")
@@ -61,7 +63,10 @@ def build_graphviz_dot(
         dot.node(dataset["id"], label, **style)
 
     for edge in model.edge_records:
-        dot.edge(edge.src, edge.dst, **styles["edges"][edge.style_key])
+        edge_style = dict(resolve_edge_style(styles, edge))
+        if edge.label:
+            edge_style["label"] = edge.label
+        dot.edge(edge.src, edge.dst, **edge_style)
 
     return dot
 
@@ -70,6 +75,7 @@ def generate_svg(
     data: Dict[str, Any],
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> bytes:
     """Generate an SVG graph from an R3XA payload."""
 
@@ -78,7 +84,13 @@ def generate_svg(
     except Exception as exc:  # pragma: no cover - depends on optional dependency
         raise RuntimeError("Graph feature not available (graphviz not installed).") from exc
 
-    dot = build_graphviz_dot(data, format="svg", include_description=include_description, palette=palette)
+    dot = build_graphviz_dot(
+        data,
+        format="svg",
+        include_description=include_description,
+        palette=palette,
+        relations=relations,
+    )
     try:
         return dot.pipe(format="svg")
     except ExecutableNotFound as exc:  # pragma: no cover - runtime dependency
@@ -91,6 +103,7 @@ def render_graphviz_file(
     export_dot: bool = False,
     include_description: bool = True,
     palette: str | None = None,
+    relations: str = "all",
 ) -> Path:
     """Render a Graphviz SVG file and optionally export the DOT source."""
 
@@ -101,7 +114,13 @@ def render_graphviz_file(
 
     out_base = Path(output_path)
     out_base.parent.mkdir(parents=True, exist_ok=True)
-    dot = build_graphviz_dot(data, format="svg", include_description=include_description, palette=palette)
+    dot = build_graphviz_dot(
+        data,
+        format="svg",
+        include_description=include_description,
+        palette=palette,
+        relations=relations,
+    )
 
     if export_dot:
         dot.save(str(out_base.with_suffix(".dot")))
