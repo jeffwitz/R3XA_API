@@ -7,6 +7,8 @@ const graphContainer = document.getElementById("graph-container");
 const saveGraphBtn = document.getElementById("save-graph-btn");
 const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const fitGraphBtn = document.getElementById("fit-graph-btn");
+const zoomOutGraphBtn = document.getElementById("zoom-out-graph-btn");
+const zoomInGraphBtn = document.getElementById("zoom-in-graph-btn");
 const exportStandaloneBtn = document.getElementById("export-standalone-btn");
 const graphNavigationHelp = document.querySelector(".graph-navigation-help");
 const graphDescriptionToggle = document.getElementById("graph-show-description");
@@ -191,6 +193,8 @@ const renderGraph = async () => {
   graphContainer.classList.remove("graph-container-interactive");
   setGraphNavigationHelpVisible(false);
   setGraphActionVisible(fitGraphBtn, false);
+  setGraphActionVisible(zoomOutGraphBtn, false);
+  setGraphActionVisible(zoomInGraphBtn, false);
   graphContainer.textContent = t("schema.generating", "Generating graph…");
   if (!stored) {
     graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
@@ -219,6 +223,8 @@ const renderGraph = async () => {
         interactive: true,
         dispose: response.dispose,
         fit: response.fit,
+        zoomIn: response.zoomIn,
+        zoomOut: response.zoomOut,
       };
       graphContainer.replaceChildren(response.element);
       graphContainer.classList.add("graph-container-interactive");
@@ -226,6 +232,8 @@ const renderGraph = async () => {
       setGraphActionVisible(saveGraphBtn, false);
       setGraphActionVisible(fullscreenGraphBtn, false);
       setGraphActionVisible(fitGraphBtn, true);
+      setGraphActionVisible(zoomOutGraphBtn, true);
+      setGraphActionVisible(zoomInGraphBtn, true);
       setGraphActionVisible(exportStandaloneBtn, false);
       localStorage.setItem("r3xaDraftLast", stored);
       return true;
@@ -268,6 +276,8 @@ const renderGraph = async () => {
     setGraphActionVisible(saveGraphBtn, !!currentGraph);
     setGraphActionVisible(fullscreenGraphBtn, !!currentGraph);
     setGraphActionVisible(fitGraphBtn, false);
+    setGraphActionVisible(zoomOutGraphBtn, false);
+    setGraphActionVisible(zoomInGraphBtn, false);
     setGraphActionVisible(exportStandaloneBtn, backend === "graphviz");
     localStorage.setItem("r3xaDraftLast", stored);
     return !!currentGraph;
@@ -279,6 +289,8 @@ const renderGraph = async () => {
     setGraphActionVisible(saveGraphBtn, false);
     setGraphActionVisible(fullscreenGraphBtn, false);
     setGraphActionVisible(fitGraphBtn, false);
+    setGraphActionVisible(zoomOutGraphBtn, false);
+    setGraphActionVisible(zoomInGraphBtn, false);
     setGraphActionVisible(exportStandaloneBtn, false);
     return false;
   }
@@ -497,6 +509,8 @@ const bindEvents = () => {
   saveGraphBtn?.addEventListener("click", saveGraph);
   fullscreenGraphBtn?.addEventListener("click", openFullscreenGraph);
   fitGraphBtn?.addEventListener("click", () => currentGraph?.fit?.());
+  zoomOutGraphBtn?.addEventListener("click", () => currentGraph?.zoomOut?.());
+  zoomInGraphBtn?.addEventListener("click", () => currentGraph?.zoomIn?.());
   exportStandaloneBtn?.addEventListener("click", exportStandaloneHtml);
   graphContainer?.addEventListener("click", () => {
     if (graphContainer.querySelector("svg")) showFullscreenGraph();

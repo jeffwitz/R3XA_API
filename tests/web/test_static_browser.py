@@ -1077,7 +1077,11 @@ def test_static_cytoscape_graph_uses_graphviz_positions(static_site: str) -> Non
         assert page.locator("#graph-container .cytoscape-graph").get_attribute("data-edge-count") == "1"
         assert "graph-container-interactive" in (page.locator("#graph-container").get_attribute("class") or "")
         assert page.locator("#fit-graph-btn").is_visible()
+        assert page.locator("#zoom-out-graph-btn").is_visible()
+        assert page.locator("#zoom-in-graph-btn").is_visible()
         assert page.locator(".graph-navigation-help").is_visible()
+        page.locator("#zoom-in-graph-btn").click()
+        page.locator("#zoom-out-graph-btn").click()
         page.locator("#fit-graph-btn").click()
         assert all(method == "GET" for method, _ in requests)
         assert all(url.startswith(static_site) for _, url in requests)

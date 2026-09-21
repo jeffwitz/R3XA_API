@@ -73,11 +73,11 @@ const readGraphvizLayout = (svgText) => {
   return {viewBox, nodes};
 };
 
-const styleFor = (style = {}) => ({
+export const styleFor = (style = {}) => ({
   fill: style.fillcolor || style.color || "#d8dee8",
   border: style.color || style.fillcolor || "#3d4652",
   borderWidth: Math.max(1, parseNumber(style.penwidth, 1)),
-  text: style.fontcolor || "#ffffff",
+  text: style.fontcolor || "#000000",
 });
 
 const nodeRecords = (payload, model, styles, includeDescription, layoutNodes) => {
@@ -228,6 +228,17 @@ export const renderCytoscapeGraph = async (
     cy.resize();
     cy.fit(cy.elements(), 40);
   };
+  const zoomAtCenter = (factor) => {
+    if (cy.destroyed()) return;
+    const level = Math.min(cy.maxZoom(), Math.max(cy.minZoom(), cy.zoom() * factor));
+    cy.zoom({
+      level,
+      renderedPosition: {
+        x: container.clientWidth * 0.5,
+        y: container.clientHeight * 0.5,
+      },
+    });
+  };
   const resizeObserver = typeof ResizeObserver === "function"
     ? new ResizeObserver(fit)
     : null;
@@ -246,6 +257,8 @@ export const renderCytoscapeGraph = async (
   return {
     element: container,
     fit,
+    zoomIn: () => zoomAtCenter(1.25),
+    zoomOut: () => zoomAtCenter(0.8),
     dispose: () => {
       resizeObserver?.disconnect();
       cy.destroy();
