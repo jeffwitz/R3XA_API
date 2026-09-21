@@ -308,6 +308,57 @@ Graphviz behavior are the reproducibility contract. The committed artifact's
 hash remains recorded so a rebuild can be reviewed deliberately rather than
 silently replacing the runtime binary.
 
+### Performance and installation cost
+
+The WASM backend is deliberately measured before it is optimized. The
+following local smoke benchmark renders the same QI document repeatedly with
+both backends after one warm-up render:
+
+```bash
+./.venv/bin/python - <<'PY'
+import json
+import statistics
+import time
+from pathlib import Path
+
+from r3xa_api.webcore.graph import generate_svg, generate_svg_wasm
+
+payload = json.loads(
+    Path("examples/artifacts/baseline_qi/qi_hu_from_scratch.json").read_text()
+)
+for name, renderer in (("wasm", generate_svg_wasm), ("native", generate_svg)):
+    renderer(payload)
+    samples = []
+    for _ in range(10):
+        started = time.perf_counter()
+        renderer(payload)
+        samples.append(time.perf_counter() - started)
+    print(
+        name,
+        f"mean_ms={statistics.mean(samples) * 1000:.2f}",
+        f"min_ms={min(samples) * 1000:.2f}",
+        f"max_ms={max(samples) * 1000:.2f}",
+    )
+PY
+```
+
+On the maintainer workstation on 2026-09-21, this produced approximately
+`5.5 ms` per warm WASM render and `54.5 ms` per native render. The first WASM
+render took approximately `473 ms` because it included module instantiation;
+the first native render took approximately `47 ms`. These are observations
+for one document, machine, and Graphviz installation, not performance
+guarantees. The native measurement includes launching the system `dot`
+process, whereas the warm WASM measurement reuses the loaded module. The
+first-render cost matters for UI latency, while repeated renders benefit from
+the cached WASM module.
+
+The packaged `wasmtime` installation is currently about `24 MB` in the local
+Python environment, and the pure-Python wheel containing the WASM asset is
+about `711 KB`. These figures should be rechecked when upgrading wasmtime or
+the Graphviz artifact; they are the reason the standard distribution favors a
+single ready-to-run WASM backend rather than requiring users to install a
+platform-specific `dot` executable.
+
 ## Packaging and build flow
 
 The normal Python package contains:

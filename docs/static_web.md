@@ -273,11 +273,19 @@ dependencies, produces `dist/r3xa-webui/`, and stores both the directory and a
 short-SHA zip as artifacts. The test job runs the canonical static build and
 browser qualification with system Chromium.
 
+The same explicit pipeline also runs `registry-sync`. This job checks out the
+canonical `R3XA_REGISTRY` repository and validates all of its items against the
+schema and SDK from the current API branch. The bundled `R3XA_API/registry/`
+directory remains a small offline example/test catalogue; it is not a second
+published Registry.
+
 The `static-pages` job publishes only the generated `dist/r3xa-webui/`
 directory and is restricted to the default branch when the pipeline is
-explicitly started or requested with `[ci run]`. Ordinary pushes remain
-subject to the repository's CI execution policy. The build is independent of
-GitLab and can be copied to another static host.
+explicitly started or requested with `[ci run]`. It explicitly waits for the
+Python matrix, schema sync, canonical Registry sync, documentation, FastAPI
+browser checks, and static browser checks before publishing. Ordinary pushes
+remain subject to the repository's CI execution policy. The build is
+independent of GitLab and can be copied to another static host.
 
 Development work continues on `develop`; publication is made from the
 validated default/release branch according to the repository CI policy. The
@@ -288,6 +296,14 @@ Iframe integration is documented and tested separately. GitLab response headers
 such as `X-Frame-Options` and `Content-Security-Policy` must be checked before
 claiming that the hosted Pages URL is embeddable. If GitLab hosting prevents an
 iframe, the same static artefact remains deployable on PhotoMechanics hosting.
+
+As of 2026-09-21, the project Pages API reports the configured domain
+`https://r3xa-api-ff00f6.gitlab.io` but no Pages deployment. A request to that
+domain redirects to GitLab authentication, so the application response and
+its final `X-Frame-Options`/CSP headers cannot yet be qualified. This is a
+deployment/quota state, not evidence that the static artefact is broken. Do
+not mark Phase F complete until a successful default-branch Pages pipeline
+serves the generated site anonymously.
 
 ## Local build and deployment
 
@@ -307,6 +323,12 @@ HTTP server:
 cd dist/r3xa-webui
 python -m http.server 8080
 ```
+
+The build toolchain is pinned to Node.js `22.23.0` (`web/.node-version` and
+`web/package.json`). CI uses the matching `node:22.23.0-bookworm-slim` image;
+the Python environment used by the build and browser qualification is created
+inside that image. This keeps the generated validator and static bundles
+reproducible without adding Node.js to the runtime deployment.
 
 The serving machine does not need `r3xa-api`, FastAPI, Node.js, `dot`, or
 Graphviz installed. Node.js and Python are needed only to build the artefact

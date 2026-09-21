@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Minimal FastAPI shell wired to the `r3xa_api.webcore` contracts.",
   "main": "index.js",
+  "engines": {
+    "node": "22.23.x"
+  },
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "build-validator": "node scripts/build-validator.mjs"

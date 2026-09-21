@@ -47,6 +47,36 @@ GET-only navigation, local-only asset checks, schema-validation parity cases,
 and the main static editor workflows (mode changes, local import/persistence,
 directory selection, graph palettes, fullscreen, standalone export, and i18n).
 
+The post-static consolidation is now in progress. The generated Pydantic
+document model is the only active document implementation; the obsolete legacy
+document/list/header implementation has been removed. Reference-field
+semantics are scoped to each schema `kind`, and static `build-info.json`
+reports the same content-aware build identifier used for cache busting. The
+canonical `R3XA_REGISTRY` repository uses the same `stg-`, `src-`, and `set-`
+identifier convention as the WebUI. API CI now includes an explicit
+`registry-sync` job that validates the canonical Registry against the SDK and
+schema of the current branch. The Pages job explicitly waits for the complete
+quality set, including the Python matrix, schema/Registry sync, docs, FastAPI
+browser checks, and static browser checks; it must not publish from only a
+successful static build.
+
+Static JavaScript builds use Node.js `22.23.0`, declared in
+`web/.node-version`, `web/package.json`, and `web/package-lock.json`. The two
+static CI jobs use the matching official Node image and create their Python
+environment locally, so Node is pinned for build reproducibility without
+becoming a runtime dependency of the published site.
+
+The Registry API boundary is intentionally explicit: `Registry.load()` and
+`Registry.get()` return the schema-generated `R3XAItem`; `Registry.get_item()`
+and `Registry.wrap()` return `RegistryItem` only when mapping semantics or a
+bound registry tree path are needed. Do not merge these types speculatively
+before 2.0: the distinction is covered by tests and avoids putting filesystem
+binding into every standalone R3XA item.
+
+The Graphviz WASM documentation now records a local benchmark and installation
+size observation. These figures are diagnostic, not API guarantees: measure
+again after changing `wasmtime`, the Graphviz artifact, or the host toolchain.
+
 ## Working rules
 
 - Keep each coherent development phase in its own commit.
@@ -554,8 +584,12 @@ The current overall assessment is:
   pipeline and hosted smoke test. An explicit validation pipeline
   (`2859601291`, commit `161b6b8`) was created but all jobs were rejected with
   GitLab's `ci_quota_exceeded` runner failure before execution; this is an
-  infrastructure quota issue, not a reported test or YAML error. Complete
-  error-report parity and the hosted smoke test remain open.
+  infrastructure quota issue, not a reported test or YAML error. On
+  2026-09-21 the Pages API reported the configured domain
+  `https://r3xa-api-ff00f6.gitlab.io` with no deployment, and an HTTP request
+  redirected to GitLab authentication. Therefore hosted headers, anonymous
+  access, and iframe behavior remain unqualified. Complete error-report
+  parity and the hosted smoke test remain open.
 
 ## Useful checks
 

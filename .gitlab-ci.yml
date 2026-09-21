@@ -57,6 +57,24 @@ schema-sync:
     - test -f /tmp/R3XA_SPEC/schema.json
     - R3XA_SPEC_PATH=/tmp/R3XA_SPEC python -m pytest -q tests/test_schema_sync.py
 
+registry-sync:
+  stage: quality
+  image: python:3.12-slim
+  variables:
+    R3XA_REGISTRY_URL: "https://gitlab.com/photomechanics/R3XA_REGISTRY.git"
+    # The Registry is the canonical source for reusable items. Keep this as a
+    # deliberate integration point when a Registry release changes.
+    R3XA_REGISTRY_REF: "main"
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends git ca-certificates
+    - python -m pip install --upgrade pip
+    - python -m pip install -e ".[dev]"
+  script:
+    - git clone --depth 1 --branch "$R3XA_REGISTRY_REF" "$R3XA_REGISTRY_URL" /tmp/R3XA_REGISTRY
+    - python /tmp/R3XA_REGISTRY/scripts/validate_all.py
+    - python -m pytest -q /tmp/R3XA_REGISTRY/tests
+
 docs:
   stage: quality
   image: python:3.12-slim
@@ -80,16 +98,17 @@ browser:
 
 static-web-build:
   stage: quality
-  image: python:3.12-slim
+  image: node:22.23.0-bookworm-slim
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends nodejs npm zip
-    - python -m pip install --upgrade pip
-    - python -m pip install -e ".[web]"
+    - apt-get install -y --no-install-recommends python3 python3-venv zip
+    - python3 -m venv .ci-venv
+    - .ci-venv/bin/python -m pip install --upgrade pip
+    - .ci-venv/bin/python -m pip install -e ".[web]"
     - npm ci --prefix web
   script:
     - npm test --prefix web
-    - python scripts/dev.py build-static-web
+    - .ci-venv/bin/python scripts/dev.py build-static-web
     - zip -qr "dist/r3xa-webui-${CI_COMMIT_SHORT_SHA}.zip" dist/r3xa-webui
   artifacts:
     paths:
@@ -98,18 +117,19 @@ static-web-build:
 
 static-web-test:
   stage: quality
-  image: python:3.12-slim
+  image: node:22.23.0-bookworm-slim
   needs:
     - job: static-web-build
       artifacts: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends nodejs npm chromium
-    - python -m pip install --upgrade pip
-    - python -m pip install -e ".[dev,web]"
+    - apt-get install -y --no-install-recommends python3 python3-venv chromium
+    - python3 -m venv .ci-venv
+    - .ci-venv/bin/python -m pip install --upgrade pip
+    - .ci-venv/bin/python -m pip install -e ".[dev,web]"
     - npm ci --prefix web
   script:
-    - R3XA_CHROMIUM_EXECUTABLE=/usr/bin/chromium python scripts/dev.py test-static-web
+    - R3XA_CHROMIUM_EXECUTABLE=/usr/bin/chromium .ci-venv/bin/python scripts/dev.py test-static-web
 
 package:
   stage: package
@@ -187,6 +207,18 @@ static-pages:
   needs:
     - job: static-web-build
       artifacts: true
+    - job: static-web-test
+      artifacts: false
+    - job: test
+      artifacts: false
+    - job: schema-sync
+      artifacts: false
+    - job: registry-sync
+      artifacts: false
+    - job: docs
+      artifacts: false
+    - job: browser
+      artifacts: false
   script:
     - mkdir -p public
     - cp -a dist/r3xa-webui/. public/

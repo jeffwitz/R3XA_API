@@ -72,6 +72,12 @@ Registry editor migrates it to the canonical kind-specific form such as
 
 ## Relation to existing web docs
 
+The reusable Registry is maintained in the separate `R3XA_REGISTRY` repository,
+which is the canonical source for shareable items. The `registry/` directory in
+this repository contains a small bundled example and test catalogue for the SDK
+and WebUI; it is not an independent Registry publication. The API CI validates
+the canonical Registry against the schema and SDK used by the current branch.
+
 The general web architecture and deployment details are still documented in:
 
 - `docs/web.md`
