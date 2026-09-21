@@ -96,6 +96,8 @@ const nodeRecords = (payload, model, styles, includeDescription, layoutNodes) =>
     records.push({
       data: {
         id: item.id,
+        section,
+        kind: item.kind || "",
         label: formatNodeLabel(item.title, item.description, includeDescription),
         shape: shapeForSection[section],
         fill: colors.fill,
@@ -180,7 +182,7 @@ const cytoscapeStyle = [
 
 export const renderCytoscapeGraph = async (
   payload,
-  {includeDescription = true, palette = "document", relations = "all"} = {},
+  {includeDescription = true, palette = "document", relations = "all", onNodeSelect} = {},
   palettes,
   relationCatalog,
 ) => {
@@ -223,10 +225,38 @@ export const renderCytoscapeGraph = async (
     autolock: false,
     autoungrabify: true,
   });
+  const nodeHitLayer = globalThis.document.createElement("div");
+  nodeHitLayer.className = "cytoscape-node-hit-layer";
+  const nodeHitAreas = new Map();
+  cy.nodes().forEach((node) => {
+    const nodeData = node.data();
+    const hitArea = globalThis.document.createElement("button");
+    hitArea.type = "button";
+    hitArea.className = "cytoscape-node-hit-area";
+    hitArea.dataset.nodeId = nodeData.id;
+    hitArea.setAttribute("aria-label", nodeData.label || nodeData.id);
+    hitArea.addEventListener("click", () => selectNode({target: node}));
+    nodeHitAreas.set(nodeData.id, hitArea);
+    nodeHitLayer.appendChild(hitArea);
+  });
+  container.appendChild(nodeHitLayer);
+  const syncNodeHitAreas = () => {
+    if (cy.destroyed()) return;
+    cy.nodes().forEach((node) => {
+      const hitArea = nodeHitAreas.get(node.id());
+      if (!hitArea) return;
+      const bounds = node.renderedBoundingBox();
+      hitArea.style.left = `${bounds.x1}px`;
+      hitArea.style.top = `${bounds.y1}px`;
+      hitArea.style.width = `${bounds.w}px`;
+      hitArea.style.height = `${bounds.h}px`;
+    });
+  };
   const fit = () => {
     if (cy.destroyed()) return;
     cy.resize();
     cy.fit(cy.elements(), 40);
+    syncNodeHitAreas();
   };
   const zoomAtCenter = (factor) => {
     if (cy.destroyed()) return;
@@ -243,17 +273,33 @@ export const renderCytoscapeGraph = async (
     ? new ResizeObserver(fit)
     : null;
   resizeObserver?.observe(container);
+  cy.on("render zoom pan resize", syncNodeHitAreas);
   globalThis.requestAnimationFrame?.(fit);
   setTimeout(fit, 0);
-  cy.on("tap", "node", (event) => {
+  const selectNode = (event) => {
+    const nodeData = event.target.data();
+    const item = (payload[nodeData.section] || []).find((candidate) => candidate?.id === nodeData.id);
+    onNodeSelect?.({
+      id: nodeData.id,
+      kind: nodeData.kind,
+      section: nodeData.section,
+      item,
+    });
     const neighborhood = event.target.closedNeighborhood();
     cy.elements().removeClass("faded highlighted");
     neighborhood.addClass("highlighted");
     cy.elements().difference(neighborhood).addClass("faded");
-  });
-  cy.on("tap", (event) => {
-    if (event.target === cy) cy.elements().removeClass("faded highlighted");
-  });
+  };
+  const clearSelection = (event) => {
+    if (event.target === cy) {
+      cy.elements().removeClass("faded highlighted");
+      onNodeSelect?.(null);
+    }
+  };
+  cy.on("tap", "node", selectNode);
+  cy.on("click", "node", selectNode);
+  cy.on("tap", clearSelection);
+  cy.on("click", clearSelection);
   return {
     element: container,
     fit,
@@ -261,6 +307,7 @@ export const renderCytoscapeGraph = async (
     zoomOut: () => zoomAtCenter(0.8),
     dispose: () => {
       resizeObserver?.disconnect();
+      nodeHitLayer.remove();
       cy.destroy();
     },
   };

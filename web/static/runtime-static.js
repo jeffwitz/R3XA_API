@@ -219,6 +219,7 @@
             includeDescription: options.showDescription !== false,
             palette: options.palette || "document",
             relations: options.relations || "all",
+            onNodeSelect: options.onNodeSelect,
           }, palettes, relations);
         } catch (error) {
           return unavailable(`Cytoscape.js rendering failed: ${error.message || error}`);

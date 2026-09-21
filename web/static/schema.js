@@ -4,6 +4,12 @@ const filterEl = document.getElementById("schema-filter");
 const clearBtn = document.getElementById("schema-clear");
 const viewSelect = document.getElementById("schema-view");
 const graphContainer = document.getElementById("graph-container");
+const graphWorkspace = document.getElementById("graph-workspace");
+const graphInspector = document.getElementById("graph-inspector");
+const graphInspectorTitle = document.getElementById("graph-inspector-title");
+const graphInspectorKind = document.getElementById("graph-inspector-kind");
+const graphInspectorId = document.getElementById("graph-inspector-id");
+const graphInspectorFields = document.getElementById("graph-inspector-fields");
 const saveGraphBtn = document.getElementById("save-graph-btn");
 const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const fitGraphBtn = document.getElementById("fit-graph-btn");
@@ -17,7 +23,9 @@ const graphRelationSelect = document.getElementById("graph-relations");
 const graphBackendSelect = document.getElementById("graph-backend");
 
 let cachedSummary = null;
+let cachedCatalog = null;
 let currentGraph = null;
+let inspectorRequest = 0;
 
 const setGraphActionVisible = (element, visible) => {
   element?.classList.toggle("graph-action-hidden", !visible);
@@ -25,6 +33,67 @@ const setGraphActionVisible = (element, visible) => {
 
 const setGraphNavigationHelpVisible = (visible) => {
   if (graphNavigationHelp) graphNavigationHelp.hidden = !visible;
+};
+
+const setGraphInspectorVisible = (visible) => {
+  graphWorkspace?.classList.toggle("graph-workspace-interactive", visible);
+  if (graphInspector) graphInspector.hidden = !visible;
+};
+
+const renderInspectorValue = (value) => {
+  if (value === undefined) return "—";
+  if (value === null) return "null";
+  if (typeof value === "string") return value;
+  return JSON.stringify(value, null, 2);
+};
+
+const renderGraphInspector = async (selection) => {
+  const request = ++inspectorRequest;
+  if (!selection?.item) {
+    if (graphInspectorTitle) graphInspectorTitle.textContent = t("schema.graph_select_node", "Select an object");
+    if (graphInspectorKind) graphInspectorKind.textContent = t("schema.graph_select_node_help", "Click a graph node to inspect its fields.");
+    if (graphInspectorId) graphInspectorId.textContent = "";
+    graphInspectorFields?.replaceChildren();
+    return;
+  }
+  if (graphInspectorTitle) graphInspectorTitle.textContent = selection.item.title || selection.kind || selection.id;
+  if (graphInspectorKind) graphInspectorKind.textContent = selection.kind || selection.section || "";
+  if (graphInspectorId) graphInspectorId.textContent = `ID: ${selection.id}`;
+  if (!graphInspectorFields) return;
+  graphInspectorFields.textContent = t("schema.loading_fields", "Loading fields…");
+  try {
+    cachedCatalog ||= await window.R3XARuntime.loadSchemaCatalog();
+    if (request !== inspectorRequest) return;
+    const kindSchema = cachedCatalog?.sections?.[selection.section]?.kinds?.[selection.kind] || {};
+    const properties = kindSchema.properties || {};
+    const keys = [...Object.keys(properties), ...Object.keys(selection.item).filter((key) => !(key in properties))];
+    graphInspectorFields.replaceChildren();
+    keys.forEach((key) => {
+      const property = properties[key] || {};
+      const field = document.createElement("section");
+      field.className = "graph-inspector-field";
+      const label = document.createElement("h4");
+      label.textContent = property.title || key;
+      const name = document.createElement("code");
+      name.textContent = key;
+      label.append(" ", name);
+      field.appendChild(label);
+      if (property.description) {
+        const description = document.createElement("p");
+        description.className = "muted";
+        description.textContent = property.description;
+        field.appendChild(description);
+      }
+      const value = document.createElement("pre");
+      value.textContent = renderInspectorValue(selection.item[key]);
+      field.appendChild(value);
+      graphInspectorFields.appendChild(field);
+    });
+  } catch (error) {
+    if (request === inspectorRequest) {
+      graphInspectorFields.textContent = t("schema.failed_fields", "Failed to load fields: {message}", {message: error.message || error});
+    }
+  }
 };
 
 const ensureServerStart = () => {
@@ -191,6 +260,8 @@ const renderGraph = async () => {
   currentGraph?.dispose?.();
   currentGraph = null;
   graphContainer.classList.remove("graph-container-interactive");
+  setGraphInspectorVisible(false);
+  renderGraphInspector(null);
   setGraphNavigationHelpVisible(false);
   setGraphActionVisible(fitGraphBtn, false);
   setGraphActionVisible(zoomOutGraphBtn, false);
@@ -216,6 +287,7 @@ const renderGraph = async () => {
       palette,
       backend,
       relations,
+      onNodeSelect: renderGraphInspector,
     });
     if (response?.element && response?.interactive !== false) {
       currentGraph = {
@@ -228,6 +300,8 @@ const renderGraph = async () => {
       };
       graphContainer.replaceChildren(response.element);
       graphContainer.classList.add("graph-container-interactive");
+      setGraphInspectorVisible(true);
+      renderGraphInspector(null);
       setGraphNavigationHelpVisible(true);
       setGraphActionVisible(saveGraphBtn, false);
       setGraphActionVisible(fullscreenGraphBtn, false);

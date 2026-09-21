@@ -1089,6 +1089,47 @@ def test_static_cytoscape_graph_uses_graphviz_positions(static_site: str) -> Non
         browser.close()
 
 
+def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str) -> None:
+    payload = {
+        "title": "Cytoscape inspector",
+        "description": "Interactive inspector test",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [{
+            "id": "machine",
+            "kind": "settings/generic",
+            "title": "Testing machine",
+            "description": "Universal testing machine",
+        }],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(locale="en-US", viewport={"width": 1400, "height": 1000})
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#graph-backend").select_option("cytoscape")
+        page.locator("#generate-graph-btn").click()
+        graph = page.locator("#graph-container .cytoscape-graph")
+        graph.wait_for(state="attached", timeout=30_000)
+        graph.scroll_into_view_if_needed()
+        box = graph.bounding_box()
+        assert box is not None
+        page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+        page.wait_for_function("document.querySelector('#graph-inspector-title').textContent === 'Testing machine'")
+        assert page.locator("#graph-inspector").is_visible()
+        assert page.locator("#graph-inspector-kind").inner_text() == "settings/generic"
+        assert page.locator("#graph-inspector-id").inner_text() == "ID: machine"
+        inspector_text = page.locator("#graph-inspector").inner_text()
+        assert "Universal testing machine" in inspector_text
+        assert "title" in inspector_text
+        assert page.locator("#graph-inspector input, #graph-inspector select, #graph-inspector textarea").count() == 0
+        browser.close()
+
+
 def test_static_schema_viewer_handles_an_invalid_saved_draft(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())

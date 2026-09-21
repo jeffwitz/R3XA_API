@@ -96,7 +96,18 @@
           <button id="save-graph-btn" class="ghost graph-action-hidden" type="button" data-i18n="schema.save_graph">Save graph</button>
         </div>
         <p class="muted graph-navigation-help" data-i18n="schema.cytoscape_navigation" hidden>Interactive graph: drag the background to pan, scroll or pinch to zoom, click a node to highlight its relations.</p>
-        <div id="graph-container" class="graph-container" role="status" aria-live="polite"></div>
+        <div id="graph-workspace" class="graph-workspace">
+          <div id="graph-container" class="graph-container" role="status" aria-live="polite"></div>
+          <aside id="graph-inspector" class="graph-inspector" hidden aria-live="polite">
+            <div class="graph-inspector-banner">
+              <span class="graph-inspector-eyebrow" data-i18n="schema.graph_inspector">Selected object</span>
+              <h3 id="graph-inspector-title" data-i18n="schema.graph_select_node">Select an object</h3>
+              <p id="graph-inspector-kind" class="muted" data-i18n="schema.graph_select_node_help">Click a graph node to inspect its fields.</p>
+              <code id="graph-inspector-id"></code>
+            </div>
+            <div id="graph-inspector-fields" class="graph-inspector-fields"></div>
+          </aside>
+        </div>
       </section>
     </main>
     <script src="{{ static_base|default('/static') }}/{{ runtime_name|default('runtime.js') }}?v={{ app_start }}" data-asset-base="{{ static_base|default('/static') }}" data-asset-version="{{ app_start }}"></script>

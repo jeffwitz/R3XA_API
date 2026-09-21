@@ -718,6 +718,91 @@ body[data-editor-mode="expert"] .guided-panel {
   min-height: 120px;
 }
 
+.graph-workspace-interactive {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.graph-workspace-interactive .graph-container {
+  min-width: 0;
+}
+
+.graph-inspector {
+  min-width: 0;
+  max-height: min(75vh, 900px);
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.graph-inspector-banner {
+  padding: 1rem;
+  background: #eef5fb;
+  border-bottom: 1px solid var(--border);
+}
+
+.graph-inspector-eyebrow {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.graph-inspector-banner h3 {
+  margin: 0;
+}
+
+.graph-inspector-banner p {
+  margin: 0.35rem 0;
+}
+
+.graph-inspector-fields {
+  padding: 0.75rem 1rem;
+}
+
+.graph-inspector-field {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.graph-inspector-field:last-child {
+  border-bottom: 0;
+}
+
+.graph-inspector-field h4 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.graph-inspector-field h4 code {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+.graph-inspector-field p {
+  margin: 0.3rem 0;
+  font-size: 0.85rem;
+}
+
+.graph-inspector-field pre {
+  margin: 0.45rem 0 0;
+  padding: 0.55rem;
+  overflow: auto;
+  border-radius: 5px;
+  background: #f5f7fa;
+  color: var(--text);
+  font: 0.82rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .graph-container.graph-container-interactive {
   max-height: none;
   overflow: hidden;
@@ -730,6 +815,7 @@ body[data-editor-mode="expert"] .guided-panel {
 }
 
 .graph-container .cytoscape-graph {
+  position: relative;
   width: 100%;
   min-height: 520px;
   height: min(75vh, 900px);
@@ -740,12 +826,45 @@ body[data-editor-mode="expert"] .guided-panel {
   touch-action: none;
 }
 
+.cytoscape-node-hit-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.cytoscape-node-hit-area {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.cytoscape-node-hit-area:focus-visible {
+  outline: 3px solid #1d70b8;
+  outline-offset: 2px;
+}
+
 .graph-container .cytoscape-graph:active {
   cursor: grabbing;
 }
 
 .graph-navigation-help {
   margin: 0.65rem 0 0;
+}
+
+@media (max-width: 900px) {
+  .graph-workspace-interactive {
+    display: block;
+  }
+
+  .graph-inspector {
+    margin-top: 1rem;
+    max-height: none;
+  }
 }
 
 .graph-frame {
