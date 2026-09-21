@@ -82,6 +82,14 @@ type, const, enum, pattern, minItems, minimum, additional-properties,
 oneOf, and integrity cases. Add a parity fixture before introducing another
 schema keyword or user-facing validation message.
 
+The current `develop` branch is also mirrored to the previous GitHub
+repository for a Pages preview. `.github/workflows/pages.yml` builds the same
+static artefact and deploys it through GitHub Actions. The successful preview
+URL is `https://jeffwitz.github.io/R3XA_API/`; it has been checked for Schema
+viewer loading, local Graphviz WebAssembly SVG rendering, and zero `/api/*`
+or third-party requests. This is a preview path only; GitLab remains the
+canonical repository.
+
 ## Working rules
 
 - Keep each coherent development phase in its own commit.

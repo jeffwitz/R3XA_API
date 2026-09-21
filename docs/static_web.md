@@ -348,6 +348,25 @@ the URL shown in **Deploy → Pages**; it is also available to the job as
 `CI_PAGES_URL`. The URL may include a project subpath, which is why the build
 uses relative asset and navigation paths.
 
+## GitHub Pages preview
+
+For a hosted smoke test independent of the GitLab runner quota, the current
+`develop` branch is also published temporarily on GitHub Pages:
+
+```text
+https://jeffwitz.github.io/R3XA_API/
+```
+
+The workflow is `.github/workflows/pages.yml`. It builds the same
+`dist/r3xa-webui/` artefact with Python and Node.js, then deploys it with
+GitHub Pages Actions. On 2026-09-21, the first run completed successfully and
+was checked in a real browser: the Schema viewer loaded, Graphviz WebAssembly
+produced an SVG, and no `/api/*` or third-party requests were made. The root
+and `/schema/` pages returned HTTP 200, with no `X-Frame-Options` or restrictive
+`frame-ancestors` header observed. This validates the static site on GitHub
+Pages, but does not yet qualify GitLab Pages or replace the GitLab deployment
+configuration.
+
 ## Iframe integration
 
 The published site can be embedded when the selected host permits framing:
