@@ -718,6 +718,11 @@ body[data-editor-mode="expert"] .guided-panel {
   min-height: 120px;
 }
 
+.graph-container.graph-container-interactive {
+  max-height: none;
+  overflow: hidden;
+}
+
 .graph-container svg {
   width: 100%;
   height: auto;
@@ -731,6 +736,16 @@ body[data-editor-mode="expert"] .guided-panel {
   border: 1px solid #e4e8ee;
   border-radius: 6px;
   background: #fff;
+  cursor: grab;
+  touch-action: none;
+}
+
+.graph-container .cytoscape-graph:active {
+  cursor: grabbing;
+}
+
+.graph-navigation-help {
+  margin: 0.65rem 0 0;
 }
 
 .graph-frame {

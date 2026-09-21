@@ -1075,6 +1075,10 @@ def test_static_cytoscape_graph_uses_graphviz_positions(static_site: str) -> Non
         assert page.locator("#graph-container .cytoscape-graph canvas").count() >= 1
         assert page.locator("#graph-container .cytoscape-graph").get_attribute("data-node-count") == "3"
         assert page.locator("#graph-container .cytoscape-graph").get_attribute("data-edge-count") == "1"
+        assert "graph-container-interactive" in (page.locator("#graph-container").get_attribute("class") or "")
+        assert page.locator("#fit-graph-btn").is_visible()
+        assert page.locator(".graph-navigation-help").is_visible()
+        page.locator("#fit-graph-btn").click()
         assert all(method == "GET" for method, _ in requests)
         assert all(url.startswith(static_site) for _, url in requests)
         assert not any("/api/" in url for _, url in requests)

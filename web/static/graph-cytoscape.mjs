@@ -80,7 +80,7 @@ const styleFor = (style = {}) => ({
   text: style.fontcolor || "#ffffff",
 });
 
-const nodeRecords = (payload, model, styles, includeDescription) => {
+const nodeRecords = (payload, model, styles, includeDescription, layoutNodes) => {
   const records = [];
   const add = (section, item, style) => {
     if (!item?.id) return;
@@ -90,6 +90,9 @@ const nodeRecords = (payload, model, styles, includeDescription) => {
         ? (model.usedDatasets.includes(item.id) ? "intermediate" : "final")
         : "root";
     const colors = styleFor(style);
+    const bounds = layoutNodes.get(item.id) || {width: 190, height: 64};
+    const width = Math.max(120, bounds.width);
+    const height = Math.max(56, bounds.height);
     records.push({
       data: {
         id: item.id,
@@ -99,6 +102,9 @@ const nodeRecords = (payload, model, styles, includeDescription) => {
         border: colors.border,
         borderWidth: colors.borderWidth,
         text: colors.text,
+        width,
+        height,
+        textMaxWidth: Math.max(100, width - 18),
       },
       classes: `${section.replace("_", "-")} ${status}`,
     });
@@ -136,8 +142,8 @@ const cytoscapeStyle = [
     style: {
       label: "data(label)",
       shape: "data(shape)",
-      width: 190,
-      height: 64,
+      width: "data(width)",
+      height: "data(height)",
       "background-color": "data(fill)",
       "border-color": "data(border)",
       "border-width": "data(borderWidth)",
@@ -145,7 +151,7 @@ const cytoscapeStyle = [
       "font-size": 14,
       "font-family": "Arial, sans-serif",
       "text-wrap": "wrap",
-      "text-max-width": 190,
+      "text-max-width": "data(textMaxWidth)",
       "text-valign": "center",
       "text-halign": "center",
       "overlay-opacity": 0,
@@ -183,7 +189,7 @@ export const renderCytoscapeGraph = async (
   const model = buildGraphModel(payload, {relations}, relationCatalog);
   const styles = palettes[palette] || palettes.document || palettes;
   const elements = [
-    ...nodeRecords(payload, model, styles, includeDescription),
+    ...nodeRecords(payload, model, styles, includeDescription, layout.nodes),
     ...edgeRecords(model, styles),
   ];
   const container = globalThis.document.createElement("div");
@@ -193,8 +199,12 @@ export const renderCytoscapeGraph = async (
   const width = layout.viewBox[2] || 1200;
   const height = layout.viewBox[3] || 800;
   container.style.aspectRatio = `${width} / ${height}`;
+  const [viewBoxX, viewBoxY] = layout.viewBox;
   const positions = Object.fromEntries(
-    [...layout.nodes.entries()].map(([id, bounds]) => [id, {x: bounds.x, y: bounds.y}]),
+    [...layout.nodes.entries()].map(([id, bounds]) => [id, {
+      x: bounds.x - viewBoxX,
+      y: viewBoxY + height - bounds.y,
+    }]),
   );
   const cy = cytoscape({
     container,
@@ -203,8 +213,25 @@ export const renderCytoscapeGraph = async (
     layout: {name: "preset", positions, fit: true, padding: 40},
     minZoom: 0.1,
     maxZoom: 4,
-    wheelSensitivity: 0.2,
+    wheelSensitivity: 0.12,
+    panningEnabled: true,
+    userPanningEnabled: true,
+    userZoomingEnabled: true,
+    boxSelectionEnabled: false,
+    autolock: false,
+    autoungrabify: true,
   });
+  const fit = () => {
+    if (cy.destroyed()) return;
+    cy.resize();
+    cy.fit(cy.elements(), 40);
+  };
+  const resizeObserver = typeof ResizeObserver === "function"
+    ? new ResizeObserver(fit)
+    : null;
+  resizeObserver?.observe(container);
+  globalThis.requestAnimationFrame?.(fit);
+  setTimeout(fit, 0);
   cy.on("tap", "node", (event) => {
     const neighborhood = event.target.closedNeighborhood();
     cy.elements().removeClass("faded highlighted");
@@ -214,5 +241,12 @@ export const renderCytoscapeGraph = async (
   cy.on("tap", (event) => {
     if (event.target === cy) cy.elements().removeClass("faded highlighted");
   });
-  return {element: container, dispose: () => cy.destroy()};
+  return {
+    element: container,
+    fit,
+    dispose: () => {
+      resizeObserver?.disconnect();
+      cy.destroy();
+    },
+  };
 };

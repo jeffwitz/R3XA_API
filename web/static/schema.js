@@ -6,7 +6,9 @@ const viewSelect = document.getElementById("schema-view");
 const graphContainer = document.getElementById("graph-container");
 const saveGraphBtn = document.getElementById("save-graph-btn");
 const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
+const fitGraphBtn = document.getElementById("fit-graph-btn");
 const exportStandaloneBtn = document.getElementById("export-standalone-btn");
+const graphNavigationHelp = document.querySelector(".graph-navigation-help");
 const graphDescriptionToggle = document.getElementById("graph-show-description");
 const graphPaletteSelect = document.getElementById("graph-palette");
 const graphRelationSelect = document.getElementById("graph-relations");
@@ -17,6 +19,10 @@ let currentGraph = null;
 
 const setGraphActionVisible = (element, visible) => {
   element?.classList.toggle("graph-action-hidden", !visible);
+};
+
+const setGraphNavigationHelpVisible = (visible) => {
+  if (graphNavigationHelp) graphNavigationHelp.hidden = !visible;
 };
 
 const ensureServerStart = () => {
@@ -182,11 +188,15 @@ const renderGraph = async () => {
   if (!graphContainer) return false;
   currentGraph?.dispose?.();
   currentGraph = null;
+  graphContainer.classList.remove("graph-container-interactive");
+  setGraphNavigationHelpVisible(false);
+  setGraphActionVisible(fitGraphBtn, false);
   graphContainer.textContent = t("schema.generating", "Generating graph…");
   if (!stored) {
     graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
     setGraphActionVisible(saveGraphBtn, false);
     setGraphActionVisible(fullscreenGraphBtn, false);
+    setGraphActionVisible(fitGraphBtn, false);
     return false;
   }
   try {
@@ -208,10 +218,14 @@ const renderGraph = async () => {
         backend,
         interactive: true,
         dispose: response.dispose,
+        fit: response.fit,
       };
       graphContainer.replaceChildren(response.element);
+      graphContainer.classList.add("graph-container-interactive");
+      setGraphNavigationHelpVisible(true);
       setGraphActionVisible(saveGraphBtn, false);
       setGraphActionVisible(fullscreenGraphBtn, false);
+      setGraphActionVisible(fitGraphBtn, true);
       setGraphActionVisible(exportStandaloneBtn, false);
       localStorage.setItem("r3xaDraftLast", stored);
       return true;
@@ -253,14 +267,18 @@ const renderGraph = async () => {
     }
     setGraphActionVisible(saveGraphBtn, !!currentGraph);
     setGraphActionVisible(fullscreenGraphBtn, !!currentGraph);
+    setGraphActionVisible(fitGraphBtn, false);
     setGraphActionVisible(exportStandaloneBtn, backend === "graphviz");
     localStorage.setItem("r3xaDraftLast", stored);
     return !!currentGraph;
   } catch (err) {
     graphContainer.textContent = t("schema.failed_graph", "Failed to generate graph: {message}", {message: err.message || err});
+    graphContainer.classList.remove("graph-container-interactive");
+    setGraphNavigationHelpVisible(false);
     currentGraph = null;
     setGraphActionVisible(saveGraphBtn, false);
     setGraphActionVisible(fullscreenGraphBtn, false);
+    setGraphActionVisible(fitGraphBtn, false);
     setGraphActionVisible(exportStandaloneBtn, false);
     return false;
   }
@@ -478,6 +496,7 @@ const bindEvents = () => {
   document.getElementById("generate-graph-btn")?.addEventListener("click", renderGraph);
   saveGraphBtn?.addEventListener("click", saveGraph);
   fullscreenGraphBtn?.addEventListener("click", openFullscreenGraph);
+  fitGraphBtn?.addEventListener("click", () => currentGraph?.fit?.());
   exportStandaloneBtn?.addEventListener("click", exportStandaloneHtml);
   graphContainer?.addEventListener("click", () => {
     if (graphContainer.querySelector("svg")) showFullscreenGraph();
