@@ -22,7 +22,7 @@ Notes:
   **Graphviz executable** (`dot`) is only needed for the explicit native backend.
 - `r3xa-ensure-graphviz` can install `dot` through Homebrew on macOS or
   WinGet/Chocolatey on Windows.
-- The schema viewer JS is vendored; **no `npm install` is required** for normal use.
+- The schema viewer uses the packaged vanilla-JavaScript renderer; **no `npm install` is required** for normal server use.
 - The editor keeps one canonical R3XA JSON document across Guided, Advanced, and Expert modes.
 - Schema kinds come from `GET /api/schema/catalog`; UI presentation and profiles come from `GET /api/ui`.
 

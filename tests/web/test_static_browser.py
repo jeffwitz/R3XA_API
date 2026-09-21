@@ -824,7 +824,9 @@ def test_static_registry_generates_unique_ids_and_rejects_duplicate_local_items(
         page.click("#registry-validate-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
         page.click("#registry-add-local-btn")
-        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items.length === 1")
+        page.wait_for_function(
+            "JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '{\"items\":[]}').items.length === 1"
+        )
 
         page.locator("#registry-field-title").fill("Another camera")
         page.click("#registry-validate-btn")
@@ -858,7 +860,9 @@ def test_static_registry_migrates_legacy_local_ids(static_site: str) -> None:
             """
         )
         page.reload()
-        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0].id.startsWith('src-camera-')")
+        page.wait_for_function(
+            "JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '{\"items\":[]}').items[0]?.id.startsWith('src-camera-')"
+        )
         migrated = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0]")
         assert migrated["id"].startswith("src-camera-")
         assert migrated["id"] != "ds_cam_legacy"
@@ -920,7 +924,9 @@ def test_static_valid_registry_item_is_available_only_as_a_local_editor_template
         page.click("#registry-validate-btn")
         page.wait_for_function("document.querySelector('#registry-validation-output').textContent.includes('Valid')")
         page.click("#registry-add-local-btn")
-        page.wait_for_function("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items.length === 1")
+        page.wait_for_function(
+            "JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '{\"items\":[]}').items.length === 1"
+        )
         saved = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0]")
         assert saved["title"] == "Local camera template"
 
@@ -1133,7 +1139,7 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         title_input.fill("Updated testing machine")
         page.locator("#graph-inspector-validate-btn").click()
         page.wait_for_function(
-            "JSON.parse(localStorage.getItem('r3xaDraft')).settings[0].title === 'Updated testing machine'"
+            "JSON.parse(localStorage.getItem('r3xaDraft') || '{\"settings\":[]}').settings[0]?.title === 'Updated testing machine'"
         )
         assert page.locator("#graph-inspector-title").inner_text() == "Updated testing machine"
         assert "Valid item" in page.locator("#graph-inspector-status").inner_text()

@@ -286,11 +286,12 @@ directory remains a small offline example/test catalogue; it is not a second
 published Registry.
 
 The `static-pages` job publishes only the generated `dist/r3xa-webui/`
-directory and is restricted to the default branch when the pipeline is
-explicitly started or requested with `[ci run]`. It explicitly waits for the
+directory. It runs on the default branch when the pipeline is explicitly
+started or requested with `[ci run]`. An explicitly started Web/API pipeline
+on `develop` may also publish the same artefact for pre-release Pages
+qualification; ordinary `develop` pushes do not deploy. The job waits for the
 Python matrix, schema sync, canonical Registry sync, documentation, FastAPI
-browser checks, and static browser checks before publishing. Ordinary pushes
-remain subject to the repository's CI execution policy. The build is
+browser checks, and static browser checks before publishing. The build is
 independent of GitLab and can be copied to another static host.
 
 Development work continues on `develop`; publication is made from the
@@ -345,10 +346,10 @@ python scripts/dev.py test-static-web
 ```
 
 The GitLab Pages job publishes the same content that is stored as the
-`static-web-build` artifact. After a successful default-branch pipeline, copy
-the URL shown in **Deploy → Pages**; it is also available to the job as
-`CI_PAGES_URL`. The URL may include a project subpath, which is why the build
-uses relative asset and navigation paths.
+`static-web-build` artifact. After a successful default-branch or explicit
+`develop` qualification pipeline, copy the URL shown in **Deploy → Pages**; it
+is also available to the job as `CI_PAGES_URL`. The URL may include a project
+subpath, which is why the build uses relative asset and navigation paths.
 
 ## GitHub Pages preview
 
@@ -549,10 +550,9 @@ referring schema location.
 - Added GitLab CI jobs for static build, static browser qualification, and
   Pages publication. The Pages job consumes the same build artifact that is
   available for download and publishes it at the root of the Pages site.
-- GitLab CI lint accepted the Pages configuration. The first explicit pipeline
-  (`2859601291`, commit `161b6b8`) could not start its jobs because GitLab
-  rejected them with `ci_quota_exceeded`; a successful hosted smoke test still
-  requires available runner quota.
+- GitLab CI lint accepts the Pages configuration. Pages publication remains
+  gated by the complete Python, schema/Registry, documentation, server-browser,
+  and static-browser qualification set.
 
 ### Phase G progress
 

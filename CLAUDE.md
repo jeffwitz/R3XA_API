@@ -58,7 +58,8 @@ identifier convention as the WebUI. API CI now includes an explicit
 schema of the current branch. The Pages job explicitly waits for the complete
 quality set, including the Python matrix, schema/Registry sync, docs, FastAPI
 browser checks, and static browser checks; it must not publish from only a
-successful static build.
+successful static build. Explicit Web/API pipelines may deploy `develop` for
+pre-release Pages qualification, while ordinary pushes still do not deploy.
 
 Static JavaScript builds use Node.js `22.23.0`, declared in
 `web/.node-version`, `web/package.json`, and `web/package-lock.json`. The two

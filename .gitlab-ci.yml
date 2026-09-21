@@ -171,11 +171,16 @@ package:
           "web/app/asgi.py",
           "web/templates/index.html",
           "web/static/app.js",
+          "web/static/graph-core.mjs",
+          "web/static/graph-cytoscape.mjs",
+          "web/static/graph-runtime.mjs",
           "web/static/home.js",
           "web/static/i18n.js",
+          "web/static/registry-storage.js",
+          "web/static/schema.js",
+          "web/static/style.css",
           "r3xa_api/resources/ui/messages.json",
           "r3xa_api/resources/graphviz/graphviz-12.2.1.wasm",
-          "web/static/vendor/json-viewer-js/json-viewer.global.js",
       }
       missing = required - names
       if missing:
@@ -233,6 +238,7 @@ static-pages:
     publish: public
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api" || $CI_COMMIT_MESSAGE =~ /\[ci run\]/)'
+    - if: '$CI_COMMIT_BRANCH == "develop" && ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api")'
     - when: never
   artifacts:
     paths:
