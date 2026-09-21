@@ -58,6 +58,7 @@ def test_dev_cli_exposes_cross_platform_commands():
         "test-static-web",
         "serve-static-web",
         "ensure-graphviz",
+        "build-graphviz-wasm",
         "clean-artifacts",
         "source-archive",
     }.issubset(commands)
@@ -149,5 +150,26 @@ def test_setup_dev_dry_run_prints_bootstrap_plan(tmp_path: Path):
         assert "scripts/generate_core_stub.py" in output
         assert "tools/generate_spec.py" in output
         assert "-m sphinx -b html docs docs/_build/html" in output
+    finally:
+        module.ROOT = original_root
+
+
+def test_setup_dev_can_select_source_graphviz_wasm_build(tmp_path: Path):
+    module = _load_dev_module()
+    original_root = module.ROOT
+    fake_root, _ = _fake_project_root(tmp_path)
+    module.ROOT = fake_root
+    stdout = io.StringIO()
+
+    try:
+        with redirect_stdout(stdout):
+            exit_code = module.main(
+                ["setup-dev", "--dry-run", "--graphviz-wasm", "source"]
+            )
+
+        output = stdout.getvalue()
+        assert exit_code == 0
+        assert "tools/graphviz-wasi/build.py" in output
+        assert output.index("tools/graphviz-wasi/build.py") < output.index("-m pip install")
     finally:
         module.ROOT = original_root

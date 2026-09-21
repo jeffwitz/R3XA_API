@@ -78,6 +78,18 @@ re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
 environment, it first bootstraps `pip`, `setuptools`, and `wheel`, because
 editable installs using the setuptools backend cannot start without them.
 
+The default uses the committed Graphviz WebAssembly artifact. If you want the
+development installation to rebuild that module from the pinned Graphviz and
+WASI sources first, use:
+
+```bash
+python scripts/dev.py setup-dev --graphviz-wasm source
+```
+
+This source-build mode requires CMake, Bison, Flex, and a compatible host
+environment. A normal PyPI installation continues to use the packaged binary;
+it does not compile Graphviz during installation.
+
 ## Quick start
 ```python
 from r3xa_api import R3XAFile, unit

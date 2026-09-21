@@ -27,10 +27,10 @@ The packaged artifact is:
 r3xa_api/resources/graphviz/graphviz-12.2.1.wasm
 ```
 
-The current artifact is 1,375,865 bytes and has SHA-256:
+The current artifact is 1,263,220 bytes and has SHA-256:
 
 ```text
-31b362c3c2d7f4c699caa3a3af0bac245c294c657164301ac9a34590f1541434
+7e7e38b14253339d9007004039f16ac13b59f6a1dae06cb0f8700f0e93f07d2a
 ```
 
 The binary is based on the Graphviz 12.2.1 release from the
@@ -287,20 +287,26 @@ here.
 
 ### Current reproducibility boundary
 
-The current repository does **not** yet contain the wrapper C source and the
-complete command/script that rebuilds this exact binary from the Graphviz
-source release. It contains the versioned module, its ABI contract, the Python
-and browser adapters, package/build integration, provenance, and tests. This is
-enough for deterministic use of the committed artifact, but not yet a complete
-from-source reproduction environment.
+The source-side reconstruction is now versioned in `tools/graphviz-wasi/`.
+That directory contains the R3XA wrapper C source, the CMake link definition,
+the pinned Graphviz source commit and archive hash, the pinned WASI SDK
+version/hash, and `build.py`, which verifies downloads before compiling. The
+canonical command is:
 
-That boundary is intentional in the current documentation: a future fully
-reproducible toolchain should add a dedicated directory such as
-`tools/graphviz-wasi/` containing the wrapper C source, the exact Graphviz tag,
-WASI SDK/compiler version, build flags, linker configuration, and a script that
-checks the expected SHA-256. Until then, documentation must not imply that
-`pip install` silently compiles Graphviz or that the committed WASM can be
-recreated without the recorded toolchain.
+```bash
+python scripts/dev.py build-graphviz-wasm
+```
+
+This command rebuilds the module into
+`r3xa_api/resources/graphviz/graphviz-12.2.1.wasm`. It does not run during
+`pip install`: installation consumes the already-built package artifact, while
+rebuilding is an explicit maintainer/developer operation.
+
+The output need not be byte-for-byte identical across compiler environments;
+the source commit, SDK, target, build flags, exported ABI, output hash, and
+Graphviz behavior are the reproducibility contract. The committed artifact's
+hash remains recorded so a rebuild can be reviewed deliberately rather than
+silently replacing the runtime binary.
 
 ## Packaging and build flow
 
@@ -335,11 +341,10 @@ dependencies:
 
 ## Rebuilding or replacing the binary
 
-The repository currently records the binary provenance and its consumers, but
-does not yet contain a fully reproducible WASI build script for Graphviz. The
-artifact is therefore a versioned binary input to this repository, not a
-binary rebuilt automatically by `pip install`, `npm`, or the normal CI build.
-This distinction must not be hidden.
+The repository records the binary provenance and contains the source-side
+rebuild toolchain. The artifact is still a versioned binary input to the Python
+package: it is not rebuilt automatically by `pip install`, `npm`, or the
+normal application build.
 
 Before replacing the module, record all of the following in the merge request
 and update this page:
@@ -353,6 +358,8 @@ and update this page:
 
 After replacing it, update the versioned references in:
 
+- `tools/graphviz-wasi/manifest.json` and `tools/graphviz-wasi/build.py`;
+- `tools/graphviz-wasi/wrapper.c` and `tools/graphviz-wasi/CMakeLists.txt`;
 - `r3xa_api/webcore/_graph_graphviz_wasm.py`;
 - `web/static/graph-runtime.mjs`;
 - `scripts/dev.py` if the asset filename changes;

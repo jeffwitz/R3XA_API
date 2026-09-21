@@ -137,6 +137,18 @@ each regeneration command manually.
 The `--no-build-isolation` flag is intentional: it avoids an unnecessary second
 packaging environment inside the already-prepared project `.venv`.
 
+The standard bootstrap uses the committed Graphviz WASM artifact. To rebuild
+the module from the pinned Graphviz source and WASI SDK before installing the
+editable package, use:
+
+```bash
+python scripts/dev.py setup-dev --graphviz-wasm source
+```
+
+This is an explicit development/maintainer choice, not a runtime dependency.
+It requires CMake, Bison, Flex, and the native tools needed by Graphviz. A
+normal `pip install r3xa-api` keeps using the prebuilt wheel artifact.
+
 The explicit bootstrap of `pip`, `setuptools`, and `wheel` is also intentional:
 on fresh Python 3.12+ virtual environments, `setuptools` is not guaranteed to
 be present, but editable installs with the setuptools backend require it.

@@ -398,6 +398,9 @@ def cmd_setup_dev(args: argparse.Namespace) -> None:
     python = project_python()
     steps: list[tuple[str, ...]] = []
 
+    if args.graphviz_wasm == "source":
+        steps.append((python, "tools/graphviz-wasi/build.py"))
+
     if not args.skip_install:
         steps.append(
             (
@@ -459,6 +462,19 @@ def cmd_ensure_graphviz(_: argparse.Namespace) -> None:
     print(f"Graphviz is ready: {_ensure_graphviz()}")
 
 
+def cmd_build_graphviz_wasm(args: argparse.Namespace) -> None:
+    command = [project_python(), "tools/graphviz-wasi/build.py"]
+    if args.graphviz_source:
+        command.extend(["--graphviz-source", args.graphviz_source])
+    if args.wasi_sdk:
+        command.extend(["--wasi-sdk", args.wasi_sdk])
+    if args.workdir:
+        command.extend(["--workdir", args.workdir])
+    if args.output:
+        command.extend(["--output", args.output])
+    _run(*command)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Cross-platform developer commands for R3XA_API.",
@@ -496,6 +512,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--skip-install",
         action="store_true",
         help="skip the editable pip install step and only regenerate derived artifacts",
+    )
+    setup_dev.add_argument(
+        "--graphviz-wasm",
+        choices=("bundled", "source"),
+        default="bundled",
+        help="use the committed WASM artifact (default) or rebuild it from pinned sources first",
     )
     setup_dev.add_argument(
         "--no-build-docs",
@@ -580,6 +602,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="install Graphviz with the platform package manager when dot is missing",
     )
     ensure_graphviz_command.set_defaults(func=cmd_ensure_graphviz)
+
+    build_graphviz_wasm = subparsers.add_parser(
+        "build-graphviz-wasm",
+        help="rebuild the pinned Graphviz WASI module from source",
+    )
+    build_graphviz_wasm.add_argument(
+        "--graphviz-source",
+        help="existing checkout of the pinned Graphviz source",
+    )
+    build_graphviz_wasm.add_argument(
+        "--wasi-sdk",
+        help="existing WASI SDK installation",
+    )
+    build_graphviz_wasm.add_argument(
+        "--workdir",
+        default="build/graphviz-wasi",
+        help="temporary build and download directory",
+    )
+    build_graphviz_wasm.add_argument(
+        "--output",
+        default="r3xa_api/resources/graphviz/graphviz-12.2.1.wasm",
+        help="output WASM path",
+    )
+    build_graphviz_wasm.set_defaults(func=cmd_build_graphviz_wasm)
 
     clean = subparsers.add_parser("clean-artifacts", help="remove build products, caches, and generated artifacts")
     clean.set_defaults(func=cmd_clean_artifacts)

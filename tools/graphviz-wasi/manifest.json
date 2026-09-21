@@ -1,0 +1,13 @@
+{
+  "graphviz_version": "12.2.1",
+  "graphviz_commit": "0a1e625ea287ae55e0db59a470f076f8d79d3c4f",
+  "graphviz_source_url": "https://gitlab.com/graphviz/graphviz/-/archive/0a1e625ea287ae55e0db59a470f076f8d79d3c4f/graphviz-12.2.1.tar.gz",
+  "graphviz_source_sha256": "8f588ff102b0a9004364779d50715ee5a68bb6ba5182b0203a00103a80dba224",
+  "wasi_sdk_version": "27.0",
+  "wasi_sdk_target": "wasm32-wasip1",
+  "wasi_sdk_linux_x86_64_url": "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-27/wasi-sdk-27.0-x86_64-linux.tar.gz",
+  "wasi_sdk_linux_x86_64_sha256": "b7d4d944c88503e4f21d84af07ac293e3440b1b6210bfd7fe78e0afd92c23bc2",
+  "output": "r3xa_api/resources/graphviz/graphviz-12.2.1.wasm",
+  "current_artifact_size": 1263220,
+  "current_artifact_sha256": "7e7e38b14253339d9007004039f16ac13b59f6a1dae06cb0f8700f0e93f07d2a"
+}
