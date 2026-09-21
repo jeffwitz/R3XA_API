@@ -762,6 +762,18 @@ body[data-editor-mode="expert"] .guided-panel {
   margin: 0.35rem 0;
 }
 
+.graph-inspector-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.graph-inspector-status {
+  margin: 0.75rem 0 0;
+  white-space: pre-line;
+}
+
 .graph-inspector-fields {
   padding: 0.75rem 1rem;
 }
@@ -850,6 +862,36 @@ body[data-editor-mode="expert"] .guided-panel {
 
 .graph-container .cytoscape-graph:active {
   cursor: grabbing;
+}
+
+.graph-workspace:fullscreen,
+.graph-workspace-fullscreen-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.9fr);
+  gap: 1rem;
+  width: 100vw;
+  height: 100vh;
+  padding: 1rem;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.graph-workspace:fullscreen .graph-container,
+.graph-workspace-fullscreen-fallback .graph-container {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  margin-top: 0;
+}
+
+.graph-workspace:fullscreen .graph-inspector,
+.graph-workspace-fullscreen-fallback .graph-inspector {
+  height: 100%;
+  max-height: none;
 }
 
 .graph-navigation-help {

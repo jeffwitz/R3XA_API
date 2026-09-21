@@ -1115,10 +1115,7 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         page.locator("#generate-graph-btn").click()
         graph = page.locator("#graph-container .cytoscape-graph")
         graph.wait_for(state="attached", timeout=30_000)
-        graph.scroll_into_view_if_needed()
-        box = graph.bounding_box()
-        assert box is not None
-        page.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+        page.locator(".cytoscape-node-hit-area[data-node-id='machine']").click()
         page.wait_for_function("document.querySelector('#graph-inspector-title').textContent === 'Testing machine'")
         assert page.locator("#graph-inspector").is_visible()
         assert page.locator("#graph-inspector-kind").inner_text() == "settings/generic"
@@ -1127,6 +1124,29 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         assert "Universal testing machine" in inspector_text
         assert "title" in inspector_text
         assert page.locator("#graph-inspector input, #graph-inspector select, #graph-inspector textarea").count() == 0
+        page.locator("#graph-inspector-edit-btn").click()
+        title_input = page.locator("[data-inspector-field='title']")
+        title_input.fill("Updated testing machine")
+        page.locator("#graph-inspector-validate-btn").click()
+        page.wait_for_function(
+            "JSON.parse(localStorage.getItem('r3xaDraft')).settings[0].title === 'Updated testing machine'"
+        )
+        assert page.locator("#graph-inspector-title").inner_text() == "Updated testing machine"
+        assert "Valid item" in page.locator("#graph-inspector-status").inner_text()
+        assert page.locator("#graph-inspector input, #graph-inspector select, #graph-inspector textarea").count() == 0
+        page.locator("#fullscreen-graph-btn").click()
+        page.wait_for_function(
+            "() => document.fullscreenElement?.id === 'graph-workspace' || document.querySelector('#graph-workspace').classList.contains('graph-workspace-fullscreen-fallback')"
+        )
+        page.evaluate(
+            "async () => {"
+            "if (document.fullscreenElement) await document.exitFullscreen();"
+            "document.querySelector('#graph-workspace').classList.remove('graph-workspace-fullscreen-fallback');"
+            "}"
+        )
+        page.wait_for_function(
+            "() => !document.fullscreenElement && !document.querySelector('#graph-workspace').classList.contains('graph-workspace-fullscreen-fallback')"
+        )
         browser.close()
 
 

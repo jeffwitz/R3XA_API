@@ -10,6 +10,10 @@ const graphInspectorTitle = document.getElementById("graph-inspector-title");
 const graphInspectorKind = document.getElementById("graph-inspector-kind");
 const graphInspectorId = document.getElementById("graph-inspector-id");
 const graphInspectorFields = document.getElementById("graph-inspector-fields");
+const graphInspectorEditBtn = document.getElementById("graph-inspector-edit-btn");
+const graphInspectorValidateBtn = document.getElementById("graph-inspector-validate-btn");
+const graphInspectorCancelBtn = document.getElementById("graph-inspector-cancel-btn");
+const graphInspectorStatus = document.getElementById("graph-inspector-status");
 const saveGraphBtn = document.getElementById("save-graph-btn");
 const fullscreenGraphBtn = document.getElementById("fullscreen-graph-btn");
 const fitGraphBtn = document.getElementById("fit-graph-btn");
@@ -26,6 +30,9 @@ let cachedSummary = null;
 let cachedCatalog = null;
 let currentGraph = null;
 let inspectorRequest = 0;
+let selectedGraphSelection = null;
+let selectedGraphProperties = {};
+let graphInspectorEditing = false;
 
 const setGraphActionVisible = (element, visible) => {
   element?.classList.toggle("graph-action-hidden", !visible);
@@ -40,6 +47,13 @@ const setGraphInspectorVisible = (visible) => {
   if (graphInspector) graphInspector.hidden = !visible;
 };
 
+const setGraphInspectorActions = (selection, editing) => {
+  const hasSelection = Boolean(selection?.item);
+  if (graphInspectorEditBtn) graphInspectorEditBtn.hidden = !hasSelection || editing;
+  if (graphInspectorValidateBtn) graphInspectorValidateBtn.hidden = !hasSelection || !editing;
+  if (graphInspectorCancelBtn) graphInspectorCancelBtn.hidden = !hasSelection || !editing;
+};
+
 const renderInspectorValue = (value) => {
   if (value === undefined) return "—";
   if (value === null) return "null";
@@ -47,8 +61,106 @@ const renderInspectorValue = (value) => {
   return JSON.stringify(value, null, 2);
 };
 
+const propertyTypes = (property) => {
+  if (Array.isArray(property?.type)) return property.type;
+  if (property?.type) return [property.type];
+  if (property?.properties) return ["object"];
+  if (property?.items) return ["array"];
+  return [];
+};
+
+const propertyEnum = (property) => {
+  if (Array.isArray(property?.enum)) return property.enum;
+  if (!Array.isArray(property?.oneOf)) return [];
+  return property.oneOf
+    .filter((variant) => Object.prototype.hasOwnProperty.call(variant || {}, "const"))
+    .map((variant) => variant.const);
+};
+
+const editorValueType = (property, value) => {
+  const types = propertyTypes(property);
+  if (value === null && types.includes("null")) return "null";
+  if (Array.isArray(value) || types.includes("array")) return "array";
+  if (value !== null && typeof value === "object" || types.includes("object")) return "object";
+  if (types.includes("boolean")) return "boolean";
+  if (types.includes("number") || types.includes("integer")) return types.find((type) => type !== "null");
+  return "string";
+};
+
+const createInspectorEditor = (key, property, value) => {
+  const enumValues = propertyEnum(property);
+  const type = editorValueType(property, value);
+  const isComplex = type === "array" || type === "object";
+  let control;
+  if (enumValues.length) {
+    control = document.createElement("select");
+    enumValues.forEach((optionValue) => {
+      const option = document.createElement("option");
+      option.value = String(optionValue);
+      option.textContent = String(optionValue);
+      control.appendChild(option);
+    });
+  } else if (type === "boolean") {
+    control = document.createElement("input");
+    control.type = "checkbox";
+    control.checked = value === true;
+  } else if (isComplex || key === "description" || key === "documentation" || String(value || "").length > 120) {
+    control = document.createElement("textarea");
+    control.rows = 4;
+    control.value = value === undefined ? "" : isComplex ? JSON.stringify(value, null, 2) : String(value);
+  } else {
+    control = document.createElement("input");
+    control.type = type === "number" || type === "integer" ? "number" : "text";
+    if (type === "number" || type === "integer") control.step = type === "integer" ? "1" : "any";
+    control.value = value === undefined || value === null ? "" : String(value);
+  }
+  control.dataset.inspectorField = key;
+  control.dataset.inspectorType = type;
+  control.className = "graph-inspector-control";
+  if (key === "id" || key === "kind" || Object.prototype.hasOwnProperty.call(property || {}, "const")) {
+    control.disabled = true;
+  }
+  return control;
+};
+
+const renderInspectorFields = (selection, properties, editing) => {
+  if (!graphInspectorFields) return;
+  const keys = [...Object.keys(properties), ...Object.keys(selection.item).filter((key) => !(key in properties))];
+  graphInspectorFields.replaceChildren();
+  keys.forEach((key) => {
+    const property = properties[key] || {};
+    const field = document.createElement("section");
+    field.className = "graph-inspector-field";
+    const label = document.createElement("h4");
+    label.textContent = property.title || key;
+    const name = document.createElement("code");
+    name.textContent = key;
+    label.append(" ", name);
+    field.appendChild(label);
+    if (property.description) {
+      const description = document.createElement("p");
+      description.className = "muted";
+      description.textContent = property.description;
+      field.appendChild(description);
+    }
+    if (editing) {
+      field.appendChild(createInspectorEditor(key, property, selection.item[key]));
+    } else {
+      const value = document.createElement("pre");
+      value.textContent = renderInspectorValue(selection.item[key]);
+      field.appendChild(value);
+    }
+    graphInspectorFields.appendChild(field);
+  });
+};
+
 const renderGraphInspector = async (selection) => {
   const request = ++inspectorRequest;
+  selectedGraphSelection = selection;
+  graphInspectorEditing = false;
+  selectedGraphProperties = {};
+  setGraphInspectorActions(selection, false);
+  if (graphInspectorStatus) graphInspectorStatus.textContent = "";
   if (!selection?.item) {
     if (graphInspectorTitle) graphInspectorTitle.textContent = t("schema.graph_select_node", "Select an object");
     if (graphInspectorKind) graphInspectorKind.textContent = t("schema.graph_select_node_help", "Click a graph node to inspect its fields.");
@@ -66,33 +178,104 @@ const renderGraphInspector = async (selection) => {
     if (request !== inspectorRequest) return;
     const kindSchema = cachedCatalog?.sections?.[selection.section]?.kinds?.[selection.kind] || {};
     const properties = kindSchema.properties || {};
-    const keys = [...Object.keys(properties), ...Object.keys(selection.item).filter((key) => !(key in properties))];
-    graphInspectorFields.replaceChildren();
-    keys.forEach((key) => {
-      const property = properties[key] || {};
-      const field = document.createElement("section");
-      field.className = "graph-inspector-field";
-      const label = document.createElement("h4");
-      label.textContent = property.title || key;
-      const name = document.createElement("code");
-      name.textContent = key;
-      label.append(" ", name);
-      field.appendChild(label);
-      if (property.description) {
-        const description = document.createElement("p");
-        description.className = "muted";
-        description.textContent = property.description;
-        field.appendChild(description);
-      }
-      const value = document.createElement("pre");
-      value.textContent = renderInspectorValue(selection.item[key]);
-      field.appendChild(value);
-      graphInspectorFields.appendChild(field);
-    });
+    selectedGraphProperties = properties;
+    renderInspectorFields(selection, properties, false);
   } catch (error) {
     if (request === inspectorRequest) {
       graphInspectorFields.textContent = t("schema.failed_fields", "Failed to load fields: {message}", {message: error.message || error});
     }
+  }
+};
+
+const startGraphInspectorEdit = () => {
+  if (!selectedGraphSelection?.item) return;
+  graphInspectorEditing = true;
+  renderInspectorFields(selectedGraphSelection, selectedGraphProperties, true);
+  setGraphInspectorActions(selectedGraphSelection, true);
+  if (graphInspectorStatus) graphInspectorStatus.textContent = "";
+};
+
+const cancelGraphInspectorEdit = () => {
+  if (!selectedGraphSelection?.item) return;
+  graphInspectorEditing = false;
+  renderInspectorFields(selectedGraphSelection, selectedGraphProperties, false);
+  setGraphInspectorActions(selectedGraphSelection, false);
+  if (graphInspectorStatus) graphInspectorStatus.textContent = "";
+};
+
+const readInspectorValue = (control) => {
+  if (control.type === "checkbox") return control.checked;
+  const raw = control.value.trim();
+  if (!raw) return undefined;
+  if (control.dataset.inspectorType === "array" || control.dataset.inspectorType === "object") {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      throw new Error(`${control.dataset.inspectorField}: enter valid JSON`);
+    }
+  }
+  if (control.dataset.inspectorType === "number" || control.dataset.inspectorType === "integer") {
+    const value = Number(raw);
+    if (!Number.isFinite(value)) throw new Error(`${control.dataset.inspectorField}: enter a valid number`);
+    return value;
+  }
+  return control.value;
+};
+
+const readInspectorItem = () => {
+  const candidate = JSON.parse(JSON.stringify(selectedGraphSelection.item));
+  graphInspectorFields?.querySelectorAll("[data-inspector-field]").forEach((control) => {
+    if (control.disabled) return;
+    const key = control.dataset.inspectorField;
+    const value = readInspectorValue(control);
+    if (value === undefined && !Object.prototype.hasOwnProperty.call(selectedGraphSelection.item, key)) {
+      delete candidate[key];
+    } else {
+      candidate[key] = value;
+    }
+  });
+  return candidate;
+};
+
+const inspectorReportText = (report) => {
+  if (report.valid) return t("schema.valid_item", "Valid item ✅");
+  const errors = (report.errors || []).map((error) => (
+    `- ${error.path || "<root>"}: ${error.user_message || error.message || t("schema.validation_failed", "Validation failed.")}`
+  ));
+  return [t("schema.invalid_item", "Invalid item ❌"), "", ...errors].join("\n");
+};
+
+const validateGraphInspectorItem = async () => {
+  if (!selectedGraphSelection?.item || !graphInspectorEditing) return;
+  try {
+    const candidate = readInspectorItem();
+    const response = await window.R3XARuntime.validateItem(candidate, candidate.kind || "");
+    if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
+    const report = await response.json();
+    if (!report.valid) {
+      if (graphInspectorStatus) graphInspectorStatus.textContent = inspectorReportText(report);
+      return;
+    }
+    const payload = getStoredDraft();
+    const sectionItems = payload?.[selectedGraphSelection.section];
+    const index = Array.isArray(sectionItems)
+      ? sectionItems.findIndex((item) => item?.id === selectedGraphSelection.id)
+      : -1;
+    if (!payload || index < 0) throw new Error("The selected item is no longer present in the draft.");
+    sectionItems[index] = candidate;
+    const serialized = JSON.stringify(payload);
+    localStorage.setItem("r3xaDraft", serialized);
+    localStorage.setItem("r3xaDraftLast", serialized);
+    if (graphInspectorStatus) graphInspectorStatus.textContent = inspectorReportText(report);
+    await renderGraph({section: selectedGraphSelection.section, id: candidate.id});
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    if (graphInspectorStatus) graphInspectorStatus.textContent = inspectorReportText(report);
+  } catch (error) {
+    if (graphInspectorStatus) graphInspectorStatus.textContent = t(
+      "schema.validation_failed",
+      "Validation failed: {message}",
+      {message: error.message || error},
+    );
   }
 };
 
@@ -254,7 +437,7 @@ const sanitizeSvg = (content) => {
   return document.importNode(parsed.documentElement, true);
 };
 
-const renderGraph = async () => {
+const renderGraph = async (selectionToRestore = null) => {
   const stored = getStoredDraftText();
   if (!graphContainer) return false;
   currentGraph?.dispose?.();
@@ -304,12 +487,18 @@ const renderGraph = async () => {
       renderGraphInspector(null);
       setGraphNavigationHelpVisible(true);
       setGraphActionVisible(saveGraphBtn, false);
-      setGraphActionVisible(fullscreenGraphBtn, false);
+      setGraphActionVisible(fullscreenGraphBtn, true);
       setGraphActionVisible(fitGraphBtn, true);
       setGraphActionVisible(zoomOutGraphBtn, true);
       setGraphActionVisible(zoomInGraphBtn, true);
       setGraphActionVisible(exportStandaloneBtn, false);
       localStorage.setItem("r3xaDraftLast", stored);
+      if (selectionToRestore?.id) {
+        const hitArea = Array.from(graphContainer.querySelectorAll("[data-node-id]")).find(
+          (element) => element.dataset.nodeId === selectionToRestore.id,
+        );
+        hitArea?.click();
+      }
       return true;
     }
     if (!response.ok) {
@@ -475,10 +664,42 @@ const saveGraph = () => {
   URL.revokeObjectURL(url);
 };
 
+const updateFullscreenButton = () => {
+  if (!fullscreenGraphBtn) return;
+  const active = document.fullscreenElement === graphWorkspace
+    || graphWorkspace?.classList.contains("graph-workspace-fullscreen-fallback");
+  fullscreenGraphBtn.textContent = t(
+    active ? "schema.exit_fullscreen" : "schema.fullscreen",
+    active ? "Exit fullscreen" : "Fullscreen",
+  );
+};
+
+const toggleWorkspaceFullscreen = async () => {
+  if (!graphWorkspace) return;
+  try {
+    if (document.fullscreenElement === graphWorkspace) {
+      await document.exitFullscreen();
+    } else if (graphWorkspace.classList.contains("graph-workspace-fullscreen-fallback")) {
+      graphWorkspace.classList.remove("graph-workspace-fullscreen-fallback");
+    } else if (document.fullscreenEnabled && graphWorkspace.requestFullscreen) {
+      await graphWorkspace.requestFullscreen();
+    } else {
+      graphWorkspace.classList.toggle("graph-workspace-fullscreen-fallback");
+    }
+  } catch (error) {
+    graphWorkspace.classList.toggle("graph-workspace-fullscreen-fallback");
+  }
+  updateFullscreenButton();
+};
+
 const openFullscreenGraph = async () => {
   if (!currentGraph) {
     const ok = await renderGraph();
     if (!ok) return;
+  }
+  if (currentGraph.interactive) {
+    await toggleWorkspaceFullscreen();
+    return;
   }
   showFullscreenGraph();
 };
@@ -586,9 +807,14 @@ const bindEvents = () => {
   zoomOutGraphBtn?.addEventListener("click", () => currentGraph?.zoomOut?.());
   zoomInGraphBtn?.addEventListener("click", () => currentGraph?.zoomIn?.());
   exportStandaloneBtn?.addEventListener("click", exportStandaloneHtml);
+  graphInspectorEditBtn?.addEventListener("click", startGraphInspectorEdit);
+  graphInspectorValidateBtn?.addEventListener("click", validateGraphInspectorItem);
+  graphInspectorCancelBtn?.addEventListener("click", cancelGraphInspectorEdit);
+  document.addEventListener("fullscreenchange", updateFullscreenButton);
   graphContainer?.addEventListener("click", () => {
     if (graphContainer.querySelector("svg")) showFullscreenGraph();
   });
+  updateFullscreenButton();
 };
 
 const configureGraphBackends = () => {

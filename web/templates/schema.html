@@ -104,6 +104,12 @@
               <h3 id="graph-inspector-title" data-i18n="schema.graph_select_node">Select an object</h3>
               <p id="graph-inspector-kind" class="muted" data-i18n="schema.graph_select_node_help">Click a graph node to inspect its fields.</p>
               <code id="graph-inspector-id"></code>
+              <div class="graph-inspector-actions">
+                <button id="graph-inspector-edit-btn" class="ghost" type="button" data-i18n="schema.edit_fields" hidden>Edit fields</button>
+                <button id="graph-inspector-validate-btn" type="button" data-i18n="schema.validate_item" hidden>Validate item</button>
+                <button id="graph-inspector-cancel-btn" class="ghost" type="button" data-i18n="schema.cancel_edit" hidden>Cancel</button>
+              </div>
+              <p id="graph-inspector-status" class="graph-inspector-status" role="status" aria-live="polite"></p>
             </div>
             <div id="graph-inspector-fields" class="graph-inspector-fields"></div>
           </aside>
