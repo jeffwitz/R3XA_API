@@ -24,6 +24,24 @@ def test_builtin_registry_ids_use_kind_prefixes():
         assert item["id"].startswith(f"{prefixes[section]}-{kind_name}-"), path
 
 
+def test_builtin_registry_ids_and_titles_are_unique():
+    root = Path(__file__).parents[1] / "registry"
+    seen_ids: dict[str, Path] = {}
+    seen_titles: dict[str, Path] = {}
+
+    for path in sorted(root.rglob("*.json")):
+        item = load_item(path)
+        item_id = item["id"]
+        title = item.to_dict().get("title")
+        assert item_id not in seen_ids, f"duplicate registry id {item_id!r}: {path} and {seen_ids[item_id]}"
+        seen_ids[item_id] = path
+        if title:
+            assert title not in seen_titles, (
+                f"duplicate registry title {title!r}: {path} and {seen_titles[title]}"
+            )
+            seen_titles[title] = path
+
+
 def test_merge_item_overrides():
     root = Path(__file__).parents[1] / "registry"
     base = load_item(root / "data_sources" / "generic" / "pyxel_dic_2d.json")
