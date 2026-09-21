@@ -199,11 +199,13 @@ export const renderCytoscapeGraph = async (
   const width = layout.viewBox[2] || 1200;
   const height = layout.viewBox[3] || 800;
   container.style.aspectRatio = `${width} / ${height}`;
-  const [viewBoxX, viewBoxY] = layout.viewBox;
+  const layoutBounds = [...layout.nodes.values()];
+  const minX = layoutBounds.length ? Math.min(...layoutBounds.map((bounds) => bounds.x)) : 0;
+  const minY = layoutBounds.length ? Math.min(...layoutBounds.map((bounds) => bounds.y)) : 0;
   const positions = Object.fromEntries(
     [...layout.nodes.entries()].map(([id, bounds]) => [id, {
-      x: bounds.x - viewBoxX,
-      y: viewBoxY + height - bounds.y,
+      x: bounds.x - minX,
+      y: bounds.y - minY,
     }]),
   );
   const cy = cytoscape({
