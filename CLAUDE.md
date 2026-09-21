@@ -77,6 +77,11 @@ The Graphviz WASM documentation now records a local benchmark and installation
 size observation. These figures are diagnostic, not API guarantees: measure
 again after changing `wasmtime`, the Graphviz artifact, or the host toolchain.
 
+Static/Python validation parity now covers the current schema's required,
+type, const, enum, pattern, minItems, minimum, additional-properties,
+oneOf, and integrity cases. Add a parity fixture before introducing another
+schema keyword or user-facing validation message.
+
 ## Working rules
 
 - Keep each coherent development phase in its own commit.
@@ -588,8 +593,9 @@ The current overall assessment is:
   2026-09-21 the Pages API reported the configured domain
   `https://r3xa-api-ff00f6.gitlab.io` with no deployment, and an HTTP request
   redirected to GitLab authentication. Therefore hosted headers, anonymous
-  access, and iframe behavior remain unqualified. Complete error-report
-  parity and the hosted smoke test remain open.
+  access, and iframe behavior remain unqualified. Validation parity for the
+  current schema is covered by `tests/web/test_static_parity.py` and the
+  browser parity suite; the hosted smoke test remains open.
 
 ## Useful checks
 

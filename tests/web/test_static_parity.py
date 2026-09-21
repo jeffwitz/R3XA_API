@@ -29,8 +29,39 @@ def test_static_validator_agrees_with_python_on_schema_cases(tmp_path: Path) -> 
     cases = {
         "valid": valid_payload,
         "missing_title": {key: value for key, value in valid_payload.items() if key != "title"},
+        "empty_authors": {**valid_payload, "authors": []},
+        "invalid_date_pattern": {**valid_payload, "date": "2026/09/17"},
         "wrong_version": {**valid_payload, "version": "not-the-current-schema"},
         "wrong_author_type": {**valid_payload, "authors": ["Tester"]},
+        "invalid_enum": {
+            **valid_payload,
+            "data_sources": [{**valid_payload["data_sources"][0], "output_dimension": "line"}],
+        },
+        "negative_integer": {
+            **valid_payload,
+            "data_sources": [{**valid_payload["data_sources"][0], "output_components": -1}],
+        },
+        "too_many_file_rows": {
+            **valid_payload,
+            "data_sets": [{
+                "id": "file-data",
+                "kind": "data_sets/file",
+                "title": "File data",
+                "path": "data/",
+                "timestamps": {
+                    "kind": "data_set_file",
+                    "filename": "timestamps.csv",
+                    "col": 0,
+                    "rows": [0, None, 1],
+                },
+                "values": {
+                    "kind": "data_set_file",
+                    "filename": "values.csv",
+                    "col": 1,
+                    "rows": [0, None],
+                },
+            }],
+        },
     }
     expected = {
         name: build_validation_report(payload)["valid"]

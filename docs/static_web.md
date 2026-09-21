@@ -218,6 +218,10 @@ the meaningful Python validation error. The parity assertion compares validity
 and the stable `(path, validator)` identity of each error. Common Guided-mode
 messages for required, type, constant, enum, pattern, item-count, and
 numeric-bound errors are also aligned with the Python report builder.
+The technical `schema_path` is preserved in both reports, but it may point to
+the resolved `$ref` target in Ajv and to the referring location in
+`jsonschema`; consumers should use `path` and `validator` as the portable
+error identity.
 
 The browser qualification also covers Guided → Advanced → Expert transitions,
 local JSON import and persistence across reload, natural sorting of selected
@@ -507,7 +511,10 @@ editor.
 Phase E browser qualification, zero-network checks, and schema/integrity status
 parity are now covered by the local test suite. The remaining Phase E work is
 the final normalized user-facing error wording review and any gaps found during
-the hosted smoke test.
+the hosted smoke test. The parity tests intentionally compare portable error
+identity (`path`, `validator`) and controlled user messages; `schema_path` may
+differ when Ajv resolves a `$ref` to its target while Python reports the
+referring schema location.
 
 ### Phase F progress
 
