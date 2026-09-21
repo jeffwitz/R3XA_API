@@ -257,13 +257,14 @@ def build_static_web(output_dir: Path) -> Path:
     _write_json(assets_dir / "schema-summary.json", build_schema_summary(schema))
     _write_json(assets_dir / "ui-catalog.json", build_ui_catalog(schema_catalog))
     _write_json(assets_dir / "graph-palettes.json", PALETTES)
+    build_id = _static_build_id()
     _write_json(
         assets_dir / "build-info.json",
         {
             "api_version": _project_version(),
             "schema_version": schema_catalog.get("schema_version"),
             "git_commit": _git_revision(),
-            "build_id": _git_revision(),
+            "build_id": build_id,
         },
     )
     node = shutil.which("node")
@@ -292,7 +293,6 @@ def build_static_web(output_dir: Path) -> Path:
         "schema/index.html": ("schema.html", "..", ".."),
         "registry/index.html": ("registry.html", "..", ".."),
     }
-    build_id = _static_build_id()
     for relative_path, (template_name, static_base, app_base) in pages.items():
         destination = output_dir / relative_path
         destination.parent.mkdir(parents=True, exist_ok=True)

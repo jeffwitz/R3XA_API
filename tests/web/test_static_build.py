@@ -65,7 +65,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert catalog["schema_version"]
     assert "data_sources" in catalog["sections"]
     build_info = json.loads((assets / "build-info.json").read_text(encoding="utf-8"))
-    assert build_info["build_id"]
+    assert build_info["build_id"] == module._static_build_id()
     assert build_info["git_commit"]
     assert "assetUrl" in static_runtime
     assert "assetVersion" in static_runtime

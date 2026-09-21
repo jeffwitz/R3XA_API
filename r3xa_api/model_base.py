@@ -26,6 +26,12 @@ class R3XAItem(BaseModel):
     _document: Any = PrivateAttr(default=None)
     _reference_objects: dict[str, Any] = PrivateAttr(default_factory=dict)
 
+    @classmethod
+    def _reference_field_map(cls) -> dict[str, str]:
+        kind_field = cls.model_fields.get("kind")
+        kind = getattr(kind_field, "default", None) if kind_field is not None else None
+        return reference_fields(kind if isinstance(kind, str) else None)
+
     def __init__(self, **data: Any) -> None:
         if "id" in self.__class__.model_fields and "id" not in data:
             kind = data.get("kind")
@@ -34,7 +40,7 @@ class R3XAItem(BaseModel):
                 kind = getattr(kind_field, "default", "")
             data["id"] = generate_id(kind if isinstance(kind, str) else "")
         reference_objects: dict[str, Any] = {}
-        for field in reference_fields():
+        for field in type(self)._reference_field_map():
             if field not in data or data[field] is None:
                 continue
             normalized, objects = self._normalize_reference(data[field])
@@ -240,7 +246,7 @@ class R3XAItem(BaseModel):
         return R3XAItem.from_dict(payload, validate=False)  # type: ignore[return-value]
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if name in reference_fields() and value is not None:
+        if name in type(self)._reference_field_map() and value is not None:
             value, objects = self._normalize_reference(value)
             references = getattr(self, "_reference_objects", None)
             if references is not None:
@@ -248,7 +254,7 @@ class R3XAItem(BaseModel):
                     references.pop(name, None)
                 else:
                     references[name] = objects
-        elif name in reference_fields():
+        elif name in type(self)._reference_field_map():
             try:
                 object.__getattribute__(self, "_reference_objects").pop(name, None)
             except AttributeError:
@@ -269,7 +275,7 @@ class R3XAItem(BaseModel):
 
     def _resolved_reference(self, field: str, value: Any) -> Any:
         document = getattr(self, "_document", None)
-        section = reference_fields().get(field)
+        section = type(self)._reference_field_map().get(field)
         if section is None or value is None:
             return value
 
@@ -298,7 +304,7 @@ class R3XAItem(BaseModel):
             value = object.__getattribute__(self, name)
         except AttributeError:
             value = super().__getattribute__(name)
-        if name in reference_fields():
+        if name in type(self)._reference_field_map():
             return self._resolved_reference(name, value)
         return value
 
@@ -317,7 +323,7 @@ class R3XAItem(BaseModel):
     def _wire_value(cls, value: Any, field: str | None = None) -> Any:
         """Serialize nested object references as IDs throughout a payload."""
 
-        if field in reference_fields():
+        if field in cls._reference_field_map():
             return cls._reference_wire_value(value)
         if isinstance(value, Mapping):
             return {
@@ -693,7 +699,7 @@ class R3XAItem(BaseModel):
             if isinstance(value, list):
                 return [cls._summary_label(item, "name") for item in value]
             return cls._summary_label(value, "name")
-        if name in reference_fields():
+        if name in cls._reference_field_map():
             if isinstance(value, list):
                 return [cls._summary_label(item, "title") for item in value]
             return cls._summary_label(value, "title")

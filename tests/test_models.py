@@ -10,6 +10,7 @@ import jsonschema
 
 import r3xa_api
 from r3xa_api import R3XAFile, from_model, schema_version, validate
+from r3xa_api._references import reference_fields
 
 from pydantic import ValidationError
 
@@ -36,6 +37,15 @@ def _valid_camera():
 def test_typed_available():
     assert hasattr(r3xa_api, "_TYPED_AVAILABLE")
     assert r3xa_api._TYPED_AVAILABLE is True
+
+
+def test_reference_fields_are_scoped_to_the_schema_kind():
+    assert reference_fields("data_sources/camera") == {"input_data_sets": "data_sets"}
+    assert reference_fields("data_sources/dic_measurement") == {
+        "input_data_sets": "data_sets",
+        "mesh": "settings",
+    }
+    assert reference_fields("data_sets/file") == {"parent_data_sources": "data_sources"}
 
 
 def test_unit_valid():

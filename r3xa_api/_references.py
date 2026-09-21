@@ -7,46 +7,59 @@ from typing import Any
 from .schema import load_schema
 
 
-@lru_cache(maxsize=1)
-def reference_fields() -> dict[str, str]:
-    """Return schema-declared reference fields and their target sections."""
+_REFERENCE_TYPES = {
+    "#/$defs/types/setting_id": "settings",
+    "#/$defs/types/data_source_id": "data_sources",
+    "#/$defs/types/data_set_id": "data_sets",
+}
 
-    id_types = {
-        "#/$defs/types/setting_id": "settings",
-        "#/$defs/types/data_source_id": "data_sources",
-        "#/$defs/types/data_set_id": "data_sets",
-    }
+
+def _collect_reference_fields(node: Any) -> dict[str, str]:
     fields: dict[str, str] = {}
 
-    def visit(node: Any, field: str | None = None) -> None:
-        if isinstance(node, Mapping):
-            ref = node.get("$ref")
-            if field and ref in id_types:
-                fields[field] = id_types[ref]
-            items = node.get("items")
-            if field and isinstance(items, Mapping) and items.get("$ref") in id_types:
-                fields[field] = id_types[items["$ref"]]
-            properties = node.get("properties")
+    def visit(value: Any, field: str | None = None) -> None:
+        if isinstance(value, Mapping):
+            ref = value.get("$ref")
+            if field and ref in _REFERENCE_TYPES:
+                fields[field] = _REFERENCE_TYPES[ref]
+            items = value.get("items")
+            if field and isinstance(items, Mapping) and items.get("$ref") in _REFERENCE_TYPES:
+                fields[field] = _REFERENCE_TYPES[items["$ref"]]
+            properties = value.get("properties")
             if isinstance(properties, Mapping):
-                for name, value in properties.items():
-                    visit(value, str(name))
-            definitions = node.get("$defs")
-            if isinstance(definitions, Mapping):
-                for group in definitions.values():
-                    if isinstance(group, Mapping):
-                        for value in group.values():
-                            visit(value, field)
+                for name, property_schema in properties.items():
+                    visit(property_schema, str(name))
             if isinstance(items, Mapping):
                 visit(items, field)
             for key in ("anyOf", "oneOf", "allOf"):
-                for value in node.get(key, ()) or ():
-                    visit(value, field)
-        elif isinstance(node, list):
-            for value in node:
-                visit(value, field)
+                for option in value.get(key, ()) or ():
+                    visit(option, field)
+        elif isinstance(value, list):
+            for option in value:
+                visit(option, field)
 
-    visit(load_schema())
+    visit(node)
     return fields
+
+
+@lru_cache(maxsize=None)
+def reference_fields(kind: str | None = None) -> dict[str, str]:
+    """Return schema-declared reference fields, optionally scoped to a kind.
+
+    With no kind, return the historical union used by document-level helpers.
+    Passing a concrete kind keeps reference semantics local to the schema
+    definition instead of assuming that a property name has one meaning
+    everywhere.
+    """
+
+    schema = load_schema()
+    if kind is None:
+        return _collect_reference_fields(schema)
+    if "/" not in kind:
+        return {}
+    section, name = kind.split("/", 1)
+    definition = schema.get("$defs", {}).get(section, {}).get(name)
+    return _collect_reference_fields(definition) if isinstance(definition, Mapping) else {}
 
 
 def reference_id(value: Any) -> str | None:
