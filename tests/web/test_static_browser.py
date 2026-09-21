@@ -140,7 +140,7 @@ def test_static_editor_loads_catalogue_and_validates_locally(static_page: Page, 
 def test_static_web_works_under_a_non_root_subpath(static_subpath_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(f"{static_subpath_site}/edit/")
         page.wait_for_selector("#schema-summary")
         assert page.evaluate("window.R3XARuntime.mode") == "static"
@@ -160,7 +160,7 @@ def test_static_navigation_uses_only_same_origin_get_requests(static_site: str) 
     requests: list[tuple[str, str]] = []
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.on("request", lambda request: requests.append((request.method, request.url)))
         page.goto(f"{static_site}/")
         page.wait_for_selector(".profile-card")
@@ -207,7 +207,7 @@ def test_static_user_session_uses_no_remote_or_post_requests(static_site: str) -
     }
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.on("request", lambda request: requests.append((request.method, request.url)))
         page.goto(f"{static_site}/edit/?profile=generic&new=1")
         page.wait_for_selector("#schema-summary")
@@ -247,7 +247,7 @@ def test_static_runtime_works_with_documented_strict_csp(static_site: str) -> No
     }
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         console_errors: list[str] = []
         page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
 
@@ -320,7 +320,7 @@ def test_static_webui_works_inside_a_local_cross_origin_iframe(static_site: str,
 def test_static_editor_preserves_one_document_across_modes(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(f"{static_site}/edit/?profile=dic_2d&prefill=1")
         page.wait_for_selector("#schema-summary")
         page.wait_for_function("Boolean(localStorage.getItem('r3xaDraft'))")
@@ -346,7 +346,7 @@ def test_static_duplicate_ids_are_not_migrated_ambiguously(static_site: str) -> 
     }
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(static_site)
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.goto(f"{static_site}/edit/?profile=generic")
@@ -403,7 +403,7 @@ def test_every_static_prefilled_profile_is_valid_and_survives_mode_changes(stati
 def test_static_advanced_editor_can_create_every_schema_kind(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page_errors: list[str] = []
         page.on("pageerror", lambda error: page_errors.append(str(error)))
         page.goto(f"{static_site}/edit/?profile=generic&new=1")
@@ -466,7 +466,7 @@ def test_static_editor_imports_json_and_persists_it_locally(static_site: str) ->
 def test_static_editor_adds_and_edits_author_objects(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(f"{static_site}/edit/?profile=generic&new=1")
         page.wait_for_selector("#schema-summary")
         author_field = page.locator("#guided-document-authors")
@@ -492,7 +492,7 @@ def test_static_editor_adds_and_edits_author_objects(static_site: str) -> None:
 def test_static_advanced_editor_adds_and_removes_author_objects(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(f"{static_site}/edit/?profile=generic&new=1")
         page.wait_for_selector("#schema-summary")
         page.locator("[data-editor-mode='advanced']").click()
@@ -512,7 +512,7 @@ def test_static_advanced_editor_adds_and_removes_author_objects(static_site: str
 def test_static_advanced_item_validation_does_not_report_document_reference_errors(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(f"{static_site}/edit/?profile=tabular_file&prefill=1")
         page.wait_for_selector("#schema-summary")
         page.locator("[data-editor-mode='advanced']").click()
@@ -977,7 +977,7 @@ def test_static_local_registry_inserts_dependency_closure_with_remapped_ids(stat
 def test_static_local_registry_rejects_missing_and_cyclic_dependencies(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.goto(static_site)
         page.evaluate(
             """() => localStorage.setItem('r3xaLocalRegistryItems', JSON.stringify([{
@@ -1028,7 +1028,7 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
     }
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
-        page = browser.new_page()
+        page = browser.new_page(locale="en-US")
         page.on("request", lambda request: requests.append((request.method, request.url)))
         page.goto(f"{static_site}/schema/")
         assert page.locator("#graph-backend option:checked").inner_text() == "Graphviz WebAssembly · SVG · browser"
