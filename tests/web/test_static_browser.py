@@ -520,6 +520,7 @@ def test_static_advanced_item_validation_does_not_report_document_reference_erro
         data_set.get_by_role("button", name="Validate item").click()
         page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
         assert "Valid" in page.locator("#validation-output").inner_text()
+        assert "Valid" in data_set.locator(".item-validation-output").inner_text()
         browser.close()
 
 

@@ -229,6 +229,7 @@ def test_advanced_item_validation_uses_registry_validation(page: Page, web_serve
     data_set.get_by_role("button", name="Validate item").click()
     page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
     assert "Valid" in page.locator("#validation-output").inner_text()
+    assert "Valid" in data_set.locator(".item-validation-output").inner_text()
 
 
 def test_registry_form_syncs_with_json_and_preserves_unknown_fields(page: Page, web_server: str) -> None:

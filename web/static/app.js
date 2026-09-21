@@ -1477,23 +1477,36 @@ const buildHeaderForm = (properties) => {
   });
 };
 
-const validateItem = async (section, item, index) => {
+const setItemValidationOutput = (element, text, valid = null) => {
+  if (!element) return;
+  element.textContent = text;
+  element.classList.toggle("validation-valid", valid === true);
+  element.classList.toggle("validation-invalid", valid === false);
+};
+
+const validateItem = async (section, item, index, itemOutput = outputEl) => {
   const itemTitle = item.title || `${section} #${index + 1}`;
   try {
     const response = await window.R3XARuntime.validateItem(item, item.kind || "");
     if (!response.ok) throw new Error(`Validation request failed (${response.status})`);
     const report = await response.json();
     if (report.valid) {
-      outputEl.textContent = `${itemTitle}: ${t("validation.valid", "Valid ✅")}`;
+      const message = `${itemTitle}: ${t("validation.valid", "Valid ✅")}`;
+      outputEl.textContent = message;
+      setItemValidationOutput(itemOutput, message, true);
       return;
     }
     const lines = [`${itemTitle}: Invalid ❌`, ""];
     for (const error of report.errors || []) {
       lines.push(`- ${error.path || "<root>"}: ${validationMessage(error)}`);
     }
-    outputEl.textContent = lines.join("\n");
+    const message = lines.join("\n");
+    outputEl.textContent = message;
+    setItemValidationOutput(itemOutput, message, false);
   } catch (error) {
-    outputEl.textContent = t("validation.unavailable", "Validation unavailable: {message}", {message: error.message});
+    const message = t("validation.unavailable", "Validation unavailable: {message}", {message: error.message});
+    outputEl.textContent = message;
+    setItemValidationOutput(itemOutput, message, false);
   }
 };
 
@@ -1616,7 +1629,16 @@ const buildArrayEditor = (container, sectionName) => {
     validateButton.textContent = t("registry.validate", "Validate item");
     validateButton.className = "ghost";
     validateButton.type = "button";
-    validateButton.addEventListener("click", () => validateItem(sectionName, readPayload()?.[sectionName]?.[index] || item, index));
+    const itemValidationOutput = document.createElement("pre");
+    itemValidationOutput.className = "item-validation-output";
+    itemValidationOutput.setAttribute("role", "status");
+    itemValidationOutput.setAttribute("aria-live", "polite");
+    validateButton.addEventListener("click", () => validateItem(
+      sectionName,
+      readPayload()?.[sectionName]?.[index] || item,
+      index,
+      itemValidationOutput,
+    ));
     actionsRow.appendChild(removeButton);
     actionsRow.appendChild(validateButton);
     header.appendChild(actionsRow);
@@ -1677,6 +1699,7 @@ const buildArrayEditor = (container, sectionName) => {
         .forEach(([key, propertyMeta]) => renderItemField(key, propertyMeta));
     }
     card.appendChild(form);
+    card.appendChild(itemValidationOutput);
     list.appendChild(card);
   });
 };

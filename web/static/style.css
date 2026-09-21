@@ -292,6 +292,29 @@ button.ghost,
   text-align: left;
 }
 
+.item-validation-output {
+  display: none;
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.item-validation-output.validation-valid,
+.item-validation-output.validation-invalid {
+  display: block;
+}
+
+.item-validation-output.validation-valid {
+  background: #eaf7ee;
+  color: #176b36;
+}
+
+.item-validation-output.validation-invalid {
+  background: #fff0f0;
+  color: #9c1c1c;
+}
+
 #header-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
