@@ -24,6 +24,12 @@
       "to_many": true
     },
     {
+      "from_step": "specimen",
+      "to_step": "stereo_dic_source",
+      "to_field": "mesh",
+      "to_many": false
+    },
+    {
       "from_step": "camera_left",
       "to_step": "left_images",
       "to_field": "parent_data_sources",

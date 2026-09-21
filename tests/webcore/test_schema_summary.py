@@ -38,10 +38,14 @@ def _prefilled_profile_document(profile: dict) -> dict:
     for link in profile.get("links", []):
         target = items[link["to_step"]]
         field = link["to_field"]
+        source_id = items[link["from_step"]]["id"]
+        if link.get("to_many", True) is False:
+            target[field] = source_id
+            continue
         current = target.get(field, [])
         if not isinstance(current, list):
             current = [current]
-        current.append(items[link["from_step"]]["id"])
+        current.append(source_id)
         target[field] = list(dict.fromkeys(current))
     return payload
 
@@ -324,6 +328,7 @@ def test_prefilled_dic_profile_builds_a_valid_dependency_chain() -> None:
         (
             "stereo_dic",
             {
+                ("specimen_id", "stereo_dic_source_id"),
                 ("stereo_rig_id", "camera_left_id"),
                 ("stereo_rig_id", "camera_right_id"),
                 ("camera_left_id", "left_images_id"),
