@@ -222,6 +222,8 @@ def test_advanced_editor_adds_and_edits_author_objects(page: Page, web_server: s
 
 
 def test_advanced_item_validation_uses_registry_validation(page: Page, web_server: str) -> None:
+    dialogs: list[str] = []
+    page.on("dialog", lambda dialog: (dialogs.append(dialog.message), dialog.dismiss()))
     page.goto(f"{web_server}/edit?profile=tabular_file&prefill=1")
     page.wait_for_selector("#schema-summary")
     page.locator("[data-editor-mode='advanced']").click()
@@ -230,6 +232,7 @@ def test_advanced_item_validation_uses_registry_validation(page: Page, web_serve
     page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
     assert "Valid" in page.locator("#validation-output").inner_text()
     assert "Valid" in data_set.locator(".item-validation-output").inner_text()
+    assert any("Valid" in message for message in dialogs)
 
 
 def test_registry_form_syncs_with_json_and_preserves_unknown_fields(page: Page, web_server: str) -> None:

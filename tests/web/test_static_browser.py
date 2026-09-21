@@ -513,6 +513,8 @@ def test_static_advanced_item_validation_does_not_report_document_reference_erro
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page(locale="en-US")
+        dialogs: list[str] = []
+        page.on("dialog", lambda dialog: (dialogs.append(dialog.message), dialog.dismiss()))
         page.goto(f"{static_site}/edit/?profile=tabular_file&prefill=1")
         page.wait_for_selector("#schema-summary")
         page.locator("[data-editor-mode='advanced']").click()
@@ -521,6 +523,7 @@ def test_static_advanced_item_validation_does_not_report_document_reference_erro
         page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
         assert "Valid" in page.locator("#validation-output").inner_text()
         assert "Valid" in data_set.locator(".item-validation-output").inner_text()
+        assert any("Valid" in message for message in dialogs)
         browser.close()
 
 

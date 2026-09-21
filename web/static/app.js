@@ -1494,6 +1494,7 @@ const validateItem = async (section, item, index, itemOutput = outputEl) => {
       const message = `${itemTitle}: ${t("validation.valid", "Valid ✅")}`;
       outputEl.textContent = message;
       setItemValidationOutput(itemOutput, message, true);
+      window.alert(t("validation.valid", "Valid ✅"));
       return;
     }
     const lines = [`${itemTitle}: Invalid ❌`, ""];
@@ -1503,10 +1504,12 @@ const validateItem = async (section, item, index, itemOutput = outputEl) => {
     const message = lines.join("\n");
     outputEl.textContent = message;
     setItemValidationOutput(itemOutput, message, false);
+    window.alert(message);
   } catch (error) {
     const message = t("validation.unavailable", "Validation unavailable: {message}", {message: error.message});
     outputEl.textContent = message;
     setItemValidationOutput(itemOutput, message, false);
+    window.alert(message);
   }
 };
 
