@@ -217,6 +217,7 @@ def test_static_user_session_uses_no_remote_or_post_requests(static_site: str) -
         page.wait_for_function("document.querySelector('#validation-output').textContent.length > 0")
         page.goto(f"{static_site}/schema/")
         page.wait_for_selector("#schema-tree")
+        page.locator("#graph-backend").select_option("graphviz")
         page.locator("#generate-graph-btn").click()
         page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
         page.goto(f"{static_site}/registry/")
@@ -263,6 +264,7 @@ def test_static_runtime_works_with_documented_strict_csp(static_site: str) -> No
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.goto(f"{static_site}/schema/")
         page.locator("#schema-tree").wait_for(state="visible")
+        page.locator("#graph-backend").select_option("graphviz")
         page.locator("#generate-graph-btn").click()
         page.locator("#graph-container svg").wait_for(state="attached", timeout=30_000)
         browser.close()
@@ -307,6 +309,7 @@ def test_static_webui_works_inside_a_local_cross_origin_iframe(static_site: str,
             child = next(frame for frame in page.frames if frame.url.startswith(static_site))
             child.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
             child.goto(f"{static_site}/schema/")
+            child.locator("#graph-backend").select_option("graphviz")
             child.locator("#generate-graph-btn").click()
             child.locator("#graph-container svg").wait_for(state="attached", timeout=30_000)
 
@@ -606,6 +609,7 @@ def test_static_graph_exports_svg_and_standalone_html(static_site: str) -> None:
         page.goto(f"{static_site}/schema/")
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.reload()
+        page.locator("#graph-backend").select_option("graphviz")
         page.locator("#generate-graph-btn").click()
         page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
         page.locator("#graph-palette").select_option("classic")
@@ -1041,10 +1045,11 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
         page = browser.new_page(locale="en-US")
         page.on("request", lambda request: requests.append((request.method, request.url)))
         page.goto(f"{static_site}/schema/")
-        assert page.locator("#graph-backend option:checked").inner_text() == "Graphviz WebAssembly · SVG · browser"
+        assert page.locator("#graph-backend option:checked").inner_text() == "Cytoscape.js · interactive browser"
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.reload()
         page.wait_for_selector("#graph-backend")
+        page.locator("#graph-backend").select_option("graphviz")
         page.locator("#generate-graph-btn").click()
         page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
         assert page.locator("#graph-container svg").count() == 1
@@ -1160,6 +1165,76 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         browser.close()
 
 
+def test_static_cytoscape_inspector_selects_existing_references(static_site: str) -> None:
+    payload = {
+        "title": "Cytoscape references",
+        "description": "Interactive reference editing test",
+        "version": "2026.9.18",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [{
+            "id": "stg-specimen-1",
+            "kind": "settings/specimen",
+            "title": "Tensile specimen",
+        }],
+        "data_sources": [{
+            "id": "src-camera-1",
+            "kind": "data_sources/camera",
+            "title": "Left camera",
+        }],
+        "data_sets": [{
+            "id": "set-images-1",
+            "kind": "data_sets/list",
+            "title": "Camera images",
+            "timestamps": [0.0, 1.0],
+            "values": ["image_0000.tif", "image_0001.tif"],
+            "parent_data_sources": ["src-camera-1"],
+        }],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(locale="en-US", viewport={"width": 1400, "height": 1000})
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#graph-backend").select_option("cytoscape")
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container .cytoscape-graph", state="attached", timeout=30_000)
+        page.locator(".cytoscape-node-hit-area[data-node-id='set-images-1']").click()
+        page.wait_for_function("document.querySelector('#graph-inspector-title').textContent === 'Camera images'")
+        selected_node = page.locator(".cytoscape-node-hit-area[data-node-id='set-images-1']")
+        assert "graph-node-selected" in (selected_node.get_attribute("class") or "")
+        assert selected_node.evaluate("element => getComputedStyle(element).outlineStyle") == "dashed"
+        page.locator("#graph-inspector-edit-btn").click()
+
+        reference_field = page.locator("[data-inspector-field='parent_data_sources']")
+        assert reference_field.get_attribute("data-inspector-type") == "reference-array"
+        assert reference_field.get_by_text("Left camera · data_sources/camera · src-camera-1").count() == 1
+        assert reference_field.locator("input[type=checkbox]").count() == 1
+        reference_checkbox = reference_field.locator("input[type=checkbox]")
+        assert reference_checkbox.is_checked()
+        reference_checkbox.uncheck()
+        page.locator("#graph-inspector-validate-btn").click()
+        page.wait_for_function(
+            "JSON.parse(localStorage.getItem('r3xaDraft') || '{}').data_sets[0]?.parent_data_sources?.length === 0"
+        )
+        assert "Valid item" in page.locator("#graph-inspector-status").inner_text()
+        page.wait_for_function(
+            "document.querySelector('#graph-container .cytoscape-graph')?.dataset.edgeCount === '0'"
+        )
+        page.locator("#graph-inspector-edit-btn").click()
+        reference_field = page.locator("[data-inspector-field='parent_data_sources']")
+        reference_field.locator("input[type=checkbox]").check()
+        page.locator("#graph-inspector-validate-btn").click()
+        page.wait_for_function(
+            "JSON.parse(localStorage.getItem('r3xaDraft') || '{}').data_sets[0]?.parent_data_sources?.[0] === 'src-camera-1'"
+        )
+        page.wait_for_function(
+            "document.querySelector('#graph-container .cytoscape-graph')?.dataset.edgeCount === '1'"
+        )
+        browser.close()
+
+
 def test_static_schema_viewer_handles_an_invalid_saved_draft(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
@@ -1256,6 +1331,7 @@ def test_static_graph_failure_does_not_break_the_editor(static_site: str) -> Non
         page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
         page.reload()
         page.route("**/assets/graph.generated.js*", lambda route: route.abort())
+        page.locator("#graph-backend").select_option("graphviz")
         page.locator("#generate-graph-btn").click()
         page.wait_for_function(
             "document.querySelector('#graph-container').textContent.includes('Graphviz WASM rendering failed')"

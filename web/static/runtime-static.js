@@ -177,7 +177,7 @@
 
   window.R3XARuntime = {
     mode: "static",
-    graphBackends: ["graphviz", "cytoscape"],
+    graphBackends: ["cytoscape", "graphviz"],
     loadSchema: () => loadAsset("schema.json"),
     loadSchemaSummary: () => loadAsset("schema-summary.json"),
     loadSchemaCatalog: () => loadAsset("schema-catalog.json"),

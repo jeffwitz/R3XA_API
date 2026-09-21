@@ -87,7 +87,88 @@ const editorValueType = (property, value) => {
   return "string";
 };
 
+const referenceSectionFor = (property) => {
+  const reference = property?.ref || property?.items?.ref || property?.$ref || property?.items?.$ref;
+  if (!reference) return null;
+  if (String(reference).endsWith("setting_id")) return "settings";
+  if (String(reference).endsWith("data_source_id")) return "data_sources";
+  if (String(reference).endsWith("data_set_id")) return "data_sets";
+  return null;
+};
+
+const inspectorReferenceCandidates = (section) => {
+  const payload = getStoredDraft();
+  return Array.isArray(payload?.[section])
+    ? payload[section].filter((item) => item && typeof item === "object" && typeof item.id === "string" && item.id)
+    : [];
+};
+
+const inspectorReferenceLabel = (item, section) => (
+  `${item.title || t("schema.untitled_object", "Untitled object")} · ${item.kind || section} · ${item.id}`
+);
+
+const inspectorReferenceIds = (value) => (
+  Array.isArray(value) ? value.filter((item) => typeof item === "string" && item) : typeof value === "string" && value ? [value] : []
+);
+
+const createInspectorReferenceEditor = (key, property, value, section) => {
+  const currentIds = inspectorReferenceIds(value);
+  const candidates = inspectorReferenceCandidates(section);
+  const choices = new Map(candidates.map((item) => [item.id, inspectorReferenceLabel(item, section)]));
+  currentIds.forEach((id) => {
+    if (!choices.has(id)) choices.set(id, t("schema.missing_object", "Missing object · {id}", {id}));
+  });
+  const isArray = propertyTypes(property).includes("array");
+  if (isArray) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "reference-checklist graph-inspector-reference-checklist";
+    wrapper.dataset.inspectorField = key;
+    wrapper.dataset.inspectorType = "reference-array";
+    wrapper.dataset.inspectorReferenceSection = section;
+    wrapper.dataset.inspectorInitialCount = String(currentIds.length);
+    const selectedIds = new Set(currentIds);
+    choices.forEach((label, id) => {
+      const option = document.createElement("label");
+      option.className = "reference-option";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = id;
+      checkbox.checked = selectedIds.has(id);
+      option.append(checkbox, document.createTextNode(label));
+      wrapper.appendChild(option);
+    });
+    if (!choices.size) {
+      const empty = document.createElement("small");
+      empty.className = "field-description";
+      empty.textContent = t("field.no_compatible_objects", "No compatible objects have been created yet.");
+      wrapper.appendChild(empty);
+    }
+    return wrapper;
+  }
+  const control = document.createElement("select");
+  control.dataset.inspectorField = key;
+  control.dataset.inspectorType = "reference";
+  control.dataset.inspectorReferenceSection = section;
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = t("field.select_object", "Select an object…");
+  control.appendChild(blank);
+  choices.forEach((label, id) => {
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = label;
+    option.selected = currentIds.includes(id);
+    control.appendChild(option);
+  });
+  if (!choices.size) control.disabled = true;
+  return control;
+};
+
 const createInspectorEditor = (key, property, value) => {
+  const referenceSection = referenceSectionFor(property);
+  if (referenceSection) {
+    return createInspectorReferenceEditor(key, property, value, referenceSection);
+  }
   const enumValues = propertyEnum(property);
   const type = editorValueType(property, value);
   const isComplex = type === "array" || type === "object";
@@ -204,6 +285,12 @@ const cancelGraphInspectorEdit = () => {
 };
 
 const readInspectorValue = (control) => {
+  if (control.dataset.inspectorType === "reference-array") {
+    const selected = [...control.querySelectorAll("input[type=checkbox]:checked")].map((checkbox) => checkbox.value);
+    if (!selected.length && control.dataset.inspectorInitialCount === "0") return undefined;
+    return selected;
+  }
+  if (control.dataset.inspectorType === "reference") return control.value.trim() || undefined;
   if (control.type === "checkbox") return control.checked;
   const raw = control.value.trim();
   if (!raw) return undefined;

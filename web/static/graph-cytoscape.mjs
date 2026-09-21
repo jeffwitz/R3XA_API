@@ -54,6 +54,53 @@ const shapeBounds = (shape) => {
   };
 };
 
+const rectanglesOverlap = (first, second, gap) => {
+  const horizontalDistance = Math.abs(first.x - second.x);
+  const verticalDistance = Math.abs(first.y - second.y);
+  return horizontalDistance < (first.width + second.width) * 0.5 + gap
+    && verticalDistance < (first.height + second.height) * 0.5 + gap;
+};
+
+export const resolveNodeOverlaps = (nodes, positions, gap = 12) => {
+  const resolved = new Map(
+    Object.entries(positions).map(([id, position]) => [id, {...position}]),
+  );
+  const placedNodes = nodes.filter((node) => resolved.has(node.id));
+  for (let pass = 0; pass < placedNodes.length; pass += 1) {
+    let changed = false;
+    for (let firstIndex = 0; firstIndex < placedNodes.length; firstIndex += 1) {
+      const firstNode = placedNodes[firstIndex];
+      const firstPosition = resolved.get(firstNode.id);
+      for (let secondIndex = firstIndex + 1; secondIndex < placedNodes.length; secondIndex += 1) {
+        const secondNode = placedNodes[secondIndex];
+        const secondPosition = resolved.get(secondNode.id);
+        const firstBounds = {...firstPosition, width: firstNode.width, height: firstNode.height};
+        const secondBounds = {...secondPosition, width: secondNode.width, height: secondNode.height};
+        if (!rectanglesOverlap(firstBounds, secondBounds, gap)) continue;
+
+        const horizontalOverlap = (firstNode.width + secondNode.width) * 0.5
+          + gap - Math.abs(firstPosition.x - secondPosition.x);
+        const verticalOverlap = (firstNode.height + secondNode.height) * 0.5
+          + gap - Math.abs(firstPosition.y - secondPosition.y);
+        if (horizontalOverlap <= verticalOverlap) {
+          const direction = secondPosition.x >= firstPosition.x ? 1 : -1;
+          const shift = horizontalOverlap * 0.5;
+          firstPosition.x -= direction * shift;
+          secondPosition.x += direction * shift;
+        } else {
+          const direction = secondPosition.y >= firstPosition.y ? 1 : -1;
+          const shift = verticalOverlap * 0.5;
+          firstPosition.y -= direction * shift;
+          secondPosition.y += direction * shift;
+        }
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return Object.fromEntries(resolved);
+};
+
 const readGraphvizLayout = (svgText) => {
   const parsed = new DOMParser().parseFromString(svgText, "image/svg+xml");
   if (parsed.querySelector("parsererror") || parsed.documentElement?.tagName.toLowerCase() !== "svg") {
@@ -91,8 +138,8 @@ const nodeRecords = (payload, model, styles, includeDescription, layoutNodes) =>
         : "root";
     const colors = styleFor(style);
     const bounds = layoutNodes.get(item.id) || {width: 190, height: 64};
-    const width = Math.max(120, bounds.width);
-    const height = Math.max(56, bounds.height);
+    const width = Math.max(72, bounds.width);
+    const height = Math.max(42, bounds.height);
     records.push({
       data: {
         id: item.id,
@@ -210,11 +257,21 @@ export const renderCytoscapeGraph = async (
       y: bounds.y - minY,
     }]),
   );
+  const resolvedPositions = resolveNodeOverlaps(
+    elements
+      .filter((element) => element.data?.width && element.data?.height)
+      .map((element) => ({
+        id: element.data.id,
+        width: element.data.width,
+        height: element.data.height,
+      })),
+    positions,
+  );
   const cy = cytoscape({
     container,
     elements,
     style: cytoscapeStyle,
-    layout: {name: "preset", positions, fit: true, padding: 40},
+    layout: {name: "preset", positions: resolvedPositions, fit: true, padding: 40},
     minZoom: 0.1,
     maxZoom: 4,
     wheelSensitivity: 0.12,
@@ -279,6 +336,8 @@ export const renderCytoscapeGraph = async (
   const selectNode = (event) => {
     const nodeData = event.target.data();
     const item = (payload[nodeData.section] || []).find((candidate) => candidate?.id === nodeData.id);
+    nodeHitAreas.forEach((hitArea) => hitArea.classList.remove("graph-node-selected"));
+    nodeHitAreas.get(nodeData.id)?.classList.add("graph-node-selected");
     onNodeSelect?.({
       id: nodeData.id,
       kind: nodeData.kind,
@@ -292,6 +351,7 @@ export const renderCytoscapeGraph = async (
   };
   const clearSelection = (event) => {
     if (event.target === cy) {
+      nodeHitAreas.forEach((hitArea) => hitArea.classList.remove("graph-node-selected"));
       cy.elements().removeClass("faded highlighted");
       onNodeSelect?.(null);
     }

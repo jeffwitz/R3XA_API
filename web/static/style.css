@@ -883,6 +883,12 @@ body[data-editor-mode="expert"] .guided-panel {
   outline-offset: 2px;
 }
 
+.cytoscape-node-hit-area.graph-node-selected {
+  outline: 2px dashed #111;
+  outline-offset: 7px;
+  z-index: 2;
+}
+
 .graph-container .cytoscape-graph:active {
   cursor: grabbing;
 }
