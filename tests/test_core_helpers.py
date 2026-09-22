@@ -432,6 +432,26 @@ def test_summaries_use_author_and_reference_titles() -> None:
     assert "output_components" not in dataset_summary
 
 
+def test_generic_item_summary_includes_additional_fields() -> None:
+    document = R3XAFile(
+        title="Summary additional fields",
+        description="Show generic properties",
+        authors=[{"name": "R3XA API"}],
+        date="2026-09-18",
+    )
+    light = document.add_generic_setting(
+        title="Spot light",
+        description="Spotlight MultiLed",
+        documentation="MULTILED_QX.pdf",
+        power="fullgaz",
+    )
+
+    summary = light.summary()
+
+    assert "  documentation: MULTILED_QX.pdf" in summary
+    assert "# power: fullgaz" in summary
+
+
 def test_document_summary_shares_value_formatting_with_models() -> None:
     document = R3XAFile(title="t", description="d", authors=[{"name": "a"}], date="2026-01-01")
     document.header["license"] = "CC-BY"

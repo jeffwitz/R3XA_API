@@ -776,6 +776,9 @@ class R3XAItem(BaseModel):
             if name in {"settings", "data_sources", "data_sets"} and isinstance(value, list):
                 value = [getattr(item, "title", None) for item in value]
             lines.append(f"{marker} {name}: {self._format_value(value)}")
+        for name, value in (getattr(self, "model_extra", None) or {}).items():
+            value = self._summary_field_value(name, value)
+            lines.append(f"# {name}: {self._format_value(value)}")
         return "\n".join(lines)
 
     def print(self) -> None:
