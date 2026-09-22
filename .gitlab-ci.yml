@@ -121,7 +121,7 @@ static-web-build:
     - .ci-venv/bin/python -m pip install -e ".[web]"
     - npm ci --prefix r3xa_web
   script:
-    - npm test --prefix web
+    - npm test --prefix r3xa_web
     - .ci-venv/bin/python scripts/dev.py build-static-web
     - zip -qr "dist/r3xa-webui-${CI_COMMIT_SHORT_SHA}.zip" dist/r3xa-webui
   artifacts:
