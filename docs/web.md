@@ -55,6 +55,8 @@ the graph endpoint. Operators can lower or raise this limit deliberately with
 this API. Python Graphviz WebAssembly rendering also uses a deterministic fuel
 budget of 50 million instructions by default; operators can tune it with
 `R3XA_GRAPHVIZ_WASM_FUEL` when rendering unusually large documents.
+The optional native `dot` backend has a 30-second subprocess timeout by default,
+configurable with `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`.
 
 > Note: the native `graphviz` SVG backend requires the **Graphviz executable** (`dot`).
 > The default `graphviz-wasm` backend uses the bundled Graphviz WASI module and

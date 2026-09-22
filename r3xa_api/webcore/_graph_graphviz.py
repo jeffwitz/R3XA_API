@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
+import subprocess
 from typing import Any, Dict
 
 from ._graph_core import (
@@ -10,6 +12,48 @@ from ._graph_core import (
     resolve_styles,
     resolve_edge_style,
 )
+
+
+_DEFAULT_NATIVE_TIMEOUT_SECONDS = 30.0
+
+
+def _native_timeout_seconds() -> float:
+    raw_timeout = os.getenv(
+        "R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS",
+        str(_DEFAULT_NATIVE_TIMEOUT_SECONDS),
+    )
+    try:
+        timeout = float(raw_timeout)
+    except ValueError as exc:
+        raise RuntimeError(
+            "R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS must be a positive number."
+        ) from exc
+    if timeout <= 0:
+        raise RuntimeError(
+            "R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS must be a positive number."
+        )
+    return timeout
+
+
+def _pipe_native(dot: Any) -> bytes:
+    """Render DOT with a bounded native Graphviz subprocess."""
+
+    from graphviz.backend import dot_command, execute
+
+    command = dot_command.command("dot", "svg")
+    try:
+        completed = execute.run_check(
+            command,
+            input=dot.source.encode("utf-8"),
+            capture_output=True,
+            quiet=True,
+            timeout=_native_timeout_seconds(),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(
+            "Native Graphviz rendering exceeded its configured timeout."
+        ) from exc
+    return completed.stdout
 
 
 def build_graphviz_dot(
@@ -92,7 +136,7 @@ def generate_svg(
         relations=relations,
     )
     try:
-        return dot.pipe(format="svg")
+        return _pipe_native(dot)
     except ExecutableNotFound as exc:  # pragma: no cover - runtime dependency
         raise RuntimeError("Graph feature not available (dot executable missing).") from exc
 
@@ -125,7 +169,9 @@ def render_graphviz_file(
     if export_dot:
         dot.save(str(out_base.with_suffix(".dot")))
 
+    svg_path = out_base.with_suffix(".svg")
     try:
-        return Path(dot.render(str(out_base), view=False, cleanup=True))
+        svg_path.write_bytes(_pipe_native(dot))
+        return svg_path
     except ExecutableNotFound as exc:  # pragma: no cover - runtime dependency
         raise RuntimeError("Graph feature not available (dot executable missing).") from exc

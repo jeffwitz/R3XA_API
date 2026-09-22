@@ -1,6 +1,7 @@
 import json
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,7 @@ if shutil.which("dot") is None:
     pytest.skip("graphviz 'dot' executable is not available", allow_module_level=True)
 
 from r3xa_api.webcore.graph import build_graphviz_dot, generate_svg, render_graphviz_file, render_pyvis_html
+from graphviz.backend import execute
 
 
 GRAPH_CASES = [
@@ -34,6 +36,17 @@ def test_generate_svg_returns_svg_document(case_name: str, filename: str) -> Non
 
     assert "<svg" in svg_text
     assert "</svg>" in svg_text
+
+
+def test_native_graphviz_timeout_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _timeout(*args: object, **kwargs: object) -> None:
+        raise subprocess.TimeoutExpired("dot", 1)
+
+    monkeypatch.setattr(execute, "run_check", _timeout)
+    monkeypatch.setenv("R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS", "1")
+
+    with pytest.raises(RuntimeError, match="configured timeout"):
+        generate_svg(_load_example_payload("dic_pipeline.json"))
 
 
 def test_graph_renderers_can_hide_descriptions(tmp_path: Path) -> None:
