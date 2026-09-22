@@ -246,6 +246,12 @@ class R3XAItem(BaseModel):
         return R3XAItem.from_dict(payload, validate=False)  # type: ignore[return-value]
 
     def __setattr__(self, name: str, value: Any) -> None:
+        old_id = None
+        if name == "id" and "id" in type(self).model_fields:
+            try:
+                old_id = object.__getattribute__(self, "id")
+            except AttributeError:
+                pass
         if name in type(self)._reference_field_map() and value is not None:
             value, objects = self._normalize_reference(value)
             references = getattr(self, "_reference_objects", None)
@@ -266,6 +272,43 @@ class R3XAItem(BaseModel):
                 name,
                 R3XACollection(getattr(self, name, None) or (), document=self),
             )
+        if name == "id" and old_id and old_id != value:
+            document = object.__getattribute__(self, "_document")
+            if document is not None:
+                document._replace_reference_id(old_id, value)
+
+    def _replace_reference_id(self, old_id: str, new_id: str) -> None:
+        """Update wire IDs retained by this document after an item rename."""
+
+        for section in ("settings", "data_sources", "data_sets"):
+            if section not in type(self).model_fields:
+                continue
+            collection = object.__getattribute__(self, section)
+            for item in collection:
+                for field in type(item)._reference_field_map():
+                    raw_value = object.__getattribute__(item, field)
+                    def replace(reference: Any) -> Any:
+                        if reference_id(reference) != old_id:
+                            return reference
+                        if isinstance(reference, str):
+                            return new_id
+                        if isinstance(reference, RootModel):
+                            return type(reference)(new_id)
+                        if isinstance(reference, Mapping):
+                            updated = dict(reference)
+                            if "root" in updated:
+                                updated["root"] = new_id
+                            elif "id" in updated:
+                                updated["id"] = new_id
+                            return updated
+                        return new_id
+
+                    if isinstance(raw_value, list):
+                        replacement = [replace(reference) for reference in raw_value]
+                    else:
+                        replacement = replace(raw_value)
+                    if replacement != raw_value:
+                        object.__setattr__(item, field, replacement)
 
     def bind_document(self, document: Any) -> "R3XAItem":
         """Bind this object to a document so references resolve to objects."""
@@ -317,7 +360,24 @@ class R3XAItem(BaseModel):
             fallback=self._to_json_like,
             warnings=False,
         )
-        return self._wire_value(payload)
+        payload = self._wire_value(payload)
+        for field in type(self).model_fields:
+            raw_value = object.__getattribute__(self, field)
+            serialized_value = payload.get(field)
+            if isinstance(raw_value, R3XAItem) and isinstance(serialized_value, Mapping):
+                payload[field] = raw_value.to_dict(exclude_none=exclude_none)
+            elif isinstance(raw_value, (list, tuple)) and isinstance(serialized_value, list):
+                payload[field] = [
+                    item.to_dict(exclude_none=exclude_none) if isinstance(item, R3XAItem) else value
+                    for item, value in zip(raw_value, serialized_value)
+                ]
+        kind = object.__getattribute__(self, "__class__").model_fields.get("kind")
+        if kind is not None and isinstance(kind.default, str):
+            payload.setdefault("kind", kind.default)
+        if kind is not None and kind.default == "data_set_file":
+            if "delimiter" not in self.model_fields_set:
+                payload.pop("delimiter", None)
+        return payload
 
     @classmethod
     def _wire_value(cls, value: Any, field: str | None = None) -> Any:

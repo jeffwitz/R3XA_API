@@ -122,10 +122,13 @@ def data_set_file(
             raise TypeError("rows must be a sequence of integers or None")
         payload["rows"] = list(rows)
     payload.update(extra)
-    return new_item(
+    item = new_item(
         "data_set_file",
         **{key: value for key, value in payload.items() if key != "kind"},
     )
+    if delimiter is None:
+        item.delimiter = None
+    return item
 
 
 def _ensure_data_set_file(value: Union[str, Mapping[str, Any], R3XAItem]) -> R3XAItem:

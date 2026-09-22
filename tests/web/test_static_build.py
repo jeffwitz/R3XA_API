@@ -36,6 +36,8 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "graph-palettes.json",
         "graph-relations.json",
         "graphviz-12.2.1.wasm",
+        "GRAPHVIZ_LICENSE.txt",
+        "THIRD_PARTY_NOTICES.txt",
         "runtime-static.js",
         "id-utils.js",
         "registry-storage.js",
@@ -56,6 +58,11 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     assert "graph-relations.json" in static_runtime
     assert "cytoscape.generated.js" in static_runtime
     assert (assets / "graphviz-12.2.1.wasm").stat().st_size > 1_000_000
+    assert "Eclipse Public License" in (assets / "GRAPHVIZ_LICENSE.txt").read_text(encoding="utf-8")
+    notices = (assets / "THIRD_PARTY_NOTICES.txt").read_text(encoding="utf-8")
+    assert "Ajv 8.17.1" in notices
+    assert "Cytoscape.js 3.34.3" in notices
+    assert "Graphviz 12.2.1 WASI artifact" in notices
     source_wasm = (
         Path(__file__).resolve().parents[2]
         / "r3xa_api"

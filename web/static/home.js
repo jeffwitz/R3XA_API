@@ -17,7 +17,7 @@ const renderProfileCards = (catalog) => {
     const action = document.createElement("small");
     action.textContent = profileId === "generic"
       ? t("home.open_generic", "Open schema-driven editor")
-      : t("home.open_guided", "Open guided workflow");
+      : t("home.open_example", "Start from this example");
     card.append(title, description, action);
     profileCardsEl.appendChild(card);
   });

@@ -23,6 +23,8 @@ const guidedPreviousEl = document.getElementById("guided-previous");
 const guidedNextEl = document.getElementById("guided-next");
 const guidedProgressEl = document.getElementById("guided-progress");
 const guidedPrefillEl = document.getElementById("guided-prefill");
+const guidedExampleBannerEl = document.getElementById("guided-example-banner");
+const guidedExampleBannerTextEl = document.getElementById("guided-example-banner-text");
 const modeButtons = document.querySelectorAll("[data-editor-mode]");
 const launchParams = new URLSearchParams(window.location.search);
 const t = (key, fallback, values) => window.R3XAI18N?.t(key, fallback, values) || fallback;
@@ -36,6 +38,8 @@ let guidedStepItems = {};
 let syncing = false;
 let prefillRequested = launchParams.get("prefill") === "1";
 let newDocumentRequested = launchParams.get("new") === "1";
+const draftOriginStorageKey = "r3xaDraftOrigin";
+let draftOriginProfile = localStorage.getItem(draftOriginStorageKey) || "";
 
 const guidedStepItemsStorageKey = () => `r3xaGuidedStepItems:${selectedProfile}`;
 
@@ -67,6 +71,11 @@ const loadDraft = () => {
 const saveDraft = () => {
   localStorage.setItem("r3xaDraft", inputEl.value);
   localStorage.setItem("r3xaDraftLast", inputEl.value);
+};
+
+const clearDraftOrigin = () => {
+  draftOriginProfile = "";
+  localStorage.removeItem(draftOriginStorageKey);
 };
 
 const readPayload = () => {
@@ -295,6 +304,24 @@ const profileHasPrefilledWorkflow = (profile) => Boolean(
   ),
 );
 
+const updateExampleTemplateBanner = () => {
+  const profile = uiCatalog?.profiles?.[selectedProfile];
+  const visible = Boolean(
+    guidedExampleBannerEl
+    && profileHasPrefilledWorkflow(profile)
+    && draftOriginProfile === selectedProfile,
+  );
+  if (guidedExampleBannerEl) guidedExampleBannerEl.hidden = !visible;
+  if (visible && guidedExampleBannerTextEl) {
+    const title = t(`profile.${selectedProfile}.title`, profile.title || selectedProfile);
+    guidedExampleBannerTextEl.textContent = t(
+      "guided.example_banner_help",
+      "This document was created from the illustrative workflow “{profile}”. All values remain editable and should be adapted to your experiment.",
+      {profile: title},
+    );
+  }
+};
+
 const createPrefilledWorkflow = () => {
   const profile = uiCatalog?.profiles?.[selectedProfile];
   if (!profile || !profileHasPrefilledWorkflow(profile)) return;
@@ -320,6 +347,8 @@ const createPrefilledWorkflow = () => {
   });
   payload.version = schemaCatalog?.schema_version || payload.version;
   applyProfileLinks(profile, payload, {overwrite: true});
+  draftOriginProfile = selectedProfile;
+  localStorage.setItem(draftOriginStorageKey, selectedProfile);
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
   inputEl.value = JSON.stringify(payload, null, 2);
@@ -583,6 +612,7 @@ const renderGuidedSteps = () => {
   if (!guidedStepsEl || !uiCatalog || !schemaCatalog) return;
   const profile = uiCatalog.profiles?.[selectedProfile];
   const steps = profile?.steps || [];
+  updateExampleTemplateBanner();
   if (guidedPrefillEl) guidedPrefillEl.hidden = !profileHasPrefilledWorkflow(profile);
   guidedStepIndex = Math.min(Math.max(guidedStepIndex, 0), Math.max(steps.length - 1, 0));
   guidedStepsEl.innerHTML = "";
@@ -1980,6 +2010,7 @@ const reset = () => {
   payload.version = schemaCatalog?.schema_version || payload.version;
   inputEl.value = JSON.stringify(payload, null, 2);
   guidedStepItems = {};
+  clearDraftOrigin();
   saveGuidedStepItems();
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
@@ -2077,6 +2108,7 @@ const loadJsonFile = (file) => {
     const normalization = normalizeDocumentIds(payload);
     inputEl.value = JSON.stringify(payload, null, 2);
     guidedStepItems = {};
+    clearDraftOrigin();
     saveGuidedStepItems();
     saveDraft();
     syncFormFromJson();

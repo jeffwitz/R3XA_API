@@ -326,6 +326,8 @@ def test_static_editor_preserves_one_document_across_modes(static_site: str) -> 
         page = browser.new_page(locale="en-US")
         page.goto(f"{static_site}/edit/?profile=dic_2d&prefill=1")
         page.wait_for_selector("#schema-summary")
+        assert page.locator("#guided-example-banner").is_visible()
+        assert "illustrative workflow" in page.locator("#guided-example-banner").inner_text()
         page.wait_for_function("Boolean(localStorage.getItem('r3xaDraft'))")
         original = page.evaluate("localStorage.getItem('r3xaDraft')")
         for mode in ("advanced", "expert", "guided"):

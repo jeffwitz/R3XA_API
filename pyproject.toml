@@ -51,18 +51,20 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 include-package-data = false
-packages = ["r3xa_api", "r3xa_api.webcore", "web", "web.app"]
+packages = ["r3xa_api", "r3xa_api.resources", "r3xa_api.webcore", "web", "web.app"]
 
 [tool.setuptools.package-data]
 r3xa_api = [
-  "resources/schema.json",
-  "resources/ui/*.json",
-  "resources/ui/profiles/*.json",
-  "resources/graphviz/*.wasm",
-  "resources/graphviz/*.md",
-  "resources/graphviz/*.txt",
   "py.typed",
   "*.pyi",
+]
+"r3xa_api.resources" = [
+  "schema.json",
+  "ui/*.json",
+  "ui/profiles/*.json",
+  "graphviz/*.wasm",
+  "graphviz/*.md",
+  "graphviz/*.txt",
 ]
 web = [
   "templates/*.html",
@@ -70,4 +72,5 @@ web = [
   "static/*.mjs",
   "static/*.css",
   "static/*.png",
+  "static/*.txt",
 ]

@@ -87,6 +87,14 @@ def test_data_set_file_print_format_is_compact() -> None:
     assert format_json_value(payload) == "{example_files/tutorial3_file.csv: 1 x [1, 5]}"
 
 
+def test_data_set_file_does_not_serialize_an_implicit_delimiter() -> None:
+    implicit = data_set_file(filename="results.csv", col=1, rows=[0, None])
+    explicit = data_set_file(filename="results.csv", delimiter=";", col=1, rows=[0, None])
+
+    assert "delimiter" not in implicit.to_dict()
+    assert explicit.to_dict()["delimiter"] == ";"
+
+
 def test_unit_accepts_minimal_schema_payload() -> None:
     payload = unit(unit="px")
     assert payload.to_dict() == {"kind": "unit", "unit": "px", "scale": 1.0}

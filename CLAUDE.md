@@ -569,6 +569,52 @@ If a full suite is blocked by infrastructure, record the exact blocked command
 and retain the successful targeted results. A GitLab `ci_quota_exceeded`
 failure is not evidence that the code passed or failed.
 
+## Latest audit baseline and handoff (2026-09-22)
+
+Before resuming release-hardening work, read the complete audit in
+`docs/internal/AUDIT_2.0.0RC3_2026-09-22.md`. It is the persistent reference
+for the `2.0.0rc3` review and must not be replaced by assumptions from a
+previous agent session.
+
+The audit identifies the following blockers or priority lots:
+
+- G1: verify the installed wheel and bundled resources on every supported
+  Python version, especially Python 3.9;
+- G2: restore an effective MR/push CI policy without bypassing the quota issue;
+- S1: prevent unconfirmed guided-profile examples from being exported as user
+  data;
+- S2/S3: decide the `scale` contract in `R3XA_SPEC` and avoid serializing
+  defaults that the user did not provide;
+- S5: make renamed object references serialize coherently;
+- then address S4, G3, G4, G5 and G9 before a final `2.0.0` release.
+
+Do not modify `R3XA_API/resources/schema.json` to address S2 or any other
+schema issue. Schema changes must first be made and published in
+`R3XA_SPEC`, then synchronized into this repository and verified by
+`schema-sync`.
+
+The audit is a work-tracking baseline, not evidence that all findings are
+still unresolved. Reproduce each finding against the current `develop` HEAD,
+record the result in the relevant commit, and update this section and the
+audit status when a lot is completed.
+
+Current hardening status:
+
+- S1 is treated as a presentation issue, not a reason to remove profile
+  examples: profiles are intentional complete templates, and the WebUI now
+  labels them explicitly in Home and Guided mode;
+- G1 is fixed in the package configuration and covered by a resource regression
+  test, but an installed-wheel check on Python 3.9 remains to be qualified in
+  CI;
+- G5 is fixed: `Registry.get_item(validated=False)` now loads incomplete items
+  without validation and validated paths no longer validate twice.
+- S3 is fixed for the public `data_set_file()` helper: an omitted delimiter is
+  not serialized, while an explicitly supplied delimiter is retained;
+- S5 is fixed for document-bound item renames: retained wire references follow
+  the new ID and serialization/integrity are covered by a regression test;
+- G9 is fixed for the static distribution: third-party notices and the complete
+  Graphviz license are built and tested locally.
+
 ## Audit baseline (2026-09-18)
 
 The audit that produced the plan above established this local baseline:

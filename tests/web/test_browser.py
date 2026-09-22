@@ -195,6 +195,8 @@ def test_language_switch_translates_the_home_page(page: Page) -> None:
 def test_prefilled_values_are_editable_without_confirmation(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/edit?profile=dic_2d&prefill=1")
     page.wait_for_selector(".guided-step")
+    assert page.locator("#guided-example-banner").is_visible()
+    assert "illustrative workflow" in page.locator("#guided-example-banner").inner_text()
     page.locator("#guided-prefill").click()
     page.locator(".guided-step-block").filter(has_text="Universal testing machine").first.locator(".guided-step").click()
     page.wait_for_selector(".example-values-help")

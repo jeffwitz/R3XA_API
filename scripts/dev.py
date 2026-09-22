@@ -255,6 +255,10 @@ def build_static_web(output_dir: Path) -> Path:
         ROOT / "r3xa_api" / "resources" / "graphviz" / "graphviz-12.2.1.wasm",
         assets_dir / "graphviz-12.2.1.wasm",
     )
+    shutil.copy2(
+        ROOT / "r3xa_api" / "resources" / "graphviz" / "LICENSE-Graphviz.txt",
+        assets_dir / "GRAPHVIZ_LICENSE.txt",
+    )
 
     schema = load_schema()
     schema_catalog = build_schema_catalog(schema)

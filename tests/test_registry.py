@@ -1,6 +1,8 @@
+import json
 from pathlib import Path
 
 import jsonschema
+import pytest
 
 from r3xa_api import R3XAFile, Registry, RegistryItem, load_item, load_registry, merge_item, validate_item
 
@@ -57,6 +59,22 @@ def test_registry_class():
     assert item["kind"] == "settings/specimen"
     assert registry.load("settings/specimen/openhole_sample")["kind"] == "settings/specimen"
     assert registry.load_validated("settings/specimen/openhole_sample")["kind"] == "settings/specimen"
+
+
+def test_registry_can_load_invalid_item_without_validation(tmp_path: Path):
+    path = tmp_path / "settings" / "specimen" / "incomplete.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        json.dumps({"id": "stg-specimen-incomplete", "kind": "settings/specimen"}),
+        encoding="utf-8",
+    )
+
+    registry = Registry(tmp_path)
+    item = registry.get_item("settings/specimen/incomplete", validated=False)
+
+    assert item["id"] == "stg-specimen-incomplete"
+    with pytest.raises(jsonschema.ValidationError):
+        registry.get_item("settings/specimen/incomplete")
 
 
 def test_registry_list_and_iteration():

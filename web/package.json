@@ -12,7 +12,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "GPL-2.0-or-later",
   "devDependencies": {
     "ajv": "^8.17.1",
     "cytoscape": "^3.34.3",

@@ -48,7 +48,7 @@ def _plain_value(value: Any) -> Any:
     return value
 
 
-def load_item(path: str | Path) -> R3XAItem:
+def load_item(path: str | Path, *, validate: bool = True) -> R3XAItem:
     """Load a JSON registry item from disk.
 
     Returns an `R3XAItem`, so a loaded item prints, validates and saves like
@@ -56,7 +56,7 @@ def load_item(path: str | Path) -> R3XAItem:
     """
 
     with open(path, "r", encoding="utf-8") as f:
-        return R3XAItem.from_dict(json.load(f))
+        return R3XAItem.from_dict(json.load(f), validate=validate)
 
 
 def save_item(
@@ -78,12 +78,12 @@ def save_item(
     return path
 
 
-def load_item_path(root: str | Path, tree_path: str) -> R3XAItem:
+def load_item_path(root: str | Path, tree_path: str, *, validate: bool = True) -> R3XAItem:
     """Load a registry item addressed as section/kind/name."""
 
     root = Path(root)
     path = root / f"{tree_path}.json"
-    return load_item(path)
+    return load_item(path, validate=validate)
 
 
 def save_item_path(
@@ -294,15 +294,15 @@ class Registry:
 
         self.root = Path(root)
 
-    def get(self, tree_path: str) -> R3XAItem:
+    def get(self, tree_path: str, *, validate: bool = True) -> R3XAItem:
         """Load an item from `section/kind/name` path."""
 
-        return load_item_path(self.root, tree_path)
+        return load_item_path(self.root, tree_path, validate=validate)
 
-    def load(self, tree_path: str) -> R3XAItem:
+    def load(self, tree_path: str, *, validate: bool = True) -> R3XAItem:
         """Alias for `get()` with a more discoverable name."""
 
-        return self.get(tree_path)
+        return self.get(tree_path, validate=validate)
 
     def wrap(self, item: Mapping[str, Any] | R3XAItem, tree_path: str | None = None) -> RegistryItem:
         """Wrap a plain item payload into a bound `RegistryItem`."""
@@ -312,7 +312,7 @@ class Registry:
     def get_item(self, tree_path: str, *, validated: bool = True, kind: Optional[str] = None) -> RegistryItem:
         """Load a registry item and return it as a `RegistryItem` wrapper."""
 
-        item = self.get_validated(tree_path, kind=kind) if validated else self.get(tree_path)
+        item = self.get_validated(tree_path, kind=kind) if validated else self.get(tree_path, validate=False)
         return RegistryItem(item, registry_root=self.root, tree_path=tree_path)
 
     def save(
@@ -335,7 +335,7 @@ class Registry:
     def get_validated(self, tree_path: str, kind: Optional[str] = None) -> R3XAItem:
         """Load then validate a registry item in one call."""
 
-        item = self.get(tree_path)
+        item = self.get(tree_path, validate=False)
         self.validate(item, kind=kind)
         return item
 

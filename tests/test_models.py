@@ -337,6 +337,32 @@ def test_scalar_reference_preserves_the_object_until_serialization():
     assert dic.to_dict()["mesh"] == specimen.id
 
 
+def test_renaming_a_bound_item_updates_serialized_references():
+    document = R3XAFile(
+        title="Reference rename",
+        description="References follow object identifiers",
+        authors=[{"name": "R3XA API"}],
+        date="2026-09-22",
+    )
+    camera = _valid_camera()
+    document.data_sources.append(camera)
+    images = models.ListDataSet(
+        title="Camera images",
+        data_type="image/tiff",
+        parent_data_sources=[camera],
+        timestamps=[0.0],
+        values=["image_0000.tif"],
+    )
+    document.data_sets.append(images)
+
+    camera.id = "src-camera-renamed"
+
+    assert images.parent_data_sources[0] is camera
+    assert document.integrity_errors() == []
+    assert document.to_dict()["data_sets"][0]["parent_data_sources"] == [camera.id]
+    assert document.validate() is None
+
+
 def test_object_first_item_merge_returns_a_typed_copy():
     camera = _valid_camera()
     merged = camera.merge(title="Updated camera")

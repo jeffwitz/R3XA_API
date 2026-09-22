@@ -185,6 +185,7 @@ package:
           "web/static/registry-storage.js",
           "web/static/schema.js",
           "web/static/style.css",
+          "r3xa_api/resources/schema.json",
           "r3xa_api/resources/ui/messages.json",
           "r3xa_api/resources/graphviz/graphviz-12.2.1.wasm",
       }
