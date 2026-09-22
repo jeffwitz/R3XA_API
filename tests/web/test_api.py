@@ -255,6 +255,21 @@ async def test_api_graph_svg_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.anyio
+async def test_api_graph_rejects_invalid_document() -> None:
+    app = create_app()
+    transport = ASGITransport(app=app)
+    payload = _load_example()
+    payload["version"] = "invalid"
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/graph", json=payload)
+
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    assert detail["valid"] is False
+    assert any(error["path"] == "version" for error in detail["errors"])
+
+
+@pytest.mark.anyio
 async def test_api_graph_svg_passes_palette(monkeypatch: pytest.MonkeyPatch) -> None:
     svg_payload = b"<svg xmlns='http://www.w3.org/2000/svg'><rect width='1' height='1'/></svg>"
 

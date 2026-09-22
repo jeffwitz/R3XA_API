@@ -70,6 +70,9 @@ async def graph_svg(
     payload = await _read_json(request)
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
+    validation_report = build_validation_report(payload)
+    if not validation_report["valid"]:
+        raise HTTPException(status_code=422, detail=validation_report)
     try:
         graph_options = {
             "include_description": show_description,

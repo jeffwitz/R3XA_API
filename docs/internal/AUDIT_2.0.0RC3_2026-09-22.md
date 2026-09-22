@@ -262,8 +262,9 @@ default.
   coverage. The Python Graphviz WebAssembly backend now also consumes a
   configurable deterministic fuel budget through `R3XA_GRAPHVIZ_WASM_FUEL`.
   Native `dot` rendering now has a configurable subprocess timeout through
-  `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. Complete graph-payload validation
-  remains open before public backend deployment.
+  `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. The `/api/graph` endpoint validates
+  the complete R3XA document, including integrity references, before invoking
+  a renderer and returns a structured `422` report for invalid documents.
 - **G4:** the WebUI package is now named `r3xa_web` instead of the generic
   top-level `web`. Runtime commands, wheel contents, deployment manifests,
   tests, and documentation were updated; the installed wheel now exposes only

@@ -623,8 +623,10 @@ Current hardening status:
   with API regression coverage. The Python Graphviz WebAssembly backend also
   has a configurable fuel budget via `R3XA_GRAPHVIZ_WASM_FUEL`; native `dot`
   rendering now has a configurable subprocess timeout via
-  `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. Complete graph-payload validation
-  remains open before public backend deployment.
+  `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. The `/api/graph` endpoint now
+  validates the complete R3XA document, including integrity references, before
+  invoking any rendering backend and returns a structured `422` report for
+  invalid graph documents.
 - G4 is fixed locally: the FastAPI/static WebUI package is now `r3xa_web`,
   avoiding a collision with unrelated top-level `web` distributions. Runtime
   commands, packaging, deployment manifests, tests, and documentation use the
