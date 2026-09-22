@@ -622,8 +622,9 @@ Current hardening status:
   over the configurable `R3XA_MAX_JSON_BODY_BYTES` limit (5 MiB by default),
   with API regression coverage. The Python Graphviz WebAssembly backend also
   has a configurable fuel budget via `R3XA_GRAPHVIZ_WASM_FUEL`; native `dot`
-  subprocess timeouts and complete graph-payload validation remain open before
-  public backend deployment.
+  rendering now has a configurable subprocess timeout via
+  `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. Complete graph-payload validation
+  remains open before public backend deployment.
 
 ## Audit baseline (2026-09-18)
 
