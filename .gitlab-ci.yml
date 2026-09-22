@@ -119,7 +119,7 @@ static-web-build:
     - python3 -m venv .ci-venv
     - .ci-venv/bin/python -m pip install --upgrade pip
     - .ci-venv/bin/python -m pip install -e ".[web]"
-    - npm ci --prefix web
+    - npm ci --prefix r3xa_web
   script:
     - npm test --prefix web
     - .ci-venv/bin/python scripts/dev.py build-static-web
@@ -141,7 +141,7 @@ static-web-test:
     - python3 -m venv .ci-venv
     - .ci-venv/bin/python -m pip install --upgrade pip
     - .ci-venv/bin/python -m pip install -e ".[dev,web]"
-    - npm ci --prefix web
+    - npm ci --prefix r3xa_web
   script:
     - R3XA_CHROMIUM_EXECUTABLE=/usr/bin/chromium .ci-venv/bin/python scripts/dev.py test-static-web
 
@@ -175,24 +175,24 @@ package:
       with ZipFile(wheel) as archive:
           names = set(archive.namelist())
       required = {
-          "web/app/asgi.py",
-          "web/templates/index.html",
-          "web/static/app.js",
-          "web/static/graph-core.mjs",
-          "web/static/graph-cytoscape.mjs",
-          "web/static/graph-runtime.mjs",
-          "web/static/home.js",
-          "web/static/i18n.js",
-          "web/static/registry-storage.js",
-          "web/static/schema.js",
-          "web/static/style.css",
+          "r3xa_web/app/asgi.py",
+          "r3xa_web/templates/index.html",
+          "r3xa_web/static/app.js",
+          "r3xa_web/static/graph-core.mjs",
+          "r3xa_web/static/graph-cytoscape.mjs",
+          "r3xa_web/static/graph-runtime.mjs",
+          "r3xa_web/static/home.js",
+          "r3xa_web/static/i18n.js",
+          "r3xa_web/static/registry-storage.js",
+          "r3xa_web/static/schema.js",
+          "r3xa_web/static/style.css",
           "r3xa_api/resources/schema.json",
           "r3xa_api/resources/ui/messages.json",
           "r3xa_api/resources/graphviz/graphviz-12.2.1.wasm",
       }
       missing = required - names
       if missing:
-          raise SystemExit(f"Wheel is missing web files: {sorted(missing)}")
+          raise SystemExit(f"Wheel is missing WebUI files: {sorted(missing)}")
       print(f"Validated package contents in {wheel.name}")
       PY
     - python -m venv .wheel-venv

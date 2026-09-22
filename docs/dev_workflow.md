@@ -25,7 +25,7 @@ Pages publication jobs; the persistent status is maintained in
 To build the static distribution, install the JavaScript build dependency once:
 
 ```bash
-npm ci --prefix web
+npm ci --prefix r3xa_web
 python scripts/dev.py build-static-web
 ```
 
@@ -289,4 +289,4 @@ python examples/python/graph_r3xa.py \
 ## Clean source archive
 
 - `python scripts/dev.py source-archive` creates `archives/R3XA_API-source.zip` from `git archive`.
-- Generated folders (`docs/_build`, `web/node_modules`, caches, build artifacts) are excluded by workflow and `.gitignore`.
+- Generated folders (`docs/_build`, `r3xa_web/node_modules`, caches, build artifacts) are excluded by workflow and `.gitignore`.

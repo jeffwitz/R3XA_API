@@ -146,7 +146,7 @@ Each reference is stored twice (the ID and the object), and `__getattribute__` i
 
 ### G9 — Moderate: license notices are missing
 
-The static site redistributes `graphviz-12.2.1.wasm` (EPL-1.0), generated Ajv code and Cytoscape (MIT), but contains no `THIRD_PARTY_NOTICES`. Lot 8 of `CLAUDE.md` requires this and is marked as completed, but the file is absent from the build. `web/package.json` declares ISC for a project declared GPL-2.0-or-later.
+The static site redistributes `graphviz-12.2.1.wasm` (EPL-1.0), generated Ajv code and Cytoscape (MIT), but contains no `THIRD_PARTY_NOTICES`. Lot 8 of `CLAUDE.md` requires this and is marked as completed, but the file is absent from the build. `r3xa_web/package.json` declares ISC for a project declared GPL-2.0-or-later.
 
 **Proposed correction:** generate notices in the build and test their presence. State explicitly that the WASM program is a separate EPL/GPL aggregate.
 
@@ -264,6 +264,10 @@ default.
   Native `dot` rendering now has a configurable subprocess timeout through
   `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. Complete graph-payload validation
   remains open before public backend deployment.
+- **G4:** the WebUI package is now named `r3xa_web` instead of the generic
+  top-level `web`. Runtime commands, wheel contents, deployment manifests,
+  tests, and documentation were updated; the installed wheel now exposes only
+  the non-colliding namespace.
 
 S2, S4 and the other schema-policy decisions remain blocked on an explicit
 decision in `R3XA_SPEC`; this repository must not edit the vendored schema to

@@ -11,7 +11,7 @@ python -m pip install "r3xa-api[web]"
 ## Run
 
 ```bash
-python -m uvicorn web.app.asgi:app --reload
+python -m uvicorn r3xa_web.app.asgi:app --reload
 ```
 
 When working from a source checkout, `pip install -e ".[web,dev]"` remains
@@ -31,7 +31,7 @@ Notes:
 Place the Photomeca logo at:
 
 ```
-web/static/photomeca-logo.png
+r3xa_web/static/photomeca-logo.png
 ```
 
 It will be displayed in the top bar if present.

@@ -11,7 +11,7 @@ This guide describes how to deploy the FastAPI web app on Railway.
 Railway will detect the `Procfile` and start:
 
 ```
-python -m uvicorn web.app.asgi:app --host 0.0.0.0 --port $PORT
+python -m uvicorn r3xa_web.app.asgi:app --host 0.0.0.0 --port $PORT
 ```
 
 If the build system does not install web extras, the included `railway.toml`
@@ -45,7 +45,7 @@ You can find the public URL in the Railway project dashboard.
 
 ```bash
 pip install -e ".[web]"
-python scripts/dev.py run-web --app web.app.asgi:app --port 8000
+python scripts/dev.py run-web --app r3xa_web.app.asgi:app --port 8000
 ```
 
 ## Notes

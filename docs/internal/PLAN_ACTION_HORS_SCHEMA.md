@@ -6,7 +6,7 @@ Ce plan couvre les améliorations proposées qui **ne nécessitent pas** de modi
 
 - Nettoyer définitivement les artefacts générés :
   - `docs/_build/`
-  - `web/node_modules/`
+  - `r3xa_web/node_modules/`
   - `build/`, `dist/`, `*.egg-info/`
   - `__pycache__/`, `*.pyc`
 - Verrouiller `.gitignore` pour éviter les réintroductions.

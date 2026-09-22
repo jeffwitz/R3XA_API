@@ -15,7 +15,7 @@ This section documents the optional web UI included in the repository.
 The web UI is split into two layers:
 
 - **`r3xa_api/webcore/`**: pure Python helpers used by the web API (validation reports, resolved schema catalogue, UI profiles, schema summary, and the Graphviz, PyVis, and NetworkX/Matplotlib graph backends).
-- **`web/`**: FastAPI app + HTML/JS/CSS templates and static assets.
+- **`r3xa_web/`**: FastAPI app + HTML/JS/CSS templates and static assets.
 
 This keeps the **core API** (`r3xa_api`) as the single source of truth, while the web UI remains a thin consumer of that API.
 
@@ -32,7 +32,7 @@ The web UI is included in the PyPI package. Install it with:
 
 ```bash
 python -m pip install "r3xa-api[web]"
-python -m uvicorn web.app.asgi:app --host 127.0.0.1 --port 8002
+python -m uvicorn r3xa_web.app.asgi:app --host 127.0.0.1 --port 8002
 ```
 
 From a source checkout, the repository runner is also available:

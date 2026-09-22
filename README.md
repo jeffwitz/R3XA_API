@@ -292,7 +292,7 @@ Run on MyBinder (no local install):
 The web UI is available from PyPI:
 ```bash
 python -m pip install "r3xa-api[web]"
-python -m uvicorn web.app.asgi:app --host 127.0.0.1 --port 8002
+python -m uvicorn r3xa_web.app.asgi:app --host 127.0.0.1 --port 8002
 ```
 Then open `http://127.0.0.1:8002/`.
 

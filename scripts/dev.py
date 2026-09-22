@@ -16,8 +16,8 @@ FULL_DEV_EXTRAS = ".[dev,docs,web,notebook,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
 SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
 MODELS_OUTPUT = "r3xa_api/models.py"
-WEB_TEMPLATES = ROOT / "web" / "templates"
-WEB_STATIC = ROOT / "web" / "static"
+WEB_TEMPLATES = ROOT / "r3xa_web" / "templates"
+WEB_STATIC = ROOT / "r3xa_web" / "static"
 
 
 def model_codegen_command(
@@ -282,24 +282,24 @@ def build_static_web(output_dir: Path) -> Path:
     if node is None:
         raise RuntimeError(
             "Node.js is required to build the static validator. "
-            "Install Node.js and run `npm ci` in web/ first."
+            "Install Node.js and run `npm ci` in r3xa_web/ first."
         )
     _run(
         node,
-        "web/scripts/build-validator.mjs",
+        "r3xa_web/scripts/build-validator.mjs",
         SCHEMA_RESOURCE,
         str(assets_dir / "validator.generated.js"),
     )
     _run(
         node,
-        "web/scripts/build-graph.mjs",
-        "web/static/graph-runtime.mjs",
+        "r3xa_web/scripts/build-graph.mjs",
+        "r3xa_web/static/graph-runtime.mjs",
         str(assets_dir / "graph.generated.js"),
     )
     _run(
         node,
-        "web/scripts/build-cytoscape.mjs",
-        "web/static/graph-cytoscape.mjs",
+        "r3xa_web/scripts/build-cytoscape.mjs",
+        "r3xa_web/static/graph-cytoscape.mjs",
         str(assets_dir / "cytoscape.generated.js"),
     )
 
@@ -366,7 +366,7 @@ def cmd_serve_static_web(args: argparse.Namespace) -> None:
 def cmd_clean_artifacts(_: argparse.Namespace) -> None:
     directories = [
         ROOT / "docs" / "_build",
-        ROOT / "web" / "node_modules",
+        ROOT / "r3xa_web" / "node_modules",
         ROOT / "build",
         ROOT / "dist",
         ROOT / ".pytest_cache",
@@ -564,7 +564,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_web = subparsers.add_parser("run-web", help="launch the local FastAPI web UI")
     run_web.add_argument("--host", default="127.0.0.1", help="host interface for Uvicorn")
     run_web.add_argument("--port", type=int, default=8002, help="port for Uvicorn")
-    run_web.add_argument("--app", default="web.app.main:app", help="ASGI application import path")
+    run_web.add_argument("--app", default="r3xa_web.app.main:app", help="ASGI application import path")
     run_web.add_argument("--no-reload", dest="reload", action="store_false", help="disable Uvicorn autoreload")
     run_web.add_argument("--install", action="store_true", help="install the web extra before launching the server")
     run_web.add_argument(

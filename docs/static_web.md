@@ -318,7 +318,7 @@ Install the build-time dependencies and create the site from the repository
 root:
 
 ```bash
-npm ci --prefix web
+npm ci --prefix r3xa_web
 python scripts/dev.py build-static-web
 ```
 
@@ -331,8 +331,8 @@ cd dist/r3xa-webui
 python -m http.server 8080
 ```
 
-The build toolchain is pinned to Node.js `22.23.0` (`web/.node-version` and
-`web/package.json`). CI uses the matching `node:22.23.0-bookworm-slim` image;
+The build toolchain is pinned to Node.js `22.23.0` (`r3xa_web/.node-version` and
+`r3xa_web/package.json`). CI uses the matching `node:22.23.0-bookworm-slim` image;
 the Python environment used by the build and browser qualification is created
 inside that image. This keeps the generated validator and static bundles
 reproducible without adding Node.js to the runtime deployment.
@@ -467,7 +467,7 @@ The initiative is complete only when all of the following are true:
 - Recorded the static WebUI architecture and acceptance criteria.
 - Chose a parallel migration: FastAPI remains the server runtime while the
   static runtime is built and qualified.
-- Completed Phase A: introduced `web/static/runtime.js` as the server runtime
+- Completed Phase A: introduced `r3xa_web/static/runtime.js` as the server runtime
   adapter and routed page metadata, validation, and graph operations through it.
 - Verified Phase A with JavaScript syntax checks, 26 WebUI API/contract tests,
   and 16 browser tests.
@@ -499,7 +499,7 @@ The initiative is complete only when all of the following are true:
 ### Phase C progress
 
 - Ajv 2020 standalone compilation is implemented in
-  `web/scripts/build-validator.mjs` and runs as part of the static build.
+  `r3xa_web/scripts/build-validator.mjs` and runs as part of the static build.
 - The static runtime validates documents and Registry fragments without a
   server, then applies local ID/reference/date integrity checks to documents.
 - Browser tests cover local document validation, duplicate-ID integrity errors,

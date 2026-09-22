@@ -199,7 +199,7 @@ The call sequence is:
 
 The Python implementation of this protocol is in
 `r3xa_api/webcore/_graph_graphviz_wasm.py`. The browser implementation is in
-`web/static/graph-runtime.mjs`. Keeping the ABI small is important: it avoids
+`r3xa_web/static/graph-runtime.mjs`. Keeping the ABI small is important: it avoids
 duplicating Graphviz’s internal data structures in either runtime.
 
 ## What was implemented in R3XA_API
@@ -275,8 +275,8 @@ The repository-specific pieces are:
 | `r3xa_api/webcore/_graph_core.py` | Builds the R3XA graph model, identifies settings, sources, intermediate objects, and final datasets, and shares palette/role semantics. |
 | `r3xa_api/webcore/_graph_graphviz.py` | Builds the Graphviz DOT representation and contains the native Graphviz backend integration. |
 | `r3xa_api/webcore/_graph_graphviz_wasm.py` | Python `wasmtime` adapter: loads the packaged module, configures WASI, implements the `malloc`/`free`/render ABI, reads SVG, and extracts Graphviz positions. |
-| `web/static/graph-core.mjs` | Browser-side equivalent of the R3XA graph model and DOT generation used by the static WebUI. |
-| `web/static/graph-runtime.mjs` | Browser-side WASI adapter: loads the local module, supplies the required `wasi_snapshot_preview1` imports, calls the wrapper exports, and returns SVG. |
+| `r3xa_web/static/graph-core.mjs` | Browser-side equivalent of the R3XA graph model and DOT generation used by the static WebUI. |
+| `r3xa_web/static/graph-runtime.mjs` | Browser-side WASI adapter: loads the local module, supplies the required `wasi_snapshot_preview1` imports, calls the wrapper exports, and returns SVG. |
 | `scripts/dev.py` | Copies the exact packaged WASM bytes into the static distribution and exports the shared graph assets. |
 | `pyproject.toml` | Declares `wasmtime` and includes the WASM, license, and provenance files in the Python package. |
 | `r3xa_api/resources/graphviz/README.md` | Records upstream Graphviz provenance, the release, the wrapper ABI, and distribution notes. |
@@ -417,7 +417,7 @@ After replacing it, update the versioned references in:
 - `tools/graphviz-wasi/manifest.json` and `tools/graphviz-wasi/build.py`;
 - `tools/graphviz-wasi/wrapper.c` and `tools/graphviz-wasi/CMakeLists.txt`;
 - `r3xa_api/webcore/_graph_graphviz_wasm.py`;
-- `web/static/graph-runtime.mjs`;
+- `r3xa_web/static/graph-runtime.mjs`;
 - `scripts/dev.py` if the asset filename changes;
 - `r3xa_api/resources/graphviz/README.md`;
 - the static-build and WASM backend tests.

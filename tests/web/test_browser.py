@@ -32,7 +32,7 @@ def web_server() -> str:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]
     process = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "web.app.main:app", "--host", "127.0.0.1", "--port", str(port)],
+        [sys.executable, "-m", "uvicorn", "r3xa_web.app.main:app", "--host", "127.0.0.1", "--port", str(port)],
         cwd=ROOT,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,

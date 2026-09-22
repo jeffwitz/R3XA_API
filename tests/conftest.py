@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 
-# Ensure project root is on sys.path so that `import web.app...` works in tests.
+# Ensure project root is on sys.path so that `import r3xa_web.app...` works in tests.
 ROOT = Path(__file__).resolve().parents[1]
 root_str = str(ROOT)
 if root_str not in sys.path:

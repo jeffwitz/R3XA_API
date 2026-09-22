@@ -25,7 +25,7 @@ The architectural invariants are:
 
 ## Static WebUI phases
 
-Phase A is complete: `web/static/runtime.js` provides the server runtime
+Phase A is complete: `r3xa_web/static/runtime.js` provides the server runtime
 adapter, and page scripts use `window.R3XARuntime` instead of direct `/api/*`
 calls. Phase B is complete: `python scripts/dev.py build-static-web` generates
 static pages, local schema/UI artefacts, build metadata, and a precompiled Ajv
@@ -62,7 +62,7 @@ successful static build. Explicit Web/API pipelines may deploy `develop` for
 pre-release Pages qualification, while ordinary pushes still do not deploy.
 
 Static JavaScript builds use Node.js `22.23.0`, declared in
-`web/.node-version`, `web/package.json`, and `web/package-lock.json`. The two
+`r3xa_web/.node-version`, `r3xa_web/package.json`, and `r3xa_web/package-lock.json`. The two
 static CI jobs use the matching official Node image and create their Python
 environment locally, so Node is pinned for build reproducibility without
 becoming a runtime dependency of the published site.
@@ -131,7 +131,7 @@ The next agent should start on `develop`, verify the worktree, and run:
 
 ```bash
 git status -sb
-npm ci --prefix web
+npm ci --prefix r3xa_web
 .venv/bin/python scripts/dev.py test-static-web
 ```
 
@@ -164,7 +164,7 @@ listed order and keep one coherent commit per numbered lot.
 Status: implemented in the current working tree. Keep the regression tests and
 do not reintroduce automatic enrichment when extending the Registry editor.
 
-`web/static/registry.js` currently calls `enrichLoadedDraft()` when a draft or
+`r3xa_web/static/registry.js` currently calls `enrichLoadedDraft()` when a draft or
 file is loaded. It uses `completeExampleValue()` to populate missing or blank
 fields with plausible example values and may also replace legacy IDs. This is
 useful when explicitly creating an example, but it is unsafe for imported
@@ -196,7 +196,7 @@ now leaves documents containing duplicate IDs unchanged and reports the
 ambiguity instead of guessing a reference target. Keep the duplicate-ID tests
 when changing migration behavior.
 
-`normalizeDocumentIds()` in `web/static/app.js` and the local Registry
+`normalizeDocumentIds()` in `r3xa_web/static/app.js` and the local Registry
 normalization currently build a simple `old ID -> new ID` map. If two objects
 share the same old ID, the second replacement wins and references can silently
 be redirected to the wrong object.
@@ -473,7 +473,7 @@ feat(web): complete i18n accessibility and CSP support
 #### 10. Share runtime qualification and add missing tests
 
 The Python Playwright coverage is valuable, but server and static suites are
-not fully shared. `web/package.json` still has no real JavaScript unit suite,
+not fully shared. `r3xa_web/package.json` still has no real JavaScript unit suite,
 and pure functions such as ID migration, local storage, report normalization,
 and graph-model construction are tested mainly through the browser.
 
@@ -625,6 +625,10 @@ Current hardening status:
   rendering now has a configurable subprocess timeout via
   `R3XA_GRAPHVIZ_NATIVE_TIMEOUT_SECONDS`. Complete graph-payload validation
   remains open before public backend deployment.
+- G4 is fixed locally: the FastAPI/static WebUI package is now `r3xa_web`,
+  avoiding a collision with unrelated top-level `web` distributions. Runtime
+  commands, packaging, deployment manifests, tests, and documentation use the
+  new namespace.
 
 ## Audit baseline (2026-09-18)
 
@@ -656,7 +660,7 @@ The current overall assessment is:
 
 ## Current known limitations
 
-- The static build requires Node.js and `npm ci --prefix web` at build time;
+- The static build requires Node.js and `npm ci --prefix r3xa_web` at build time;
   the generated site does not require Node.js at runtime.
 - The static graph bundle is deliberately loaded only after `Generate graph`.
 - The Schema viewer uses a text-only JSON tree and sanitizes returned SVG before

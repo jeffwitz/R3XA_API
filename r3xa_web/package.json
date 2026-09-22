@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "r3xa-webui",
   "version": "1.0.0",
   "description": "Minimal FastAPI shell wired to the `r3xa_api.webcore` contracts.",
   "main": "index.js",

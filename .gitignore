@@ -37,7 +37,7 @@ Archive.zip
 archives/
 
 # Web tooling
-web/node_modules/
+r3xa_web/node_modules/
 
 # Local agent/tooling caches
 .codebase-memory/

@@ -37,7 +37,7 @@ jobs:
         run: |
           .ci-venv/bin/python -m pip install --upgrade pip
           .ci-venv/bin/python -m pip install -e ".[web]"
-          npm ci --prefix web
+          npm ci --prefix r3xa_web
 
       - name: Build static WebUI
         run: .ci-venv/bin/python scripts/dev.py build-static-web --output dist/r3xa-webui

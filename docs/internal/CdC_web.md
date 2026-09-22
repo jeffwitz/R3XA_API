@@ -31,7 +31,7 @@
 
 ### Recommandation de structure : monorepo multi-composants
 
-On garde le repo `R3XA_API`, on ajoute une UI dans un dossier `web/` **sans transformer le package Python** en monolithe.
+On garde le repo `R3XA_API`, on ajoute une UI dans un dossier `r3xa_web/` **sans transformer le package Python** en monolithe.
 
 #### Arborescence cible
 
@@ -51,7 +51,7 @@ R3XA_API/
 │     ├─ schema_summary.py         # SchemaSummary (format stable)
 │     ├─ batch.py                  # batch validate helpers
 │     └─ normalize.py              # (optionnel, stub v0)
-├─ web/                           # NOUVEAU : application web (outil)
+├─ r3xa_web/                      # NOUVEAU : application web (outil)
 │  ├─ app/                        # backend FastAPI (ASGI)
 │  │  ├─ main.py                  # create_app(), routes, mounting static/templates
 │  │  ├─ api.py                   # routes /api/*
@@ -63,7 +63,7 @@ R3XA_API/
 ├─ tests/
 │  ├─ api/                        # tests r3xa_api (existants + nouveaux)
 │  ├─ webcore/                    # tests unitaires reports/summary/batch
-│  └─ web/                        # tests API FastAPI + (option) Playwright e2e
+│  └─ tests/web/                  # tests API FastAPI + (option) Playwright e2e
 ├─ examples/
 │  ├─ python/
 │  └─ artifacts/
@@ -74,13 +74,13 @@ R3XA_API/
 ### Pourquoi cette structure ?
 
 * `r3xa_api/webcore/` = logique réutilisable, testable, sans HTTP (TDD facile).
-* `web/` = outil UI (peut rester non-packagé au début, ou packagé plus tard).
+* `r3xa_web/` = outil UI (peut rester non-packagé au début, ou packagé plus tard).
 * `tests/webcore` verrouille les **contrats** dont dépend l’UI.
-* Possibilité future : extraire `web/` dans un autre repo sans réécrire le cœur.
+* Possibilité future : extraire `r3xa_web/` dans un autre repo sans réécrire le cœur.
 
 ### Ce qu’il faut éviter
 
-* ❌ Mettre de la logique de validation/formatage d’erreurs dans `web/app/*` (duplication).
+* ❌ Mettre de la logique de validation/formatage d’erreurs dans `r3xa_web/app/*` (duplication).
 * ❌ Dépendre d’un framework front lourd (React/Vue build) dès v0 (risque d’explosion de scope).
 * ❌ Coupler la release PyPI API avec le web : le web est “outil repo” au départ.
 
@@ -326,9 +326,9 @@ Output :
 
 ## 10) Livrables
 
-* Code dans `web/` + `r3xa_api/webcore/`
+* Code dans `r3xa_web/` + `r3xa_api/webcore/`
 * Tests `pytest` passants
-* README `web/README.md` :
+* README `r3xa_web/README.md` :
 
   * installation
   * `pip install -e .[web,dev]`

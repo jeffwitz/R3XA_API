@@ -51,8 +51,8 @@ def _(Path, base64, mo):
             return f"data:{mime};base64,{encoded}"
         return None
 
-    r3xa_logo = logo_data_uri(["web/static/r3xa-logo.png", "docs/figures/R3XA.png"])
-    photomeca_logo = logo_data_uri(["web/static/photomeca-logo.png"])
+    r3xa_logo = logo_data_uri(["r3xa_web/static/r3xa-logo.png", "docs/figures/R3XA.png"])
+    photomeca_logo = logo_data_uri(["r3xa_web/static/photomeca-logo.png"])
 
     logo_tags = []
     if photomeca_logo:
@@ -74,7 +74,7 @@ def _(Path, base64, mo):
         )
     else:
         logos = mo.callout(
-            "Logos not found. Expected assets under `web/static/`.",
+            "Logos not found. Expected assets under `r3xa_web/static/`.",
             kind="warn",
         )
     intro = mo.md("""

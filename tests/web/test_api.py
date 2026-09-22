@@ -9,8 +9,8 @@ import pytest
 pytest.importorskip("fastapi")
 
 from httpx import ASGITransport
-from web.app import api as api_module
-from web.app.main import create_app
+from r3xa_web.app import api as api_module
+from r3xa_web.app.main import create_app
 
 
 def _load_example() -> dict:
