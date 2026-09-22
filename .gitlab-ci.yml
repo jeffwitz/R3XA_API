@@ -48,8 +48,11 @@ schema-sync:
   image: python:3.12-slim
   variables:
     R3XA_SPEC_URL: "https://gitlab.com/photomechanics/R3XA_SPEC.git"
-    # Pin validation to the published schema tag instead of a moving branch.
-    R3XA_SPEC_REF: "2026.9.18"
+    # Pin validation to the exact SPEC commit used to refresh the vendored
+    # schema. This commit keeps schema version 2026.9.18 while allowing the
+    # generic item additionalProperties change to be consumed before a new
+    # SPEC release tag is published.
+    R3XA_SPEC_REF: "87101d66219b3ad640f327243db051d824464c07"
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends git ca-certificates
@@ -59,7 +62,10 @@ schema-sync:
     # The packaged schema is a copy of the one published by R3XA_SPEC. Compare
     # against a fresh clone so a divergence fails here instead of surfacing as a
     # validation error downstream.
-    - git clone --depth 1 --branch "$R3XA_SPEC_REF" "$R3XA_SPEC_URL" /tmp/R3XA_SPEC
+    - git init /tmp/R3XA_SPEC
+    - git -C /tmp/R3XA_SPEC remote add origin "$R3XA_SPEC_URL"
+    - git -C /tmp/R3XA_SPEC fetch --depth 1 origin "$R3XA_SPEC_REF"
+    - git -C /tmp/R3XA_SPEC checkout --detach FETCH_HEAD
     # Guard against the test skipping itself if the clone were ever incomplete.
     - test -f /tmp/R3XA_SPEC/schema.json
     - R3XA_SPEC_PATH=/tmp/R3XA_SPEC python -m pytest -q tests/test_schema_sync.py

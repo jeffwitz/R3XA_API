@@ -20,7 +20,11 @@ WEB_TEMPLATES = ROOT / "web" / "templates"
 WEB_STATIC = ROOT / "web" / "static"
 
 
-def model_codegen_command(python: str, output: str = MODELS_OUTPUT) -> tuple[str, ...]:
+def model_codegen_command(
+    python: str,
+    output: str = MODELS_OUTPUT,
+    schema: str = SCHEMA_RESOURCE,
+) -> tuple[str, ...]:
     """Return the datamodel-code-generator invocation that builds the typed models.
 
     `tests/test_models_sync.py` reuses this so the sync check cannot drift from
@@ -32,7 +36,7 @@ def model_codegen_command(python: str, output: str = MODELS_OUTPUT) -> tuple[str
         "-m",
         "datamodel_code_generator",
         "--input",
-        SCHEMA_RESOURCE,
+        schema,
         "--input-file-type",
         "jsonschema",
         "--output",

@@ -206,6 +206,36 @@ def test_data_set_file_enforces_schema_fields_and_rejects_unknown_fields():
         data_file.validate()
 
 
+def test_generated_item_extra_policy_matches_schema():
+    schema = r3xa_api.load_schema()
+    model_names = {
+        "settings/generic": "GenericSetting",
+        "data_sources/generic": "GenericSource",
+        "data_sets/generic": "GenericDataSet",
+    }
+
+    for kind, model_name in model_names.items():
+        section, name = kind.split("/", 1)
+        definition = schema["$defs"][section][name]
+        model_class = getattr(models, model_name)
+        expected_extra = (
+            "forbid" if definition.get("additionalProperties") is False else "allow"
+        )
+
+        assert model_class.model_config["extra"] == expected_extra
+
+        payload = {"title": f"Example {kind}"}
+        payload["unexpected_example_field"] = "accepted only when the schema allows it"
+        if expected_extra == "forbid":
+            with pytest.raises(ValidationError):
+                model_class(**payload)
+        else:
+            item = model_class(**payload)
+            assert item.model_extra["unexpected_example_field"] == payload[
+                "unexpected_example_field"
+            ]
+
+
 def test_document_collections_preserve_object_identity_and_bind_documents():
     document = models.R3XADocument()
     camera = models.CameraSource(id="camera_01", title="Camera")

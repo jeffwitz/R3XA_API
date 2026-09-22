@@ -103,6 +103,28 @@ canonical repository.
 - Run targeted tests first, then the broader suite and documentation build
   before handing off a phase.
 
+### Critical schema authority rule
+
+`R3XA_SPEC` is the only authority for the R3XA schema. This rule is mandatory:
+
+- Never hand-edit `r3xa_api/resources/schema.json`, even for a one-line fix.
+- Never reconstruct, simplify, reformat, or patch a schema change locally in
+  `R3XA_API`.
+- First fetch the exact intended commit or release from `R3XA_SPEC`, then copy
+  its published `schema.json` byte-for-byte into `r3xa_api/resources/schema.json`.
+- Only after that copy may derived artefacts be regenerated with
+  `generate-spec`, `generate-models`, and `generate-stubs`.
+- Pin CI schema synchronization to the exact `R3XA_SPEC` commit used for the
+  copy; do not validate against an unrelated tag or moving branch.
+- Verify the copy with `cmp` (or an equivalent byte-for-byte check) and run the
+  schema-sync, model-sync, and relevant API tests before committing.
+- If the required `R3XA_SPEC` commit is unavailable, stop and report the
+  blocker. Do not edit the vendored schema to make tests pass.
+
+This is a release-blocking invariant: a schema change made directly in
+`R3XA_API` creates a second source of truth and must be treated as a critical
+error.
+
 ## Resume checklist
 
 The next agent should start on `develop`, verify the worktree, and run:

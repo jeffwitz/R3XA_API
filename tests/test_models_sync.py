@@ -14,6 +14,7 @@ lands on a non-blank line.
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -81,3 +82,45 @@ def test_models_match_packaged_schema(tmp_path: Path) -> None:
         "r3xa_api/models.py no longer matches the schema it is generated from.\n"
         "Regenerate it with `python scripts/dev.py generate-models`."
     )
+
+
+def test_model_codegen_preserves_schema_extra_policy(tmp_path: Path) -> None:
+    """Ensure ``additionalProperties`` is not hard-coded for every model."""
+
+    schema = json.loads(
+        (ROOT / "r3xa_api" / "resources" / "schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    schema["$defs"]["settings"]["generic"]["additionalProperties"] = True
+    schema["$defs"]["data_sources"]["generic"]["additionalProperties"] = False
+    schema["$defs"]["data_sets"]["generic"]["additionalProperties"] = False
+    schema_path = tmp_path / "schema.json"
+    schema_path.write_text(json.dumps(schema), encoding="utf-8")
+    generated = tmp_path / "models.py"
+    dev = _load_dev_module()
+
+    _run(
+        list(
+            dev.model_codegen_command(
+                sys.executable,
+                str(generated),
+                str(schema_path),
+            )
+        )
+    )
+    generated_text = generated.read_text(encoding="utf-8")
+
+    generic_setting = generated_text.split("class GenericModel1(", 1)[1].split(
+        "class Specimen(", 1
+    )[0]
+    generic_source = generated_text.split("class GenericModel(", 1)[1].split(
+        "class Identification(", 1
+    )[0]
+    generic_data_set = generated_text.split("class Generic(", 1)[1].split(
+        "class List(", 1
+    )[0]
+
+    assert "extra='allow'" in generic_setting
+    assert "extra='forbid'" in generic_source
+    assert "extra='forbid'" in generic_data_set

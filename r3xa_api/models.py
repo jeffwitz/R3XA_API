@@ -215,7 +215,7 @@ class File(R3XAItem):
 
 class Generic(R3XAItem):
     model_config = ConfigDict(
-        extra='forbid',
+        extra='allow',
     )
     id: Optional[str] = Field(None, description='ID of the data set.', title='ID')
     kind: Literal['data_sets/generic'] = Field(
@@ -469,7 +469,7 @@ class DicMeasurement(R3XAItem):
 
 class GenericModel(R3XAItem):
     model_config = ConfigDict(
-        extra='forbid',
+        extra='allow',
     )
     id: Optional[str] = Field(None, description='ID of the data source', title='ID')
     kind: Literal['data_sources/generic'] = Field(
@@ -1022,7 +1022,7 @@ class Tomograph(R3XAItem):
 
 class GenericModel1(R3XAItem):
     model_config = ConfigDict(
-        extra='forbid',
+        extra='allow',
     )
     id: Optional[str] = Field(None, description='ID of the setting.', title='ID')
     kind: Literal['settings/generic'] = Field(

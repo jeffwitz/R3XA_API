@@ -193,7 +193,7 @@
           "kind",
           "title"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "specimen": {
         "title": "Specimen",
@@ -473,7 +473,7 @@
           "output_dimension",
           "output_units"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "camera": {
         "title": "Visible Camera",
@@ -1756,7 +1756,7 @@
           "parent_data_sources",
           "path"
         ],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "file": {
         "title": "Data set (single file)",
