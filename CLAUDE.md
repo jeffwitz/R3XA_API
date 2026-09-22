@@ -586,7 +586,8 @@ The audit identifies the following blockers or priority lots:
 - S2/S3: decide the `scale` contract in `R3XA_SPEC` and avoid serializing
   defaults that the user did not provide;
 - S5: make renamed object references serialize coherently;
-- then address S4, G3, G4, G5 and G9 before a final `2.0.0` release.
+- then address S4, G4 and S6 before a final `2.0.0` release; G3, G5 and G9
+  are already addressed locally.
 
 Do not modify `R3XA_API/resources/schema.json` to address S2 or any other
 schema issue. Schema changes must first be made and published in
