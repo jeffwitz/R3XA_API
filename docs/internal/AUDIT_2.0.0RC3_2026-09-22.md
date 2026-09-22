@@ -253,6 +253,9 @@ default.
   the complete Graphviz license text, with a build test covering Ajv,
   Cytoscape and Graphviz notices. The WebUI package metadata now declares the
   project license consistently.
+- **G3:** the generated `core.pyi` now re-exports the shared
+  `r3xa_api.model_base.R3XAItem` instead of defining an incompatible duplicate,
+  and the generated `R3XAFile` signatures match the inherited runtime methods.
 
 S2, S4 and the other schema-policy decisions remain blocked on an explicit
 decision in `R3XA_SPEC`; this repository must not edit the vendored schema to

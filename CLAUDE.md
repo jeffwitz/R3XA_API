@@ -606,6 +606,9 @@ Current hardening status:
 - G1 is fixed in the package configuration and covered by a resource regression
   test, but an installed-wheel check on Python 3.9 remains to be qualified in
   CI;
+- G3 is fixed in the generated stubs: `core.pyi` now re-exports the shared
+  `r3xa_api.model_base.R3XAItem` instead of declaring a second incompatible
+  base type, and its `R3XAFile` signatures match the runtime API;
 - G5 is fixed: `Registry.get_item(validated=False)` now loads incomplete items
   without validation and validated paths no longer validate twice.
 - S3 is fixed for the public `data_set_file()` helper: an omitted delimiter is
