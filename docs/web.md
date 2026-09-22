@@ -52,7 +52,9 @@ render SVG without installing the system `dot` executable.
 The FastAPI runtime limits JSON request bodies to 5 MiB by default, including
 the graph endpoint. Operators can lower or raise this limit deliberately with
 `R3XA_MAX_JSON_BODY_BYTES`; the static runtime does not send user documents to
-this API.
+this API. Python Graphviz WebAssembly rendering also uses a deterministic fuel
+budget of 50 million instructions by default; operators can tune it with
+`R3XA_GRAPHVIZ_WASM_FUEL` when rendering unusually large documents.
 
 > Note: the native `graphviz` SVG backend requires the **Graphviz executable** (`dot`).
 > The default `graphviz-wasm` backend uses the bundled Graphviz WASI module and

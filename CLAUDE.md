@@ -620,8 +620,10 @@ Current hardening status:
   Graphviz license are built and tested locally.
 - G8 has a first server-side safeguard: FastAPI JSON endpoints reject bodies
   over the configurable `R3XA_MAX_JSON_BODY_BYTES` limit (5 MiB by default),
-  with API regression coverage. Graph execution timeout/fuel limits remain
-  open before public backend deployment.
+  with API regression coverage. The Python Graphviz WebAssembly backend also
+  has a configurable fuel budget via `R3XA_GRAPHVIZ_WASM_FUEL`; native `dot`
+  subprocess timeouts and complete graph-payload validation remain open before
+  public backend deployment.
 
 ## Audit baseline (2026-09-18)
 

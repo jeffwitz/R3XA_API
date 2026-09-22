@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from importlib.resources import files
+import os
 from pathlib import Path
 import re
 from typing import Any, Dict, Iterable
@@ -10,6 +11,18 @@ from xml.etree import ElementTree
 from ._graph_graphviz import build_graphviz_dot
 
 _WASM_RESOURCE = "resources/graphviz/graphviz-12.2.1.wasm"
+_DEFAULT_WASM_FUEL = 50_000_000
+
+
+def _wasm_fuel_limit() -> int:
+    raw_limit = os.getenv("R3XA_GRAPHVIZ_WASM_FUEL", str(_DEFAULT_WASM_FUEL))
+    try:
+        limit = int(raw_limit)
+    except ValueError as exc:
+        raise RuntimeError("R3XA_GRAPHVIZ_WASM_FUEL must be a positive integer.") from exc
+    if limit <= 0:
+        raise RuntimeError("R3XA_GRAPHVIZ_WASM_FUEL must be a positive integer.")
+    return limit
 
 
 def _load_wasmtime() -> Any:
@@ -26,7 +39,9 @@ def _load_wasmtime() -> Any:
 @lru_cache(maxsize=1)
 def _module() -> tuple[Any, Any]:
     wasmtime = _load_wasmtime()
-    engine = wasmtime.Engine()
+    config = wasmtime.Config()
+    config.consume_fuel = True
+    engine = wasmtime.Engine(config)
     resource = files("r3xa_api").joinpath(_WASM_RESOURCE)
     try:
         module = wasmtime.Module(engine, resource.read_bytes())
@@ -38,6 +53,7 @@ def _module() -> tuple[Any, Any]:
 def _render_dot(dot_source: str) -> bytes:
     wasmtime, (engine, module) = _module()
     store = wasmtime.Store(engine)
+    store.set_fuel(_wasm_fuel_limit())
     wasi = wasmtime.WasiConfig()
     wasi.argv = ["r3xa-graphviz"]
     store.set_wasi(wasi)
