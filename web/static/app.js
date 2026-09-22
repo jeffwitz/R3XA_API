@@ -1316,6 +1316,188 @@ const renderDataSetListField = (container, key, meta, value, onChange, options) 
   return wrapper;
 };
 
+const customPropertyTypes = ["string", "number", "boolean", "null", "object", "array"];
+
+const customPropertyType = (value) => {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  if (typeof value === "object") return "object";
+  if (typeof value === "number") return "number";
+  if (typeof value === "boolean") return "boolean";
+  return "string";
+};
+
+const customPropertyDefault = (type, value) => {
+  if (type === "null") return null;
+  if (type === "string") return value === undefined || value === null ? "" : String(value);
+  if (type === "number") return typeof value === "number" && Number.isFinite(value) ? value : 0;
+  if (type === "boolean") return Boolean(value);
+  if (type === "object") return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  if (type === "array") return Array.isArray(value) ? value : [];
+  return value;
+};
+
+const customPropertyControl = (type, value) => {
+  if (type === "boolean") {
+    const control = document.createElement("input");
+    control.type = "checkbox";
+    control.checked = Boolean(value);
+    return control;
+  }
+  if (type === "object" || type === "array") {
+    const control = document.createElement("textarea");
+    control.className = "json-field";
+    control.value = JSON.stringify(value, null, 2);
+    return control;
+  }
+  const control = document.createElement("input");
+  control.type = type === "number" ? "number" : "text";
+  if (type === "number") control.step = "any";
+  control.value = type === "null" ? "null" : (value ?? "");
+  control.readOnly = type === "null";
+  return control;
+};
+
+const customPropertyValue = (type, control) => {
+  if (type === "null") return null;
+  if (type === "boolean") return control.checked;
+  if (type === "number") {
+    const value = Number(control.value);
+    if (!Number.isFinite(value)) throw new Error("Enter a valid number");
+    return value;
+  }
+  if (type === "object" || type === "array") {
+    const value = JSON.parse(control.value);
+    if (type === "object" && (!value || typeof value !== "object" || Array.isArray(value))) {
+      throw new Error("Enter a JSON object");
+    }
+    if (type === "array" && !Array.isArray(value)) throw new Error("Enter a JSON array");
+    return value;
+  }
+  return control.value;
+};
+
+const renderAdditionalProperties = (container, item, meta, onChange, options = {}) => {
+  if (meta.additionalProperties !== true) return null;
+  const knownKeys = new Set(Object.keys(meta.properties || {}));
+  let working = Object.fromEntries(Object.entries(item).filter(([key]) => !knownKeys.has(key)));
+  const wrapper = document.createElement("section");
+  wrapper.className = "custom-properties-panel";
+  wrapper.dataset.customPropertiesFor = options.path || "item";
+  const heading = document.createElement("strong");
+  heading.textContent = t("editor.custom_properties", "Custom properties");
+  wrapper.appendChild(heading);
+  const help = document.createElement("small");
+  help.className = "field-description";
+  help.textContent = t(
+    "editor.custom_properties_help",
+    "This kind accepts additional JSON properties. Use them for project-specific metadata without changing the R3XA schema.",
+  );
+  wrapper.appendChild(help);
+  const list = document.createElement("div");
+  list.className = "custom-properties-list";
+  wrapper.appendChild(list);
+
+  const commit = (next) => {
+    working = {...next};
+    onChange({...working});
+  };
+
+  const renderRows = () => {
+    list.replaceChildren();
+    Object.keys(working)
+      .filter((key) => !knownKeys.has(key))
+      .forEach((key) => {
+        const row = document.createElement("div");
+        row.className = "custom-property-row";
+        const keyControl = document.createElement("input");
+        keyControl.type = "text";
+        keyControl.value = key;
+        keyControl.className = "custom-property-key";
+        keyControl.dataset.customPropertyKey = "";
+        keyControl.setAttribute("aria-label", t("editor.custom_property_name", "Property name"));
+        const type = customPropertyType(working[key]);
+        const typeControl = document.createElement("select");
+        typeControl.className = "custom-property-type";
+        typeControl.dataset.customPropertyType = "";
+        typeControl.setAttribute("aria-label", t("editor.custom_property_type", "Property type"));
+        customPropertyTypes.forEach((choice) => {
+          const option = document.createElement("option");
+          option.value = choice;
+          option.textContent = choice;
+          typeControl.appendChild(option);
+        });
+        typeControl.value = type;
+        const valueControl = customPropertyControl(type, working[key]);
+        valueControl.classList.add("custom-property-value");
+        valueControl.dataset.customPropertyValue = "";
+        valueControl.setAttribute("aria-label", t("editor.custom_property_value", "Property value"));
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "ghost custom-property-remove";
+        removeButton.textContent = t("field.remove", "Remove");
+        removeButton.addEventListener("click", () => {
+          const next = {...working};
+          delete next[key];
+          commit(next);
+          renderRows();
+        });
+        keyControl.addEventListener("change", () => {
+          const nextKey = keyControl.value.trim();
+          if (!nextKey || knownKeys.has(nextKey) || (nextKey !== key && Object.prototype.hasOwnProperty.call(working, nextKey))) {
+            keyControl.setCustomValidity(t("editor.custom_property_name_invalid", "Use a non-empty, unique name that is not a schema field."));
+            keyControl.reportValidity();
+            keyControl.value = key;
+            return;
+          }
+          const next = {...working};
+          next[nextKey] = next[key];
+          if (nextKey !== key) delete next[key];
+          commit(next);
+          renderRows();
+        });
+        keyControl.addEventListener("input", () => keyControl.setCustomValidity(""));
+        typeControl.addEventListener("change", () => {
+          const next = {...working, [key]: customPropertyDefault(typeControl.value, working[key])};
+          commit(next);
+          renderRows();
+        });
+        const updateValue = () => {
+          try {
+            const next = {...working, [key]: customPropertyValue(typeControl.value, valueControl)};
+            valueControl.setCustomValidity("");
+            commit(next);
+          } catch (error) {
+            valueControl.setCustomValidity(error.message);
+          }
+        };
+        valueControl.addEventListener(valueControl.type === "checkbox" ? "change" : "input", updateValue);
+        row.append(keyControl, typeControl, valueControl, removeButton);
+        list.appendChild(row);
+      });
+  };
+
+  renderRows();
+  const addButton = document.createElement("button");
+  addButton.type = "button";
+  addButton.className = "ghost custom-property-add";
+  addButton.dataset.customPropertyAdd = "";
+  addButton.textContent = t("editor.add_custom_property", "Add custom property");
+  addButton.addEventListener("click", () => {
+    const base = "custom_property";
+    let name = base;
+    let suffix = 1;
+    while (knownKeys.has(name) || Object.prototype.hasOwnProperty.call(working, name)) {
+      name = `${base}_${suffix++}`;
+    }
+    commit({...working, [name]: ""});
+    renderRows();
+  });
+  wrapper.appendChild(addButton);
+  container.appendChild(wrapper);
+  return wrapper;
+};
+
 const renderField = (container, key, meta, value, onChange, options = {}) => {
   if (!isFieldVisible(key, options.required, options.forceVisible, meta)) return null;
   if (isUnitMeta(meta)) return renderUnitField(container, key, meta, value, onChange, options);
@@ -1700,6 +1882,27 @@ const buildArrayEditor = (container, sectionName) => {
       entries
         .filter(([, propertyMeta]) => !isReferenceMeta(propertyMeta))
         .forEach(([key, propertyMeta]) => renderItemField(key, propertyMeta));
+      if (editorMode === "advanced" && meta.additionalProperties === true) {
+        const schemaKeys = new Set(Object.keys(meta.properties || {}));
+        renderAdditionalProperties(
+          form,
+          item,
+          meta,
+          (updatedItem) => {
+            const currentPayload = readPayload();
+            const currentItem = currentPayload?.[sectionName]?.[index];
+            if (!currentItem) return;
+            Object.keys(currentItem).forEach((key) => {
+              if (!schemaKeys.has(key) && !Object.prototype.hasOwnProperty.call(updatedItem, key)) delete currentItem[key];
+            });
+            Object.assign(currentItem, updatedItem);
+            inputEl.value = JSON.stringify(currentPayload, null, 2);
+            saveDraft();
+            refreshGuidedNavigation();
+          },
+          {path: `${sectionName}/${index}`},
+        );
+      }
     }
     card.appendChild(form);
     card.appendChild(itemValidationOutput);

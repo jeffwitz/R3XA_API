@@ -651,6 +651,45 @@ body[data-editor-mode="expert"] .guided-panel {
   box-sizing: border-box;
 }
 
+.custom-properties-panel {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border: 1px dashed #b7c5d4;
+  border-radius: 6px;
+  background: #f8fbfe;
+}
+
+.custom-properties-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.custom-property-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) 110px minmax(150px, 2fr) auto;
+  gap: 0.45rem;
+  align-items: start;
+}
+
+.custom-property-row input,
+.custom-property-row select,
+.custom-property-row textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.custom-property-row textarea {
+  min-height: 70px;
+}
+
+@media (max-width: 700px) {
+  .custom-property-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 #schema-tree ul {
   list-style: none;
   padding-left: 1rem;

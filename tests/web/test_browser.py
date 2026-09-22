@@ -235,6 +235,49 @@ def test_advanced_item_validation_uses_registry_validation(page: Page, web_serve
     assert any("Valid" in message for message in dialogs)
 
 
+def test_advanced_editor_can_edit_generic_custom_properties(page: Page, web_server: str) -> None:
+    page.goto(f"{web_server}/edit?profile=generic&new=1")
+    page.wait_for_selector("#schema-summary")
+    page.locator("[data-editor-mode='advanced']").click()
+    page.locator("#settings-form .array-actions button").filter(has_text="Generic experimental setup").click()
+
+    panel = page.locator("#settings-form .custom-properties-panel")
+    panel.locator("[data-custom-property-add]").click()
+    row = panel.locator(".custom-property-row").first
+    row.locator("[data-custom-property-key]").fill("calibration")
+    row.locator("[data-custom-property-key]").press("Tab")
+    row.locator("[data-custom-property-type]").select_option("object")
+    row = panel.locator(".custom-property-row").first
+    row.locator("[data-custom-property-value]").fill('{"operator":"JC","reference":12}')
+    page.locator("#field-settings-0-title").fill("Updated generic setup")
+
+    for section, title, key, value in (
+        ("data-sources-form", "Generic data source", "source_extension", "camera calibration metadata"),
+        ("data-sets-form", "Generic data set", "dataset_extension", "processed locally"),
+    ):
+        page.locator(f"#{section} .array-actions button").filter(has_text=title).click()
+        extra_panel = page.locator(f"#{section} .custom-properties-panel")
+        extra_panel.locator("[data-custom-property-add]").click()
+        extra_row = extra_panel.locator(".custom-property-row").first
+        extra_row.locator("[data-custom-property-key]").fill(key)
+        extra_row.locator("[data-custom-property-key]").press("Tab")
+        extra_row.locator("[data-custom-property-value]").fill(value)
+
+    payload = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+    assert payload["settings"][0]["calibration"] == {"operator": "JC", "reference": 12}
+    assert payload["settings"][0]["title"] == "Updated generic setup"
+    assert payload["data_sources"][0]["source_extension"] == "camera calibration metadata"
+    assert payload["data_sets"][0]["dataset_extension"] == "processed locally"
+
+    page.locator("[data-editor-mode='expert']").click()
+    page.locator("[data-editor-mode='advanced']").click()
+    assert page.locator("[data-custom-property-key]").first.input_value() == "calibration"
+    assert page.evaluate("JSON.parse(document.querySelector('#json-input').value).settings[0].calibration.reference") == 12
+
+    panel.locator(".custom-property-remove").click()
+    assert "calibration" not in page.evaluate("JSON.parse(document.querySelector('#json-input').value).settings[0]")
+
+
 def test_registry_form_syncs_with_json_and_preserves_unknown_fields(page: Page, web_server: str) -> None:
     page.goto(f"{web_server}/registry")
     page.wait_for_selector("#registry-form .registry-field")
