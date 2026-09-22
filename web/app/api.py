@@ -1,4 +1,5 @@
-from json import JSONDecodeError
+import os
+from json import JSONDecodeError, loads
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Request, Response, HTTPException, Query
@@ -17,10 +18,23 @@ from r3xa_api.webcore import (
 
 router = APIRouter()
 
+MAX_JSON_BODY_BYTES = int(os.getenv("R3XA_MAX_JSON_BODY_BYTES", str(5 * 1024 * 1024)))
+
 
 async def _read_json(request: Request) -> Any:
+    content_length = request.headers.get("content-length")
+    if content_length is not None:
+        try:
+            declared_length = int(content_length)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="Invalid Content-Length header.") from exc
+        if declared_length > MAX_JSON_BODY_BYTES:
+            raise HTTPException(status_code=413, detail="Request body is too large.")
     try:
-        return await request.json()
+        body = await request.body()
+        if len(body) > MAX_JSON_BODY_BYTES:
+            raise HTTPException(status_code=413, detail="Request body is too large.")
+        return loads(body.decode("utf-8"))
     except (JSONDecodeError, UnicodeDecodeError) as exc:
         raise HTTPException(status_code=400, detail="Request body must contain valid JSON.") from exc
 

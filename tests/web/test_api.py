@@ -157,6 +157,17 @@ async def test_api_rejects_non_object_json_for_object_endpoints(path: str) -> No
 
 
 @pytest.mark.anyio
+async def test_api_rejects_json_bodies_over_configured_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(api_module, "MAX_JSON_BODY_BYTES", 32)
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post("/api/validate", json={"payload": "x" * 64})
+    assert response.status_code == 413
+    assert response.json()["detail"] == "Request body is too large."
+
+
+@pytest.mark.anyio
 async def test_api_registry_validate_valid() -> None:
     app = create_app()
     transport = ASGITransport(app=app)

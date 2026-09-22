@@ -49,6 +49,11 @@ Graphviz WebAssembly SVG backend. The `web` extra adds FastAPI, interactive
 PyVis HTML, and static NetworkX/Matplotlib support. Select `graphviz-wasm` to
 render SVG without installing the system `dot` executable.
 
+The FastAPI runtime limits JSON request bodies to 5 MiB by default, including
+the graph endpoint. Operators can lower or raise this limit deliberately with
+`R3XA_MAX_JSON_BODY_BYTES`; the static runtime does not send user documents to
+this API.
+
 > Note: the native `graphviz` SVG backend requires the **Graphviz executable** (`dot`).
 > The default `graphviz-wasm` backend uses the bundled Graphviz WASI module and
 > does not require `dot`.
