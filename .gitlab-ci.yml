@@ -9,6 +9,7 @@ stages:
   - test
   - quality
   - package
+  - package-test
   - deploy
 
 variables:
@@ -220,6 +221,43 @@ package:
   artifacts:
     paths:
       - dist/
+
+wheel-smoke:
+  stage: package-test
+  image: python:${PYTHON_VERSION}-slim
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+  needs:
+    - job: package
+      artifacts: true
+  before_script:
+    - python -m pip install --upgrade pip
+    - python -m pip install dist/*.whl
+  script:
+    - |
+      cd /tmp
+      python - <<'PY'
+      import importlib.resources
+
+      import r3xa_api
+      from r3xa_api import R3XAFile, validate
+      from r3xa_api.webcore.graph import generate_svg_wasm
+
+      resource_root = importlib.resources.files("r3xa_api.resources")
+      assert (resource_root / "schema.json").is_file()
+      assert (resource_root / "graphviz" / "graphviz-12.2.1.wasm").is_file()
+      payload = R3XAFile(
+          title="Wheel smoke test",
+          description="Installed package smoke test",
+          authors=[{"name": "R3XA_API"}],
+          date="2026-01-01",
+      ).to_dict()
+      validate(payload)
+      svg = generate_svg_wasm(payload)
+      assert b"<svg" in svg
+      print(f"Validated installed wheel on Python {r3xa_api.__file__}")
+      PY
 
 static-pages:
   stage: deploy

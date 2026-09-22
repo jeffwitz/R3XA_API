@@ -237,8 +237,9 @@ default.
 - **G1:** `r3xa_api.resources` is now packaged explicitly, the wheel smoke
   check includes the schema resource, and a regression test checks resource
   access through `importlib.resources`. The wheel was rebuilt locally and its
-  schema, UI catalogue and Graphviz WASM resources were verified. A Python 3.9
-  installed-wheel job remains to be qualified in CI.
+  schema, UI catalogue and Graphviz WASM resources were verified. CI now has an
+  installed-wheel smoke matrix for Python 3.9–3.13, subject to the project's
+  explicit/manual pipeline policy.
 - **G5:** `load_item`, `load_item_path`, `Registry.get`, and `Registry.load`
   now accept a validation switch. `Registry.get_item(validated=False)` really
   loads incomplete items without validating them, while validated paths avoid

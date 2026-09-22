@@ -604,8 +604,8 @@ Current hardening status:
   examples: profiles are intentional complete templates, and the WebUI now
   labels them explicitly in Home and Guided mode;
 - G1 is fixed in the package configuration and covered by a resource regression
-  test, but an installed-wheel check on Python 3.9 remains to be qualified in
-  CI;
+  test; the CI now includes an installed-wheel smoke matrix for Python 3.9–3.13.
+  It remains subject to the project's explicit/manual CI policy.
 - G3 is fixed in the generated stubs: `core.pyi` now re-exports the shared
   `r3xa_api.model_base.R3XAItem` instead of declaring a second incompatible
   base type, and its `R3XAFile` signatures match the runtime API;
