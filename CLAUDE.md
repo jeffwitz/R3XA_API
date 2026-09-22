@@ -473,9 +473,10 @@ feat(web): complete i18n accessibility and CSP support
 #### 10. Share runtime qualification and add missing tests
 
 The Python Playwright coverage is valuable, but server and static suites are
-not fully shared. `r3xa_web/package.json` still has no real JavaScript unit suite,
+not fully shared. The Node `node:test` suite in `r3xa_web/package.json` covers
+the main pure browser helpers; report normalization and some graph interactions
 and pure functions such as ID migration, local storage, report normalization,
-and graph-model construction are tested mainly through the browser.
+remain tested mainly through the browser.
 
 Required implementation:
 
@@ -618,7 +619,7 @@ Current hardening status:
   the new ID and serialization/integrity are covered by a regression test;
 - G9 is fixed for the static distribution: third-party notices and the complete
   Graphviz license are built and tested locally.
-- G8 has a first server-side safeguard: FastAPI JSON endpoints reject bodies
+- G8 has server-side safeguards: FastAPI JSON endpoints reject bodies
   over the configurable `R3XA_MAX_JSON_BODY_BYTES` limit (5 MiB by default),
   with API regression coverage. The Python Graphviz WebAssembly backend also
   has a configurable fuel budget via `R3XA_GRAPHVIZ_WASM_FUEL`; native `dot`

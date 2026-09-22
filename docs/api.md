@@ -240,8 +240,8 @@ summary() -> str
 print() -> None
 ```
 List every field the schema defines for the item's kind — including fields the item does not
-carry — with `*` on required ones and units collapsed to `30 mm`. `print(item)` prints the same
-listing; `repr(item)` stays Pydantic's compact object representation.
+carry — with `*` on required ones and units collapsed to `30 mm`. Both `print(item)` and
+`repr(item)` use this readable listing, so collections remain easy to inspect in a notebook.
 
 ```python
 validate(schema: dict | None = None) -> None
