@@ -257,6 +257,10 @@ default.
 - **G3:** the generated `core.pyi` now re-exports the shared
   `r3xa_api.model_base.R3XAItem` instead of defining an incompatible duplicate,
   and the generated `R3XAFile` signatures match the inherited runtime methods.
+- **G8:** FastAPI JSON endpoints now reject bodies over the configurable
+  `R3XA_MAX_JSON_BODY_BYTES` limit (5 MiB by default), with API regression
+  coverage. Graph execution timeout/fuel limits and complete graph-payload
+  validation remain open before public backend deployment.
 
 S2, S4 and the other schema-policy decisions remain blocked on an explicit
 decision in `R3XA_SPEC`; this repository must not edit the vendored schema to

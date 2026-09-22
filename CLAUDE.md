@@ -617,6 +617,10 @@ Current hardening status:
   the new ID and serialization/integrity are covered by a regression test;
 - G9 is fixed for the static distribution: third-party notices and the complete
   Graphviz license are built and tested locally.
+- G8 has a first server-side safeguard: FastAPI JSON endpoints reject bodies
+  over the configurable `R3XA_MAX_JSON_BODY_BYTES` limit (5 MiB by default),
+  with API regression coverage. Graph execution timeout/fuel limits remain
+  open before public backend deployment.
 
 ## Audit baseline (2026-09-18)
 
