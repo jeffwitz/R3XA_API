@@ -1,9 +1,16 @@
 workflow:
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api"'
-    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$/'
+    - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?$/'
     - if: '$CI_COMMIT_MESSAGE =~ /\[ci run\]/'
     - when: never
+
+.full_pipeline_rules: &full_pipeline_rules
+  - if: '$CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "api"'
+  - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?$/'
+  - if: '$CI_COMMIT_MESSAGE =~ /\[ci run\]/'
+  - when: never
 
 stages:
   - test
@@ -21,6 +28,7 @@ cache:
 
 test:
   stage: test
+  rules: *full_pipeline_rules
   image: python:${PYTHON_VERSION}-slim
   parallel:
     matrix:
@@ -46,6 +54,7 @@ test:
 
 schema-sync:
   stage: quality
+  rules: *full_pipeline_rules
   image: python:3.12-slim
   variables:
     R3XA_SPEC_URL: "https://gitlab.com/photomechanics/R3XA_SPEC.git"
@@ -73,24 +82,29 @@ schema-sync:
 
 registry-sync:
   stage: quality
+  rules: *full_pipeline_rules
   image: python:3.12-slim
   variables:
     R3XA_REGISTRY_URL: "https://gitlab.com/photomechanics/R3XA_REGISTRY.git"
     # The Registry is the canonical source for reusable items. Keep this as a
     # deliberate integration point when a Registry release changes.
-    R3XA_REGISTRY_REF: "main"
+    R3XA_REGISTRY_REF: "f53fb93a8f721e3486326f2a042dd78fe03091ba"
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends git ca-certificates
     - python -m pip install --upgrade pip
     - python -m pip install -e ".[dev]"
   script:
-    - git clone --depth 1 --branch "$R3XA_REGISTRY_REF" "$R3XA_REGISTRY_URL" /tmp/R3XA_REGISTRY
+    - git init /tmp/R3XA_REGISTRY
+    - git -C /tmp/R3XA_REGISTRY remote add origin "$R3XA_REGISTRY_URL"
+    - git -C /tmp/R3XA_REGISTRY fetch --depth 1 origin "$R3XA_REGISTRY_REF"
+    - git -C /tmp/R3XA_REGISTRY checkout --detach FETCH_HEAD
     - python /tmp/R3XA_REGISTRY/scripts/validate_all.py
     - python -m pytest -q /tmp/R3XA_REGISTRY/tests
 
 docs:
   stage: quality
+  rules: *full_pipeline_rules
   image: python:3.12-slim
   before_script:
     - python -m pip install --upgrade pip
@@ -101,6 +115,7 @@ docs:
 
 browser:
   stage: quality
+  rules: *full_pipeline_rules
   image: python:3.12-slim
   before_script:
     - apt-get update
@@ -112,6 +127,7 @@ browser:
 
 static-web-build:
   stage: quality
+  rules: *full_pipeline_rules
   image: node:22.23.0-bookworm-slim
   before_script:
     - apt-get update
@@ -131,6 +147,7 @@ static-web-build:
 
 static-web-test:
   stage: quality
+  rules: *full_pipeline_rules
   image: node:22.23.0-bookworm-slim
   needs:
     - job: static-web-build
@@ -147,6 +164,7 @@ static-web-test:
 
 package:
   stage: package
+  rules: *full_pipeline_rules
   image: python:3.12-slim
   before_script:
     - python -m pip install --upgrade pip build
@@ -224,6 +242,7 @@ package:
 
 wheel-smoke:
   stage: package-test
+  rules: *full_pipeline_rules
   image: python:${PYTHON_VERSION}-slim
   parallel:
     matrix:
@@ -257,6 +276,56 @@ wheel-smoke:
       svg = generate_svg_wasm(payload)
       assert b"<svg" in svg
       print(f"Validated installed wheel on Python {r3xa_api.__file__}")
+      PY
+
+mr-smoke:
+  stage: test
+  image: python:3.13-slim
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends graphviz
+    - python -m pip install --upgrade pip
+    - python -m pip install -e ".[dev,web,graph_nx]"
+  script:
+    - >-
+      python -m pytest -q
+      --ignore=tests/web/test_browser.py
+      --ignore=tests/web/test_static_build.py
+      --ignore=tests/web/test_static_graph.py
+      --ignore=tests/web/test_static_parity.py
+      --ignore=tests/web/test_static_browser.py
+
+mr-wheel-smoke:
+  stage: package
+  image: python:3.13-slim
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - python -m pip install --upgrade pip build
+  script:
+    - python -m build
+    - python -m venv .mr-wheel-venv
+    - .mr-wheel-venv/bin/python -m pip install dist/*.whl
+    - |
+      cd /tmp
+      "$CI_PROJECT_DIR/.mr-wheel-venv/bin/python" - <<'PY'
+      import importlib.resources
+
+      import r3xa_api
+      from r3xa_api import R3XAFile, validate
+
+      resources = importlib.resources.files("r3xa_api.resources")
+      assert (resources / "schema.json").is_file()
+      payload = R3XAFile(
+          title="MR wheel smoke test",
+          description="Installed package smoke test",
+          authors=[{"name": "R3XA_API"}],
+          date="2026-01-01",
+      ).to_dict()
+      validate(payload)
+      print(f"Validated MR wheel with {r3xa_api.__file__}")
       PY
 
 static-pages:

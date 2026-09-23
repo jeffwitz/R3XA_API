@@ -490,8 +490,8 @@ def test_printing_a_document_directly_shows_its_summary() -> None:
 
     # `print(document)` must work, not only `document.print()`.
     assert str(document) == document.summary()
-    assert repr(document) == document.summary()
-    assert "R3XAFile" in str(document)
+    assert repr(document) != document.summary()
+    assert "R3XAFile" in repr(document)
     assert "object at 0x" not in repr(document)
 
 

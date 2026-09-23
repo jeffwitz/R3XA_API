@@ -21,7 +21,7 @@ ModelT = TypeVar("ModelT", bound="R3XAItem")
 class R3XAItem(BaseModel):
     """Object-first base class for every generated R3XA object."""
 
-    model_config = ConfigDict(validate_assignment=True, extra="forbid")
+    model_config = ConfigDict(validate_assignment=True, extra="allow")
     _json_indent: ClassVar[int] = 2
     _document: Any = PrivateAttr(default=None)
     _reference_objects: dict[str, Any] = PrivateAttr(default_factory=dict)
@@ -58,7 +58,7 @@ class R3XAItem(BaseModel):
             object.__setattr__(
                 self,
                 section,
-                R3XACollection(values or (), document=self),
+                R3XACollection(values or (), document=self, section=section),
             )
 
     @staticmethod
@@ -243,7 +243,7 @@ class R3XAItem(BaseModel):
 
         payload = self.to_dict()
         payload.update(overrides)
-        return R3XAItem.from_dict(payload, validate=False)  # type: ignore[return-value]
+        return type(self).from_dict(payload, validate=False)
 
     def __setattr__(self, name: str, value: Any) -> None:
         old_id = None
@@ -270,7 +270,11 @@ class R3XAItem(BaseModel):
             object.__setattr__(
                 self,
                 name,
-                R3XACollection(getattr(self, name, None) or (), document=self),
+                R3XACollection(
+                    getattr(self, name, None) or (),
+                    document=self,
+                    section=name,
+                ),
             )
         if name == "id" and old_id and old_id != value:
             document = object.__getattribute__(self, "_document")
@@ -794,7 +798,7 @@ class R3XAItem(BaseModel):
         return self.summary()
 
     def __repr__(self) -> str:
-        return self.summary()
+        return BaseModel.__repr__(self)
 
     def plot(
         self,
@@ -845,10 +849,25 @@ class R3XACollection(list[Any]):
     the document's object graph rather than creating dictionary copies.
     """
 
-    def __init__(self, values: Iterable[Any] = (), document: Any = None) -> None:
+    def __init__(
+        self,
+        values: Iterable[Any] = (),
+        document: Any = None,
+        section: str | None = None,
+    ) -> None:
         self.document = document
+        self.section = section
+        self._initializing = True
         super().__init__()
         self.extend(values)
+        self._initializing = False
+
+    def _reject_duplicate(self, item: Any) -> None:
+        if self._initializing or self.document is None:
+            return
+        item_id = getattr(item, "id", None)
+        if item_id is not None and self.document.find(item_id) is not None:
+            raise ValueError(f"Duplicate R3XA item id: {item_id}")
 
     def _normalize(self, value: Any) -> Any:
         if isinstance(value, R3XAItem):
@@ -866,19 +885,30 @@ class R3XACollection(list[Any]):
             from .core import new_item
 
             item = new_item(kind, **{key: value for key, value in payload.items() if key != "kind"})
+        kind = getattr(item, "kind", None)
+        if self.section and (
+            not isinstance(kind, str) or kind.split("/", 1)[0] != self.section
+        ):
+            raise ValueError(
+                f"Item kind {kind!r} does not belong in the {self.section} collection"
+            )
         if self.document is not None:
             item.bind_document(self.document)
         return item
 
     def append(self, value: Any) -> None:
-        super().append(self._normalize(value))
+        item = self._normalize(value)
+        self._reject_duplicate(item)
+        super().append(item)
 
     def extend(self, values: Iterable[Any]) -> None:
         for value in values:
             self.append(value)
 
     def insert(self, index: int, value: Any) -> None:
-        super().insert(index, self._normalize(value))
+        item = self._normalize(value)
+        self._reject_duplicate(item)
+        super().insert(index, item)
 
     def __iadd__(self, values: Iterable[Any]) -> "R3XACollection":
         self.extend(values)

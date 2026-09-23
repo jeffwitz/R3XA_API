@@ -204,7 +204,11 @@ The working group must decide:
 - the compatibility and migration policy between schema versions;
 - whether Python 3.9 remains supported.
 
-Until those decisions are recorded in `R3XA_SPEC` and reflected back into `R3XA_API`, this audit should be treated as the baseline for the 2.0.0 hardening work.
+The working decision for this hardening phase is to leave `scale` unchanged
+and explicitly defer S2. S7 (additional FAIR metadata proposals) is also out
+of scope for this release. Until the schema-version policy is recorded in
+`R3XA_SPEC` and reflected back into `R3XA_API`, this audit remains the baseline
+for the 2.0.0 hardening work.
 
 ## Status and interpretation after the audit
 
@@ -269,7 +273,29 @@ default.
   top-level `web`. Runtime commands, wheel contents, deployment manifests,
   tests, and documentation were updated; the installed wheel now exposes only
   the non-colliding namespace.
+- **S6 (partial):** document collections now reject direct insertion of an
+  item from another schema section and reject duplicate IDs, including when
+  the same object is appended directly instead of going through `add_*`.
+  The remaining schema/Pydantic `additionalProperties` audit is still open.
+- **G6 (partial):** `repr(item)` now uses Pydantic's compact representation,
+  while `str(item)` and `item.print()` keep the readable multi-line summary.
+  `merge()` now reconstructs the concrete model class, including
+  `R3XADocument`, instead of routing every merge through the generic base.
+  The remaining API-cleanup proposals are not yet addressed.
+- **G2 (partial):** merge-request pipelines now run a lightweight Python
+  smoke suite and an installed-wheel smoke test. The full Python matrix,
+  browser, static-WebUI, Registry, documentation, and Pages jobs remain
+  explicit/manual or release-triggered to avoid consuming the project's
+  constrained runner quota. Release and release-candidate tag matching now
+  covers both forms, and the Registry synchronization ref is pinned.
+- **S6 (continued):** direct collection insertion now enforces section and ID
+  invariants. The remaining `additionalProperties` alignment must still be
+  audited against the schema source in `R3XA_SPEC`; no local schema edit is
+  permitted. The generated base model now follows JSON Schema's default
+  permissive policy when a definition omits `additionalProperties`, while
+  generated definitions with an explicit `false` or `true` policy retain it.
 
-S2, S4 and the other schema-policy decisions remain blocked on an explicit
-decision in `R3XA_SPEC`; this repository must not edit the vendored schema to
-resolve them.
+S2 is intentionally deferred without changing `scale`. S7 is intentionally
+excluded from this release. S4 and the remaining schema-policy decisions stay
+blocked on an explicit decision in `R3XA_SPEC`; this repository must not edit
+the vendored schema to resolve them.

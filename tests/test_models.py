@@ -54,6 +54,18 @@ def test_unit_valid():
     assert unit.kind == "unit"
 
 
+def test_unit_accepts_schema_extensions_when_additional_properties_is_omitted():
+    unit = models.Unit(unit="px", calibration_id="cal-001")
+    loaded = models.R3XAModel.from_dict(
+        {"kind": "unit", "unit": "px", "calibration_id": "cal-001"},
+        validate=False,
+    )
+
+    assert unit.model_extra == {"calibration_id": "cal-001"}
+    assert unit.to_dict()["calibration_id"] == "cal-001"
+    assert loaded.to_dict()["calibration_id"] == "cal-001"
+
+
 def test_unit_invalid_missing_unit():
     unit = models.Unit(kind="unit")
     with pytest.raises(jsonschema.ValidationError):
@@ -373,6 +385,21 @@ def test_object_first_item_merge_returns_a_typed_copy():
     assert merged.id == camera.id
 
 
+def test_document_merge_returns_a_typed_document():
+    document = models.R3XADocument(
+        title="Original",
+        description="Document to merge",
+        authors=[{"name": "R3XA API"}],
+        date="2026-09-23",
+    )
+
+    merged = document.merge(title="Updated")
+
+    assert isinstance(merged, models.R3XADocument)
+    assert merged is not document
+    assert merged.title == "Updated"
+
+
 def test_generated_document_roundtrips_through_r3xafile():
     document = models.R3XADocument(
         title="Typed document",
@@ -439,6 +466,33 @@ def test_typed_document_rejects_duplicate_ids():
     )
     with pytest.raises(ValueError, match="Duplicate R3XA item id"):
         document.add_data_source(duplicate)
+
+
+def test_typed_document_collections_reject_duplicate_ids_on_append():
+    camera = _valid_camera()
+    document = models.R3XADocument(
+        title="Duplicate ID append document",
+        description="Typed document with duplicate IDs appended directly",
+        authors=[{"name": "R3XA Team"}],
+        date="2026-09-07",
+    )
+    document.data_sources.append(camera)
+
+    with pytest.raises(ValueError, match="Duplicate R3XA item id"):
+        document.data_sources.append(camera)
+
+
+def test_typed_document_collections_reject_items_from_other_sections():
+    document = models.R3XADocument(
+        title="Collection kind document",
+        description="Typed document with section-aware collections",
+        authors=[{"name": "R3XA Team"}],
+        date="2026-09-07",
+    )
+    camera = _valid_camera()
+
+    with pytest.raises(ValueError, match="does not belong in the settings collection"):
+        document.settings.append(camera)
 
 
 def test_camera_source_invalid_dimension():
@@ -550,7 +604,7 @@ def test_printing_an_item_directly_shows_its_summary():
 
     assert str(camera) == camera.summary()
     assert "1392 px" in str(camera)
-    assert repr(camera) == camera.summary()
+    assert repr(camera).startswith("Camera(")
 
 
 def test_legacy_class_names_alias_the_current_ones():

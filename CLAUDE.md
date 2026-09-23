@@ -581,14 +581,15 @@ The audit identifies the following blockers or priority lots:
 
 - G1: verify the installed wheel and bundled resources on every supported
   Python version, especially Python 3.9;
-- G2: restore an effective MR/push CI policy without bypassing the quota issue;
+- G2: keep an effective MR/release CI policy without bypassing the quota issue;
 - S1: prevent unconfirmed guided-profile examples from being exported as user
   data;
-- S2/S3: decide the `scale` contract in `R3XA_SPEC` and avoid serializing
-  defaults that the user did not provide;
+- S2/S3: S2 (`scale`) is intentionally deferred; S3 is fixed for the public
+  helper and must not regress;
 - S5: make renamed object references serialize coherently;
-- then address S4, G4 and S6 before a final `2.0.0` release; G3, G5 and G9
-  are already addressed locally.
+- then address S4 and the remaining S6 strictness audit before a final `2.0.0`
+  release; G3, G4, G5 and G9 are already addressed locally. S7 is explicitly
+  out of scope for this release.
 
 Do not modify `R3XA_API/resources/schema.json` to address S2 or any other
 schema issue. Schema changes must first be made and published in
@@ -632,6 +633,18 @@ Current hardening status:
   avoiding a collision with unrelated top-level `web` distributions. Runtime
   commands, packaging, deployment manifests, tests, and documentation use the
   new namespace.
+- G2 is partially fixed under the current runner-quota policy: merge requests
+  run the lightweight core and installed-wheel smoke jobs, while the full
+  matrix, browser, static-WebUI, documentation, Registry, package and Pages
+  jobs remain explicit/manual or release-triggered. Final and RC tags are both
+  recognized, and the Registry CI input is pinned to a commit rather than a
+  moving branch.
+- S2 is intentionally deferred without modifying `scale`; S7 is explicitly
+  excluded from the current release scope.
+- S6's default extra-field policy now follows JSON Schema: generated models
+  with an omitted `additionalProperties` accept extensions, while definitions
+  explicitly marked `false` remain strict. Keep the regression tests that
+  compare generated model policy with the vendored schema.
 
 ## Audit baseline (2026-09-18)
 
