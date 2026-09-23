@@ -212,16 +212,27 @@ def test_data_set_file_enforces_schema_fields_and_rejects_unknown_fields():
 
 def test_generated_item_extra_policy_matches_schema():
     schema = r3xa_api.load_schema()
-    model_names = {
-        "settings/generic": "GenericSetting",
-        "data_sources/generic": "GenericSource",
-        "data_sets/generic": "GenericDataSet",
-    }
+    models_by_kind = {}
+    for model_name in models.__all__:
+        model_class = getattr(models, model_name)
+        model_fields = getattr(model_class, "model_fields", None)
+        if model_fields is None:
+            continue
+        kind_field = model_fields.get("kind")
+        kind = getattr(kind_field, "default", None) if kind_field is not None else None
+        if isinstance(kind, str) and "/" in kind:
+            models_by_kind.setdefault(kind, model_class)
 
-    for kind, model_name in model_names.items():
+    expected_kinds = {
+        f"{section}/{name}"
+        for section in ("settings", "data_sources", "data_sets")
+        for name in schema["$defs"][section]
+    }
+    assert set(models_by_kind) == expected_kinds
+
+    for kind, model_class in models_by_kind.items():
         section, name = kind.split("/", 1)
         definition = schema["$defs"][section][name]
-        model_class = getattr(models, model_name)
         expected_extra = (
             "forbid" if definition.get("additionalProperties") is False else "allow"
         )

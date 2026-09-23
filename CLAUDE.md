@@ -91,6 +91,13 @@ type, const, enum, pattern, minItems, minimum, additional-properties,
 oneOf, and integrity cases. Add a parity fixture before introducing another
 schema keyword or user-facing validation message.
 
+The generated Pydantic extra-field policy is schema-driven for every current
+settings, data-source, and data-set kind. `tests/test_models.py` checks the
+complete taxonomy against `schema.json`, while `tests/test_models_sync.py`
+also exercises explicit `additionalProperties: true`, `false`, and omitted
+policies. Never hard-code a global extra-field policy and never edit the
+vendored schema to fix a policy that belongs in `R3XA_SPEC`.
+
 The current `develop` branch is also mirrored to the previous GitHub
 repository for a Pages preview. `.github/workflows/pages.yml` builds the same
 static artefact and deploys it through GitHub Actions. The successful preview

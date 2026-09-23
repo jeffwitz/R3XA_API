@@ -279,10 +279,13 @@ default.
   top-level `web`. Runtime commands, wheel contents, deployment manifests,
   tests, and documentation were updated; the installed wheel now exposes only
   the non-colliding namespace.
-- **S6 (partial):** document collections now reject direct insertion of an
-  item from another schema section and reject duplicate IDs, including when
-  the same object is appended directly instead of going through `add_*`.
-  The remaining schema/Pydantic `additionalProperties` audit is still open.
+- **S6:** document collections reject direct insertion of an item from
+  another schema section and reject duplicate IDs, including when the same
+  object is appended directly instead of going through `add_*`. Generated
+  Pydantic models now follow the `additionalProperties` policy of every
+  settings, data-source, and data-set definition; a generated-model test
+  checks the complete schema taxonomy and a code-generation test covers
+  explicit `true`, explicit `false`, and the omitted default policy.
 - **G6:** `repr(item)` now uses Pydantic's compact representation, while
   `str(item)` and `item.print()` keep the readable multi-line summary.
   `merge()` reconstructs the concrete model class, including `R3XADocument`.
@@ -300,12 +303,12 @@ default.
   explicit/manual or release-triggered to avoid consuming the project's
   constrained runner quota. Release and release-candidate tag matching now
   covers both forms, and the Registry synchronization ref is pinned.
-- **S6 (continued):** direct collection insertion now enforces section and ID
-  invariants. The remaining `additionalProperties` alignment must still be
-  audited against the schema source in `R3XA_SPEC`; no local schema edit is
-  permitted. The generated base model now follows JSON Schema's default
+- **S6 (continued):** direct collection insertion enforces section and ID
+  invariants. The generated base model follows JSON Schema's default
   permissive policy when a definition omits `additionalProperties`, while
   generated definitions with an explicit `false` or `true` policy retain it.
+  The complete policy is now checked against the schema copied from
+  `R3XA_SPEC`; no local schema edit was made.
 - **S8:** MATLAB item creation now generates UUID-based, kind-specific
   `stg-*`, `src-*`, or `set-*` identifiers instead of relying on the repeatable
   global random stream. MATLAB file output now requests UTF-8 explicitly. The
@@ -316,7 +319,8 @@ default.
   bug and import checks pass locally and run in the explicit full CI pipeline;
   repository-size and internal-document cleanup remain open.
 
-S2 is intentionally deferred without changing `scale`. S7 is intentionally
-excluded from this release. S4 and the remaining schema-policy decisions stay
-blocked on an explicit decision in `R3XA_SPEC`; this repository must not edit
-the vendored schema to resolve them.
+S2 is intentionally deferred without changing `scale`. S4 is intentionally
+deferred because R3XA currently has no external document users; versioned
+schema migration can be introduced when that policy becomes necessary. S7 is
+intentionally excluded from this release. This repository must not edit the
+vendored schema to resolve decisions that belong in `R3XA_SPEC`.
