@@ -296,7 +296,8 @@ classdef R3XAFile < handle
 
         function save(obj, filepath, varargin)
             json_text = obj.to_json(varargin{:});
-            fid = fopen(filepath, "w");
+            filepath = char(filepath);
+            fid = fopen(filepath, 'w', 'n', 'UTF-8');
             if fid == -1
                 error("R3XAFile:IO", "Unable to open file for writing: %s", filepath);
             end

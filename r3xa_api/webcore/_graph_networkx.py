@@ -169,7 +169,7 @@ def _center_positions_by_dependencies(
                 neighbour_mean = sum(current_x[other] for other in connected_nodes) / len(connected_nodes)
                 desired_x[node_id] = current_x[node_id] + damping * (neighbour_mean - current_x[node_id])
 
-        for level, nodes in level_nodes.items():
+        for _level, nodes in level_nodes.items():
             ordered_nodes = sorted(nodes, key=lambda node_id: current_x[node_id])
             if not ordered_nodes:
                 continue

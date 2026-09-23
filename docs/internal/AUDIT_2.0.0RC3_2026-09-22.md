@@ -16,7 +16,7 @@ The third point is the most serious for a tool whose purpose is traceability. It
 
 ## Scope and measurements
 
-The analysis covers the `develop` archive supplied on 22 September, version `2.0.0rc3`, schema `2026.9.18`. The Python package is approximately 6,900 lines and the WebUI JavaScript approximately 5,400 lines. MATLAB was not executed because no license was available.
+The analysis covers the `develop` archive supplied on 22 September, version `2.0.0rc3`, schema `2026.9.18`. The Python package is approximately 6,900 lines and the WebUI JavaScript approximately 5,400 lines. MATLAB was not executed for the original audit because no license was available at that time.
 
 | Control | Result |
 |---|---|
@@ -80,9 +80,15 @@ There is no checksum (for example SHA-256) for referenced files, making it impos
 
 **Proposed corrections for `R3XA_SPEC`:** checksum per file, a generator block, SPDX identifiers, and typed uncertainty in the sense of GUM.
 
-### S8 — Moderate, not executed: non-compliant and non-reproducible MATLAB IDs
+### S8 — Moderate: non-compliant and non-reproducible MATLAB IDs
 
 `random_id` generates 24 letters through `randi`, without the canonical `stg-`/`src-`/`set-` prefix. MATLAB initializes its random generator with the same seed at each startup, so two fresh sessions generate the same sequence of IDs.
+
+The current binding now uses Java UUIDs and kind-specific prefixes. The
+repository includes `matlab/test_smoke.m`, which also checks UTF-8 file output.
+It was executed successfully with MATLAB R2025b Update 3 and a local MATLAB
+license on 23 September 2026. This closes the local qualification gap; a
+licensed MATLAB runner is still not assumed in the shared CI.
 
 **Proposed correction:** generate IDs from a UUID (`java.util.UUID` or `matlab.lang.internal.uuid`) and add the canonical prefix without relying on the global random generator.
 
@@ -284,7 +290,7 @@ default.
   The remaining API-cleanup proposals are not yet addressed.
 - **G2 (partial):** merge-request pipelines now run a lightweight Python
   smoke suite and an installed-wheel smoke test. The full Python matrix,
-  browser, static-WebUI, Registry, documentation, and Pages jobs remain
+  lint, browser, static-WebUI, Registry, documentation, and Pages jobs remain
   explicit/manual or release-triggered to avoid consuming the project's
   constrained runner quota. Release and release-candidate tag matching now
   covers both forms, and the Registry synchronization ref is pinned.
@@ -294,6 +300,15 @@ default.
   permitted. The generated base model now follows JSON Schema's default
   permissive policy when a definition omits `additionalProperties`, while
   generated definitions with an explicit `false` or `true` policy retain it.
+- **S8:** MATLAB item creation now generates UUID-based, kind-specific
+  `stg-*`, `src-*`, or `set-*` identifiers instead of relying on the repeatable
+  global random stream. MATLAB file output now requests UTF-8 explicitly. The
+  reusable `matlab/test_smoke.m` qualification passes locally with MATLAB
+  R2025b; shared CI remains independent of a proprietary MATLAB runner.
+- **G11 (partial):** Ruff is now configured for the maintained Python source
+  and tests, with the generated stub files explicitly excluded. The configured
+  bug and import checks pass locally and run in the explicit full CI pipeline;
+  repository-size and internal-document cleanup remain open.
 
 S2 is intentionally deferred without changing `scale`. S7 is intentionally
 excluded from this release. S4 and the remaining schema-policy decisions stay

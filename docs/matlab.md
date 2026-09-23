@@ -6,6 +6,18 @@ Use it when you need the exact supported scope and MATLAB call patterns.
 This binding focuses **only on generating R3XA JSON** from MATLAB.  
 No graph generation, no GUI dependencies, and no Python packages required inside MATLAB.
 
+## Smoke test
+
+With a licensed MATLAB installation, run the repository qualification script:
+
+```bash
+matlab -batch "run('matlab/test_smoke.m')"
+```
+
+The script checks kind-specific UUID identifiers and UTF-8 JSON output. It is
+intentionally separate from the Python CI because shared runners do not
+require a proprietary MATLAB license.
+
 ## Install (MATLAB path)
 Add the `matlab/` folder to your MATLAB path:
 ```matlab

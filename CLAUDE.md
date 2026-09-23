@@ -635,7 +635,7 @@ Current hardening status:
   new namespace.
 - G2 is partially fixed under the current runner-quota policy: merge requests
   run the lightweight core and installed-wheel smoke jobs, while the full
-  matrix, browser, static-WebUI, documentation, Registry, package and Pages
+  matrix, lint, browser, static-WebUI, documentation, Registry, package and Pages
   jobs remain explicit/manual or release-triggered. Final and RC tags are both
   recognized, and the Registry CI input is pinned to a commit rather than a
   moving branch.
@@ -645,6 +645,15 @@ Current hardening status:
   with an omitted `additionalProperties` accept extensions, while definitions
   explicitly marked `false` remain strict. Keep the regression tests that
   compare generated model policy with the vendored schema.
+- S8 is addressed in MATLAB: `new_item` now uses UUID-based, kind-specific
+  identifiers (`stg-*`, `src-*`, `set-*`), and `R3XAFile.save()` requests
+  UTF-8 explicitly. Run `matlab/test_smoke.m` with a licensed MATLAB to
+  qualify the binding locally; shared CI must remain independent of a
+  proprietary MATLAB runner.
+- G11 is partially addressed: Ruff checks the maintained Python source and
+  tests in the explicit full CI pipeline. Generated stubs are excluded because
+  their imports are deliberate public re-exports; repository-size and internal
+  document cleanup remain deferred.
 
 ## Audit baseline (2026-09-18)
 

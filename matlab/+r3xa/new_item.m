@@ -10,7 +10,7 @@ for i = 1:2:numel(varargin)
     item.(field) = value;
 end
 if ~isfield(item, "id")
-    item.id = r3xa.random_id();
+    item.id = r3xa.random_id(kind);
 end
 item.kind = kind;
 end

@@ -1,6 +1,5 @@
 import jsonschema
 import pytest
-from pydantic import ValidationError
 
 import json
 

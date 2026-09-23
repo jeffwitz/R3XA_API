@@ -1,8 +1,5 @@
 import importlib.util
 import json
-import os
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -330,12 +327,6 @@ def test_generated_reference_annotations_accept_ids_and_objects():
 
 def test_scalar_reference_preserves_the_object_until_serialization():
     specimen = models.SpecimenSetting(title="Specimen")
-    camera = models.CameraSource(
-        title="Camera",
-        output_components=1,
-        output_dimension="surface",
-        output_units=[models.Unit(unit="graylevel")],
-    )
     dic = models.DicMeasurementSource(
         title="DIC",
         output_components=2,

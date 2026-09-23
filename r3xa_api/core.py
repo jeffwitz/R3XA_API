@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 from .schema import load_schema
-from ._format import format_json_value
+from ._format import format_json_value as format_json_value
 from .model_base import R3XAItem
 from ._ids import generate_id
 

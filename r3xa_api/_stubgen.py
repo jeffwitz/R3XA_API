@@ -137,7 +137,7 @@ def render_core_stub() -> str:
         "",
     ]
 
-    for kind, spec in sorted(helper_specs.items(), key=_helper_sort_key):
+    for _, spec in sorted(helper_specs.items(), key=_helper_sort_key):
         builder_name = "new_" + spec["helper_name"][len("add_"):]
         lines.extend(_render_function_stub(builder_name, tuple(spec["required"])))
         lines.append("")

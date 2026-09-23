@@ -380,7 +380,7 @@ def test_every_static_prefilled_profile_is_valid_and_survives_mode_changes(stati
         for profile in profiles:
             page = browser.new_page()
             page_errors: list[str] = []
-            page.on("pageerror", lambda error: page_errors.append(str(error)))
+            page.on("pageerror", lambda error, page_errors=page_errors: page_errors.append(str(error)))
             page.goto(f"{static_site}/edit/?profile={profile}&prefill=1")
             page.wait_for_selector("#schema-summary")
             page.wait_for_function("Boolean(localStorage.getItem('r3xaDraft'))")

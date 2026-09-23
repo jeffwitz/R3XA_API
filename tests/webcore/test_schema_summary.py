@@ -20,7 +20,6 @@ def _prefilled_profile_document(profile: dict) -> dict:
         "data_sources": [],
         "data_sets": [],
     }
-    steps = {step["id"]: step for step in profile["steps"]}
     items = {}
     for step in profile["steps"]:
         if step["section"] == "header":

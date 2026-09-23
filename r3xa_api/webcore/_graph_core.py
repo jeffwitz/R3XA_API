@@ -531,8 +531,12 @@ def compute_manual_positions(
             nodes.sort(key=lambda node_id: base_order.get(node_id, 0))
         else:
 
-            def parent_barycenter(node_id: str) -> float:
-                upstream = [parent for parent in parents.get(node_id, []) if levels.get(parent, 0) < level]
+            def parent_barycenter(node_id: str, current_level: int = level) -> float:
+                upstream = [
+                    parent
+                    for parent in parents.get(node_id, [])
+                    if levels.get(parent, 0) < current_level
+                ]
                 if not upstream:
                     return float(base_order.get(node_id, 0))
                 return sum(base_order.get(parent, 0) for parent in upstream) / len(upstream)

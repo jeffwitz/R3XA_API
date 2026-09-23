@@ -1,4 +1,4 @@
-from r3xa_api.webcore._graph_core import EdgeRecord, build_graph_model
+from r3xa_api.webcore._graph_core import build_graph_model
 
 
 def test_graph_model_includes_settings_as_root_nodes() -> None:
