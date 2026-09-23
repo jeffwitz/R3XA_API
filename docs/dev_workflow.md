@@ -226,6 +226,25 @@ python scripts/dev.py source-archive
 `setup-dev` is the one-shot bootstrap command; the other subcommands stay useful
 for targeted day-to-day work.
 
+### ReadTheDocs
+
+The repository contains `.readthedocs.yaml`, so a ReadTheDocs project linked to
+this repository rebuilds its documentation automatically after a branch or tag
+build. The ReadTheDocs build uses Python 3.12, installs the `docs` extra, and
+regenerates `docs/specification.md` from the embedded schema before running
+Sphinx with warnings treated as errors.
+
+The documentation version mapping is defined in `docs/conf.py`:
+
+- `latest` follows `develop`;
+- `stable` follows `main`;
+- other ReadTheDocs versions retain their selected branch or tag.
+
+The repository configuration cannot enable the external ReadTheDocs webhook by
+itself. In the ReadTheDocs project administration, the GitLab repository must be
+connected and its build trigger/webhook enabled. After that one-time setup,
+normal pushes and tags rebuild the corresponding documentation version.
+
 ### Schema-driven stubs
 
 The guided helper methods on `R3XAFile` and the standalone `new_*` builders are

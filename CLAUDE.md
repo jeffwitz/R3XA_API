@@ -618,6 +618,13 @@ audit status when a lot is completed.
 
 Current hardening status:
 
+- **N1 ReadTheDocs:** `.readthedocs.yaml` now defines the automatic build:
+  ReadTheDocs installs the `docs` extra, regenerates `docs/specification.md`
+  from the embedded schema, and runs Sphinx with warnings treated as errors.
+  The external ReadTheDocs project still needs its GitLab repository webhook
+  enabled once in the ReadTheDocs administration; this repository cannot create
+  that external setting itself.
+
 - S1 is treated as a presentation issue, not a reason to remove profile
   examples: profiles are intentional complete templates, and the WebUI now
   labels them explicitly in Home and Guided mode;
@@ -654,7 +661,8 @@ Current hardening status:
   jobs remain explicit/manual or release-triggered. Final and RC tags are both
   recognized, and the Registry CI input is pinned to a commit rather than a
   moving branch.
-- S2 is intentionally deferred without modifying `scale`; S7 is explicitly
+- S2's schema semantics are intentionally deferred without modifying `scale`,
+  but the SDK no longer serializes an implicit `scale: 1.0`; S7 is explicitly
   excluded from the current release scope.
 - S6's default extra-field policy now follows JSON Schema: generated models
   with an omitted `additionalProperties` accept extensions, while definitions
