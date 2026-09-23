@@ -372,6 +372,18 @@ def test_renaming_a_bound_item_updates_serialized_references():
     assert document.validate() is None
 
 
+def test_renaming_an_unbound_item_does_not_require_a_document():
+    item = r3xa_api.new_item(
+        "settings/generic",
+        title="Standalone setting",
+        description="A setting created outside a document",
+    )
+
+    item.id = "stg-generic-standalone"
+
+    assert item.id == "stg-generic-standalone"
+
+
 def test_object_first_item_merge_returns_a_typed_copy():
     camera = _valid_camera()
     merged = camera.merge(title="Updated camera")
@@ -477,6 +489,28 @@ def test_typed_document_collections_reject_duplicate_ids_on_append():
 
     with pytest.raises(ValueError, match="Duplicate R3XA item id"):
         document.data_sources.append(camera)
+
+
+def test_typed_document_collections_reject_duplicate_ids_on_assignment():
+    first = _valid_camera()
+    second = _valid_camera().merge(id="cam_02", title="Second camera")
+    document = models.R3XADocument(
+        title="Duplicate ID assignment document",
+        description="Typed document with duplicate IDs assigned directly",
+        authors=[{"name": "R3XA Team"}],
+        date="2026-09-07",
+        data_sources=[first, second],
+    )
+
+    with pytest.raises(ValueError, match="Duplicate R3XA item id"):
+        document.data_sources[1] = first.merge(title="Duplicate replacement")
+
+    with pytest.raises(ValueError, match="Duplicate R3XA item id"):
+        document.data_sources[:] = [first, first.merge(title="Duplicate slice replacement")]
+
+    replacement = second.merge(title="Updated second camera")
+    document.data_sources[1] = replacement
+    assert document.data_sources[1] is replacement
 
 
 def test_typed_document_collections_reject_items_from_other_sections():

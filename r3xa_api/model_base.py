@@ -271,7 +271,7 @@ class R3XAItem(BaseModel):
                 ),
             )
         if name == "id" and old_id and old_id != value:
-            document = object.__getattribute__(self, "_document")
+            document = getattr(self, "_document", None)
             if document is not None:
                 document._replace_reference_id(old_id, value)
 
@@ -854,12 +854,27 @@ class R3XACollection(list[Any]):
         self.extend(values)
         self._initializing = False
 
-    def _reject_duplicate(self, item: Any) -> None:
+    def _reject_duplicates(self, items: Iterable[Any], excluded: Iterable[Any] = ()) -> None:
         if self._initializing or self.document is None:
             return
-        item_id = getattr(item, "id", None)
-        if item_id is not None and self.document.find(item_id) is not None:
-            raise ValueError(f"Duplicate R3XA item id: {item_id}")
+        excluded_objects = {id(item) for item in excluded}
+        known_ids: set[str] = set()
+        for _, existing in self.document.iter_items():
+            if id(existing) in excluded_objects:
+                continue
+            existing_id = getattr(existing, "id", None)
+            if isinstance(existing_id, str):
+                known_ids.add(existing_id)
+        for item in items:
+            item_id = getattr(item, "id", None)
+            if not isinstance(item_id, str):
+                continue
+            if item_id in known_ids:
+                raise ValueError(f"Duplicate R3XA item id: {item_id}")
+            known_ids.add(item_id)
+
+    def _reject_duplicate(self, item: Any, excluded: Iterable[Any] = ()) -> None:
+        self._reject_duplicates((item,), excluded=excluded)
 
     def _normalize(self, value: Any) -> Any:
         if isinstance(value, R3XAItem):
@@ -908,9 +923,13 @@ class R3XACollection(list[Any]):
 
     def __setitem__(self, index: Any, value: Any) -> None:
         if isinstance(index, slice):
-            super().__setitem__(index, [self._normalize(item) for item in value])
+            replacement = [self._normalize(item) for item in value]
+            self._reject_duplicates(replacement, excluded=self[index])
+            super().__setitem__(index, replacement)
         else:
-            super().__setitem__(index, self._normalize(value))
+            replacement = self._normalize(value)
+            self._reject_duplicate(replacement, excluded=(self[index],))
+            super().__setitem__(index, replacement)
 
 
 # Generated models historically inherit the name `R3XAModel`; keep that base
