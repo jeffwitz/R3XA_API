@@ -328,7 +328,7 @@ array is gone.
 
 ### `unit(...)`
 ```python
-unit(title: str | None = None, value: float | None = None, unit: str | None = None, scale: float | None = 1.0, **extra) -> R3XAItem
+unit(title: str | None = None, value: float | None = None, unit: str | None = None, scale: float | None = None, **extra) -> R3XAItem
 ```
 Build a schema‑compliant unit object. Only `unit` is required by the schema; `title`,
 `value`, and `scale` are optional metadata.
