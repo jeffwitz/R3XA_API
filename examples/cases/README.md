@@ -35,5 +35,6 @@ The MATLAB entry point writes `examples/artifacts/qi_hu_from_scratch_matlab.json
 Each case also has a Jupyter notebook with the same construction split into
 interactive sections, a Marimo conversion, and a MATLAB entry point. The
 Python, Jupyter and Marimo versions validate the document and display the
-Graphviz SVG inline. The Qi Hu MATLAB entry point is also available at the historical path
-`examples/matlab/qi_hu_from_scratch.m`.
+Graphviz SVG inline. The former Qi Hu MATLAB path is retained under
+`examples/archive/matlab/qi_hu_from_scratch.m`; use the canonical case path
+above for new work.

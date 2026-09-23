@@ -9,6 +9,23 @@ These tutorials form a progressive introduction to the Python object-first API:
 5. compare list and file datasets;
 6. validate documents and items.
 
+## Prerequisite
+
+Run the commands from the repository root and install R3XA_API with the extra
+corresponding to the interactive tool. This is important: installing only the
+notebook application does not install the R3XA package, its current schema, or
+the bundled Graphviz WebAssembly backend.
+
+```bash
+# Choose one, or install both extras together.
+python -m pip install -e ".[jupyter]"
+python -m pip install -e ".[marimo]"
+```
+
+The dependency-only files `requirements-jupyter.txt` and
+`requirements-marimo.txt` can be used after `python -m pip install -e .`, but
+the editable extra commands above are the recommended setup.
+
 ## Python scripts
 
 Run the scripts from the repository root, in order:
@@ -42,8 +59,10 @@ Start Jupyter from the repository root so its file browser exposes both the
 tutorial notebooks and the notebooks under `examples/cases/`:
 
 ```bash
-jupyter notebook --notebook-dir=.
+jupyter notebook --no-browser --ip=127.0.0.1 --port=8888 --notebook-dir=.
 ```
+
+Open the URL printed by Jupyter, normally `http://127.0.0.1:8888/tree`.
 
 Open `examples/tutorials/jupyter/` for the tutorials, or
 `examples/cases/<case>/` for a complete scientific case.
@@ -67,7 +86,15 @@ Run Marimo from the repository root without passing a notebook filename. This
 opens its workspace browser and exposes both tutorial and case applications:
 
 ```bash
-marimo edit
+marimo edit --host 127.0.0.1 --port 2720
+```
+
+Open `http://127.0.0.1:2720`. If that port is occupied, choose another free
+port with `--port` and use the corresponding URL. The base DIC application can
+also be launched directly with:
+
+```bash
+python scripts/dev.py notebook-dic --port 2720
 ```
 
 Select a file under `examples/tutorials/marimo/` or

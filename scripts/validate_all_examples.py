@@ -15,13 +15,15 @@ def validate_json(path: Path) -> None:
 
 def main() -> None:
     script_dir = Path(__file__).resolve().parent
-    examples_dir = script_dir.parent
+    examples_dir = script_dir.parent / "examples"
 
     # Generate complex examples first
     import importlib.util
 
     for script in ["complex_dic_pipeline.py", "complex_dic_pipeline_registry.py"]:
-        spec = importlib.util.spec_from_file_location("_tmp", script_dir / script)
+        spec = importlib.util.spec_from_file_location(
+            "_tmp", examples_dir / "python" / script
+        )
         module = importlib.util.module_from_spec(spec)
         assert spec and spec.loader
         spec.loader.exec_module(module)

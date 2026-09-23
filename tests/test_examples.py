@@ -146,12 +146,12 @@ def test_registry_examples_use_kind_prefixed_ids() -> None:
 def test_validation_scripts_run() -> None:
     root = Path(__file__).parents[1]
     examples = root / "examples"
-    examples_python = examples / "python"
+    scripts = root / "scripts"
     artifacts = examples / "artifacts"
 
-    _run_script(examples_python / "validate_examples.py")
+    _run_script(scripts / "validate_static_examples.py")
     _run_script(
-        examples_python / "validate_all.py",
+        scripts / "validate_all_examples.py",
         restore_paths=[
             artifacts / "dic_pipeline.json",
             artifacts / "dic_pipeline_registry.json",
@@ -161,7 +161,7 @@ def test_validation_scripts_run() -> None:
 
 def test_qi_hu_json_literal_script_runs_with_sha_check(tmp_path: Path) -> None:
     root = Path(__file__).parents[1]
-    script = root / "examples" / "python" / "qi_hu_from_json_literal.py"
+    script = root / "examples" / "archive" / "python" / "qi_hu_from_json_literal.py"
     output = tmp_path / "qi_hu_from_json_literal.json"
 
     completed = subprocess.run(

@@ -36,6 +36,12 @@ Thumbs.db
 Archive.zip
 archives/
 
+# Notebook/editor outputs
+**/.ipynb_checkpoints/
+examples/**/examples/
+examples_tutorials.zip
+r3xa_develop.zip
+
 # Web tooling
 r3xa_web/node_modules/
 

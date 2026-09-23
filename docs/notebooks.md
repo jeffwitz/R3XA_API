@@ -1,11 +1,28 @@
 # Tutorials — Jupyter and Marimo
 
 The repository contains parallel Python, Jupyter, Marimo, and MATLAB examples.
-Install Jupyter with `pip install -r requirements-jupyter.txt`, or install
-Marimo with `pip install -r requirements-marimo.txt`, then follow
-`examples/tutorials/README.md`.
+This page is the main entry point for running the interactive tutorials and the
+larger torsion and Qi Hu case studies.
 
-This page is the main **learn-by-doing tutorial entry point** for the project.
+:::{important}
+Install **R3XA_API itself** in the same virtual environment as the notebook
+runtime. Installing only Jupyter or Marimo gives you the notebook application,
+but not the current R3XA schema, Python API, bundled Graphviz WebAssembly
+runtime, or the generated helpers used by these examples.
+
+Run the commands below from the repository root:
+
+```bash
+python -m pip install -e ".[jupyter]"       # Jupyter tutorials and cases
+python -m pip install -e ".[marimo]"        # Marimo tutorials and cases
+```
+
+You can install both extras at once with
+`python -m pip install -e ".[jupyter,marimo]"`. The files
+`requirements-jupyter.txt` and `requirements-marimo.txt` are dependency-only
+shortcuts; use them **after** `pip install -e .` if you prefer that workflow.
+:::
+
 If you want to understand the library by running a real workflow, start here.
 
 This page explains how to run the **base DIC notebook** with a real Python runtime.
@@ -24,6 +41,24 @@ The converted tutorial notebooks are:
 Their Marimo counterparts are in {glsrc}`examples/tutorials/marimo/` and the
 scientific case conversions are in {glsrc}`examples/cases/`.
 
+## Scientific case studies
+
+These larger examples are presented in all currently supported interactive
+Python forms and also have MATLAB entry points:
+
+- **Large-rotation torsion** — {glsrc}`examples/cases/torsion/example.py`,
+  {glsrc}`examples/cases/torsion/example.ipynb`,
+  {glsrc}`examples/cases/torsion/marimo/example.py`, and
+  {glsrc}`examples/cases/torsion/example.m`.
+- **Qi Hu thermography** — {glsrc}`examples/cases/qi_hu/example.py`,
+  {glsrc}`examples/cases/qi_hu/example.ipynb`,
+  {glsrc}`examples/cases/qi_hu/marimo/example.py`, and
+  {glsrc}`examples/cases/qi_hu/example.m`.
+
+Both cases validate their document and generate a Graphviz SVG. The Jupyter
+and Marimo versions display that graph inline, which makes them useful for
+checking the references and data flow while following the construction.
+
 Notebook features:
 - **Load JSON from PC** (upload button)
 - **Export JSON to PC** (download button)
@@ -31,15 +66,42 @@ Notebook features:
 
 ---
 
-## 1) Local test (interactive editor)
+## 1) Start the local notebook servers
 
-### Install notebook dependencies
+Always start these commands from the repository root. This is important: the
+workspace browsers then expose both `examples/tutorials/` and
+`examples/cases/`, and the relative artifact paths used by the notebooks work
+as documented.
+
+### Jupyter
+
 ```bash
-python -m pip install -r requirements-marimo.txt
+jupyter notebook --no-browser --ip=127.0.0.1 --port=8888 --notebook-dir=.
 ```
 
-For the converted Jupyter tutorials instead, install
-`python -m pip install -r requirements-jupyter.txt`.
+Open the URL printed by Jupyter, normally
+`http://127.0.0.1:8888/tree`. Select a notebook under
+`examples/tutorials/jupyter/`, or a complete case under
+`examples/cases/<case>/`.
+
+### Marimo
+
+```bash
+marimo edit --host 127.0.0.1 --port 2720
+```
+
+Open `http://127.0.0.1:2720`. The Marimo workspace browser exposes the six
+tutorial applications and the case applications under
+`examples/cases/*/marimo/`. To open the base DIC application directly, use:
+
+```bash
+python scripts/dev.py notebook-dic --port 2720
+```
+
+If a port is already in use, choose another free port in both the command and
+the URL, for example `--port 2721`.
+
+## 2) Local interactive validation
 
 ### Graphviz requirement
 
@@ -47,21 +109,6 @@ The notebook uses the bundled Graphviz WebAssembly module through the standard
 `wasmtime` dependency, so no system installation is required. The native
 `dot` executable remains optional if you want to use the explicit native
 `graphviz` backend elsewhere.
-
-### Start Marimo
-```bash
-marimo edit
-```
-
-Run this command from the repository root. The Marimo workspace browser then
-exposes both `examples/tutorials/marimo/` and the case applications under
-`examples/cases/*/marimo/`. To launch the base DIC notebook directly, use:
-
-```bash
-python scripts/dev.py notebook-dic
-```
-
-Then open the URL printed by Marimo (usually `http://127.0.0.1:2718`).
 
 ### What to validate
 In the notebook:
@@ -80,10 +127,10 @@ In the notebook:
 
 ---
 
-## 2) MyBinder (public interactive run)
+## 3) MyBinder (public interactive run)
 
 Open:
-- [Launch notebook on MyBinder](https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc4?urlpath=proxy/2718/)
+- [Launch notebook on MyBinder](https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc5?urlpath=proxy/2718/)
 
 How it works in this repository:
 - Dependencies come from `binder/requirements.txt`.

@@ -6,7 +6,6 @@ Use it after the interactive notebook if you want to study a larger real-world R
 This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
 
 Sources:
-- {glsrc}`examples/python/qi_hu_from_scratch.py`
 - {glsrc}`examples/python/graph_r3xa.py`
 - {glsrc}`examples/cases/qi_hu/example.py`
 - {glsrc}`examples/cases/qi_hu/example.ipynb`
@@ -42,8 +41,8 @@ Below is the **interactive HTML** version (PyVis backend):
 
 ## How to generate the graph
 The canonical Qi Hu file is built **from scratch in Python** (no input JSON at
-runtime) by `examples/cases/qi_hu/example.py`. The older
-`examples/python/qi_hu_from_scratch.py` remains as a compact historical recipe.
+runtime) by `examples/cases/qi_hu/example.py`. Older literal and compact
+recipes remain under `examples/archive/python/` for comparison only.
 The script uses **loops** for repetitive file lists (IR frames, calibration series, time grids)
 so the dataset is defined compactly and remains easy to edit.
 
@@ -107,6 +106,6 @@ The graph encodes **object types** and **data‑flow roles**:
 These styles are defined in {glsrc}`examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
 
 ## Files used
-- Build script: {glsrc}`examples/python/qi_hu_from_scratch.py`
+- Build script: {glsrc}`examples/cases/qi_hu/example.py`
 - Graph tool: {glsrc}`examples/python/graph_r3xa.py`
 - Output SVG: `docs/figures/graph_qi_from_scratch.svg`

@@ -4,7 +4,7 @@ Python SDK and WebUI for creating and validating R3XA metadata files.
 
 > **Documentation:** [current documentation](https://r3xa-api.readthedocs.io/en/latest/)
 
-> **Release candidate:** `2.0.0rc4` targets schema `2026.9.18` and is not
+> **Release candidate:** `2.0.0rc5` targets schema `2026.9.18` and is not
 > source-compatible with the stable `1.x` releases.
 
 ## Install from PyPI
@@ -18,7 +18,7 @@ To try the current release candidate instead, install the tagged GitLab
 source explicitly:
 
 ```bash
-python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc4"
+python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc5"
 ```
 
 Graph support is part of the standard SDK installation: the Python `graphviz`
@@ -306,7 +306,7 @@ See `examples/tutorials/README.md` for the complete progression and
 `examples/cases/README.md` for the larger scientific cases.
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc4?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc5?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.
@@ -343,21 +343,21 @@ Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 - Save it back with `RegistryItem.save(...)` or `RegistryItem.save_to(...)`.
 
 ## Examples
-- Minimal create/save: `examples/python/basic_create.py`
 - From scratch pipeline: `examples/python/complex_dic_pipeline.py`
 - Registry pipeline: `examples/python/complex_dic_pipeline_registry.py`
 - Registry item creation: `examples/python/create_registry_camera.py`
 - Graph export tool: `examples/python/graph_r3xa.py`
 - Full file load/edit/save: `examples/python/load_edit_save.py`
-- Literal Qi Hu reconstruction: `examples/python/qi_hu_from_json_literal.py`
-- Qi Hu from scratch: `examples/python/qi_hu_from_scratch.py`
 - Registry discovery and merge: `examples/python/registry_discovery.py`
 - Registry loading and override basics: `examples/python/registry_usage.py`
 - Object-first (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
-- Validate all: `examples/python/validate_all.py`
-- Validate static example JSON: `examples/python/validate_examples.py`
+- Validate all examples: `scripts/validate_all_examples.py`
+- Validate static example JSON: `scripts/validate_static_examples.py`
 - Progressive tutorials: `examples/tutorials/README.md`
 - Scientific case studies: `examples/cases/README.md`
+
+Historical recipes retained for comparison are in `examples/archive/`; new
+code should start from `examples/tutorials/` or `examples/cases/`.
 
 ## Optional static graph backend (NetworkX + Matplotlib)
 Install:

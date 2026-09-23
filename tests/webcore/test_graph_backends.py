@@ -195,7 +195,7 @@ def test_pyvis_and_graphviz_export_same_node_and_edge_counts(case_name: str, fil
 
     dot_node_ids = {
         node_id
-        for node_id in re.findall(r"^\s*([A-Za-z0-9_]+)\s+\[", dot_text, flags=re.MULTILINE)
+        for node_id in re.findall(r'^\s*"?([A-Za-z0-9_-]+)"?\s+\[', dot_text, flags=re.MULTILINE)
         if node_id != "node"
     }
     dot_edge_count = len(re.findall(r"->", dot_text))

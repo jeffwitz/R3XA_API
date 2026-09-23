@@ -14,29 +14,54 @@ For a progressive object-first introduction, see the instructions in
 `examples/tutorials/README.md` and run the scripts listed there. Larger
 scientific demonstrations are collected in `examples/cases/README.md`.
 
+## Start the interactive examples
+
+Install R3XA_API together with the runtime you want before launching a server.
+Run these commands from the repository root; installing only `jupyter` or
+`marimo` is not sufficient because the examples use the editable R3XA package,
+the current schema and the bundled Graphviz WebAssembly backend.
+
+```bash
+# Jupyter tutorials and scientific cases
+python -m pip install -e ".[jupyter]"
+jupyter notebook --no-browser --ip=127.0.0.1 --port=8888 --notebook-dir=.
+```
+
+Open the Jupyter URL printed in the terminal and select a notebook under
+`examples/tutorials/jupyter/` or `examples/cases/`.
+
+```bash
+# Marimo tutorials and scientific cases
+python -m pip install -e ".[marimo]"
+marimo edit --host 127.0.0.1 --port 2720
+```
+
+Open `http://127.0.0.1:2720` and select an application from the workspace.
+The complete launch instructions, port alternatives and the base DIC command
+are collected in [notebooks.md](notebooks.md).
+
 
 ## Example index
 ### Python scripts (`examples/python/`)
-- {glsrc}`examples/python/basic_create.py`: minimal end‑to‑end JSON generation.
 - {glsrc}`examples/python/complex_dic_pipeline.py`: from‑scratch DIC pipeline (detailed below).
 - {glsrc}`examples/python/complex_dic_pipeline_registry.py`: registry‑based DIC pipeline (detailed below).
 - {glsrc}`examples/python/create_registry_camera.py`: generate, validate, and save a new camera item directly into `registry/`.
 - {glsrc}`examples/python/graph_r3xa.py`: graph generator (Graphviz + PyVis + NetworkX).
   Accepts `--palette document|classic` to switch the colour scheme on every backend at once.
 - {glsrc}`examples/python/load_edit_save.py`: load an existing R3XA file, edit it, and save it again.
-- {glsrc}`examples/python/qi_hu_from_json_literal.py`: literal Python reconstruction of the Qi Hu JSON payload.
 - {glsrc}`examples/python/registry_discovery.py`: list registry entries, merge one item, and save the merged result.
 - {glsrc}`examples/python/registry_usage.py`: minimal registry loading and override example.
 - {glsrc}`examples/python/typed_dic_pipeline.py`: object-first/Pydantic version of the DIC pipeline.
-- {glsrc}`examples/python/qi_hu_from_scratch.py`: full Qi Hu case built from scratch with loops (see Qi Hu page for details).
-- {glsrc}`examples/python/validate_all.py`: validate all example JSON.
-- {glsrc}`examples/python/validate_examples.py`: quick validation of example files.
+- {glsrc}`scripts/validate_all_examples.py`: validate all example JSON and generated artifacts.
+- {glsrc}`scripts/validate_static_examples.py`: quick validation of static example files.
 
 ### MATLAB scripts
-- {glsrc}`examples/matlab/qi_hu_from_scratch.m`: Qi Hu case built from scratch using the MATLAB binding.
 - {glsrc}`examples/tutorials/matlab/tutorial0_basic.m`: minimal MATLAB tutorial.
 - {glsrc}`examples/cases/torsion/example.m`: torsion case generated with MATLAB.
 - {glsrc}`examples/cases/qi_hu/example.m`: Qi Hu case at its canonical location.
+
+Historical recipes retained for comparison are under
+{glsrc}`examples/archive/` and are not the recommended entry points.
 
 ### Data files
 - `examples/valid_camera_list.json`: minimal valid camera dataset.
@@ -273,7 +298,7 @@ This example writes:
 - `examples/artifacts/dic_pipeline_typed.json`
 
 ## 7) Qi Hu from a literal JSON reconstruction
-Source: {glsrc}`examples/python/qi_hu_from_json_literal.py`
+Source: {glsrc}`examples/archive/python/qi_hu_from_json_literal.py`
 
 Key ideas:
 - rebuild the Qi Hu document with explicit `add_setting(...)`, `add_data_source(...)`, and `add_data_set(...)` calls
