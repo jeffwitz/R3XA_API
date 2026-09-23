@@ -6,3 +6,7 @@ documentation.
 
 These files are excluded from the Sphinx build and should not be treated as part
 of the supported SDK or schema documentation.
+
+Do not store credentials, access tokens, or live meeting links in these notes.
+Working documents may remain here for project traceability, but sensitive
+coordination details must be exchanged outside the public repository.

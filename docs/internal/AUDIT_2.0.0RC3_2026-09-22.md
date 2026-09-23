@@ -314,10 +314,14 @@ default.
   global random stream. MATLAB file output now requests UTF-8 explicitly. The
   reusable `matlab/test_smoke.m` qualification passes locally with MATLAB
   R2025b; shared CI remains independent of a proprietary MATLAB runner.
-- **G11 (partial):** Ruff is now configured for the maintained Python source
-  and tests, with the generated stub files explicitly excluded. The configured
-  bug and import checks pass locally and run in the explicit full CI pipeline;
-  repository-size and internal-document cleanup remain open.
+- **G11 (partial):** Ruff is configured for the maintained Python source and
+  tests, with generated stub files explicitly excluded. The configured bug
+  and import checks pass locally and run in the explicit full CI pipeline. The
+  internal coordination note is no longer at repository root and its live
+  meeting link has been removed. Large notebook exports, deliberate scientific
+  baselines, and historical presentation assets remain because they are linked
+  from the documentation or used by examples; a future repository split or
+  Git LFS policy can address their storage cost without changing the SDK.
 
 S2 is intentionally deferred without changing `scale`. S4 is intentionally
 deferred because R3XA currently has no external document users; versioned

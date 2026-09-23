@@ -22,7 +22,7 @@ TODO:
 - [ ] regarder Model Contexte Provider (MCP) sur gitlab [name=Manu]
 
 prochaine **réunion le mercredi 30 à 09:00**
-https://visio.numerique.gouv.fr/ndb-bwrv-fvb
+[Lien de visioconférence distribué séparément]
 
 ---
 ### Réunion 31 aout 2026
