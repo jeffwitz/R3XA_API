@@ -622,8 +622,9 @@ Current hardening status:
   ReadTheDocs installs the `docs` extra, regenerates `docs/specification.md`
   from the embedded schema, and runs Sphinx with warnings treated as errors.
   The external ReadTheDocs project still needs its GitLab repository webhook
-  enabled once in the ReadTheDocs administration; this repository cannot create
-  that external setting itself.
+  enabled once in the ReadTheDocs administration, and its `latest`/`stable`
+  aliases must be checked there; this repository cannot create those external
+  settings itself.
 
 - S1 is treated as a presentation issue, not a reason to remove profile
   examples: profiles are intentional complete templates, and the WebUI now

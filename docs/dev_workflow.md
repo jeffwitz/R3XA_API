@@ -234,11 +234,11 @@ build. The ReadTheDocs build uses Python 3.12, installs the `docs` extra, and
 regenerates `docs/specification.md` from the embedded schema before running
 Sphinx with warnings treated as errors.
 
-The documentation version mapping is defined in `docs/conf.py`:
-
-- `latest` follows `develop`;
-- `stable` follows `main`;
-- other ReadTheDocs versions retain their selected branch or tag.
+`docs/conf.py` maps ReadTheDocs' `latest` and `stable` names to the intended
+GitLab references when generating source links (`latest` → `develop`,
+`stable` → `main`). The actual ReadTheDocs version aliases are configured in
+the external project administration: they must point `latest` to `develop` and
+`stable` to `main` if that is the desired publication policy.
 
 The repository configuration cannot enable the external ReadTheDocs webhook by
 itself. In the ReadTheDocs project administration, the GitLab repository must be
