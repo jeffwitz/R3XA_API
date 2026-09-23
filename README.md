@@ -4,7 +4,7 @@ Python SDK and WebUI for creating and validating R3XA metadata files.
 
 > **Documentation:** [current documentation](https://r3xa-api.readthedocs.io/en/latest/)
 
-> **Release candidate:** `2.0.0rc3` targets schema `2026.9.18` and is not
+> **Release candidate:** `2.0.0rc4` targets schema `2026.9.18` and is not
 > source-compatible with the stable `1.x` releases.
 
 ## Install from PyPI
@@ -18,7 +18,7 @@ To try the current release candidate instead, install the tagged GitLab
 source explicitly:
 
 ```bash
-python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc3"
+python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc4"
 ```
 
 Graph support is part of the standard SDK installation: the Python `graphviz`
@@ -282,7 +282,7 @@ python scripts/dev.py notebook-dic-export
 ```
 
 Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc3?urlpath=proxy/2718/`
+- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc4?urlpath=proxy/2718/`
 - Binder builds Python dependencies from `binder/requirements.txt`.
 - Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
 - Marimo starts automatically through `binder/start`.
