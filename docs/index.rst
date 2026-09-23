@@ -70,7 +70,7 @@ Choose one profile from the project root, inside ``.venv``:
 
   .. code-block:: bash
 
-     pip install -e ".[dev,docs,web,notebook,graph_nx]"
+     pip install -e ".[dev,docs,web,marimo,jupyter,graph_nx]"
 
   The standard SDK dependency set includes the Python ``graphviz`` wrapper,
   the bundled Graphviz WebAssembly module, and ``wasmtime``. The system
@@ -114,12 +114,15 @@ Choose one profile from the project root, inside ``.venv``:
      pip install -e ".[web]"
      python scripts/dev.py run-web --port 8002
 
-- **Notebook** — run the Marimo notebook example:
+- **Notebooks** — run the Marimo example or open the Jupyter tutorials:
 
   .. code-block:: bash
 
-     pip install -e ".[notebook]"
+     pip install -e ".[marimo]"
      python scripts/dev.py notebook-dic
+
+     # Jupyter tutorial dependencies
+     pip install -e ".[jupyter]"
 
 - **Static graph rendering** — enable the optional NetworkX/Matplotlib renderer outside the WebUI:
 

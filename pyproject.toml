@@ -33,7 +33,9 @@ docs = [
   "myst-parser>=2.0",
   "sphinxcontrib-mermaid>=0.9",
 ]
+marimo = ["marimo>=0.11"]
 notebook = ["marimo>=0.11"]
+jupyter = ["jupyter>=1.0", "notebook>=7.0", "ipykernel>=6.29"]
 graph_nx = ["networkx>=3.2", "matplotlib>=3.8"]
 web = [
   "fastapi>=0.110",

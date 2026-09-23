@@ -65,7 +65,8 @@ Install only what you need:
 pip install -e .
 pip install -e ".[docs]"           # Sphinx + doc extensions
 pip install -e ".[web]"            # FastAPI UI/API + all three graph backends
-pip install -e ".[notebook]"       # Marimo notebooks
+pip install -e ".[marimo]"         # Marimo notebooks
+pip install -e ".[jupyter]"        # Jupyter notebooks and Python kernel
 pip install -e ".[graph_nx]"       # NetworkX + Matplotlib for non-WebUI use
 pip install -e ".[dev]"            # pytest and developer tools
 ```
@@ -90,7 +91,7 @@ python scripts/dev.py setup-dev
 This command:
 
 - bootstraps `pip`, `setuptools`, and `wheel` inside `.venv`
-- installs the editable contributor stack `.[dev,docs,web,notebook,graph_nx]`
+- installs the editable contributor stack `.[dev,docs,web,marimo,jupyter,graph_nx]`
   with `--no-build-isolation`
 - regenerates `r3xa_api/models.py`
 - regenerates `r3xa_api/core.pyi` and `r3xa_api/__init__.pyi`
@@ -216,6 +217,7 @@ python scripts/dev.py setup-dev
 python scripts/dev.py generate-models
 python scripts/dev.py generate-stubs
 python scripts/dev.py generate-spec
+python scripts/dev.py convert-tutorials
 python scripts/dev.py build-docs
 python scripts/dev.py build-static-web
 python scripts/dev.py clean-artifacts

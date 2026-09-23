@@ -1,0 +1,30 @@
+{
+  "id": "src-camera-oyjsnp3dkabm",
+  "kind": "data_sources/camera",
+  "title": "CCD Camera",
+  "description": "",
+  "output_components": 1,
+  "output_dimension": "surface",
+  "output_units": [
+    {
+      "unit": "gl",
+      "kind": "unit"
+    }
+  ],
+  "manufacturer": "Allied Vision Technologies (AVT)",
+  "model": "Dolphin F-145B",
+  "image_size": [
+    {
+      "title": "width",
+      "value": 1392.0,
+      "unit": "px",
+      "kind": "unit"
+    },
+    {
+      "title": "height",
+      "value": 1040.0,
+      "unit": "px",
+      "kind": "unit"
+    }
+  ]
+}

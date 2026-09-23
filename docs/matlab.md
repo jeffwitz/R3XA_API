@@ -96,6 +96,15 @@ So `description`, `manufacturer`, and `model` are positional in MATLAB, while th
 schema fields passed through `**extra` in Python.
 
 When switching from Python to MATLAB, use the MATLAB examples in this page as the reference call signature.
+For a minimal tutorial and larger complete cases, see:
+
+- `examples/tutorials/matlab/tutorial0_basic.m`
+- `examples/cases/torsion/example.m`
+- `examples/cases/qi_hu/example.m`
+
+These scripts write JSON files under `examples/artifacts/`. They do not run
+the Python validator inside MATLAB; validate the generated file with the
+Python API or the WebUI.
 
 ## `unit()` signature difference
 

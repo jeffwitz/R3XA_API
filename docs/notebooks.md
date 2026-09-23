@@ -1,12 +1,28 @@
-# Tutorial — Interactive DIC notebook (Marimo)
+# Tutorials — Jupyter and Marimo
+
+The repository contains parallel Python, Jupyter, Marimo, and MATLAB examples.
+Install Jupyter with `pip install -r requirements-jupyter.txt`, or install
+Marimo with `pip install -r requirements-marimo.txt`, then follow
+`examples/tutorials/README.md`.
 
 This page is the main **learn-by-doing tutorial entry point** for the project.
 If you want to understand the library by running a real workflow, start here.
 
 This page explains how to run the **base DIC notebook** with a real Python runtime.
 
-Notebook source:
+The base interactive Marimo notebook source is:
 - {glsrc}`examples/notebooks/dic_base_marimo.py`
+
+The converted tutorial notebooks are:
+- {glsrc}`examples/tutorials/jupyter/tutorial0_basic.ipynb`
+- {glsrc}`examples/tutorials/jupyter/tutorial1_printing_and_plotting.ipynb`
+- {glsrc}`examples/tutorials/jupyter/tutorial2_edit_r3xafile.ipynb`
+- {glsrc}`examples/tutorials/jupyter/tutorial3_build_use_predefined_items.ipynb`
+- {glsrc}`examples/tutorials/jupyter/tutorial4_file_vs_list.ipynb`
+- {glsrc}`examples/tutorials/jupyter/tutorial5_validation.ipynb`
+
+Their Marimo counterparts are in {glsrc}`examples/tutorials/marimo/` and the
+scientific case conversions are in {glsrc}`examples/cases/`.
 
 Notebook features:
 - **Load JSON from PC** (upload button)
@@ -19,8 +35,11 @@ Notebook features:
 
 ### Install notebook dependencies
 ```bash
-python -m pip install -r requirements-notebook.txt
+python -m pip install -r requirements-marimo.txt
 ```
+
+For the converted Jupyter tutorials instead, install
+`python -m pip install -r requirements-jupyter.txt`.
 
 ### Graphviz requirement
 
@@ -30,6 +49,14 @@ The notebook uses the bundled Graphviz WebAssembly module through the standard
 `graphviz` backend elsewhere.
 
 ### Start Marimo
+```bash
+marimo edit
+```
+
+Run this command from the repository root. The Marimo workspace browser then
+exposes both `examples/tutorials/marimo/` and the case applications under
+`examples/cases/*/marimo/`. To launch the base DIC notebook directly, use:
+
 ```bash
 python scripts/dev.py notebook-dic
 ```

@@ -12,7 +12,7 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-FULL_DEV_EXTRAS = ".[dev,docs,web,notebook,graph_nx]"
+FULL_DEV_EXTRAS = ".[dev,docs,web,marimo,jupyter,graph_nx]"
 BUILD_BOOTSTRAP_PACKAGES = ("pip", "setuptools>=68", "wheel")
 SCHEMA_RESOURCE = "r3xa_api/resources/schema.json"
 MODELS_OUTPUT = "r3xa_api/models.py"
@@ -156,6 +156,29 @@ def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
         "docs/figures/dic_base_marimo/index.html",
         "--force",
     )
+
+
+def cmd_convert_tutorials(_: argparse.Namespace) -> None:
+    """Regenerate repository-local Marimo examples from their Jupyter sources."""
+
+    python = project_python()
+    notebooks = sorted((ROOT / "examples" / "tutorials" / "jupyter").glob("*.ipynb"))
+    notebooks.extend(sorted((ROOT / "examples" / "cases").glob("*/example.ipynb")))
+    for notebook in notebooks:
+        if notebook.parent.name == "jupyter":
+            output = ROOT / "examples" / "tutorials" / "marimo" / f"{notebook.stem}.py"
+        else:
+            output = notebook.parent / "marimo" / "example.py"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        _run(
+            python,
+            "-m",
+            "marimo",
+            "convert",
+            str(notebook.relative_to(ROOT)),
+            "-o",
+            str(output.relative_to(ROOT)),
+        )
 
 
 def cmd_run_web(args: argparse.Namespace) -> None:
@@ -560,6 +583,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     notebook_export = subparsers.add_parser("notebook-dic-export", help="export the Marimo notebook to static HTML")
     notebook_export.set_defaults(func=cmd_notebook_dic_export)
+
+    convert_tutorials = subparsers.add_parser(
+        "convert-tutorials",
+        help="regenerate Marimo tutorial and case sources from Jupyter notebooks",
+    )
+    convert_tutorials.set_defaults(func=cmd_convert_tutorials)
 
     run_web = subparsers.add_parser("run-web", help="launch the local FastAPI web UI")
     run_web.add_argument("--host", default="127.0.0.1", help="host interface for Uvicorn")

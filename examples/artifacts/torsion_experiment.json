@@ -1,0 +1,749 @@
+{
+  "title": "Large-Rotation Torsion Test on HMA Sample",
+  "description": "Experimental dataset of torsion testing under large rotations (up to 350°) on a hot-melt adhesive (HMA) cylindrical specimen including an a priori full 360° scan, used to benchmark mono-cam PhDIC",
+  "version": "2026.9.18",
+  "authors": [
+    {
+      "name": "P. Avetisian",
+      "affiliation": "Sorbonne Université"
+    },
+    {
+      "name": "J. C. Passieux",
+      "affiliation": "INSA-Toulouse - ICA",
+      "orcid": "https://orcid.org/0000-0001-8387-4122"
+    },
+    {
+      "name": "J. N. Périé",
+      "affiliation": "Toulouse University - ICA",
+      "orcid": "https://orcid.org/0000-0002-1522-3931"
+    }
+  ],
+  "date": "2025-07-02",
+  "settings": [
+    {
+      "id": "stg-testing_machine-g576ua90joxv",
+      "kind": "settings/testing_machine",
+      "title": "Torsion apparatus",
+      "description": "Andilog Twist torsion test stand, precision : 0,1 deg ",
+      "type": "electromechanical",
+      "manufacturer": "Andilog",
+      "model": "Drivetwist",
+      "capacity": {
+        "value": 40.0,
+        "unit": "Nm",
+        "kind": "unit"
+      },
+      "attached_data_sources": [
+        "src-generic-7lypcsyrceav",
+        "src-generic-v679zqgjkhfe"
+      ]
+    },
+    {
+      "id": "stg-specimen-pmjyhzskdl7d",
+      "kind": "settings/specimen",
+      "title": "Sample",
+      "description": "hot-melt adhesive (HMA) cylindrical specimen",
+      "sizes": [
+        {
+          "title": "diameter",
+          "value": 7.0,
+          "unit": "mm",
+          "kind": "unit"
+        },
+        {
+          "title": "length",
+          "value": 150.0,
+          "unit": "mm",
+          "kind": "unit"
+        }
+      ],
+      "patterning_technique": "matte black and white spray paint"
+    },
+    {
+      "id": "stg-generic-b5pulsptrq3q",
+      "kind": "settings/generic",
+      "title": "calibration board",
+      "description": "Circles grid of 12 x 9, spacing = 5 mm",
+      "grid": [
+        12,
+        9
+      ],
+      "spacing": {
+        "value": 5.0,
+        "unit": "mm",
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "stg-generic-hdff42ok14ne",
+      "kind": "settings/generic",
+      "title": "Spotlights",
+      "description": "2 Spotlights MultiLed QX 100% indirect\nGS Vitec SN : GS01224 and GS01225",
+      "documentation": "https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf"
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "src-generic-7lypcsyrceav",
+      "kind": "data_sources/generic",
+      "title": "Dynamic Torque sensor",
+      "description": "Andilog Dynamic Torque sensor, capacity 6Nm, resolution 0.6mNm",
+      "output_components": 1,
+      "output_dimension": "point",
+      "output_units": [
+        {
+          "unit": "Nm",
+          "kind": "unit"
+        }
+      ],
+      "manufacturer": "Andilog",
+      "model": "SPIP TT 6",
+      "documentation": "https://pdf.directindustry.com/pdf/andilog-technologies/andilog-force-torque-measurements/7999-34677.html",
+      "uncertainty": {
+        "value": 0.6,
+        "unit": "mNm",
+        "kind": "unit"
+      },
+      "capacity": {
+        "value": 6.0,
+        "unit": "Nm",
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "src-generic-v679zqgjkhfe",
+      "kind": "data_sources/generic",
+      "title": "Dynamic Angle sensor",
+      "description": "Andilog Dynamic angle sensor",
+      "output_components": 1,
+      "output_dimension": "point",
+      "output_units": [
+        {
+          "unit": "deg",
+          "kind": "unit"
+        }
+      ],
+      "manufacturer": "Andilog",
+      "documentation": "https://pdf.directindustry.com/pdf/andilog-technologies/andilog-force-torque-measurements/7999-34677.html",
+      "uncertainty": {
+        "value": 0.1,
+        "unit": "deg",
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "src-camera-jjzrs7pya6t3",
+      "kind": "data_sources/camera",
+      "title": "CCD Camera",
+      "output_components": 1,
+      "output_dimension": "surface",
+      "output_units": [
+        {
+          "unit": "gl",
+          "kind": "unit"
+        }
+      ],
+      "manufacturer": "Flir",
+      "model": "Grasshopper3 GS3-U3-51S5M",
+      "image_size": [
+        {
+          "title": "width",
+          "value": 2048.0,
+          "unit": "px",
+          "kind": "unit"
+        },
+        {
+          "title": "height",
+          "value": 2048.0,
+          "unit": "px",
+          "kind": "unit"
+        }
+      ],
+      "image_scale": {
+        "value": 13.0,
+        "unit": "px/m",
+        "kind": "unit"
+      },
+      "focal_length": {
+        "value": 50.0,
+        "unit": "mm",
+        "kind": "unit"
+      },
+      "lens": "Tamron C-Mount 50mm f/2.8",
+      "exposure": {
+        "value": 20.0,
+        "unit": "ms",
+        "kind": "unit"
+      },
+      "standoff_distance": {
+        "value": 1.0,
+        "unit": "m",
+        "kind": "unit"
+      },
+      "uncertainty": {
+        "value": 1.12,
+        "unit": "gl",
+        "kind": "unit"
+      }
+    },
+    {
+      "id": "src-generic-me75la6ec0ab",
+      "kind": "data_sources/generic",
+      "title": "Camera Calibration",
+      "description": "using Calibration_tool based on OpenCV",
+      "input_data_sets": [
+        "set-list-y0427mr0osq5"
+      ],
+      "output_components": 9,
+      "output_dimension": "point",
+      "output_units": [
+        {
+          "title": "center x",
+          "unit": "px",
+          "kind": "unit"
+        },
+        {
+          "title": "center y",
+          "unit": "px",
+          "kind": "unit"
+        },
+        {
+          "title": "focal x",
+          "unit": "px",
+          "kind": "unit"
+        },
+        {
+          "title": "focal y",
+          "unit": "px",
+          "kind": "unit"
+        },
+        {
+          "title": "k1",
+          "unit": "",
+          "kind": "unit"
+        },
+        {
+          "title": "k2",
+          "unit": "",
+          "kind": "unit"
+        },
+        {
+          "title": "k3",
+          "unit": "",
+          "kind": "unit"
+        },
+        {
+          "title": "p1",
+          "unit": "",
+          "kind": "unit"
+        },
+        {
+          "title": "p2",
+          "unit": "",
+          "kind": "unit"
+        }
+      ],
+      "manufacturer": "Calibration_tool based on OpenCV",
+      "model": "v0.1"
+    }
+  ],
+  "data_sets": [
+    {
+      "id": "set-file-mlnotv7xtx9u",
+      "kind": "data_sets/file",
+      "title": "Scanning Angles",
+      "description": "Angles during the scan (rigid body rotation)",
+      "parent_data_sources": [
+        "src-generic-v679zqgjkhfe"
+      ],
+      "time_reference": {
+        "value": 0.0,
+        "unit": "s",
+        "kind": "unit"
+      },
+      "timestamps": {
+        "filename": "resultats_angle&couple_rotation.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": "A",
+        "rows": [
+          1,
+          63
+        ],
+        "kind": "data_set_file"
+      },
+      "values": {
+        "filename": "resultats_angle&couple_rotation.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": "C",
+        "rows": [
+          1,
+          63
+        ],
+        "kind": "data_set_file"
+      }
+    },
+    {
+      "id": "set-list-zlbvyttaqdxp",
+      "kind": "data_sets/list",
+      "title": "Scanning images",
+      "description": "Images taken during the scan (rigid body rotation)",
+      "path": "rbm_img/",
+      "data_type": "image/png",
+      "parent_data_sources": [
+        "src-camera-jjzrs7pya6t3"
+      ],
+      "time_reference": {
+        "value": 0.0,
+        "unit": "s",
+        "kind": "unit"
+      },
+      "timestamps": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        18.0,
+        19.0,
+        20.0,
+        21.0,
+        22.0,
+        23.0,
+        24.0,
+        25.0,
+        26.0,
+        27.0,
+        28.0,
+        29.0,
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0
+      ],
+      "values": [
+        "img0-00.png",
+        "img0-01.png",
+        "img0-02.png",
+        "img0-03.png",
+        "img0-04.png",
+        "img0-05.png",
+        "img0-06.png",
+        "img0-07.png",
+        "img0-08.png",
+        "img0-09.png",
+        "img0-10.png",
+        "img0-11.png",
+        "img0-12.png",
+        "img0-13.png",
+        "img0-14.png",
+        "img0-15.png",
+        "img0-16.png",
+        "img0-17.png",
+        "img0-18.png",
+        "img0-19.png",
+        "img0-20.png",
+        "img0-21.png",
+        "img0-22.png",
+        "img0-23.png",
+        "img0-24.png",
+        "img0-25.png",
+        "img0-26.png",
+        "img0-27.png",
+        "img0-28.png",
+        "img0-29.png",
+        "img0-30.png",
+        "img0-31.png",
+        "img0-32.png",
+        "img0-33.png",
+        "img0-34.png",
+        "img0-35.png",
+        "img0-36.png",
+        "img0-37.png",
+        "img0-38.png",
+        "img0-39.png",
+        "img0-40.png",
+        "img0-41.png",
+        "img0-42.png",
+        "img0-43.png",
+        "img0-44.png",
+        "img0-45.png",
+        "img0-46.png",
+        "img0-47.png",
+        "img0-48.png",
+        "img0-49.png",
+        "img0-50.png",
+        "img0-51.png",
+        "img0-52.png",
+        "img0-53.png",
+        "img0-54.png",
+        "img0-55.png",
+        "img0-56.png",
+        "img0-57.png",
+        "img0-58.png",
+        "img0-59.png",
+        "img0-60.png",
+        "img0-61.png"
+      ]
+    },
+    {
+      "id": "set-file-09a01qw03f18",
+      "kind": "data_sets/file",
+      "title": "Torsion Torques",
+      "description": "Torques during the Torsion test",
+      "parent_data_sources": [
+        "src-generic-7lypcsyrceav"
+      ],
+      "time_reference": {
+        "value": 0.0,
+        "unit": "s",
+        "kind": "unit"
+      },
+      "timestamps": {
+        "filename": "resultats_angle&couple_torsion.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": "A",
+        "rows": [
+          1,
+          73
+        ],
+        "kind": "data_set_file"
+      },
+      "values": {
+        "filename": "resultats_angle&couple_torsion.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": "D",
+        "rows": [
+          1,
+          73
+        ],
+        "kind": "data_set_file"
+      }
+    },
+    {
+      "id": "set-file-5im7qqivw4a2",
+      "kind": "data_sets/file",
+      "title": "Torsion Angles",
+      "description": "Angles during the Torsion test",
+      "parent_data_sources": [
+        "src-generic-v679zqgjkhfe"
+      ],
+      "time_reference": {
+        "value": 0.0,
+        "unit": "s",
+        "kind": "unit"
+      },
+      "timestamps": {
+        "filename": "resultats_angle&couple_torsion.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": "A",
+        "rows": [
+          1,
+          73
+        ],
+        "kind": "data_set_file"
+      },
+      "values": {
+        "filename": "resultats_angle&couple_torsion.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": "C",
+        "rows": [
+          1,
+          73
+        ],
+        "kind": "data_set_file"
+      }
+    },
+    {
+      "id": "set-list-9q3b88fhuof0",
+      "kind": "data_sets/list",
+      "title": "Torsion images",
+      "description": "Images taken during the torsion test",
+      "path": "torsion_img/",
+      "data_type": "image/png",
+      "parent_data_sources": [
+        "src-camera-jjzrs7pya6t3"
+      ],
+      "time_reference": {
+        "value": 0.0,
+        "unit": "s",
+        "kind": "unit"
+      },
+      "timestamps": [
+        0.0,
+        1.0,
+        2.0,
+        3.0,
+        4.0,
+        5.0,
+        6.0,
+        7.0,
+        8.0,
+        9.0,
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0,
+        15.0,
+        16.0,
+        17.0,
+        18.0,
+        19.0,
+        20.0,
+        21.0,
+        22.0,
+        23.0,
+        24.0,
+        25.0,
+        26.0,
+        27.0,
+        28.0,
+        29.0,
+        30.0,
+        31.0,
+        32.0,
+        33.0,
+        34.0,
+        35.0,
+        36.0,
+        37.0,
+        38.0,
+        39.0,
+        40.0,
+        41.0,
+        42.0,
+        43.0,
+        44.0,
+        45.0,
+        46.0,
+        47.0,
+        48.0,
+        49.0,
+        50.0,
+        51.0,
+        52.0,
+        53.0,
+        54.0,
+        55.0,
+        56.0,
+        57.0,
+        58.0,
+        59.0,
+        60.0,
+        61.0,
+        62.0,
+        63.0,
+        64.0,
+        65.0,
+        66.0,
+        67.0,
+        68.0,
+        69.0,
+        70.0,
+        71.0
+      ],
+      "values": [
+        "img0-00.png",
+        "img0-01.png",
+        "img0-02.png",
+        "img0-03.png",
+        "img0-04.png",
+        "img0-05.png",
+        "img0-06.png",
+        "img0-07.png",
+        "img0-08.png",
+        "img0-09.png",
+        "img0-10.png",
+        "img0-11.png",
+        "img0-12.png",
+        "img0-13.png",
+        "img0-14.png",
+        "img0-15.png",
+        "img0-16.png",
+        "img0-17.png",
+        "img0-18.png",
+        "img0-19.png",
+        "img0-20.png",
+        "img0-21.png",
+        "img0-22.png",
+        "img0-23.png",
+        "img0-24.png",
+        "img0-25.png",
+        "img0-26.png",
+        "img0-27.png",
+        "img0-28.png",
+        "img0-29.png",
+        "img0-30.png",
+        "img0-31.png",
+        "img0-32.png",
+        "img0-33.png",
+        "img0-34.png",
+        "img0-35.png",
+        "img0-36.png",
+        "img0-37.png",
+        "img0-38.png",
+        "img0-39.png",
+        "img0-40.png",
+        "img0-41.png",
+        "img0-42.png",
+        "img0-43.png",
+        "img0-44.png",
+        "img0-45.png",
+        "img0-46.png",
+        "img0-47.png",
+        "img0-48.png",
+        "img0-49.png",
+        "img0-50.png",
+        "img0-51.png",
+        "img0-52.png",
+        "img0-53.png",
+        "img0-54.png",
+        "img0-55.png",
+        "img0-56.png",
+        "img0-57.png",
+        "img0-58.png",
+        "img0-59.png",
+        "img0-60.png",
+        "img0-61.png",
+        "img0-62.png",
+        "img0-63.png",
+        "img0-64.png",
+        "img0-65.png",
+        "img0-66.png",
+        "img0-67.png",
+        "img0-68.png",
+        "img0-69.png",
+        "img0-70.png",
+        "img0-71.png"
+      ]
+    },
+    {
+      "id": "set-list-y0427mr0osq5",
+      "kind": "data_sets/list",
+      "title": "Calibration images",
+      "description": "grid image for intrinsic calibration",
+      "path": "calib_img/",
+      "data_type": "image/png",
+      "parent_data_sources": [
+        "src-camera-jjzrs7pya6t3"
+      ],
+      "time_reference": {
+        "value": 0.0,
+        "unit": "s",
+        "kind": "unit"
+      },
+      "timestamps": [
+        72.0,
+        73.0,
+        74.0,
+        75.0,
+        76.0,
+        77.0,
+        78.0,
+        79.0,
+        80.0,
+        81.0,
+        82.0,
+        83.0,
+        84.0,
+        85.0,
+        86.0,
+        87.0,
+        88.0,
+        89.0,
+        90.0,
+        91.0,
+        92.0,
+        93.0,
+        94.0,
+        95.0,
+        96.0
+      ],
+      "values": [
+        "img1-72.png",
+        "img1-73.png",
+        "img1-74.png",
+        "img1-75.png",
+        "img1-76.png",
+        "img1-77.png",
+        "img1-78.png",
+        "img1-79.png",
+        "img1-80.png",
+        "img1-81.png",
+        "img1-82.png",
+        "img1-83.png",
+        "img1-84.png",
+        "img1-85.png",
+        "img1-86.png",
+        "img1-87.png",
+        "img1-88.png",
+        "img1-89.png",
+        "img1-90.png",
+        "img1-91.png",
+        "img1-92.png",
+        "img1-93.png",
+        "img1-94.png",
+        "img1-95.png",
+        "img1-96.png"
+      ]
+    },
+    {
+      "id": "set-generic-tasxny7ag9cp",
+      "kind": "data_sets/generic",
+      "title": "Calibration parameters",
+      "description": "Intrisic parameters Cx, Cy, Fx, Fy and 5 distortion params",
+      "path": "camera_intrinsics.txt",
+      "parent_data_sources": [
+        "src-generic-me75la6ec0ab"
+      ],
+      "file_type": "text/txt"
+    }
+  ]
+}

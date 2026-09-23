@@ -7,7 +7,12 @@ This page shows the **same pipeline** built in two ways:
 1) **From scratch** (explicit creation of every item)
 2) **Registry‑based** (reuse shared items and override only what changes)
 
-For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
+For interactive usage, see **Jupyter and Marimo notebooks**:
+[notebooks.md](notebooks.md).
+
+For a progressive object-first introduction, see the instructions in
+`examples/tutorials/README.md` and run the scripts listed there. Larger
+scientific demonstrations are collected in `examples/cases/README.md`.
 
 
 ## Example index
@@ -27,13 +32,21 @@ For interactive usage, see **Notebooks (Marimo)**: [notebooks.md](notebooks.md).
 - {glsrc}`examples/python/validate_all.py`: validate all example JSON.
 - {glsrc}`examples/python/validate_examples.py`: quick validation of example files.
 
-### MATLAB scripts (`examples/matlab/`)
+### MATLAB scripts
 - {glsrc}`examples/matlab/qi_hu_from_scratch.m`: Qi Hu case built from scratch using the MATLAB binding.
+- {glsrc}`examples/tutorials/matlab/tutorial0_basic.m`: minimal MATLAB tutorial.
+- {glsrc}`examples/cases/torsion/example.m`: torsion case generated with MATLAB.
+- {glsrc}`examples/cases/qi_hu/example.m`: Qi Hu case at its canonical location.
 
 ### Data files
 - `examples/valid_camera_list.json`: minimal valid camera dataset.
 - `examples/valid_tabular_file.json`: minimal valid tabular dataset.
 - `examples/artifacts/`: generated outputs (JSON + graphs) from scripts.
+
+### Tutorials and scientific cases
+- `examples/tutorials/`: six-step introduction in Python, Jupyter, Marimo, and MATLAB.
+- `examples/cases/torsion/`: large-rotation torsion experiment.
+- `examples/cases/qi_hu/`: IR/visible Qi Hu thermography pipeline.
 
 ## 1) From scratch
 Source: {glsrc}`examples/python/complex_dic_pipeline.py`

@@ -70,8 +70,8 @@ Bootstrap the full contributor environment with one command:
 python scripts/dev.py setup-dev
 ```
 
-This installs the editable contributor stack (`dev`, `docs`, `web`, `notebook`,
-`graph_nx`) and regenerates the schema-derived artifacts tracked in
+This installs the editable contributor stack (`dev`, `docs`, `web`, `marimo`,
+`jupyter`, `graph_nx`) and regenerates the schema-derived artifacts tracked in
 the repository. The bootstrap uses `pip install --no-build-isolation -e ...`
 so it works cleanly inside an already-created project `.venv` without trying to
 re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
@@ -260,12 +260,19 @@ Regenerate typed models after schema updates:
 python scripts/dev.py generate-models
 ```
 
-## Marimo notebook (base DIC example)
-Install notebook support:
+## Tutorials and notebooks
+The repository contains the same introductory progression as Python scripts,
+Jupyter notebooks, Marimo notebooks, and MATLAB scripts under
+`examples/tutorials/`. Larger torsion and Qi Hu demonstrations are under
+`examples/cases/`; their Python, Jupyter, Marimo, and MATLAB entry points share
+the same document structure and write generated files below `examples/artifacts/`.
+
+### Marimo notebook (base DIC example)
+Install Marimo support:
 ```bash
-pip install -e ".[notebook]"
+pip install -e ".[marimo]"
 # or
-pip install -r requirements-notebook.txt
+pip install -r requirements-marimo.txt
 ```
 
 Run the notebook:
@@ -280,6 +287,23 @@ Optional static export (no backend):
 ```bash
 python scripts/dev.py notebook-dic-export
 ```
+
+### Jupyter tutorials
+Install Jupyter and its Python kernel separately when you want to open the
+`.ipynb` versions:
+```bash
+pip install -e ".[jupyter]"
+# or
+pip install -r requirements-jupyter.txt
+```
+
+Then open a notebook, for example:
+```bash
+jupyter notebook examples/tutorials/jupyter/tutorial0_basic.ipynb
+```
+
+See `examples/tutorials/README.md` for the complete progression and
+`examples/cases/README.md` for the larger scientific cases.
 
 Run on MyBinder (no local install):
 - Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc4?urlpath=proxy/2718/`
@@ -332,6 +356,8 @@ Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
 - Object-first (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
 - Validate all: `examples/python/validate_all.py`
 - Validate static example JSON: `examples/python/validate_examples.py`
+- Progressive tutorials: `examples/tutorials/README.md`
+- Scientific case studies: `examples/cases/README.md`
 
 ## Optional static graph backend (NetworkX + Matplotlib)
 Install:
@@ -362,6 +388,7 @@ python examples/python/graph_r3xa.py \
 - Generate schema models after schema updates: `python scripts/dev.py generate-models`
 - Regenerate IDE/type-checker stubs for guided helpers: `python scripts/dev.py generate-stubs`
 - Regenerate schema spec markdown: `python scripts/dev.py generate-spec`
+- Regenerate Marimo sources from Jupyter: `python scripts/dev.py convert-tutorials`
 - Build the HTML docs: `python scripts/dev.py build-docs`
 - Clean generated artifacts before packaging: `python scripts/dev.py clean-artifacts`
 - Build clean source zip from git tracked files: `python scripts/dev.py source-archive`
@@ -373,7 +400,7 @@ python examples/python/graph_r3xa.py \
 only want the dependencies without the regeneration steps, the equivalent install is:
 
 ```bash
-pip install -e ".[dev,docs,web,notebook,graph_nx]"
+pip install -e ".[dev,docs,web,marimo,jupyter,graph_nx]"
 ```
 
 Test totals depend on installed extras:

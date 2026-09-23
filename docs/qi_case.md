@@ -8,7 +8,10 @@ This page documents the **Qi Hu experimental case** and how it maps to R3XA conc
 Sources:
 - {glsrc}`examples/python/qi_hu_from_scratch.py`
 - {glsrc}`examples/python/graph_r3xa.py`
-- {glsrc}`examples/matlab/qi_hu_from_scratch.m`
+- {glsrc}`examples/cases/qi_hu/example.py`
+- {glsrc}`examples/cases/qi_hu/example.ipynb`
+- {glsrc}`examples/cases/qi_hu/marimo/example.py`
+- {glsrc}`examples/cases/qi_hu/example.m`
 
 ## Context
 The Qi Hu dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
@@ -38,25 +41,31 @@ Below is the **interactive HTML** version (PyVis backend):
 ></iframe>
 
 ## How to generate the graph
-The Qi Hu file is built **from scratch in Python** (no input JSON at runtime).
+The canonical Qi Hu file is built **from scratch in Python** (no input JSON at
+runtime) by `examples/cases/qi_hu/example.py`. The older
+`examples/python/qi_hu_from_scratch.py` remains as a compact historical recipe.
 The script uses **loops** for repetitive file lists (IR frames, calibration series, time grids)
 so the dataset is defined compactly and remains easy to edit.
 
 To generate the R3XA JSON from an activated `.venv`:
 ```bash
-PYTHONPATH=. python examples/python/qi_hu_from_scratch.py
+python examples/cases/qi_hu/example.py
 ```
+
+This writes `examples/artifacts/qi_hu_tutorial.json` and the corresponding
+Graphviz SVG at `examples/artifacts/graph_qi_hu_tutorial.svg`. The Jupyter and
+Marimo versions display the same SVG inline after validation.
 
 MATLAB users can also generate the same JSON with:
 ```matlab
 addpath(genpath('path/to/R3XA_API/matlab'));
-run('path/to/R3XA_API/examples/matlab/qi_hu_from_scratch.m');
+run('path/to/R3XA_API/examples/cases/qi_hu/example.m');
 ```
 
 Then generate the graph:
 ```bash
 python examples/python/graph_r3xa.py \
-  --input examples/artifacts/qi_hu_from_scratch.json \
+  --input examples/artifacts/qi_hu_tutorial.json \
   --output docs/figures/graph_qi_from_scratch
 ```
 
