@@ -2,7 +2,7 @@ import inspect
 
 import pytest
 import r3xa_api
-from r3xa_api import R3XAFile
+from r3xa_api import R3XAFile, Registry
 from r3xa_api.core import _guided_kind_specs
 
 
@@ -22,7 +22,6 @@ BASE_EXPORTS = {
     "Registry",
     "RegistryItem",
     "models",
-    "typed_available",
 }
 
 
@@ -34,7 +33,7 @@ def test_public_api_surface() -> None:
     # Beyond the base surface, only two families are exported: the standalone
     # item builders and the generated model classes.
     builders = set(r3xa_api.core.GUIDED_BUILDERS)
-    models = set(r3xa_api.models.__all__) if r3xa_api.typed_available else set()
+    models = set(r3xa_api.models.__all__)
 
     assert exports - BASE_EXPORTS == (builders | models) - BASE_EXPORTS
     assert all(name.startswith("new_") for name in builders)
@@ -81,8 +80,15 @@ def test_web_helpers_still_available_from_webcore() -> None:
     assert callable(build_schema_summary)
 
 
-def test_typed_available_flag_remains_module_attribute() -> None:
-    assert hasattr(r3xa_api, "_TYPED_AVAILABLE")
+def test_typed_models_are_always_part_of_the_public_api() -> None:
+    assert hasattr(r3xa_api, "models")
+    assert not hasattr(r3xa_api, "typed_available")
+
+
+def test_removed_20_conversion_and_registry_aliases_stay_removed() -> None:
+    assert not hasattr(R3XAFile, "to_model")
+    assert not hasattr(Registry, "get")
+    assert not hasattr(Registry, "get_validated")
 
 
 @pytest.mark.parametrize("kind,spec", sorted(_guided_kind_specs().items()))

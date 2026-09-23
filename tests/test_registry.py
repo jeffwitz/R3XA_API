@@ -55,7 +55,7 @@ def test_merge_item_overrides():
 def test_registry_class():
     root = Path(__file__).parents[1] / "registry"
     registry = Registry(root)
-    item = registry.get_validated("settings/specimen/openhole_sample")
+    item = registry.load_validated("settings/specimen/openhole_sample")
     assert item["kind"] == "settings/specimen"
     assert registry.load("settings/specimen/openhole_sample")["kind"] == "settings/specimen"
     assert registry.load_validated("settings/specimen/openhole_sample")["kind"] == "settings/specimen"

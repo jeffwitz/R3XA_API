@@ -155,10 +155,8 @@ Some functions still exist for compatibility:
 - `save_item_path(...)`
 - `validate_item(...)`
 - `merge_item(...)`
-- `Registry.get(...)`
-- `Registry.get_validated(...)`
-
-They remain usable during the `2.x` series where implemented, but they are no longer the preferred entry points for new code and do not translate pre-2.0 schema fields.
+These low-level helpers remain usable where implemented, but they do not
+translate pre-2.0 schema fields.
 
 The practical rule is:
 

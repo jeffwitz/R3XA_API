@@ -312,12 +312,6 @@ class R3XAFile(_generated_models.R3XADocument):
             setattr(self, field, value)
         return self
 
-    def to_model(self) -> "R3XAFile":
-        """Return this document; it is already the generated Pydantic model."""
-
-        self.validate()
-        return self
-
     @classmethod
     def from_model(cls, model: Any) -> "R3XAFile":
         """Create this document type from another generated model."""

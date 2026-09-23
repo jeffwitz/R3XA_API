@@ -294,15 +294,10 @@ class Registry:
 
         self.root = Path(root)
 
-    def get(self, tree_path: str, *, validate: bool = True) -> R3XAItem:
+    def load(self, tree_path: str, *, validate: bool = True) -> R3XAItem:
         """Load an item from `section/kind/name` path."""
 
         return load_item_path(self.root, tree_path, validate=validate)
-
-    def load(self, tree_path: str, *, validate: bool = True) -> R3XAItem:
-        """Alias for `get()` with a more discoverable name."""
-
-        return self.get(tree_path, validate=validate)
 
     def wrap(self, item: Mapping[str, Any] | R3XAItem, tree_path: str | None = None) -> RegistryItem:
         """Wrap a plain item payload into a bound `RegistryItem`."""
@@ -312,7 +307,7 @@ class Registry:
     def get_item(self, tree_path: str, *, validated: bool = True, kind: Optional[str] = None) -> RegistryItem:
         """Load a registry item and return it as a `RegistryItem` wrapper."""
 
-        item = self.get_validated(tree_path, kind=kind) if validated else self.get(tree_path, validate=False)
+        item = self.load_validated(tree_path, kind=kind) if validated else self.load(tree_path, validate=False)
         return RegistryItem(item, registry_root=self.root, tree_path=tree_path)
 
     def save(
@@ -332,17 +327,12 @@ class Registry:
 
         validate_item(item, kind=kind)
 
-    def get_validated(self, tree_path: str, kind: Optional[str] = None) -> R3XAItem:
+    def load_validated(self, tree_path: str, kind: Optional[str] = None) -> R3XAItem:
         """Load then validate a registry item in one call."""
 
-        item = self.get(tree_path, validate=False)
+        item = self.load(tree_path, validate=False)
         self.validate(item, kind=kind)
         return item
-
-    def load_validated(self, tree_path: str, kind: Optional[str] = None) -> R3XAItem:
-        """Alias for `get_validated()` with a more discoverable name."""
-
-        return self.get_validated(tree_path, kind=kind)
 
     def list(self, section: Optional[str] = None, kind: Optional[str] = None) -> list[str]:
         """List available registry tree paths, optionally filtered by section or kind."""
@@ -384,7 +374,7 @@ class Registry:
             if wrapped:
                 item = self.get_item(tree_path, validated=validated)
             else:
-                item = self.get_validated(tree_path) if validated else self.get(tree_path)
+                item = self.load_validated(tree_path) if validated else self.load(tree_path)
             yield tree_path, item
 
     def merge(self, tree_path: str, **overrides: Any) -> RegistryItem:

@@ -85,5 +85,3 @@ from .registry import (
 from .schema import load_schema, schema_version
 from .typed import from_model
 from .validate import integrity_errors, validate, validate_integrity
-
-typed_available: bool

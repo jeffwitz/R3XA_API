@@ -283,11 +283,17 @@ default.
   item from another schema section and reject duplicate IDs, including when
   the same object is appended directly instead of going through `add_*`.
   The remaining schema/Pydantic `additionalProperties` audit is still open.
-- **G6 (partial):** `repr(item)` now uses Pydantic's compact representation,
-  while `str(item)` and `item.print()` keep the readable multi-line summary.
-  `merge()` now reconstructs the concrete model class, including
-  `R3XADocument`, instead of routing every merge through the generic base.
-  The remaining API-cleanup proposals are not yet addressed.
+- **G6:** `repr(item)` now uses Pydantic's compact representation, while
+  `str(item)` and `item.print()` keep the readable multi-line summary.
+  `merge()` reconstructs the concrete model class, including `R3XADocument`.
+  The redundant `R3XAFile.to_model()` conversion, the meaningless
+  `typed_available` flag, and the `Registry.get`/`get_validated` aliases have
+  been removed; generated stubs, examples, tests, and documentation now use
+  the object-first 2.0 API directly.
+- **G7:** bound references now use the object-valued model field as their
+  in-memory source of truth. Wire IDs are derived during serialization, so
+  renaming a bound item cannot leave stale IDs in `to_dict()`; schema-scoped
+  reference metadata remains the source for reference resolution.
 - **G2 (partial):** merge-request pipelines now run a lightweight Python
   smoke suite and an installed-wheel smoke test. The full Python matrix,
   lint, browser, static-WebUI, Registry, documentation, and Pages jobs remain

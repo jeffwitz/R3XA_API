@@ -27,7 +27,7 @@ def test_save_item_path_creates_valid_registry_camera(tmp_path: Path):
     assert output_path.exists()
 
     registry = Registry(tmp_path)
-    loaded = registry.get_validated(tree_path)
+    loaded = registry.load_validated(tree_path)
     assert loaded["id"] == "ds_cam_test_generated"
 
 

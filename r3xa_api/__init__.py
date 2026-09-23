@@ -17,9 +17,6 @@ from .validate import integrity_errors, validate, validate_integrity
 
 from . import models
 
-_TYPED_AVAILABLE = True
-typed_available = True
-
 __all__ = [
     "R3XAFile",
     "R3XAItem",
@@ -36,7 +33,6 @@ __all__ = [
     "Registry",
     "RegistryItem",
     "models",
-    "typed_available",
 ]
 
 # Standalone item helpers, generated from the schema alongside R3XAFile

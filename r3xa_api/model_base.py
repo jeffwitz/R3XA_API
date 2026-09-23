@@ -24,7 +24,6 @@ class R3XAItem(BaseModel):
     model_config = ConfigDict(validate_assignment=True, extra="allow")
     _json_indent: ClassVar[int] = 2
     _document: Any = PrivateAttr(default=None)
-    _reference_objects: dict[str, Any] = PrivateAttr(default_factory=dict)
 
     @classmethod
     def _reference_field_map(cls) -> dict[str, str]:
@@ -39,17 +38,18 @@ class R3XAItem(BaseModel):
                 kind_field = self.__class__.model_fields.get("kind")
                 kind = getattr(kind_field, "default", "")
             data["id"] = generate_id(kind if isinstance(kind, str) else "")
-        reference_objects: dict[str, Any] = {}
+        reference_values: dict[str, Any] = {}
         for field in type(self)._reference_field_map():
             if field not in data or data[field] is None:
                 continue
-            normalized, objects = self._normalize_reference(data[field])
+            original = data[field]
+            normalized, objects = self._normalize_reference(original)
             data[field] = normalized
             if objects is not None:
-                reference_objects[field] = objects
+                reference_values[field] = original
         super().__init__(**data)
-        if reference_objects:
-            object.__setattr__(self, "_reference_objects", reference_objects)
+        for field, value in reference_values.items():
+            object.__setattr__(self, field, value)
 
         for section in ("settings", "data_sources", "data_sets"):
             if section not in self.__class__.model_fields:
@@ -253,19 +253,13 @@ class R3XAItem(BaseModel):
             except AttributeError:
                 pass
         if name in type(self)._reference_field_map() and value is not None:
-            value, objects = self._normalize_reference(value)
-            references = getattr(self, "_reference_objects", None)
-            if references is not None:
-                if objects is None:
-                    references.pop(name, None)
-                else:
-                    references[name] = objects
-        elif name in type(self)._reference_field_map():
-            try:
-                object.__getattribute__(self, "_reference_objects").pop(name, None)
-            except AttributeError:
-                pass
-        super().__setattr__(name, value)
+            original = value
+            normalized, objects = self._normalize_reference(value)
+            super().__setattr__(name, normalized)
+            if objects is not None:
+                object.__setattr__(self, name, original)
+        else:
+            super().__setattr__(name, value)
         if name in {"settings", "data_sources", "data_sets"}:
             object.__setattr__(
                 self,
@@ -326,25 +320,18 @@ class R3XAItem(BaseModel):
         if section is None or value is None:
             return value
 
-        objects = getattr(self, "_reference_objects", {}).get(field)
-        if document is None and objects is not None:
-            return objects
         if document is None:
             return value
 
-        def resolve(item: Any, fallback: Any = None) -> Any:
+        def resolve(item: Any) -> Any:
             identifier = reference_id(item)
             if identifier is None:
                 return item
-            return document.find(identifier) or fallback or identifier
+            return document.find(identifier) or item
 
         if isinstance(value, list):
-            fallbacks = objects if isinstance(objects, list) else []
-            return [
-                resolve(item, fallbacks[index] if index < len(fallbacks) else None)
-                for index, item in enumerate(value)
-            ]
-        return resolve(value, objects)
+            return [resolve(item) for item in value]
+        return resolve(value)
 
     def __getattribute__(self, name: str) -> Any:
         try:
@@ -368,7 +355,12 @@ class R3XAItem(BaseModel):
         for field in type(self).model_fields:
             raw_value = object.__getattribute__(self, field)
             serialized_value = payload.get(field)
-            if isinstance(raw_value, R3XAItem) and isinstance(serialized_value, Mapping):
+            if field in type(self)._reference_field_map():
+                if raw_value is None and exclude_none:
+                    payload.pop(field, None)
+                else:
+                    payload[field] = self._reference_wire_value(raw_value)
+            elif isinstance(raw_value, R3XAItem) and isinstance(serialized_value, Mapping):
                 payload[field] = raw_value.to_dict(exclude_none=exclude_none)
             elif isinstance(raw_value, (list, tuple)) and isinstance(serialized_value, list):
                 payload[field] = [

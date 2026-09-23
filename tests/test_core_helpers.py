@@ -707,7 +707,7 @@ def test_object_first_document_api_resolves_references_and_serializes_ids() -> N
 def test_r3xafile_bridges_to_generated_document_model() -> None:
     document = _document_with_items()
 
-    generated = document.to_model()
+    generated = document
     rebuilt = R3XAFile.from_model(generated)
 
     assert generated.title == document.title

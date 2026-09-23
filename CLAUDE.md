@@ -68,11 +68,19 @@ environment locally, so Node is pinned for build reproducibility without
 becoming a runtime dependency of the published site.
 
 The Registry API boundary is intentionally explicit: `Registry.load()` and
-`Registry.get()` return the schema-generated `R3XAItem`; `Registry.get_item()`
-and `Registry.wrap()` return `RegistryItem` only when mapping semantics or a
-bound registry tree path are needed. Do not merge these types speculatively
-before 2.0: the distinction is covered by tests and avoids putting filesystem
-binding into every standalone R3XA item.
+`Registry.load_validated()` return the schema-generated `R3XAItem`;
+`Registry.get_item()` and `Registry.wrap()` return `RegistryItem` only when
+mapping semantics or a bound registry tree path are needed. The removed
+`Registry.get()` and `Registry.get_validated()` aliases are not to be
+reintroduced: the 2.0 API uses verbs that distinguish loading an item from
+obtaining a bound wrapper.
+
+The generated Pydantic document is the only active document model. Do not add
+a `to_model()` compatibility conversion or a feature-detection flag: callers
+can use `R3XAFile` directly and the generated classes are always part of the
+public API. In-memory references keep object identity and derive JSON IDs at
+serialization, so changing a bound item's ID must update all serialized
+references.
 
 The Graphviz WASM documentation now records a local benchmark and installation
 size observation. These figures are diagnostic, not API guarantees: measure

@@ -1,9 +1,6 @@
 from pathlib import Path
 
-from r3xa_api import author, R3XAFile, models, typed_available
-
-if not typed_available or models is None:
-    raise RuntimeError('Typed models are not available. Install with: pip install -e ".[typed]"')
+from r3xa_api import author, R3XAFile, models
 
 r3xa = R3XAFile(
     title="Open-hole tensile test with DIC",

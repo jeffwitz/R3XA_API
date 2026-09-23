@@ -73,9 +73,9 @@ Create a generated document from an existing payload, JSON file, or JSON string.
 
 ```python
 set_header(**fields) -> R3XAFile
-to_model() -> R3XAFile
 ```
-Update header fields, or return the already-generated document after validation.
+Update header fields. `R3XAFile` is already the generated Pydantic document
+model; there is no separate conversion step before validation or saving.
 
 ```python
 add_setting(kind: str, **fields) -> R3XAItem

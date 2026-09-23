@@ -57,7 +57,6 @@ Generated file:
 ## Public typed entry points
 
 - `from r3xa_api import models`
-- `from r3xa_api import typed_available`
 
 `R3XAFile` and `R3XADocument` use the same generated object model. The legacy
 `from_model(...)` bridge remains available for integrations, but it is not part

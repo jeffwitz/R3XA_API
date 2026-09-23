@@ -31,11 +31,6 @@ def _valid_camera():
     )
 
 
-def test_typed_available():
-    assert hasattr(r3xa_api, "_TYPED_AVAILABLE")
-    assert r3xa_api._TYPED_AVAILABLE is True
-
-
 def test_reference_fields_are_scoped_to_the_schema_kind():
     assert reference_fields("data_sources/camera") == {"input_data_sets": "data_sets"}
     assert reference_fields("data_sources/dic_measurement") == {
@@ -404,7 +399,7 @@ def test_generated_document_roundtrips_through_r3xafile():
 
     rebuilt = R3XAFile.from_model(document)
 
-    assert rebuilt.to_model().to_dict() == document.to_dict()
+    assert rebuilt.to_dict() == document.to_dict()
 
 
 def test_typed_document_links_inputs_and_reports_dangling_references():
@@ -564,8 +559,8 @@ def test_generic_setting_uses_lowercase_documentation_field():
     assert setting.documentation == "https://example.org/lighting.pdf"
 
 
-def test_object_first_api_requires_pydantic():
-    assert r3xa_api.typed_available is True
+def test_object_first_api_uses_generated_pydantic_models():
+    assert isinstance(R3XAFile(), models.R3XADocument)
 
 
 def test_typed_example_script_generates_valid_json():

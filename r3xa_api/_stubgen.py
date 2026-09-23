@@ -207,7 +207,6 @@ def render_core_stub() -> str:
         [
             "    def to_dict(self, *, exclude_none: bool = ...) -> Dict[str, Any]: ...",
             "    def validate(self, *, schema: Optional[Dict[str, Any]] = ...) -> None: ...",
-            "    def to_model(self) -> R3XAFile: ...",
             "    def dump(self, *, exclude_none: bool = ..., indent: Optional[int] = ...) -> str: ...",
             "    def save(self, path: str | Path, *, validate: bool = ..., exclude_none: bool = ..., indent: Optional[int] = ...) -> Path: ...",
             "    def summary(self) -> str: ...",
@@ -279,8 +278,6 @@ def render_package_stub() -> str:
             "from .schema import load_schema, schema_version",
             "from .typed import from_model",
             "from .validate import integrity_errors, validate, validate_integrity",
-            "",
-            "typed_available: bool",
             "",
         ]
     )
