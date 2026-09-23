@@ -1,13 +1,16 @@
 import json
 from pathlib import Path
-from r3xa_api import validate
+from r3xa_api import validate, validate_item
 
 
 def validate_json(path: Path) -> None:
     with path.open("r", encoding="utf-8") as f:
         payload = json.load(f)
-    validate(payload)
-    print(f"OK: {path.name}")
+    if isinstance(payload, dict) and isinstance(payload.get("kind"), str):
+        validate_item(payload)
+    else:
+        validate(payload)
+    print(f"OK: {path}")
 
 
 def main() -> None:
@@ -23,13 +26,12 @@ def main() -> None:
         assert spec and spec.loader
         spec.loader.exec_module(module)
 
-    # Validate static examples
-    for path in [
-        examples_dir / "valid_camera_list.json",
-        examples_dir / "valid_tabular_file.json",
-        examples_dir / "artifacts" / "dic_pipeline.json",
-        examples_dir / "artifacts" / "dic_pipeline_registry.json",
-    ]:
+    # Validate every committed JSON example and generated artifact. Registry
+    # fragments are validated against their kind; complete documents include
+    # the document-level integrity checks.
+    paths = sorted(examples_dir.glob("*.json"))
+    paths.extend(sorted((examples_dir / "artifacts").rglob("*.json")))
+    for path in paths:
         validate_json(path)
 
 

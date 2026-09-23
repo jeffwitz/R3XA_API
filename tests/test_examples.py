@@ -7,7 +7,7 @@ import subprocess
 import sys
 from typing import Iterable
 
-from r3xa_api import validate
+from r3xa_api import validate, validate_item
 
 
 def _snapshot_paths(paths: Iterable[Path]) -> dict[Path, bytes | None]:
@@ -108,6 +108,20 @@ def test_examples_validate_all():
         assert merged_registry_item["kind"] == "data_sources/camera"
     finally:
         _restore_paths(generated_snapshots)
+
+
+def test_committed_json_artifacts_validate_against_current_schema() -> None:
+    root = Path(__file__).parents[1]
+    json_paths = sorted((root / "examples").glob("*.json"))
+    json_paths.extend(sorted((root / "examples" / "artifacts").rglob("*.json")))
+
+    assert json_paths
+    for path in json_paths:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(payload, dict) and isinstance(payload.get("kind"), str):
+            validate_item(payload)
+        else:
+            validate(payload)
 
 
 def test_registry_examples_use_kind_prefixed_ids() -> None:
