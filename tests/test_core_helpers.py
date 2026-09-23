@@ -96,6 +96,11 @@ def test_data_set_file_does_not_serialize_an_implicit_delimiter() -> None:
 
 def test_unit_accepts_minimal_schema_payload() -> None:
     payload = unit(unit="px")
+    assert payload.to_dict() == {"kind": "unit", "unit": "px"}
+
+
+def test_unit_serializes_explicit_scale() -> None:
+    payload = unit(unit="px", scale=1.0)
     assert payload.to_dict() == {"kind": "unit", "unit": "px", "scale": 1.0}
 
 

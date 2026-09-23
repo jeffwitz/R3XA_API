@@ -52,7 +52,7 @@ def unit(
     title: Optional[str] = None,
     value: Optional[float] = None,
     unit: Optional[str] = None,
-    scale: Optional[float] = 1.0,
+    scale: Optional[float] = None,
     **extra: Any,
 
 ) -> R3XAItem:
