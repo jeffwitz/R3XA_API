@@ -5,7 +5,6 @@
   "description": "images taken by the CCD camera",
   "path": "images/",
   "data_type": "image/tiff",
-  "data_origin": "raw",
   "parent_data_sources": [
     "src-camera-avt-dolphin-f145b"
   ],

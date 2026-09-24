@@ -15,7 +15,7 @@ from r3xa_web.app.main import create_app
 
 def _load_example() -> dict:
     root = Path(__file__).resolve().parents[2]
-    path = root / "examples" / "artifacts" / "dic_pipeline.json"
+    path = root / "artifacts" / "examples" / "dic_pipeline.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -45,7 +45,7 @@ async def test_api_schema_catalog() -> None:
         response = await client.get("/api/schema/catalog")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["schema_version"] == "2026.9.18"
+    assert payload["schema_version"] == "2026.9.24"
     assert "data_sources/camera" in payload["sections"]["data_sources"]["kinds"]
 
 
@@ -57,7 +57,7 @@ async def test_api_ui_catalog() -> None:
         response = await client.get("/api/ui")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["schema_version"] == "2026.9.18"
+    assert payload["schema_version"] == "2026.9.24"
     assert "dic_2d" in payload["profiles"]
 
 

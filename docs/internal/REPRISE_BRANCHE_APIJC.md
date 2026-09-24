@@ -131,7 +131,7 @@ a donc été placée **sur la bordure**, avec un fond en version claire, ce qui 
 suit déjà la palette par défaut. Les formes sont inchangées.
 
 Rendus disponibles pour juger sur pièce, sur le document Qi Hu :
-`examples/artifacts/graph_qi_document.svg`, `graph_qi_document_nx.png`,
+`artifacts/examples/graph_qi_document.svg`, `graph_qi_document_nx.png`,
 `graph_qi_document_pyvis.html`.
 
 ---
@@ -247,7 +247,7 @@ fois tous les documents et le registre dans le même cycle de version, pour un g
 |---|---|---|
 | `file_type` → `mime_type` | **Abandon** | `file_type` reste. Il n'était de toute façon implémenté nulle part, ni en 2.x ni dans `apijc`. |
 | Préfixes d'identifiants | **« EXAMPLE »** | Des `examples` (`stg-` / `src-` / `set-`) et la mention explicite de l'espace de noms plat, **sans motif imposé**. Un motif aurait invalidé tous les identifiants produits par `_random_id()` et forcé à réécrire le générateur. |
-| Flag données brutes / analyse | **Ok** | `data_origin` optionnel sur les trois types de data_sets, valeurs `raw` \| `derived`. Énumération plutôt que booléen, pour qu'un troisième cas reste exprimable ; optionnel, pour qu'un import ancien ne déclare pas une origine qu'il ignore. |
+| Origine des jeux de données | **Retiré** | L'origine `raw`/`derived` n'est pas dupliquée dans les jeux de données : elle se déduit du lignage des `parent_data_sources` et `input_data_sets`. |
 | LSA / `fullfieldmeasurement` | **Pas prioritaire** | Rien fait. Méthode d'un chercheur, hors périmètre pour l'instant. |
 | Emplacement du maillage | **« associé à l'éprouvette »** | `settings/specimen` gagne `mesh`, à côté de `cad`. **Conséquence tirée au-delà de la réponse** : `dic_measurement.mesh` acceptait « filename or specimen setting id » dans une même chaîne — deux natures qu'aucun consommateur ne pouvait départager. Il devient une référence de `setting_id`. Aucun document ne renseignait ce champ : migration nulle. |
 | `GenericDataSet` sans source | **Requis pour `generic`, pas pour les autres** | `parent_data_sources` reste requis sur `data_sets/generic`, devient optionnel sur `file` et `list`. |

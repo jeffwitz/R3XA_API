@@ -28,6 +28,14 @@ const guidedExampleBannerTextEl = document.getElementById("guided-example-banner
 const modeButtons = document.querySelectorAll("[data-editor-mode]");
 const launchParams = new URLSearchParams(window.location.search);
 const t = (key, fallback, values) => window.R3XAI18N?.t(key, fallback, values) || fallback;
+const fieldTitle = (key, fallback) => t(
+  key.includes("/") ? `kind.${key.replaceAll("/", ".")}` : `field.${key}`,
+  fallback || key,
+);
+const guidedStepTitle = (step) => t(
+  `profile.${selectedProfile}.step.${step.id}`,
+  t(`guided.step.${step.id}`, step.title || step.id),
+);
 
 let schemaCatalog = null;
 let uiCatalog = null;
@@ -304,6 +312,14 @@ const profileHasPrefilledWorkflow = (profile) => Boolean(
   ),
 );
 
+const hasMeaningfulValue = (value) => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (Array.isArray(value)) return value.some(hasMeaningfulValue);
+  if (typeof value === "object") return Object.values(value).some(hasMeaningfulValue);
+  return true;
+};
+
 const updateExampleTemplateBanner = () => {
   const profile = uiCatalog?.profiles?.[selectedProfile];
   const visible = Boolean(
@@ -326,8 +342,17 @@ const createPrefilledWorkflow = () => {
   const profile = uiCatalog?.profiles?.[selectedProfile];
   if (!profile || !profileHasPrefilledWorkflow(profile)) return;
   const current = readPayload();
-  const hasItems = ["settings", "data_sources", "data_sets"].some((section) => current?.[section]?.length);
-  if (hasItems && !window.confirm(t("guided.replace_prefilled", "Replace the current document with the prefilled workflow?"))) return;
+  const hasExistingContent = current && Object.entries(current).some(
+    ([key, value]) => key !== "version" && hasMeaningfulValue(value),
+  );
+  if (hasExistingContent && !window.confirm(t("guided.replace_prefilled", "Replace the current document with the prefilled workflow?"))) {
+    const previousProfile = localStorage.getItem("r3xaProfile");
+    if (previousProfile && uiCatalog.profiles?.[previousProfile]) selectedProfile = previousProfile;
+    if (profileSelectEl) profileSelectEl.value = selectedProfile;
+    updateEditorMode();
+    syncFormFromJson();
+    return;
+  }
 
   const payload = cloneJsonValue(defaultPayload);
   guidedStepItems = {};
@@ -349,6 +374,7 @@ const createPrefilledWorkflow = () => {
   applyProfileLinks(profile, payload, {overwrite: true});
   draftOriginProfile = selectedProfile;
   localStorage.setItem(draftOriginStorageKey, selectedProfile);
+  localStorage.setItem("r3xaProfile", selectedProfile);
   guidedStepIndex = 0;
   localStorage.setItem("r3xaGuidedStep", "0");
   inputEl.value = JSON.stringify(payload, null, 2);
@@ -618,7 +644,7 @@ const renderGuidedSteps = () => {
   guidedStepsEl.innerHTML = "";
   guidedStepsEl.className = "guided-steps";
   const payload = readPayload() || {};
-  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? t("guided.step_progress", "Step {current} of {total}", {current: guidedStepIndex + 1, total: steps.length}) : "";
+  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? t("guided.step_progress", "Editing step {current} of {total}", {current: guidedStepIndex + 1, total: steps.length}) : "";
   if (guidedPreviousEl) guidedPreviousEl.disabled = guidedStepIndex === 0;
   if (guidedNextEl) guidedNextEl.disabled = !steps.length || guidedStepIndex === steps.length - 1 || !stepCanAdvance(steps[guidedStepIndex], payload);
   steps.forEach((step, index) => {
@@ -636,19 +662,19 @@ const renderGuidedSteps = () => {
     if (complete) row.classList.add("is-complete");
     const label = document.createElement("div");
     label.className = "guided-step-label";
-    label.textContent = `${complete ? "✓" : "○"} ${step.title || step.id}`;
+    label.textContent = `${complete ? "✓" : "○"} ${guidedStepTitle(step)}`;
     row.appendChild(label);
     if (step.kind) {
       const candidates = (payload[step.section] || []).filter((item) => item.kind === step.kind);
       if (candidates.length) {
         const picker = document.createElement("select");
         picker.className = "guided-item-picker";
-        picker.setAttribute("aria-label", `Select ${step.title || step.id}`);
+        picker.setAttribute("aria-label", t("guided.select_step_item", "Select item for {step}", {step: guidedStepTitle(step)}));
         const activeItem = profileStepItem(step, payload);
         if (!activeItem) {
           const help = document.createElement("small");
           help.className = "guided-role-help";
-          help.textContent = t("guided.choose_role", "Several items match this kind. Choose the item that represents {step}.", {step: step.title || step.id});
+          help.textContent = t("guided.choose_role", "Several items match this kind. Choose the item that represents {step}.", {step: guidedStepTitle(step)});
           block.appendChild(help);
           const placeholder = document.createElement("option");
           placeholder.value = "";
@@ -682,7 +708,7 @@ const renderGuidedSteps = () => {
         const addButton = document.createElement("button");
         addButton.type = "button";
         addButton.className = "ghost";
-        addButton.textContent = t("guided.add", "Add {item}", {item: meta.title || kind});
+        addButton.textContent = t("guided.add", "Add {item}", {item: fieldTitle(kind, meta.title || kind)});
         addButton.addEventListener("click", (event) => event.stopPropagation());
         addButton.addEventListener("click", () => appendGuidedItem(step, kind));
         row.appendChild(addButton);
@@ -725,13 +751,13 @@ const refreshGuidedNavigation = () => {
   const currentStep = steps[guidedStepIndex];
   if (guidedPreviousEl) guidedPreviousEl.disabled = guidedStepIndex === 0;
   if (guidedNextEl) guidedNextEl.disabled = !steps.length || guidedStepIndex === steps.length - 1 || !stepCanAdvance(currentStep, payload);
-  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? t("guided.step_progress", "Step {current} of {total}", {current: guidedStepIndex + 1, total: steps.length}) : "";
+  if (guidedProgressEl) guidedProgressEl.textContent = steps.length ? t("guided.step_progress", "Editing step {current} of {total}", {current: guidedStepIndex + 1, total: steps.length}) : "";
   guidedStepsEl?.querySelectorAll(".guided-step").forEach((row, index) => {
     const complete = stepIsComplete(steps[index], payload);
     row.classList.toggle("is-complete", complete);
     row.classList.toggle("is-current", index === guidedStepIndex);
     const label = row.querySelector(".guided-step-label");
-    if (label) label.textContent = `${complete ? "✓" : "○"} ${steps[index].title || steps[index].id}`;
+    if (label) label.textContent = `${complete ? "✓" : "○"} ${guidedStepTitle(steps[index])}`;
   });
 };
 
@@ -983,7 +1009,7 @@ const renderReferenceField = (container, key, meta, value, onChange, options) =>
     input_data_sets: t("field.input_data_sets", "Input data sets"),
     attached_data_sources: t("field.attached_data_sources", "Attached data sources"),
   };
-  label.textContent = `${labels[key] || meta.title || key}${options.required ? " *" : ""}`;
+  label.textContent = `${labels[key] || fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   const fieldId = options.id || `field-${key}`;
   label.setAttribute("for", fieldId);
   wrapper.appendChild(label);
@@ -1084,7 +1110,7 @@ const renderUnitField = (container, key, meta, value, onChange, options) => {
   if (options.path) wrapper.dataset.jsonPath = options.path;
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  label.textContent = `${fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   wrapper.appendChild(label);
   const fields = document.createElement("div");
   fields.className = "unit-editor";
@@ -1094,7 +1120,7 @@ const renderUnitField = (container, key, meta, value, onChange, options) => {
     if (part === "kind") return;
     const partWrapper = document.createElement("label");
     partWrapper.className = "unit-part";
-    partWrapper.textContent = partMeta.title || part;
+    partWrapper.textContent = fieldTitle(part, partMeta.title || part);
     const control = document.createElement("input");
     control.type = partMeta.type === "number" || partMeta.type === "integer" ? "number" : "text";
     control.step = partMeta.type === "number" ? "any" : "1";
@@ -1128,7 +1154,7 @@ const renderUnitArrayField = (container, key, meta, value, onChange, options) =>
   if (options.path) wrapper.dataset.jsonPath = options.path;
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  label.textContent = `${fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   wrapper.appendChild(label);
   const list = document.createElement("div");
   list.className = "unit-array-list";
@@ -1182,7 +1208,7 @@ const renderObjectArrayField = (container, key, meta, value, onChange, options) 
   if (options.path) wrapper.dataset.jsonPath = options.path;
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  label.textContent = `${fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   wrapper.appendChild(label);
   let values = Array.isArray(value) ? [...value] : [];
   const list = document.createElement("div");
@@ -1257,7 +1283,7 @@ const renderDataSetFileField = (container, key, meta, value, onChange, options) 
   if (options.path) wrapper.dataset.jsonPath = options.path;
   if (options.id) wrapper.id = options.id;
   const heading = document.createElement("strong");
-  heading.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  heading.textContent = `${fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   wrapper.appendChild(heading);
   let fileValue = {...(value || {})};
   Object.entries(meta.properties || {}).forEach(([part, partMeta]) => {
@@ -1305,7 +1331,7 @@ const renderDataSetListField = (container, key, meta, value, onChange, options) 
   if (options.path) wrapper.dataset.jsonPath = options.path;
   if (options.id) wrapper.id = options.id;
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  label.textContent = `${fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   wrapper.appendChild(label);
   const picker = document.createElement("input");
   picker.type = "file";
@@ -1555,7 +1581,7 @@ const renderField = (container, key, meta, value, onChange, options = {}) => {
   if (options.path) wrapper.dataset.jsonPath = options.path;
 
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${options.required ? " *" : ""}`;
+  label.textContent = `${fieldTitle(key, meta.title || key)}${options.required ? " *" : ""}`;
   const fieldId = options.id || `field-${key}`;
   label.setAttribute("for", fieldId);
   wrapper.appendChild(label);
@@ -1791,7 +1817,7 @@ const buildArrayEditor = (container, sectionName) => {
   Object.entries(section.kinds || {}).forEach(([kind, meta]) => {
     if (!isKindVisible(kind)) return;
     const addButton = document.createElement("button");
-    addButton.textContent = t("guided.add", "Add {item}", {item: meta.title || kind});
+    addButton.textContent = t("guided.add", "Add {item}", {item: fieldTitle(kind, meta.title || kind)});
     addButton.className = "ghost";
     addButton.type = "button";
     addButton.addEventListener("click", () => appendItem(sectionName, kind));

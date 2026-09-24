@@ -136,7 +136,7 @@ def cmd_notebook_dic(args: argparse.Namespace) -> None:
         "-m",
         "marimo",
         "edit",
-        "examples/notebooks/dic_base_marimo.py",
+        "examples/cases/dic_base/marimo/example.py",
     ]
     if args.port is not None:
         command.extend(["--port", str(args.port)])
@@ -151,7 +151,7 @@ def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
         "marimo",
         "export",
         "html",
-        "examples/notebooks/dic_base_marimo.py",
+        "examples/cases/dic_base/marimo/example.py",
         "-o",
         "docs/figures/dic_base_marimo/index.html",
         "--force",

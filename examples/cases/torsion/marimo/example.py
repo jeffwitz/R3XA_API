@@ -9,7 +9,7 @@ def _():
     import marimo as mo
     from pathlib import Path
 
-    artifacts = Path(__file__).resolve().parents[4] / "examples" / "artifacts"
+    artifacts = Path(__file__).resolve().parents[4] / "artifacts" / "examples"
     return artifacts, mo
 
 
@@ -92,12 +92,14 @@ def _(mo):
 @app.cell
 def _(r3xa):
     lights = r3xa.new_generic_setting(
+        id="stg-generic-torsion-lights",
         title='Spotlights',
         description='2 Spotlights MultiLed QX 100% indirect\nGS Vitec SN : GS01224 and GS01225',
         documentation='https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf',
     )
 
     machine = r3xa.new_testing_machine_setting(
+        id="stg-testing-machine-torsion-apparatus",
         title='Torsion apparatus',
         description='Andilog Twist torsion test stand, precision : 0,1 deg ',
         manufacturer = 'Andilog',
@@ -107,6 +109,7 @@ def _(r3xa):
     )
 
     sample = r3xa.new_specimen_setting(
+        id="stg-specimen-torsion-sample",
         title='Sample',
         description = 'hot-melt adhesive (HMA) cylindrical specimen',
         patterning_technique = "matte black and white spray paint",
@@ -117,6 +120,7 @@ def _(r3xa):
     )
 
     calib_board = r3xa.new_generic_setting(
+        id="stg-generic-torsion-calibration-board",
         title = 'calibration board',
         description = 'Circles grid of 12 x 9, spacing = 5 mm',
         grid = [12, 9],
@@ -136,6 +140,7 @@ def _(mo):
 @app.cell
 def _(r3xa):
     torque_sensor = r3xa.new_generic_source(
+        id="src-generic-torsion-torque-sensor",
         title = 'Dynamic Torque sensor', 
         description = "Andilog Dynamic Torque sensor, capacity 6Nm, resolution 0.6mNm",
         output_components = 1,
@@ -149,6 +154,7 @@ def _(r3xa):
     )
 
     angle_sensor = r3xa.new_generic_source(
+        id="src-generic-torsion-angle-sensor",
         title = 'Dynamic Angle sensor', 
         description = "Andilog Dynamic angle sensor",
         output_components = 1,
@@ -160,6 +166,7 @@ def _(r3xa):
     )
 
     camera = r3xa.new_camera_source(
+        id="src-camera-torsion-camera",
         title="CCD Camera",
         output_components=1,
         output_dimension="surface",
@@ -209,7 +216,7 @@ def _(camera, r3xa):
     _image_files = ['img1-%2d.png' % i for i in range(72, 97)]
     # Calibration images
     _timestamps = [float(i) for i in range(72, 97)]
-    ds_calib_img = r3xa.new_list_data_set(title='Calibration images', description='grid image for intrinsic calibration', data_type='image/png', path='calib_img/', parent_data_sources=[camera], time_reference=t0, timestamps=_timestamps, values=_image_files)
+    ds_calib_img = r3xa.new_list_data_set(id="set-list-torsion-calibration-images", title='Calibration images', description='grid image for intrinsic calibration', data_type='image/png', path='calib_img/', parent_data_sources=[camera], time_reference=t0, timestamps=_timestamps, values=_image_files)
     return ds_calib_img, t0
 
 
@@ -240,6 +247,7 @@ def _(angle_sensor, r3xa, t0):
         )
 
     ds_rbm_angles = r3xa.new_file_data_set(
+        id="set-file-torsion-scan-angles",
         title='Scanning Angles',
         description='Angles during the scan (rigid body rotation)',
         parent_data_sources=[angle_sensor],
@@ -262,7 +270,7 @@ def _(mo):
 def _(camera, r3xa, t0):
     _image_files = ['img0-%02d.png' % i for i in range(0, 62)]
     _timestamps = [float(i) for i in range(0, 62)]
-    ds_scan_img = r3xa.new_list_data_set(title='Scanning images', description='Images taken during the scan (rigid body rotation)', data_type='image/png', path='rbm_img/', parent_data_sources=[camera], time_reference=t0, timestamps=_timestamps, values=_image_files)
+    ds_scan_img = r3xa.new_list_data_set(id="set-list-torsion-scanning-images", title='Scanning images', description='Images taken during the scan (rigid body rotation)', data_type='image/png', path='rbm_img/', parent_data_sources=[camera], time_reference=t0, timestamps=_timestamps, values=_image_files)
     return (ds_scan_img,)
 
 
@@ -301,6 +309,7 @@ def _(angle_sensor, r3xa, t0, torque_sensor):
         )
 
     ds_torsion_torques = r3xa.new_file_data_set(
+        id="set-file-torsion-torque-series",
         title='Torsion Torques',
         description='Torques during the Torsion test',
         parent_data_sources=[torque_sensor],
@@ -310,6 +319,7 @@ def _(angle_sensor, r3xa, t0, torque_sensor):
         )
 
     ds_torsion_angles = r3xa.new_file_data_set(
+        id="set-file-torsion-angle-series",
         title='Torsion Angles',
         description='Angles during the Torsion test',
         parent_data_sources=[angle_sensor],
@@ -332,7 +342,7 @@ def _(mo):
 def _(camera, r3xa, t0):
     _image_files = ['img0-%02d.png' % i for i in range(0, 72)]
     _timestamps = [float(i) for i in range(0, 72)]
-    ds_torsion_img = r3xa.new_list_data_set(title='Torsion images', description='Images taken during the torsion test', data_type='image/png', path='torsion_img/', parent_data_sources=[camera], time_reference=t0, timestamps=_timestamps, values=_image_files)
+    ds_torsion_img = r3xa.new_list_data_set(id="set-list-torsion-images", title='Torsion images', description='Images taken during the torsion test', data_type='image/png', path='torsion_img/', parent_data_sources=[camera], time_reference=t0, timestamps=_timestamps, values=_image_files)
     return (ds_torsion_img,)
 
 
@@ -347,6 +357,7 @@ def _(mo):
 @app.cell
 def _(ds_calib_img, r3xa):
     calib_engine = r3xa.new_generic_source(
+        id="src-generic-torsion-camera-calibration",
         title='Camera Calibration',
         description='using Calibration_tool based on OpenCV',
         input_data_sets=[ds_calib_img],
@@ -368,6 +379,7 @@ def _(ds_calib_img, r3xa):
         )
 
     ds_intrinsics = r3xa.new_generic_data_set(
+        id="set-generic-torsion-camera-intrinsics",
         title='Calibration parameters', 
         description='Intrisic parameters Cx, Cy, Fx, Fy and 5 distortion params', 
         parent_data_sources=[calib_engine], 

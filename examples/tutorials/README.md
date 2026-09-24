@@ -40,8 +40,8 @@ python examples/tutorials/python/tutorial5_validation.py
 ```
 
 The generated JSON and SVG files are written to
-`examples/artifacts/tutorials/`. They are deliberately kept with the other
-repository artifacts and are not written into the source directory.
+`artifacts/examples/tutorials/`. They are deliberately kept outside the
+source tree.
 
 Interactive notebooks display generated SVG graphs inline: Jupyter uses
 `IPython.display.SVG`, while Marimo embeds the SVG markup with `mo.Html`. The terminal Python

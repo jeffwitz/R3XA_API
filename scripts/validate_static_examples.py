@@ -4,10 +4,10 @@ from r3xa_api import validate
 
 
 def main() -> None:
-    examples_dir = Path(__file__).resolve().parent.parent / "examples"
+    fixtures_dir = Path(__file__).resolve().parent.parent / "tests" / "fixtures" / "documents"
     files = [
-        examples_dir / "valid_camera_list.json",
-        examples_dir / "valid_tabular_file.json",
+        fixtures_dir / "valid_camera_list.json",
+        fixtures_dir / "valid_tabular_file.json",
     ]
 
     for path in files:

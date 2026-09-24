@@ -15,24 +15,11 @@ def validate_json(path: Path) -> None:
 
 def main() -> None:
     script_dir = Path(__file__).resolve().parent
-    examples_dir = script_dir.parent / "examples"
-
-    # Generate complex examples first
-    import importlib.util
-
-    for script in ["complex_dic_pipeline.py", "complex_dic_pipeline_registry.py"]:
-        spec = importlib.util.spec_from_file_location(
-            "_tmp", examples_dir / "python" / script
-        )
-        module = importlib.util.module_from_spec(spec)
-        assert spec and spec.loader
-        spec.loader.exec_module(module)
-
-    # Validate every committed JSON example and generated artifact. Registry
-    # fragments are validated against their kind; complete documents include
-    # the document-level integrity checks.
-    paths = sorted(examples_dir.glob("*.json"))
-    paths.extend(sorted((examples_dir / "artifacts").rglob("*.json")))
+    repository_root = script_dir.parent
+    fixtures_dir = repository_root / "tests" / "fixtures" / "documents"
+    artifacts_dir = repository_root / "artifacts" / "examples"
+    paths = sorted(fixtures_dir.rglob("*.json"))
+    paths.extend(sorted(artifacts_dir.rglob("*.json")))
     for path in paths:
         validate_json(path)
 

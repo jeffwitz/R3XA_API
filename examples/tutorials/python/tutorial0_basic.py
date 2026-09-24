@@ -7,7 +7,7 @@ from pathlib import Path
 
 import r3xa_api as r3xa
 
-ARTIFACTS = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
 ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 """
@@ -48,6 +48,7 @@ _`settings` is a list of devices not directly generating data but describing the
 """
 
 light = my_file.add_generic_setting(
+    id="stg-generic-tutorial0-light",
     title='Spot light',
     description='Spotlight MultiLed',
     documentation='MULTILED_QX.pdf',
@@ -62,6 +63,7 @@ Adding a new `data_source` of type camera
 """
 
 camera = my_file.add_camera_source(
+    id="src-camera-tutorial0-camera",
     title="CCD Camera",
     description="",
     output_components=1,
@@ -86,6 +88,7 @@ image_files = ['img_0000.tif', 'img_0001.tif', 'img_0002.tif']
 timestamps = [1.0, 1.5, 2]
 
 images = my_file.add_list_data_set(
+    id="set-list-tutorial0-images",
     title="visible images",
     description="my graylevel images",
     path="images/",

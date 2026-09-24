@@ -29,11 +29,6 @@ class Types(RootModel[Optional[Any]]):
     root: Optional[Any] = None
 
 
-class DataOrigin(Enum):
-    raw = 'raw'
-    derived = 'derived'
-
-
 class OutputDimension(Enum):
     point = 'point'
     curve = 'curve'
@@ -206,11 +201,6 @@ class File(R3XAItem):
         description='filename (ex: CSV) + col and rows where to find the files or values',
         title='Data set file',
     )
-    data_origin: Optional[DataOrigin] = Field(
-        None,
-        description='Whether the data set holds raw measurements or the result of an analysis.',
-        title='Data origin',
-    )
 
 
 class Generic(R3XAItem):
@@ -241,11 +231,6 @@ class Generic(R3XAItem):
         None,
         description='List of IDs of the data sources that generated the dataset.',
         title='Parent data sources',
-    )
-    data_origin: Optional[DataOrigin] = Field(
-        None,
-        description='Whether the data set holds raw measurements or the result of an analysis.',
-        title='Data origin',
     )
 
 
@@ -289,11 +274,6 @@ class List(R3XAItem):
     )
     values: Optional[list[str]] = Field(
         None, description='List of strings.', title='List of files'
-    )
-    data_origin: Optional[DataOrigin] = Field(
-        None,
-        description='Whether the data set holds raw measurements or the result of an analysis.',
-        title='Data origin',
     )
 
 
@@ -1180,8 +1160,8 @@ class R3XADocument(R3XAItem):
         min_length=1,
         title='Description',
     )
-    version: Literal['2026.9.18'] = Field(
-        '2026.9.18', description='Version of the schema used.', title='Version'
+    version: Literal['2026.9.24'] = Field(
+        '2026.9.24', description='Version of the schema used.', title='Version'
     )
     authors: Optional[list[Author]] = Field(
         None,

@@ -26,9 +26,10 @@ items stored locally in a user's browser.
 
 ## Install the Python SDK
 
-The current release candidate is **`2.0.0rc5`**, targeting schema
-`2026.9.18`. It is not source compatible with the stable 1.x series. To
-install this candidate:
+The published release candidate **`2.0.0rc5`** targets schema `2026.9.18`.
+The current `develop` branch advances the schema to `2026.9.24`; it is not
+source compatible with the stable 1.x series. To install the published
+candidate:
 
 ```bash
 python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc5"
@@ -81,7 +82,8 @@ For a progressive introduction, follow the
 [interactive tutorials](https://r3xa-api.readthedocs.io/en/latest/notebooks.html)
 in Python, Jupyter, or Marimo. A MATLAB introductory tutorial and larger
 torsion and Qi Hu cases are also maintained under `examples/tutorials/` and
-`examples/cases/`. Older recipes are archived under `examples/archive/`.
+`examples/cases/`. Generated JSON and graph outputs are kept separately in
+`artifacts/examples/`.
 
 ## WebUI and notebooks
 

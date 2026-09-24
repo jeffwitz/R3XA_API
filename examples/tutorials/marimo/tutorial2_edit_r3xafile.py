@@ -9,7 +9,7 @@ def _():
     import marimo as mo
     from pathlib import Path
 
-    artifacts = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+    artifacts = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
     return artifacts, mo
 
 
@@ -47,7 +47,7 @@ def _(artifacts, r3xa):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Add missign attributes in the header
+    Add missing attributes in the header
     """)
     return
 
@@ -70,6 +70,7 @@ def _(mo):
 @app.cell
 def _(my_file, r3xa):
     specimen = r3xa.new_specimen_setting(
+        id="stg-specimen-tutorial2",
         title="Sample",
         description="Stainless Steel openhole plate",
         sizes=[r3xa.unit('width', 30, 'mm'), r3xa.unit('length', 120, 'mm'), r3xa.unit('hole radius', 8, 'mm')],
@@ -90,7 +91,7 @@ def _(mo):
 
 @app.cell
 def _(artifacts, my_file):
-    my_file.save(artifacts / 'tutorial1_r3xa_file.json')
+    my_file.save(artifacts / 'tutorial2_r3xa_file.json')
     return
 
 

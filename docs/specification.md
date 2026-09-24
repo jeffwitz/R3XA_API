@@ -5,7 +5,7 @@
 
 # R3XA Specification
 
-> Version : `2026.9.18`
+> Version : `2026.9.24`
 
 Yet another metadata file format whose goal is to provide a data representation scheme compatible with the variety of data types encountered in experimental and computational photomechanics, and to provide a convenient framework for software coupling and data fusion.
 
@@ -24,7 +24,7 @@ Yet another metadata file format whose goal is to provide a data representation 
 |---|---|---|---|
 | `title` | string | ✅ | Title of the data sets. |
 | `description` | string | ✅ | Description of the data sets. |
-| `version` | "2026.9.18" (fixed) | ✅ | Version of the schema used. |
+| `version` | "2026.9.24" (fixed) | ✅ | Version of the schema used. |
 | `authors` | array[Author] | ✅ | Authors of the experiment or analysis. |
 | `date` | string | ✅ | Global date of the experiment (YYYY-MM-DD). |
 | `repository` | string |  | URL to the repository where the dataset is stored. |
@@ -393,7 +393,6 @@ Description of the data set.
 | `data_type` | string |  | MIME type of the listed files. |
 | `path` | string | ✅ | Relative path to the folder containing the data file(s). |
 | `parent_data_sources` | array[Data source id] | ✅ | List of IDs of the data sources that generated the dataset. |
-| `data_origin` | "raw" \| "derived" |  | Whether the data set holds raw measurements or the result of an analysis. |
 
 ### Data set (single file) (`data_sets/file`)
 
@@ -412,7 +411,6 @@ When all the timestamps and data (number or filenames) is stored in a single spr
 | `keywords` | array[string] |  | List of keywords. |
 | `timestamps` | <a href="#data-set-file">Data set file</a> | ✅ | filename (ex: CSV) + col and rows where to find the timestamps |
 | `values` | <a href="#data-set-file">Data set file</a> | ✅ | filename (ex: CSV) + col and rows where to find the files or values |
-| `data_origin` | "raw" \| "derived" |  | Whether the data set holds raw measurements or the result of an analysis. |
 
 ### Data set (list of files) (`data_sets/list`)
 
@@ -431,7 +429,6 @@ When all the data is stored in separated files (like a list of images). They sho
 | `keywords` | array[string] |  | List of keywords. |
 | `timestamps` | array[number] | ✅ | List of the timestamps. |
 | `values` | array[string] | ✅ | List of strings. |
-| `data_origin` | "raw" \| "derived" |  | Whether the data set holds raw measurements or the result of an analysis. |
 
 ## Appendix — Common Types
 

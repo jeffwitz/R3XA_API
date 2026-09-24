@@ -19,15 +19,11 @@ The `/registry` page focuses on that use case:
 - save it back locally,
 - keep it as a browser-local template for reuse in the document editor.
 
-## Route
-
-- `GET /registry`
-
 ## Validation
 
-The server-backed page uses `POST /api/registry/validate`. The static WebUI uses
-the same schema catalogue and generated JavaScript validator locally, without
-uploading the item.
+The public static WebUI validates items in the browser using the generated
+JavaScript validator and does not upload them. The optional FastAPI WebUI
+remains available for development and uses its local validation runtime.
 
 The validation report distinguishes JSON syntax errors from schema errors and
 shows the affected JSON path when available.
@@ -64,10 +60,8 @@ silently discarded.
 Draft state is stored in browser local storage under a dedicated key (`r3xaRegistryDraft`).
 Local registry templates are stored under `r3xaLocalRegistryItems`. They remain on
 the current browser and are not published to `R3XA_REGISTRY`. The static runtime
-does not send them to a server; the server-backed runtime may send the current
-item to its validation endpoint when **Validate item** is clicked. Adding a
-template to an R3XA document creates a new local copy with a new identifier, so
-the registry item itself is never modified.
+does not send them to a server. Adding a template to an R3XA document creates a
+new local copy with a new identifier, so the registry item itself is never modified.
 
 New IDs use kind-specific prefixes such as `src-camera-...`. Legacy IDs and
 references should be reviewed when importing older items.

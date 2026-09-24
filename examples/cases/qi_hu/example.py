@@ -2,7 +2,7 @@ from pathlib import Path
 
 from r3xa_api import R3XAFile, data_set_file, schema_version, unit, validate
 
-ARTIFACTS = Path(__file__).resolve().parents[3] / "examples" / "artifacts"
+ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts" / "examples"
 ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 

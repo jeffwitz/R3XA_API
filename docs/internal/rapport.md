@@ -1,4 +1,4 @@
-# Rapport de validation — `examples/essai-torsion.json`
+# Rapport de validation — `tests/fixtures/documents/essai-torsion.json`
 
 Date: 2026-02-11
 
@@ -6,7 +6,7 @@ Date: 2026-02-11
 
 Le fichier testé est:
 
-- `examples/essai-torsion.json`
+- `tests/fixtures/documents/essai-torsion.json`
 
 Le validateur utilisé est celui de `R3XA_API`:
 
@@ -27,7 +27,7 @@ from pathlib import Path
 from r3xa_api.validate import validate
 import jsonschema
 
-p = Path("examples/essai-torsion.json")
+p = Path("tests/fixtures/documents/essai-torsion.json")
 obj = json.loads(p.read_text(encoding="utf-8"))
 try:
     validate(obj)
@@ -52,12 +52,12 @@ Deux erreurs principales sont remontées:
 
 Objet concerné:
 
-- `examples/essai-torsion.json:64`
+- `tests/fixtures/documents/essai-torsion.json:64`
 
 Propriétés bloquantes:
 
-- `capacity` à `examples/essai-torsion.json:79`
-- `uncertainty` à `examples/essai-torsion.json:84`
+- `capacity` à `tests/fixtures/documents/essai-torsion.json:79`
+- `uncertainty` à `tests/fixtures/documents/essai-torsion.json:84`
 
 Cause:
 
@@ -71,11 +71,11 @@ Message clé:
 
 Objet concerné:
 
-- `examples/essai-torsion.json:92`
+- `tests/fixtures/documents/essai-torsion.json:92`
 
 Propriété bloquante:
 
-- `uncertainty` à `examples/essai-torsion.json:107`
+- `uncertainty` à `tests/fixtures/documents/essai-torsion.json:107`
 
 Cause:
 

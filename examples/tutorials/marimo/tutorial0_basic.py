@@ -9,7 +9,7 @@ def _():
     import marimo as mo
     from pathlib import Path
 
-    artifacts = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+    artifacts = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
     return artifacts, mo
 
 
@@ -89,6 +89,7 @@ def _(mo):
 @app.cell
 def _(my_file):
     light = my_file.add_generic_setting(
+        id="stg-generic-tutorial0-light",
         title='Spot light',
         description='Spotlight MultiLed',
         documentation='MULTILED_QX.pdf',
@@ -111,6 +112,7 @@ def _(mo):
 @app.cell
 def _(my_file, r3xa):
     camera = my_file.add_camera_source(
+        id="src-camera-tutorial0-camera",
         title="CCD Camera",
         description="",
         output_components=1,
@@ -143,6 +145,7 @@ def _(camera, my_file, r3xa):
     timestamps = [1.0, 1.5, 2]
 
     images = my_file.add_list_data_set(
+        id="set-list-tutorial0-images",
         title="visible images",
         description="my graylevel images",
         path="images/",

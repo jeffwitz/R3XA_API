@@ -13,9 +13,9 @@ measurement datasets.
 python examples/cases/torsion/example.py
 ```
 
-The JSON document and Graphviz SVG are written to `examples/artifacts/`.
+The JSON document and Graphviz SVG are written to `artifacts/examples/`.
 The equivalent MATLAB entry point writes
-`examples/artifacts/torsion_experiment_matlab.json`.
+`artifacts/examples/torsion_experiment_matlab.json`.
 
 ## Qi Hu thermography
 
@@ -28,13 +28,13 @@ python examples/cases/qi_hu/example.py
 ```
 
 The generated document and Graphviz SVG are written to
-`examples/artifacts/qi_hu_tutorial.json` and
-`examples/artifacts/graph_qi_hu_tutorial.svg`.
-The MATLAB entry point writes `examples/artifacts/qi_hu_from_scratch_matlab.json`.
+`artifacts/examples/qi_hu_tutorial.json` and
+`artifacts/examples/graph_qi_hu_tutorial.svg`.
+The MATLAB entry point writes `artifacts/examples/qi_hu_from_scratch_matlab.json`.
 
 Each case also has a Jupyter notebook with the same construction split into
 interactive sections, a Marimo conversion, and a MATLAB entry point. The
 Python, Jupyter and Marimo versions validate the document and display the
-Graphviz SVG inline. The former Qi Hu MATLAB path is retained under
-`examples/archive/matlab/qi_hu_from_scratch.m`; use the canonical case path
-above for new work.
+Graphviz SVG inline. The base DIC Marimo application is maintained under
+`dic_base/marimo/example.py` and can be opened with
+`python scripts/dev.py notebook-dic --port 2720`.

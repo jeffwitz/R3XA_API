@@ -214,7 +214,7 @@ render_graphviz_wasm_file(payload, Path("graph-wasm"))
 and on the example script:
 
 ```bash
-python examples/python/graph_r3xa.py --input experiment.json --output graph --palette classic
+python scripts/graph_r3xa.py --input experiment.json --output graph --palette classic
 ```
 
 Typical edit cycle:
@@ -240,8 +240,9 @@ summary() -> str
 print() -> None
 ```
 List every field the schema defines for the item's kind — including fields the item does not
-carry — with `*` on required ones and units collapsed to `30 mm`. Both `print(item)` and
-`repr(item)` use this readable listing, so collections remain easy to inspect in a notebook.
+carry — with `*` on required ones and units collapsed to `30 mm`. Use `item.print()` or
+`print(item)` for this readable listing. `repr(item)` is the normal compact Pydantic
+representation and is intended for debugging, not as the formatted user-facing summary.
 
 ```python
 validate(schema: dict | None = None) -> None

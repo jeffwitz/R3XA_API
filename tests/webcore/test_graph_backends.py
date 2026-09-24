@@ -24,7 +24,7 @@ GRAPH_CASES = [
 
 def _load_example_payload(filename: str) -> dict:
     root = Path(__file__).resolve().parents[2]
-    payload_path = root / "examples" / "artifacts" / filename
+    payload_path = root / "artifacts" / "examples" / filename
     return json.loads(payload_path.read_text(encoding="utf-8"))
 
 

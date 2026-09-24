@@ -3,7 +3,7 @@ here = fileparts(mfilename("fullpath"));
 repo_root = fileparts(fileparts(fileparts(here)));
 addpath(genpath(fullfile(repo_root, "matlab")));
 
-artifact_dir = fullfile(repo_root, "examples", "artifacts");
+artifact_dir = fullfile(repo_root, "artifacts", "examples");
 if ~isfolder(artifact_dir)
     mkdir(artifact_dir);
 end

@@ -331,7 +331,7 @@ r3xa_file.add_data_set( ...
     "values", energy_balance_files ...
 );
 
-output_dir = fullfile(repo_root, "examples", "artifacts");
+output_dir = fullfile(repo_root, "artifacts", "examples");
 if ~isfolder(output_dir)
     mkdir(output_dir);
 end

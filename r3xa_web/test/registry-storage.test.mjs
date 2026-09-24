@@ -21,10 +21,10 @@ test("Registry storage writes a versioned local envelope", () => {
   const items = [{id: "src-camera-example", kind: "data_sources/camera"}];
 
   assert.deepEqual(JSON.parse(JSON.stringify(storage.read())), {items: [], migrated: false, corrupt: false, error: ""});
-  assert.equal(storage.write(items, "2026.9.18").ok, true);
+  assert.equal(storage.write(items, "2026.9.24").ok, true);
   const stored = JSON.parse(values.get("r3xaLocalRegistryItems"));
   assert.equal(stored.format_version, storage.formatVersion);
-  assert.equal(stored.schema_version, "2026.9.18");
+  assert.equal(stored.schema_version, "2026.9.24");
   assert.deepEqual(JSON.parse(JSON.stringify(storage.read().items)), items);
 });
 

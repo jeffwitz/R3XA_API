@@ -117,7 +117,7 @@ def test_static_editor_loads_catalogue_and_validates_locally(static_page: Page, 
         async () => (await window.R3XARuntime.validateDocument({
           title: "Integrity test",
           description: "Integrity test",
-          version: "2026.9.18",
+          version: "2026.9.24",
           authors: [{name: "Tester"}],
           date: "2026-09-17",
           settings: [{id: "duplicate", kind: "settings/generic", title: "Setup"}],
@@ -198,7 +198,7 @@ def test_static_user_session_uses_no_remote_or_post_requests(static_site: str) -
     payload = {
         "title": "Static session",
         "description": "No network session",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -239,7 +239,7 @@ def test_static_runtime_works_with_documented_strict_csp(static_site: str) -> No
     payload = {
         "title": "Strict CSP graph",
         "description": "Browser CSP test",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -276,7 +276,7 @@ def test_static_webui_works_inside_a_local_cross_origin_iframe(static_site: str,
     payload = {
         "title": "Cross-origin iframe",
         "description": "Local iframe qualification",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -405,6 +405,55 @@ def test_every_static_prefilled_profile_is_valid_and_survives_mode_changes(stati
         browser.close()
 
 
+def test_static_prefill_preserves_an_existing_draft_when_declined(static_site: str) -> None:
+    payload = {
+        "title": "Keep my in-progress experiment",
+        "description": "Do not overwrite without consent",
+        "version": "2026.9.24",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-24",
+        "settings": [],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(static_site)
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.evaluate("localStorage.setItem('r3xaProfile', 'generic')")
+        page.once("dialog", lambda dialog: dialog.dismiss())
+        page.goto(f"{static_site}/edit/?profile=dic_2d&prefill=1")
+        page.wait_for_selector("#schema-summary")
+        page.wait_for_function("document.querySelector('#json-input').value.includes('Keep my in-progress experiment')")
+        actual = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
+        assert actual == payload
+        assert page.evaluate("localStorage.getItem('r3xaProfile')") == "generic"
+        assert page.locator("#profile-select").input_value() == "generic"
+        browser.close()
+
+
+def test_static_mobile_editor_has_no_horizontal_overflow_and_remembers_profile(static_site: str) -> None:
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(viewport={"width": 390, "height": 844}, locale="en-US")
+        page.goto(f"{static_site}/edit/?profile=dic_2d&prefill=1")
+        page.wait_for_selector("#schema-summary")
+        page.wait_for_function("localStorage.getItem('r3xaProfile') === 'dic_2d'")
+        page.locator("#guided-experiment-authors").get_by_role("button", name="Add object").click()
+        page.locator("#guided-experiment-authors-0-name").fill("Example Author")
+        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+        page.locator("[data-editor-mode='advanced']").click()
+        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), "advanced editor"
+        for route in ("/", "/registry/", "/schema/"):
+            page.goto(f"{static_site}{route}")
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), route
+        page.locator(".nav a[href$='/edit/']").click()
+        page.wait_for_selector("#profile-select")
+        assert page.locator("#profile-select").input_value() == "dic_2d"
+        browser.close()
+
+
 def test_static_advanced_editor_can_create_every_schema_kind(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
@@ -487,7 +536,7 @@ def test_static_editor_imports_json_and_persists_it_locally(static_site: str) ->
     payload = {
         "title": "Imported static document",
         "description": "Loaded from a local file",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -644,7 +693,7 @@ def test_static_graph_exports_svg_and_standalone_html(static_site: str) -> None:
     payload = {
         "title": "Export graph",
         "description": "Static export test",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -729,8 +778,8 @@ def test_static_registry_form_syncs_with_expert_json_and_lints(static_site: str)
         assert payload["title"] == "Camera from form"
         assert set(camera_properties).issubset(payload)
         assert payload["documentation"] == "documentation/instrument-manual.pdf"
-        assert payload["manufacturer"] == "Allied Vision Technologies"
-        assert payload["model"] == "Dolphin F-145B"
+        assert payload["manufacturer"] == "Basler"
+        assert payload["model"] == "ace acA2448-75um"
         assert payload["exposure"] == {
             "kind": "unit",
             "title": "exposure time",
@@ -941,7 +990,7 @@ def test_static_existing_document_ids_are_migrated_to_kind_prefixes(static_site:
         legacy = {
             "title": "Legacy document",
             "description": "Legacy document",
-            "version": "2026.9.18",
+            "version": "2026.9.24",
             "authors": [],
             "date": "2026-09-02",
             "settings": [{"id": "id_specimen", "kind": "settings/specimen", "title": "Specimen"}],
@@ -1077,7 +1126,7 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
     payload = {
         "title": "Browser graph",
         "description": "Static graph test",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [{"id": "machine", "kind": "settings/generic", "title": "Machine"}],
@@ -1113,7 +1162,7 @@ def test_static_cytoscape_graph_uses_graphviz_positions(static_site: str) -> Non
     payload = {
         "title": "Cytoscape graph",
         "description": "Interactive graph test",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [{"id": "machine", "kind": "settings/generic", "title": "Machine"}],
@@ -1157,7 +1206,7 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
     payload = {
         "title": "Cytoscape inspector",
         "description": "Interactive inspector test",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [{
@@ -1218,7 +1267,7 @@ def test_static_cytoscape_inspector_selects_existing_references(static_site: str
     payload = {
         "title": "Cytoscape references",
         "description": "Interactive reference editing test",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [{
@@ -1358,7 +1407,7 @@ def test_static_graph_sanitizes_hostile_svg(static_site: str) -> None:
     payload = {
         "title": "Safe graph test",
         "description": "Graph sanitization",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -1389,7 +1438,7 @@ def test_static_graph_failure_does_not_break_the_editor(static_site: str) -> Non
     payload = {
         "title": "WASM fallback",
         "description": "Graph failure must not disable editing",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [],
@@ -1418,7 +1467,7 @@ def test_static_validation_matches_python_for_schema_and_integrity_errors(static
     valid_payload = {
         "title": "Parity document",
         "description": "Validation parity",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [{"id": "duplicate", "kind": "settings/generic", "title": "Setup"}],

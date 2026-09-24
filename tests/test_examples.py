@@ -1,119 +1,24 @@
 from __future__ import annotations
 
-from pathlib import Path
-import importlib.util
 import json
+from pathlib import Path
 import subprocess
 import sys
-from typing import Iterable
 
 from r3xa_api import validate, validate_item
 
 
-def _snapshot_paths(paths: Iterable[Path]) -> dict[Path, bytes | None]:
-    snapshots: dict[Path, bytes | None] = {}
-    for path in paths:
-        if path.exists():
-            snapshots[path] = path.read_bytes()
-        else:
-            snapshots[path] = None
-    return snapshots
-
-
-def _restore_paths(snapshots: dict[Path, bytes | None]) -> None:
-    for path, content in snapshots.items():
-        if content is None:
-            if path.exists():
-                path.unlink()
-        else:
-            path.write_bytes(content)
-
-
-def _run_script(path: Path, restore_paths: Iterable[Path] = ()) -> None:
-    snapshots = _snapshot_paths(restore_paths)
-
-    spec = importlib.util.spec_from_file_location(path.stem, path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    try:
-        spec.loader.exec_module(module)
-        main = getattr(module, "main", None)
-        if callable(main):
-            main()
-    finally:
-        _restore_paths(snapshots)
-
-
-def _run_script_preserving_outputs(path: Path, output_paths: Iterable[Path]) -> dict[Path, bytes | None]:
-    snapshots = _snapshot_paths(output_paths)
-
-    spec = importlib.util.spec_from_file_location(path.stem, path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(module)
-    main = getattr(module, "main", None)
-    if callable(main):
-        main()
-    return snapshots
-
-
-def test_examples_validate_all():
+def test_examples_directory_contains_only_tutorials_and_cases() -> None:
     root = Path(__file__).parents[1]
-    examples = root / "examples"
-    examples_python = examples / "python"
-    artifacts = examples / "artifacts"
+    entries = {path.name for path in (root / "examples").iterdir()}
 
-    _run_script(
-        examples_python / "complex_dic_pipeline.py",
-        restore_paths=[artifacts / "dic_pipeline.json"],
-    )
-    _run_script(
-        examples_python / "complex_dic_pipeline_registry.py",
-        restore_paths=[artifacts / "dic_pipeline_registry.json"],
-    )
-    generated_snapshots: dict[Path, bytes | None] = {}
-    try:
-        generated_snapshots.update(
-            _run_script_preserving_outputs(
-                examples_python / "load_edit_save.py",
-                output_paths=[artifacts / "dic_pipeline_loaded.json"],
-            )
-        )
-        generated_snapshots.update(
-            _run_script_preserving_outputs(
-                examples_python / "registry_discovery.py",
-                output_paths=[artifacts / "registry_camera_merged.json"],
-            )
-        )
-
-        for path in [
-            examples / "valid_camera_list.json",
-            examples / "valid_tabular_file.json",
-            examples / "essai-torsion.json",
-            examples / "fatigue-with-overload.json",
-            artifacts / "dic_pipeline.json",
-            artifacts / "dic_pipeline_registry.json",
-            artifacts / "dic_pipeline_loaded.json",
-            artifacts / "dic_pipeline_typed.json",
-            artifacts / "qi_hu_from_json_literal.json",
-            artifacts / "qi_hu_from_scratch.json",
-            artifacts / "qi_hu_from_scratch_matlab.json",
-            artifacts / "baseline_qi" / "qi_hu_from_scratch.json",
-        ]:
-            with path.open("r", encoding="utf-8") as f:
-                payload = json.load(f)
-            validate(payload)
-
-        merged_registry_item = json.loads((artifacts / "registry_camera_merged.json").read_text(encoding="utf-8"))
-        assert merged_registry_item["kind"] == "data_sources/camera"
-    finally:
-        _restore_paths(generated_snapshots)
+    assert entries == {"cases", "tutorials"}
 
 
-def test_committed_json_artifacts_validate_against_current_schema() -> None:
+def test_committed_documents_and_artifacts_validate_against_current_schema() -> None:
     root = Path(__file__).parents[1]
-    json_paths = sorted((root / "examples").glob("*.json"))
-    json_paths.extend(sorted((root / "examples" / "artifacts").rglob("*.json")))
+    json_paths = sorted((root / "tests" / "fixtures" / "documents").rglob("*.json"))
+    json_paths.extend(sorted((root / "artifacts" / "examples").rglob("*.json")))
 
     assert json_paths
     for path in json_paths:
@@ -126,17 +31,21 @@ def test_committed_json_artifacts_validate_against_current_schema() -> None:
 
 def test_registry_examples_use_kind_prefixed_ids() -> None:
     root = Path(__file__).parents[1]
-    artifacts = root / "examples" / "artifacts"
+    artifacts = root / "artifacts" / "examples"
     prefixes = {"settings": "stg", "data_sources": "src", "data_sets": "set"}
 
-    documents = [
-        json.loads((artifacts / "dic_pipeline_registry.json").read_text(encoding="utf-8")),
-    ]
-    items = [
-        json.loads((artifacts / "registry_camera_merged.json").read_text(encoding="utf-8")),
-    ]
-    for document in documents:
-        items.extend(item for section in ("settings", "data_sources", "data_sets") for item in document[section])
+    registry_document = json.loads(
+        (artifacts / "dic_pipeline_registry.json").read_text(encoding="utf-8")
+    )
+    merged_item = json.loads(
+        (artifacts / "registry_camera_merged.json").read_text(encoding="utf-8")
+    )
+    items = [merged_item]
+    items.extend(
+        item
+        for section in ("settings", "data_sources", "data_sets")
+        for item in registry_document[section]
+    )
 
     for item in items:
         section, kind_name = item["kind"].split("/", 1)
@@ -145,27 +54,32 @@ def test_registry_examples_use_kind_prefixed_ids() -> None:
 
 def test_validation_scripts_run() -> None:
     root = Path(__file__).parents[1]
-    examples = root / "examples"
-    scripts = root / "scripts"
-    artifacts = examples / "artifacts"
-
-    _run_script(scripts / "validate_static_examples.py")
-    _run_script(
-        scripts / "validate_all_examples.py",
-        restore_paths=[
-            artifacts / "dic_pipeline.json",
-            artifacts / "dic_pipeline_registry.json",
-        ],
-    )
+    for name in ("validate_static_examples.py", "validate_all_examples.py"):
+        completed = subprocess.run(
+            [sys.executable, str(root / "scripts" / name)],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert completed.returncode == 0, completed.stderr or completed.stdout
 
 
-def test_qi_hu_json_literal_script_runs_with_sha_check(tmp_path: Path) -> None:
+def test_graph_example_uses_wasm_and_accepts_classic_palette(tmp_path: Path) -> None:
     root = Path(__file__).parents[1]
-    script = root / "examples" / "archive" / "python" / "qi_hu_from_json_literal.py"
-    output = tmp_path / "qi_hu_from_json_literal.json"
-
+    output = tmp_path / "graph"
     completed = subprocess.run(
-        [sys.executable, str(script), "--output", str(output)],
+        [
+            sys.executable,
+            str(root / "scripts" / "graph_r3xa.py"),
+            "--input",
+            str(root / "tests" / "fixtures" / "documents" / "valid_tabular_file.json"),
+            "--output",
+            str(output),
+            "--palette",
+            "classic",
+            "--dot",
+        ],
         cwd=root,
         check=False,
         capture_output=True,
@@ -173,26 +87,5 @@ def test_qi_hu_json_literal_script_runs_with_sha_check(tmp_path: Path) -> None:
     )
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
-    with output.open("r", encoding="utf-8") as f:
-        payload = json.load(f)
-    validate(payload)
-
-
-def test_essai_torsion_validates() -> None:
-    root = Path(__file__).parents[1]
-    path = root / "examples" / "essai-torsion.json"
-
-    with path.open("r", encoding="utf-8") as f:
-        payload = json.load(f)
-
-    validate(payload)
-
-
-def test_qi_hu_matlab_artifact_validates() -> None:
-    root = Path(__file__).parents[1]
-    path = root / "examples" / "artifacts" / "qi_hu_from_scratch_matlab.json"
-
-    with path.open("r", encoding="utf-8") as f:
-        payload = json.load(f)
-
-    validate(payload)
+    assert output.with_suffix(".svg").read_text(encoding="utf-8").lstrip().startswith("<?xml")
+    assert output.with_suffix(".dot").is_file()

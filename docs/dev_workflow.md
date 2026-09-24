@@ -284,24 +284,24 @@ python -m pytest -q tests/webcore/test_graph_backends.py tests/webcore/test_grap
 ### Graph generation checks
 
 ```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/dic_pipeline.json \
-  --output examples/artifacts/graph_dic_pipeline \
+python scripts/graph_r3xa.py \
+  --input artifacts/examples/dic_pipeline.json \
+  --output artifacts/examples/graph_dic_pipeline \
   --dot \
   --networkx
 ```
 
 ```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/dic_pipeline.json \
-  --output examples/artifacts/graph_dic_pipeline_titles_only \
+python scripts/graph_r3xa.py \
+  --input artifacts/examples/dic_pipeline.json \
+  --output artifacts/examples/graph_dic_pipeline_titles_only \
   --hide-description
 ```
 
 ```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/qi_hu_from_scratch.json \
-  --output examples/artifacts/graph_qi \
+python scripts/graph_r3xa.py \
+  --input artifacts/examples/qi_hu_from_scratch.json \
+  --output artifacts/examples/graph_qi \
   --dot \
   --networkx
 ```

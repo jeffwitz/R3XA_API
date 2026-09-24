@@ -1,0 +1,79 @@
+{
+  "title": "R3XA MATLAB tutorial",
+  "description": "Minimal document built with the MATLAB binding",
+  "authors": [
+    {
+      "name": "R3XA API"
+    }
+  ],
+  "date": "2026-09-23",
+  "version": "2026.9.24",
+  "settings": [
+    {
+      "title": "Spot light",
+      "description": "Illustrative illumination source",
+      "documentation": "MULTILED_QX.pdf",
+      "id": "stg-generic-7262a1841543",
+      "kind": "settings/generic"
+    }
+  ],
+  "data_sources": [
+    {
+      "title": "CCD Camera",
+      "description": "Illustrative camera",
+      "output_components": 1,
+      "output_dimension": "surface",
+      "output_units": [
+        {
+          "kind": "unit",
+          "title": "graylevel",
+          "value": 1,
+          "unit": "gl",
+          "scale": 1
+        }
+      ],
+      "manufacturer": "Allied Vision Technologies",
+      "model": "Dolphin F-145B",
+      "image_size": [
+        {
+          "kind": "unit",
+          "title": "width",
+          "value": 1392,
+          "unit": "px",
+          "scale": 1
+        },
+        {
+          "kind": "unit",
+          "title": "height",
+          "value": 1040,
+          "unit": "px",
+          "scale": 1
+        }
+      ],
+      "id": "src-camera-2d911fd52ccf",
+      "kind": "data_sources/camera"
+    }
+  ],
+  "data_sets": [
+    {
+      "title": "Visible images",
+      "parent_data_sources": [
+        "src-camera-2d911fd52ccf"
+      ],
+      "timestamps": [
+        0,
+        0.5,
+        1
+      ],
+      "values": [
+        "img_0000.tif",
+        "img_0001.tif",
+        "img_0002.tif"
+      ],
+      "description": "Illustrative image sequence",
+      "path": "images/",
+      "id": "set-list-14bddcdbd2af",
+      "kind": "data_sets/list"
+    }
+  ]
+}

@@ -102,7 +102,7 @@ For a minimal tutorial and larger complete cases, see:
 - `examples/cases/torsion/example.m`
 - `examples/cases/qi_hu/example.m`
 
-These scripts write JSON files under `examples/artifacts/`. They do not run
+These scripts write JSON files under `artifacts/examples/`. They do not run
 the Python validator inside MATLAB; validate the generated file with the
 Python API or the WebUI.
 

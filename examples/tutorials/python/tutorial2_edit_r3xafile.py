@@ -7,7 +7,7 @@ from pathlib import Path
 
 import r3xa_api as r3xa
 
-ARTIFACTS = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
 
 """
 **load** an existing R3XA file
@@ -28,6 +28,7 @@ Adding a `setting`
 """
 
 specimen = r3xa.new_specimen_setting(
+    id="stg-specimen-tutorial2",
     title="Sample",
     description="Stainless Steel openhole plate",
     sizes=[r3xa.unit('width', 30, 'mm'), r3xa.unit('length', 120, 'mm'), r3xa.unit('hole radius', 8, 'mm')],
@@ -40,4 +41,4 @@ print(my_file)
 And **save** it again
 """
 
-my_file.save(ARTIFACTS / 'tutorial1_r3xa_file.json')
+my_file.save(ARTIFACTS / 'tutorial2_r3xa_file.json')

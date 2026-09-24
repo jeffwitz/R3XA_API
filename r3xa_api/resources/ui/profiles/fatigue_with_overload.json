@@ -199,8 +199,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified"
+        "manufacturer": "Interface",
+        "model": "1210AF load cell, 5 kN"
       },
       "questions": [
         {
@@ -248,8 +248,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified"
+        "manufacturer": "PhotoMechanics",
+        "model": "SIF extraction workflow 1.0"
       },
       "questions": [
         {
@@ -303,8 +303,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified"
+        "manufacturer": "PhotoMechanics",
+        "model": "FE-DIC workflow 1.0"
       },
       "questions": [
         {

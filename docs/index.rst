@@ -26,9 +26,9 @@ The three repositories have distinct responsibilities:
 
 This documentation follows the Diátaxis distinction: **tutorials** teach a
 workflow, **how-to guides** solve a specific task, **explanations** describe
-the design, and **reference** pages list exact contracts. Older examples are
-kept under `examples/archive/` for comparison; the maintained entry points
-are `examples/tutorials/` and `examples/cases/`.
+the design, and **reference** pages list exact contracts. Maintained source
+examples live only in `examples/tutorials/` and `examples/cases/`. Generated
+JSON and graph outputs are kept separately in `artifacts/examples/`.
 
 .. toctree::
    :maxdepth: 2

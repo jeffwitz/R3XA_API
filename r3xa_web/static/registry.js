@@ -10,6 +10,12 @@ const defaultRegistryItem = {
   model: "Bluehill Universal",
 };
 
+const t = (key, fallback) => window.R3XAI18N?.t(key, fallback) || fallback;
+const fieldTitle = (key, fallback) => t(
+  key.includes("/") ? `kind.${key.replaceAll("/", ".")}` : `field.${key}`,
+  fallback || key,
+);
+
 const inputEl = document.getElementById("registry-json-input");
 const highlightEl = document.getElementById("registry-json-highlight");
 const outputEl = document.getElementById("registry-validation-output");
@@ -392,8 +398,8 @@ const renderProfileOptions = (kind, selectedProfile = "") => {
     seen.add(profileId);
     const option = document.createElement("option");
     option.value = profileId;
-    option.textContent = profile.title || profileId;
-    option.title = profile.description || "";
+    option.textContent = t(`profile.${profileId}.title`, profile.title || profileId);
+    option.title = t(`profile.${profileId}.description`, profile.description || "");
     profileEl.appendChild(option);
   });
   profileEl.value = selectedProfile && seen.has(selectedProfile)
@@ -442,7 +448,7 @@ const createField = (container, key, meta, value, onChange, path, required = fal
   wrapper.className = "form-row registry-field";
   wrapper.dataset.jsonPath = path;
   const label = document.createElement("label");
-  label.textContent = `${meta.title || key}${required ? " *" : ""}`;
+  label.textContent = `${fieldTitle(key, meta.title || key)}${required ? " *" : ""}`;
   const fieldId = `registry-field-${path.replaceAll("/", "-")}`;
   label.setAttribute("for", fieldId);
   wrapper.appendChild(label);
@@ -599,7 +605,7 @@ const renderKindOptions = (currentKind = "") => {
     Object.entries(data.kinds).forEach(([kind, meta]) => {
       const option = document.createElement("option");
       option.value = kind;
-      option.textContent = `${meta.title || kind} (${kind})`;
+      option.textContent = `${fieldTitle(kind, meta.title || kind)} (${kind})`;
       group.appendChild(option);
     });
     kindEl.appendChild(group);

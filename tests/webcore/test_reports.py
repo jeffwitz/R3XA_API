@@ -6,7 +6,7 @@ from r3xa_api.webcore import build_validation_report
 
 def _load_example() -> dict:
     root = Path(__file__).resolve().parents[2]
-    path = root / "examples" / "artifacts" / "dic_pipeline.json"
+    path = root / "artifacts" / "examples" / "dic_pipeline.json"
     return json.loads(path.read_text(encoding="utf-8"))
 
 

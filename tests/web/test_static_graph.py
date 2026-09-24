@@ -23,7 +23,7 @@ def _payload() -> dict:
     return {
         "title": "Static graph test",
         "description": "A browser-rendered graph",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-17",
         "settings": [{"id": "machine", "kind": "settings/generic", "title": "Machine"}],

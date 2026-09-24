@@ -145,8 +145,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified"
+        "manufacturer": "Instron",
+        "model": "5969 Universal Testing System"
       },
       "questions": [
         {
@@ -230,8 +230,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified",
+        "manufacturer": "Basler",
+        "model": "ace acA2448-75um",
         "image_size": [
           {
             "kind": "unit",
@@ -338,8 +338,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified",
+        "manufacturer": "Correlated Solutions",
+        "model": "VIC-2D 7",
         "matching_criterion": "ZNSSD"
       },
       "questions": [

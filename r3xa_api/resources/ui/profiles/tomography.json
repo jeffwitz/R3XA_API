@@ -250,8 +250,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified"
+        "manufacturer": "ZEISS",
+        "model": "Xradia Scout-and-Scan 18.0"
       },
       "questions": [
         {
@@ -353,8 +353,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified",
+        "manufacturer": "LaVision",
+        "model": "DaVis 10 with DVC module",
         "matching_criterion": "ZNSSD"
       },
       "questions": [

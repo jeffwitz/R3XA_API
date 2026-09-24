@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Adopt the dated `R3XA_SPEC` schema `2026.9.24`, which removes the redundant `data_origin` field; provenance is inferred from parent data-source and input-data-set lineage.
+- Keep document bindings in Pydantic private state so editing a bound item cannot create a circular serialized document; add a regression test.
+- Correct and align Python, Jupyter, and Marimo tutorials, including runnable CSV examples, explicit validation failures, and stable identifiers for the torsion case.
+- Protect in-progress WebUI drafts when starting a profile, remember the selected profile, improve mobile layouts, and localize field, kind, and guided-step labels.
+- Fix the graph example CLI to use the bundled Graphviz WebAssembly backend and support the `document` and `classic` palettes.
+
+## [2.0.0rc5] - 2026-09-23
+
+- Reorganize user documentation around Diátaxis and promote the current public static WebUI, tutorials, and scientific case studies.
+- Add parallel Python, Jupyter, Marimo, and MATLAB tutorial material, with generated outputs kept under `artifacts/examples/`.
+- Fix multiline schema values in the WebUI schema viewer.
+- Add reproducible artifact validation and complete the current documentation/examples cleanup.
+
+## [2.0.0rc4] - 2026-09-22
+
+- Fix wheel resource packaging, reference updates after ID changes, collection uniqueness checks, and unit-scale serialization.
+- Add the automated Read the Docs build configuration and document unit scale behavior.
+- Validate committed JSON artifacts against the current schema.
+
 ## [2.0.0rc3] - 2026-09-17
 
 - Adopt the generated Pydantic document model as the public `R3XAFile` API.

@@ -1,4 +1,3 @@
-import importlib.util
 import json
 from pathlib import Path
 
@@ -38,6 +37,20 @@ def test_reference_fields_are_scoped_to_the_schema_kind():
         "mesh": "settings",
     }
     assert reference_fields("data_sets/file") == {"parent_data_sources": "data_sources"}
+
+
+def test_dataset_provenance_is_represented_by_relationships_not_data_origin():
+    schema = r3xa_api.load_schema()
+    dataset_models = {
+        "generic": models.GenericDataSet,
+        "file": models.FileDataSet,
+        "list": models.ListDataSet,
+    }
+
+    for name, model in dataset_models.items():
+        definition = schema["$defs"]["data_sets"][name]
+        assert "data_origin" not in definition["properties"]
+        assert "data_origin" not in model.model_fields
 
 
 def test_unit_valid():
@@ -265,6 +278,24 @@ def test_document_collections_preserve_object_identity_and_bind_documents():
 
     assert document.data_sources[0] is replacement
     assert replacement._document is document
+
+
+def test_editing_document_item_keeps_binding_private_and_serializable():
+    document = R3XAFile(
+        title="T",
+        description="D",
+        authors=[{"name": "A"}],
+        date="2026-09-24",
+    )
+    setting = document.add_generic_setting(title="a")
+
+    setting.title = "b"
+
+    assert setting._document is document
+    assert document.validate() is None
+    payload = document.to_dict()
+    assert payload["settings"][0]["title"] == "b"
+    assert "_document" not in payload["settings"][0]
 
 
 def test_typed_model_generates_kind_prefixed_ids():
@@ -608,26 +639,11 @@ def test_object_first_api_uses_generated_pydantic_models():
     assert isinstance(R3XAFile(), models.R3XADocument)
 
 
-def test_typed_example_script_generates_valid_json():
+def test_typed_example_artifact_validates():
     root = Path(__file__).resolve().parents[1]
-    script_path = root / "examples" / "python" / "typed_dic_pipeline.py"
-    output_path = root / "examples" / "artifacts" / "dic_pipeline_typed.json"
-
-    previous_content = output_path.read_bytes() if output_path.exists() else None
-
-    spec = importlib.util.spec_from_file_location(script_path.stem, script_path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    try:
-        spec.loader.exec_module(module)
-        payload = json.loads(output_path.read_text(encoding="utf-8"))
-        validate(payload)
-    finally:
-        if previous_content is None:
-            if output_path.exists():
-                output_path.unlink()
-        else:
-            output_path.write_bytes(previous_content)
+    output_path = root / "artifacts" / "examples" / "dic_pipeline_typed.json"
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    validate(payload)
 
 
 def test_printing_an_item_directly_shows_its_summary():

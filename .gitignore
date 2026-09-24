@@ -21,11 +21,11 @@ htmlcov/
 docs/_build/
 
 # Graph outputs (keep selected HTML/SVG in repo)
-examples/artifacts/*.html
-!examples/artifacts/graph_qi.html
-!examples/artifacts/graph_dic_pipeline.html
-examples/artifacts/graph_qi_document.svg
-examples/artifacts/graph_qi_document_nx.png
+artifacts/examples/*.html
+!artifacts/examples/graph_qi.html
+!artifacts/examples/graph_dic_pipeline.html
+artifacts/examples/graph_qi_document.svg
+artifacts/examples/graph_qi_document_nx.png
 lib/
 
 # OS/editor

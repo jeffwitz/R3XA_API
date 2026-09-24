@@ -3,9 +3,7 @@
 The Qi Hu example describes a larger IR/visible imaging and thermography
 pipeline. It demonstrates how R3XA connects acquisition devices, raw data,
 processing steps, and derived fields without embedding the experimental
-files. The source is maintained under
-{glsrc}`examples/cases/qi_hu/`; earlier reconstructions are under
-{glsrc}`examples/archive/`.
+files. The source is maintained under {glsrc}`examples/cases/qi_hu/`.
 
 The document separates three questions:
 
@@ -30,8 +28,8 @@ python examples/cases/qi_hu/example.py
 ```
 
 The script validates the document and writes
-`examples/artifacts/qi_hu_tutorial.json` and
-`examples/artifacts/graph_qi_hu_tutorial.svg`. Open the SVG in a browser to
+`artifacts/examples/qi_hu_tutorial.json` and
+`artifacts/examples/graph_qi_hu_tutorial.svg`. Open the SVG in a browser to
 inspect the complete graph. The referenced scientific file paths are
 metadata; the experimental image and field data are not bundled here.
 

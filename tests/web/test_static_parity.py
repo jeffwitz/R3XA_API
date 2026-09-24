@@ -25,7 +25,7 @@ def _load_dev_module():
 def test_static_validator_agrees_with_python_on_schema_cases(tmp_path: Path) -> None:
     output_dir = tmp_path / "r3xa-webui"
     _load_dev_module().build_static_web(output_dir)
-    valid_payload = json.loads((ROOT / "examples/artifacts/dic_pipeline.json").read_text(encoding="utf-8"))
+    valid_payload = json.loads((ROOT / "artifacts/examples/dic_pipeline.json").read_text(encoding="utf-8"))
     cases = {
         "valid": valid_payload,
         "missing_title": {key: value for key, value in valid_payload.items() if key != "title"},

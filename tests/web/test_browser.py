@@ -125,7 +125,7 @@ def test_existing_document_ids_are_migrated_to_kind_prefixes(page: Page, web_ser
     legacy = {
         "title": "Legacy document",
         "description": "Legacy document",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "authors": [],
         "date": "2026-09-02",
         "settings": [{"id": "id_specimen", "kind": "settings/specimen", "title": "Specimen"}],
@@ -346,11 +346,15 @@ def test_adding_a_guided_item_does_not_overwrite_a_manual_relationship(page: Pag
     page.goto(f"{web_server}/edit?profile=dic_2d")
     page.wait_for_selector(".guided-step")
 
-    machine_step = page.locator(".guided-step-block").filter(has_text="Universal testing machine").first
+    machine_step = page.locator(".guided-step-block").filter(
+        has=page.locator(".guided-step-label").filter(has_text="Testing machine")
+    ).first
     machine_step.locator(".guided-step").click()
     machine_step.get_by_role("button").click()
 
-    machine_data_step = page.locator(".guided-step-block").filter(has_text="Machine test files").first
+    machine_data_step = page.locator(".guided-step-block").filter(
+        has=page.locator(".guided-step-label").filter(has_text="Machine test files")
+    ).first
     machine_data_step.locator(".guided-step").click()
     machine_data_step.get_by_role("button").click()
     page.get_by_role("button", name="Clear selection").click()
@@ -410,7 +414,7 @@ def test_graph_backend_selector_renders_interactive_and_static_views(page: Page,
         "description": "Graph backend test",
         "authors": [{"name": "Tester"}],
         "date": "2026-09-05",
-        "version": "2026.9.18",
+        "version": "2026.9.24",
         "settings": [],
         "data_sources": [],
         "data_sets": [],

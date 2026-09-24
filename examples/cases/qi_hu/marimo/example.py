@@ -9,7 +9,7 @@ def _():
     import marimo as mo
     from pathlib import Path
 
-    artifacts = Path(__file__).resolve().parents[4] / "examples" / "artifacts"
+    artifacts = Path(__file__).resolve().parents[4] / "artifacts" / "examples"
     return artifacts, mo
 
 

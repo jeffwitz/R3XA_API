@@ -59,10 +59,9 @@ schema-sync:
   variables:
     R3XA_SPEC_URL: "https://gitlab.com/photomechanics/R3XA_SPEC.git"
     # Pin validation to the exact SPEC commit used to refresh the vendored
-    # schema. This commit keeps schema version 2026.9.18 while allowing the
-    # generic item additionalProperties change to be consumed before a new
-    # SPEC release tag is published.
-    R3XA_SPEC_REF: "87101d66219b3ad640f327243db051d824464c07"
+    # Pin schema synchronization to the exact source commit used to refresh
+    # the packaged schema.
+    R3XA_SPEC_REF: "b52621ee15141f75b703ba12f655d82d76ebb036"
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends git ca-certificates
@@ -88,7 +87,7 @@ registry-sync:
     R3XA_REGISTRY_URL: "https://gitlab.com/photomechanics/R3XA_REGISTRY.git"
     # The Registry is the canonical source for reusable items. Keep this as a
     # deliberate integration point when a Registry release changes.
-    R3XA_REGISTRY_REF: "f53fb93a8f721e3486326f2a042dd78fe03091ba"
+    R3XA_REGISTRY_REF: "c560640d50c9c8ad9a9956069a5fd0b300af04fa"
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends git ca-certificates

@@ -1,4 +1,6 @@
+import json
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -51,7 +53,7 @@ def _prefilled_profile_document(profile: dict) -> dict:
 
 def test_schema_summary_sections() -> None:
     summary = build_schema_summary()
-    assert summary["schema_version"] == "2026.9.18"
+    assert summary["schema_version"] == "2026.9.24"
     assert set(summary["sections"].keys()) == {
         "header",
         "settings",
@@ -63,7 +65,7 @@ def test_schema_summary_sections() -> None:
 def test_schema_catalog_contains_all_resolved_kinds() -> None:
     catalog = build_schema_catalog()
 
-    assert catalog["schema_version"] == "2026.9.18"
+    assert catalog["schema_version"] == "2026.9.24"
     assert set(catalog["sections"]["settings"]["kinds"]) == {
         "settings/generic",
         "settings/specimen",
@@ -183,7 +185,7 @@ def test_schema_catalog_discovers_kinds_from_all_of_items() -> None:
 def test_ui_catalog_profiles_reference_schema_kinds() -> None:
     catalog = build_ui_catalog()
 
-    assert catalog["schema_version"] == "2026.9.18"
+    assert catalog["schema_version"] == "2026.9.24"
     assert catalog["default"]["fields"]["kind"]["level"] == "expert"
     assert catalog["messages"]["languages"]["fr"]["editor.title"] == "Éditeur R3XA"
     assert set(catalog["profiles"]) == {
@@ -227,6 +229,22 @@ def test_registry_examples_reject_unknown_fields() -> None:
 def test_ui_messages_require_complete_string_translations() -> None:
     catalog = build_ui_catalog()
     _validate_messages(catalog["messages"])
+
+    messages_path = Path(__file__).parents[2] / "r3xa_api" / "resources" / "ui" / "messages.json"
+
+    def reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        messages: dict[str, object] = {}
+        for key, value in pairs:
+            if key in messages:
+                raise ValueError(f"duplicate UI message key: {key}")
+            messages[key] = value
+        return messages
+
+    parsed_messages = json.loads(
+        messages_path.read_text(encoding="utf-8"),
+        object_pairs_hook=reject_duplicate_keys,
+    )
+    _validate_messages(parsed_messages)
 
     with pytest.raises(ValueError, match="match default-language keys"):
         _validate_messages(
@@ -352,6 +370,25 @@ def test_prefilled_profiles_build_valid_dependency_graph(
     for step in profile["steps"]:
         for question in step.get("questions", []):
             assert question["field"] in step.get("defaults", {})
+
+
+def test_example_profiles_do_not_use_empty_or_sentinel_values() -> None:
+    profiles = build_ui_catalog()["profiles"]
+
+    def walk(value: object):
+        if isinstance(value, dict):
+            for nested in value.values():
+                yield from walk(nested)
+        elif isinstance(value, list):
+            for nested in value:
+                yield from walk(nested)
+        else:
+            yield value
+
+    for profile_id, profile in profiles.items():
+        values = list(walk(profile))
+        assert "Not specified" not in values, profile_id
+        assert "" not in values, profile_id
 
 
 def test_ui_profile_validation_reports_invalid_sections_and_steps() -> None:

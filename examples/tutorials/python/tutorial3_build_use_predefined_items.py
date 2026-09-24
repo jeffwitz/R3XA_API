@@ -7,10 +7,10 @@ from pathlib import Path
 
 import r3xa_api as r3xa
 
-ARTIFACTS = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
 
 """
-In the previous tutorials, items (data_source, data_set of setting) were created from a R3XAfile, using for example:<br>
+In the previous tutorials, data source and data set items were created from an R3XAFile, using for example:<br>
 ``my_file.add_camera_source(...)`` <br><br>
 A new data source can be **created outside a R3XA file** using:<br>
 ``r3xa.new_camera_source(...)`` <br><br>
@@ -19,6 +19,7 @@ with exactly the same arguments
 """
 
 my_torque_sensor = r3xa.new_generic_source(
+    id="src-generic-tutorial3-torque-sensor",
     title='Dynamic Torque sensor',
     description='Andilog Dynamic Torque sensor. \nCapacity 6Nm. \nResolution : 0,6 mNm',
     output_components=1,
@@ -39,21 +40,21 @@ my_torque_sensor.validate()
 And save it to the disk
 """
 
-my_torque_sensor.save(ARTIFACTS / 'tutorial2_andilog_dynamic_torque_sensor.json')
+my_torque_sensor.save(ARTIFACTS / 'tutorial3_andilog_dynamic_torque_sensor.json')
 
 """
 **Loading an existing device** and add it to an existing R3XA File
 """
 
-device = r3xa.R3XAItem.load(ARTIFACTS / 'tutorial2_andilog_dynamic_torque_sensor.json')
-my_file = r3xa.R3XAFile.load(ARTIFACTS / 'tutorial1_r3xa_file.json')
+device = r3xa.R3XAItem.load(ARTIFACTS / 'tutorial3_andilog_dynamic_torque_sensor.json')
+my_file = r3xa.R3XAFile.load(ARTIFACTS / 'tutorial2_r3xa_file.json')
 my_file.data_sources.append(device)
 print(my_file)
 
-my_file.plot(ARTIFACTS / 'tutorial2_image.svg')
+my_file.plot(ARTIFACTS / 'tutorial3_image.svg')
 
 """
 Saving a particular item inside a full R3XA file is done like this:
 """
 
-my_file.data_sources[0].save(ARTIFACTS / 'tutorial2_camera.json')
+my_file.data_sources[0].save(ARTIFACTS / 'tutorial3_camera.json')

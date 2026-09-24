@@ -329,7 +329,7 @@ from pathlib import Path
 from r3xa_api.webcore.graph import generate_svg, generate_svg_wasm
 
 payload = json.loads(
-    Path("examples/artifacts/baseline_qi/qi_hu_from_scratch.json").read_text()
+    Path("artifacts/examples/baseline_qi/qi_hu_from_scratch.json").read_text()
 )
 for name, renderer in (("wasm", generate_svg_wasm), ("native", generate_svg)):
     renderer(payload)

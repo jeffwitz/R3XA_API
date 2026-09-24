@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MARIMO_PORT="${MARIMO_PORT:-2718}"
-MARIMO_NOTEBOOK="${MARIMO_NOTEBOOK:-examples/notebooks/dic_base_marimo.py}"
+MARIMO_NOTEBOOK="${MARIMO_NOTEBOOK:-examples/cases/dic_base/marimo/example.py}"
 PYTHON_BIN="${PYTHON_BIN:-}"
 
 if [[ -z "${PYTHON_BIN}" ]]; then

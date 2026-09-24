@@ -111,7 +111,8 @@ sources, and data sets belongs to the complete document (`R3XAFile` or `R3XADocu
 
 ## `dic_pipeline` in typed mode
 
-This follows the same logic as {glsrc}`examples/python/complex_dic_pipeline.py`, but creates typed objects first.
+This follows the same object-building approach used in the maintained scientific
+cases, but creates typed objects first.
 
 ```python
 from r3xa_api import R3XAFile, models
@@ -203,7 +204,7 @@ dic_data = models.ImageSetList(
 r3xa.data_sets.append(dic_data)
 
 r3xa.validate()
-r3xa.save("examples/artifacts/dic_pipeline_typed.json")
+r3xa.save("artifacts/examples/dic_pipeline_typed.json")
 ```
 
 ## JSON boundary
@@ -211,18 +212,8 @@ r3xa.save("examples/artifacts/dic_pipeline_typed.json")
 Pydantic is required by the object-first Python API. The generated JSON file remains an ordinary
 R3XA document and can be consumed by any implementation that follows the schema.
 
-## Ready-to-run example script
-
-The repository includes a typed example script:
-
-- {glsrc}`examples/python/typed_dic_pipeline.py`
-
-Run it from project root:
-
-```bash
-python examples/python/typed_dic_pipeline.py
-```
-
-Generated output:
-
-- `examples/artifacts/dic_pipeline_typed.json`
+The resulting document is preserved as
+`artifacts/examples/dic_pipeline_typed.json` and validated with the other
+committed examples. For runnable source, see the tutorial scripts under
+{glsrc}`examples/tutorials/python/` and the typed document-building example in
+this page.

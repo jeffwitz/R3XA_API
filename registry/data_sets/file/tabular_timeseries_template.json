@@ -17,6 +17,5 @@
     "kind": "data_set_file",
     "filename": "force.csv",
     "file_type": "text/csv"
-  },
-  "data_origin": "raw"
+  }
 }

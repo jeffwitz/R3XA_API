@@ -108,7 +108,7 @@ def data_set_file(
 
     if "data_range" in extra:
         raise TypeError(
-            "data_range is not part of schema 2026.9.18; use col= and rows= instead"
+            "data_range is not part of schema 2026.9.24; use col= and rows= instead"
         )
     payload: Dict[str, Any] = {"kind": "data_set_file", "filename": filename}
     if file_type is not None:

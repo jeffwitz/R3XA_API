@@ -227,8 +227,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified",
+        "manufacturer": "Basler",
+        "model": "ace acA2448-75um (left camera)",
         "image_size": [
           {
             "kind": "unit",
@@ -290,8 +290,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified",
+        "manufacturer": "Basler",
+        "model": "ace acA2448-75um (right camera)",
         "image_size": [
           {
             "kind": "unit",
@@ -457,8 +457,8 @@
             "scale": 1.0
           }
         ],
-        "manufacturer": "Not specified",
-        "model": "Not specified",
+        "manufacturer": "Correlated Solutions",
+        "model": "VIC-3D 9",
         "matching_criterion": "ZNSSD"
       },
       "questions": [

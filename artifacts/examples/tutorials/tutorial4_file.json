@@ -1,0 +1,97 @@
+{
+  "title": "R3XA first tutorial",
+  "description": "Minimal example of a R3XA file",
+  "version": "2026.9.24",
+  "authors": [
+    {
+      "name": "J. S. Carberry",
+      "affiliation": "Brown University",
+      "orcid": "https://orcid.org/0000-0002-1825-0097"
+    }
+  ],
+  "date": "2026-09-16",
+  "settings": [
+    {
+      "id": "stg-generic-tutorial0-light",
+      "kind": "settings/generic",
+      "title": "Spot light",
+      "description": "Spotlight MultiLed",
+      "documentation": "MULTILED_QX.pdf",
+      "power": "fullgaz"
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "src-camera-tutorial0-camera",
+      "kind": "data_sources/camera",
+      "title": "CCD Camera",
+      "description": "",
+      "output_components": 1,
+      "output_dimension": "surface",
+      "output_units": [
+        {
+          "unit": "gl",
+          "kind": "unit"
+        }
+      ],
+      "manufacturer": "Allied Vision Technologies (AVT)",
+      "model": "Dolphin F-145B",
+      "image_size": [
+        {
+          "title": "width",
+          "value": 1392.0,
+          "unit": "px",
+          "kind": "unit"
+        },
+        {
+          "title": "height",
+          "value": 1040.0,
+          "unit": "px",
+          "kind": "unit"
+        }
+      ]
+    }
+  ],
+  "data_sets": [
+    {
+      "id": "set-file-tutorial4-images",
+      "kind": "data_sets/file",
+      "title": "visible images (file)",
+      "description": "my graylevel images",
+      "path": "images/",
+      "parent_data_sources": [
+        "src-camera-tutorial0-camera"
+      ],
+      "data_type": "image/tiff",
+      "time_reference": {
+        "title": "time_reference",
+        "value": 0.0,
+        "unit": "s",
+        "scale": 1.0,
+        "kind": "unit"
+      },
+      "timestamps": {
+        "filename": "tutorial4_file.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": 0,
+        "rows": [
+          0,
+          3
+        ],
+        "kind": "data_set_file"
+      },
+      "values": {
+        "filename": "tutorial4_file.csv",
+        "file_type": "text/csv",
+        "delimiter": ";",
+        "col": 1,
+        "rows": [
+          0,
+          3
+        ],
+        "kind": "data_set_file"
+      }
+    }
+  ]
+}

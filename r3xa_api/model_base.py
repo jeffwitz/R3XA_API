@@ -311,8 +311,15 @@ class R3XAItem(BaseModel):
     def bind_document(self, document: Any) -> "R3XAItem":
         """Bind this object to a document so references resolve to objects."""
 
-        object.__setattr__(self, "_document", document)
+        if self.__pydantic_private__ is None:
+            object.__setattr__(self, "__pydantic_private__", {})
+        self.__pydantic_private__["_document"] = document
         return self
+
+    def __eq__(self, other: Any) -> bool:
+        if type(self) is not type(other):
+            return NotImplemented
+        return self.to_dict() == other.to_dict()
 
     def _resolved_reference(self, field: str, value: Any) -> Any:
         document = getattr(self, "_document", None)

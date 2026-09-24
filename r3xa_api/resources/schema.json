@@ -24,7 +24,7 @@
       "title": "Version",
       "description": "Version of the schema used.",
       "type": "string",
-      "const": "2026.9.18"
+      "const": "2026.9.24"
     },
     "authors": {
       "title": "Authors",
@@ -1738,15 +1738,6 @@
             "items": {
               "$ref": "#/$defs/types/data_source_id"
             }
-          },
-          "data_origin": {
-            "title": "Data origin",
-            "description": "Whether the data set holds raw measurements or the result of an analysis.",
-            "type": "string",
-            "enum": [
-              "raw",
-              "derived"
-            ]
           }
         },
         "required": [
@@ -1824,15 +1815,6 @@
             "title": "Data set file",
             "description": "filename (ex: CSV) + col and rows where to find the files or values",
             "$ref": "#/$defs/types/data_set_file"
-          },
-          "data_origin": {
-            "title": "Data origin",
-            "description": "Whether the data set holds raw measurements or the result of an analysis.",
-            "type": "string",
-            "enum": [
-              "raw",
-              "derived"
-            ]
           }
         },
         "required": [
@@ -1916,15 +1898,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "data_origin": {
-            "title": "Data origin",
-            "description": "Whether the data set holds raw measurements or the result of an analysis.",
-            "type": "string",
-            "enum": [
-              "raw",
-              "derived"
-            ]
           }
         },
         "required": [

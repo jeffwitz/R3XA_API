@@ -402,7 +402,7 @@ const jsonScalarText = (value) => {
   return `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
 };
 
-const renderJsonViewer = (data, expand = false) => {
+const renderJsonViewer = (data, expandDepth = 1) => {
   treeEl.replaceChildren();
   const container = document.createElement("div");
   container.className = "jv-light-con";
@@ -416,8 +416,9 @@ const renderJsonViewer = (data, expand = false) => {
     left.className = "jv-light-left";
     const isObject = value !== null && typeof value === "object";
     if (isObject) {
+      const expanded = depth < expandDepth;
       const toggle = document.createElement("span");
-      toggle.className = `jv-folder jv-light-folder${expand ? " rotate90" : ""}`;
+      toggle.className = `jv-folder jv-light-folder${expanded ? " rotate90" : ""}`;
       toggle.setAttribute("role", "button");
       toggle.setAttribute("tabindex", "0");
       toggle.setAttribute("aria-label", t("schema.toggle", `Toggle ${key}`, {key}));
@@ -427,7 +428,7 @@ const renderJsonViewer = (data, expand = false) => {
       row.appendChild(left);
 
       const children = document.createElement("div");
-      children.className = `jv-light-rightObj${expand ? " add-height" : ""}`;
+      children.className = `jv-light-rightObj${expanded ? " add-height" : ""}`;
       const toggleChildren = () => {
         children.classList.toggle("add-height");
         toggle.classList.toggle("rotate90");
@@ -463,7 +464,7 @@ const renderSummary = async () => {
     if (!cachedSummary) {
       cachedSummary = await window.R3XARuntime.loadSchemaSummary();
     }
-    renderJsonViewer(cachedSummary, true);
+    renderJsonViewer(cachedSummary, 1);
   } catch {
     treeEl.textContent = t("schema.failed_summary", "Failed to load schema summary.");
   }
@@ -492,7 +493,7 @@ const renderDraft = () => {
       treeEl.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
       return;
     }
-    renderJsonViewer(buildDisplayDraft(payload), true);
+    renderJsonViewer(buildDisplayDraft(payload), 1);
   } catch {
     treeEl.textContent = t("schema.failed_draft", "Failed to load draft.");
   }

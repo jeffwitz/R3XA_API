@@ -7,7 +7,7 @@ from pathlib import Path
 
 import r3xa_api as r3xa
 
-ARTIFACTS = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
 my_file = r3xa.R3XAFile.load(ARTIFACTS / 'tutorial0_r3xa_file.json')
 
 """
@@ -33,4 +33,4 @@ Exercise: Try to print() the settings, the data_sets, and also the authors
 To plot the structure of a R3XA file as a colored flowchart in Scalable Vector Graphics (SVG) file
 """
 
-my_file.plot(ARTIFACTS / 'tutorial0_image.svg')
+my_file.plot(ARTIFACTS / 'tutorial1_image.svg')

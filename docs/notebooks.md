@@ -3,7 +3,7 @@
 The six tutorials teach the Python object-first API in order. Each has a
 plain Python script, a Jupyter notebook, and a Marimo application. Start with
 tutorial 0; the later lessons reuse documents written to
-`examples/artifacts/tutorials/`.
+`artifacts/examples/tutorials/`.
 
 | Step | Topic | What you do |
 | --- | --- | --- |
@@ -58,7 +58,7 @@ separate base DIC application directly, use
 `python scripts/dev.py notebook-dic --port 2720`.
 
 Both notebook formats display generated SVG graphs inline. Their Python
-scripts save the same JSON and SVG files under `examples/artifacts/`. The
+scripts save the same JSON and SVG files under `artifacts/examples/`. The
 standard graph backend uses bundled Graphviz WebAssembly; a system `dot`
 installation is unnecessary. If either port is busy, use another port in the
 command and URL.

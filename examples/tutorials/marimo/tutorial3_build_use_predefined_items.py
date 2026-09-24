@@ -9,7 +9,7 @@ def _():
     import marimo as mo
     from pathlib import Path
 
-    artifacts = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+    artifacts = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
     return artifacts, mo
 
 
@@ -32,7 +32,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    In the previous tutorials, items (data_source, data_set of setting) were created from a R3XAfile, using for example:<br>
+    In earlier tutorials, data sources, data sets, and settings were created from an R3XA file, for example:<br>
     ``my_file.add_camera_source(...)`` <br><br>
     A new data source can be **created outside a R3XA file** using:<br>
     ``r3xa.new_camera_source(...)`` <br><br>
@@ -45,6 +45,7 @@ def _(mo):
 @app.cell
 def _(r3xa):
     my_torque_sensor = r3xa.new_generic_source(
+        id="src-generic-tutorial3-torque-sensor",
         title='Dynamic Torque sensor',
         description='Andilog Dynamic Torque sensor. \nCapacity 6Nm. \nResolution : 0,6 mNm',
         output_components=1,
@@ -81,7 +82,7 @@ def _(mo):
 
 @app.cell
 def _(artifacts, my_torque_sensor):
-    my_torque_sensor.save(artifacts / 'tutorial2_andilog_dynamic_torque_sensor.json')
+    my_torque_sensor.save(artifacts / 'tutorial3_andilog_dynamic_torque_sensor.json')
     return
 
 
@@ -95,8 +96,8 @@ def _(mo):
 
 @app.cell
 def _(artifacts, r3xa):
-    device = r3xa.R3XAItem.load(artifacts / 'tutorial2_andilog_dynamic_torque_sensor.json')
-    my_file = r3xa.R3XAFile.load(artifacts / 'tutorial1_r3xa_file.json')
+    device = r3xa.R3XAItem.load(artifacts / 'tutorial3_andilog_dynamic_torque_sensor.json')
+    my_file = r3xa.R3XAFile.load(artifacts / 'tutorial2_r3xa_file.json')
     my_file.data_sources.append(device)
     print(my_file)
     return (my_file,)
@@ -104,7 +105,7 @@ def _(artifacts, r3xa):
 
 @app.cell
 def _(artifacts, mo, my_file):
-    svg_path = my_file.plot(artifacts / 'tutorial2_image.svg')
+    svg_path = my_file.plot(artifacts / 'tutorial3_image.svg')
     mo.Html(
         '<div class="r3xa-inline-graph">'
         + svg_path.read_text(encoding='utf-8')
@@ -123,7 +124,7 @@ def _(mo):
 
 @app.cell
 def _(artifacts, my_file):
-    my_file.data_sources[0].save(artifacts / 'tutorial2_camera.json')
+    my_file.data_sources[0].save(artifacts / 'tutorial3_camera.json')
     return
 
 

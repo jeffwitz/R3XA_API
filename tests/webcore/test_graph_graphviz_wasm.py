@@ -9,7 +9,7 @@ from r3xa_api.webcore._graph_core import compute_graphviz_positions
 
 def _load_payload() -> dict:
     root = Path(__file__).resolve().parents[2]
-    return json.loads((root / "examples" / "artifacts" / "dic_pipeline.json").read_text(encoding="utf-8"))
+    return json.loads((root / "artifacts" / "examples" / "dic_pipeline.json").read_text(encoding="utf-8"))
 
 
 def test_generate_svg_wasm_does_not_need_system_dot(monkeypatch: pytest.MonkeyPatch) -> None:

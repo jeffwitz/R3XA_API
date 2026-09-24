@@ -9,7 +9,7 @@ def _():
     import marimo as mo
     from pathlib import Path
 
-    artifacts = Path(__file__).resolve().parents[3] / "examples" / "artifacts" / "tutorials"
+    artifacts = Path(__file__).resolve().parents[3] / "artifacts" / "examples" / "tutorials"
     return artifacts, mo
 
 
@@ -78,7 +78,7 @@ def _(mo):
 
 @app.cell
 def _(artifacts, mo, my_file):
-    svg_path = my_file.plot(artifacts / 'tutorial0_image.svg')
+    svg_path = my_file.plot(artifacts / 'tutorial1_image.svg')
     mo.Html(
         '<div class="r3xa-inline-graph">'
         + svg_path.read_text(encoding='utf-8')
