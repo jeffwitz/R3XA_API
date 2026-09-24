@@ -1,4 +1,4 @@
-# Object-first models — `dic_pipeline` example
+# Object-first Python models
 
 This page explains the object-first workflow. R3XA objects are generated from the JSON Schema by
 `datamodel-code-generator` and use Pydantic for IDE completion and assignment validation.
@@ -30,7 +30,7 @@ before the final JSON Schema validation step.
 |---|---|---|
 | New `kind` in the schema | Model class and schema-driven guided helper after regeneration | Dedicated business profile or widget, if needed |
 | New field in an existing object | Updated typed constructor and field hints | Business logic that depends on that field |
-| New object compatible with the schema | Usable through `new_item(...)` / `add_item(...)` | A dedicated helper like `add_lidar_source(...)` |
+| New object compatible with the schema | Usable through `new_item(...)` and the schema-driven guided helper after regeneration | A domain-specific UI profile, if needed |
 | Schema constraint changes | Reflected in generated models and validation | Business logic that depends on the old structure |
 
 Main benefit:
@@ -41,11 +41,16 @@ Main benefit:
 
 ## Install
 
+Use the same SDK version as the schema described by this documentation. For
+the current development pages, follow [Start with R3XA](getting_started.md)
+to install the `develop` checkout. The latest stable PyPI version may target
+a different schema.
+
 ```bash
-python -m pip install r3xa-api
+python -m pip install -e .
 ```
 
-Typed models are generated from the schema:
+Contributors regenerate typed models after a published schema update:
 
 ```bash
 python scripts/dev.py generate-models

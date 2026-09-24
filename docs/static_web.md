@@ -1,9 +1,13 @@
-# Static WebUI development plan
+# Static WebUI build and deployment
 
 This document is the persistent development record for the static R3XA WebUI.
 It is both the implementation plan and the decision log for the migration. The
 goal is to make progress reviewable from the repository, without relying on an
 agent session or on undocumented architectural decisions.
+
+For everyday editing, start with [Using the WebUI](web.md). The public static
+site is [hosted on GitLab Pages](https://photomechanics.gitlab.io/R3XA_API/).
+This page covers its build, hosting, and development history.
 
 ## Objective
 
@@ -52,8 +56,9 @@ supported for development, parity testing, and users who need a server.
 The static graph target is local Graphviz-compatible WebAssembly producing SVG.
 It also provides a local Cytoscape.js exploration view: Graphviz WebAssembly
 computes the positions, while Cytoscape.js renders the same graph with browser
-zoom, pan, and neighbourhood highlighting. This first Cytoscape backend is
-deliberately non-editable. The Python Graphviz, PyVis, and NetworkX/Matplotlib
+zoom, pan, and neighbourhood highlighting. Selecting a node opens an inspector
+with schema-driven field editing; validating an edit updates the draft and
+regenerates the graph. The Python Graphviz, PyVis, and NetworkX/Matplotlib
 backends remain available in the server/Python runtime.
 
 For the binary provenance, wrapper ABI, Python/browser call sequence, packaging
@@ -90,8 +95,8 @@ Explicitly out of scope:
 | B | Build static pages and schema-derived JSON artefacts | **Completed** |
 | C | Add standalone JavaScript validation and integrity checks | **Completed** |
 | D | Add lazy Graphviz WebAssembly SVG rendering | **Completed** |
-| E | Test the generated `dist/` with parity and zero-API checks | **In progress** |
-| F | Publish the static site with GitLab Pages | **In progress** |
+| E | Test the generated `dist/` with parity and zero-API checks | **Completed locally and in CI** |
+| F | Publish the static site with GitLab Pages | **Published from a qualified `develop` pipeline; default-branch promotion remains** |
 | G | Complete documentation, deployment notes, and cleanup | **In progress** |
 
 Each phase must keep the existing Python and server WebUI tests meaningful. A
@@ -304,13 +309,12 @@ such as `X-Frame-Options` and `Content-Security-Policy` must be checked before
 claiming that the hosted Pages URL is embeddable. If GitLab hosting prevents an
 iframe, the same static artefact remains deployable on PhotoMechanics hosting.
 
-As of 2026-09-21, the project Pages API reports the configured domain
-`https://r3xa-api-ff00f6.gitlab.io` but no Pages deployment. A request to that
-domain redirects to GitLab authentication, so the application response and
-its final `X-Frame-Options`/CSP headers cannot yet be qualified. This is a
-deployment/quota state, not evidence that the static artefact is broken. Do
-not mark Phase F complete until a successful default-branch Pages pipeline
-serves the generated site anonymously.
+The qualified `develop` pipeline for commit `fafbb46` published the site at
+<https://photomechanics.gitlab.io/R3XA_API/>. Its `static-pages` job passed,
+alongside the Python, schema/Registry, docs, browser, and static-site checks.
+Promotion from the default branch and a real hosted iframe/header check remain
+separate operational qualifications. The historical hostname
+`r3xa-api-ff00f6.gitlab.io` is not the address to distribute.
 
 ## Local build and deployment
 
@@ -318,6 +322,7 @@ Install the build-time dependencies and create the site from the repository
 root:
 
 ```bash
+python -m pip install -e ".[web,dev]"
 npm ci --prefix r3xa_web
 python scripts/dev.py build-static-web
 ```
@@ -346,15 +351,15 @@ python scripts/dev.py test-static-web
 ```
 
 The GitLab Pages job publishes the same content that is stored as the
-`static-web-build` artifact. After a successful default-branch or explicit
-`develop` qualification pipeline, copy the URL shown in **Deploy → Pages**; it
-is also available to the job as `CI_PAGES_URL`. The URL may include a project
-subpath, which is why the build uses relative asset and navigation paths.
+`static-web-build` artifact. The current public address is
+<https://photomechanics.gitlab.io/R3XA_API/>. A future deployment can use
+the URL shown in **Deploy → Pages** or the job's `CI_PAGES_URL`. The URL may
+include a project subpath, which is why the build uses relative asset and
+navigation paths.
 
 ## GitHub Pages preview
 
-For a hosted smoke test independent of the GitLab runner quota, the current
-`develop` branch is also published temporarily on GitHub Pages:
+The `develop` branch also has a GitHub Pages preview:
 
 ```text
 https://jeffwitz.github.io/R3XA_API/
@@ -366,9 +371,9 @@ GitHub Pages Actions. On 2026-09-21, the first run completed successfully and
 was checked in a real browser: the Schema viewer loaded, Graphviz WebAssembly
 produced an SVG, and no `/api/*` or third-party requests were made. The root
 and `/schema/` pages returned HTTP 200, with no `X-Frame-Options` or restrictive
-`frame-ancestors` header observed. This validates the static site on GitHub
-Pages, but does not yet qualify GitLab Pages or replace the GitLab deployment
-configuration.
+`frame-ancestors` header observed. This was the first hosted smoke test.
+The GitLab Pages deployment described above is now the public address to
+distribute.
 
 ## Iframe integration
 
@@ -376,7 +381,7 @@ The published site can be embedded when the selected host permits framing:
 
 ```html
 <iframe
-  src="https://<pages-host>/<project-path>/edit/"
+  src="https://photomechanics.gitlab.io/R3XA_API/edit/"
   title="R3XA Web Editor"
   loading="lazy"
   style="width:100%;height:85vh;border:0;">
@@ -388,7 +393,7 @@ and test them explicitly:
 
 ```html
 <iframe
-  src="https://<pages-host>/<project-path>/edit/"
+  src="https://photomechanics.gitlab.io/R3XA_API/edit/"
   title="R3XA Web Editor"
   sandbox="allow-scripts allow-same-origin allow-downloads allow-forms allow-modals"
   style="width:100%;height:85vh;border:0;">
@@ -401,7 +406,7 @@ GitLab Pages response headers are controlled by the hosting service. Before
 promising iframe support, inspect the deployed URL:
 
 ```bash
-curl -I "https://<pages-host>/<project-path>/"
+curl -I "https://photomechanics.gitlab.io/R3XA_API/"
 ```
 
 Check `X-Frame-Options` and the `Content-Security-Policy` `frame-ancestors`
@@ -461,6 +466,9 @@ The initiative is complete only when all of the following are true:
    Pages, iframe, CSP, privacy, and known limitations.
 
 ## Progress log
+
+The dated entries below record the implementation sequence. For current
+status, use the phase table and deployment sections above.
 
 ### 2026-09-17
 
@@ -538,9 +546,8 @@ rendering works in Chromium, palette data comes from the Python source, and a
 failed WebAssembly load produces a graph-specific error without disabling the
 editor.
 Phase E browser qualification, zero-network checks, and schema/integrity status
-parity are now covered by the local test suite. The remaining Phase E work is
-the final normalized user-facing error wording review and any gaps found during
-the hosted smoke test. The parity tests intentionally compare portable error
+parity are covered by the local and CI suites. The parity tests intentionally
+compare portable error
 identity (`path`, `validator`) and controlled user messages; `schema_path` may
 differ when Ajv resolves a `$ref` to its target while Python reports the
 referring schema location.

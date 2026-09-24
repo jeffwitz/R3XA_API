@@ -1,418 +1,135 @@
 # R3XA_API
 
-Python SDK and WebUI for creating and validating R3XA metadata files.
+Python SDK, MATLAB binding, and WebUI for creating, validating, and visualising
+R3XA metadata documents.
 
-> **Documentation:** [current documentation](https://r3xa-api.readthedocs.io/en/latest/)
+**[Documentation](https://r3xa-api.readthedocs.io/en/latest/)** ·
+**[Public WebUI](https://photomechanics.gitlab.io/R3XA_API/)** ·
+**[Python quick start](https://r3xa-api.readthedocs.io/en/latest/getting_started.html)**
 
-> **Release candidate:** `2.0.0rc5` targets schema `2026.9.18` and is not
-> source-compatible with the stable `1.x` releases.
+The GitLab Pages WebUI is a static application. Editing, validation, Registry
+item checks, and graph generation run in the browser. It does not upload user
+documents to an R3XA backend.
 
-## Install from PyPI
-```bash
-python -m pip install r3xa-api
-```
+## The three repositories
 
-This installs the latest stable release from the Python Package Index.
+| Repository | Responsibility |
+| --- | --- |
+| [R3XA_SPEC](https://gitlab.com/photomechanics/R3XA_SPEC) | Normative JSON Schema for the format. |
+| [R3XA_API](https://gitlab.com/photomechanics/R3XA_API) | Python SDK, MATLAB binding, WebUI, derived models and validators. |
+| [R3XA_REGISTRY](https://gitlab.com/photomechanics/R3XA_REGISTRY) | Shareable, validated R3XA items. |
 
-To try the current release candidate instead, install the tagged GitLab
-source explicitly:
+R3XA_API packages the published schema from R3XA_SPEC; it does not define an
+independent format. The `registry/` folder here is a small bundled example and
+test catalogue, separate from the canonical R3XA_REGISTRY repository and from
+items stored locally in a user's browser.
+
+## Install the Python SDK
+
+The current release candidate is **`2.0.0rc5`**, targeting schema
+`2026.9.18`. It is not source compatible with the stable 1.x series. To
+install this candidate:
 
 ```bash
 python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc5"
 ```
 
-Graph support is part of the standard SDK installation: the Python `graphviz`
-wrapper, the bundled Graphviz WebAssembly module, and `wasmtime` are installed
-automatically. The system Graphviz executable (`dot`) is optional and is only
-needed when the native `graphviz` backend is selected.
+`python -m pip install r3xa-api` installs the latest stable PyPI release,
+which may use a different schema and API from the current development
+documentation. To work on `develop`, clone the repository and install it in
+an activated virtual environment:
 
-**Optional native backend on Windows and macOS:** `pip install r3xa-api` cannot
-install system software. If you select native `graphviz`, run
-`r3xa-ensure-graphviz` from the activated virtual environment; it uses WinGet
-or Chocolatey on Windows and Homebrew on macOS. Verify with `dot -V`.
-
-## Install from source (development)
 ```bash
+git clone --branch develop https://gitlab.com/photomechanics/R3XA_API.git
+cd R3XA_API
+python -m venv .venv
+source .venv/bin/activate
 python -m pip install -e .
 ```
 
-## Assumed environment
-Documentation commands assume a local virtual environment exists at `.venv` (project root).
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. Python
+3.9 and newer are supported. The standard SDK includes Pydantic and a
+bundled Graphviz WebAssembly backend; a system `dot` installation is optional.
 
-Create it once from the project root:
-
-```bash
-python -m venv .venv
-```
-
-Activate it:
-
-```bash
-# Linux / macOS
-source .venv/bin/activate
-
-# Windows (PowerShell)
-.venv\Scripts\Activate.ps1
-```
-
-Then upgrade `pip`:
-
-```bash
-python -m pip install --upgrade pip
-```
-
-Once the environment is activated, the documented `python ...` commands are the
-same across Linux, macOS, and Windows.
-
-Bootstrap the full contributor environment with one command:
-
-```bash
-python scripts/dev.py setup-dev
-```
-
-This installs the editable contributor stack (`dev`, `docs`, `web`, `marimo`,
-`jupyter`, `graph_nx`) and regenerates the schema-derived artifacts tracked in
-the repository. The bootstrap uses `pip install --no-build-isolation -e ...`
-so it works cleanly inside an already-created project `.venv` without trying to
-re-resolve build tooling from the network. On a fresh Python 3.12+ virtual
-environment, it first bootstraps `pip`, `setuptools`, and `wheel`, because
-editable installs using the setuptools backend cannot start without them.
-
-The default uses the committed Graphviz WebAssembly artifact. If you want the
-development installation to rebuild that module from the pinned Graphviz and
-WASI sources first, use:
-
-```bash
-python scripts/dev.py setup-dev --graphviz-wasm source
-```
-
-This source-build mode requires CMake, Bison, Flex, and a compatible host
-environment. A normal PyPI installation continues to use the packaged binary;
-it does not compile Graphviz during installation.
-
-## Quick start
-```python
-from r3xa_api import R3XAFile, unit
-
-r3xa = R3XAFile(
-    title="Hello World",
-    description="Minimal R3XA file",
-    authors=[{"name": "JC Passieux"}],
-    date="2024-10-30",
-)
-
-specimen = r3xa.add_specimen_setting(
-    title="Openhole sample",
-    description="Glass-epoxy specimen",
-    sizes=[unit(title="width", value=30.0, unit="mm", scale=1.0)],
-)
-
-camera = r3xa.add_camera_source(
-    title="CCD Camera",
-    description="Encoding: 8-bit",
-    output_components=1,
-    output_dimension="surface",
-    output_units=[unit(title="graylevel", value=1.0, unit="gl", scale=1.0)],
-    manufacturer="Allied Vision Technologies (AVT)",
-    model="Dolphin F-145B",
-    image_size=[
-        unit(title="width", value=1392, unit="px", scale=1.0),
-        unit(title="height", value=1040, unit="px", scale=1.0),
-    ],
-    field_of_view=[
-        unit(title="width", value=120.0, unit="mm", scale=1.0),
-        unit(title="height", value=90.0, unit="mm", scale=1.0),
-    ],
-    focal_length=unit(title="focal_length", value=25.0, unit="mm", scale=1.0),
-    standoff_distance=unit(title="standoff", value=0.5, unit="m", scale=1.0),
-    lens="50mm prime",
-    aperture="f/8",
-    exposure=unit(title="exposure", value=2.0, unit="ms", scale=1.0),
-)
-
-images = r3xa.add_list_data_set(
-    title="graylevel images",
-    description="images taken by the CCD camera",
-    path="images/",
-    data_type="image/tiff",
-    parent_data_sources=[camera],
-    time_reference=unit(title="time_reference", value=0.0, unit="s", scale=1.0),
-    timestamps=[0.0, 1.0],
-    values=["zoom-0050_1.tif", "zoom-0070_1.tif"],
-)
-
-r3xa.validate()
-
-r3xa.save("hello-world.json")
-```
-
-Load and edit an existing file:
+## Create a document
 
 ```python
 from r3xa_api import R3XAFile
 
-r3xa = R3XAFile.load("hello-world.json")
-r3xa.set_header(title="Updated title")
-r3xa.save("hello-world-updated.json")
-```
-
-Guided helper methods now exist for every schema kind using a consistent naming rule:
-
-```python
-add_<kind>_setting(...)
-add_<kind>_source(...)
-add_<kind>_data_set(...)
-```
-
-Examples:
-- `add_testing_machine_setting(...)`
-- `add_load_cell_source(...)`
-- `add_generic_data_set(...)`
-
-## Common workflows
-For most users, the public API now boils down to three entry points:
-
-1. **Create a new file from scratch**
-   - `R3XAFile(...)`
-   - `add_<kind>_setting/source/data_set(...)`
-   - `validate()` / `save(...)`
-
-2. **Load, edit, and save an existing file**
-   - `R3XAFile.load(...)`
-   - `set_header(...)`
-   - `save(...)`
-
-3. **Load, edit, and save a reusable registry item**
-   - `Registry.load(...)` for a schema-generated object
-   - `R3XAItem.merge(...)` / `R3XAItem.save(...)`
-   - `Registry.get_item(...)` for a `RegistryItem` wrapper
-   - `RegistryItem.merge(...)` / `RegistryItem.save(...)` when mapping or path binding is needed
-
-Example:
-
-```python
-from r3xa_api import Registry
-
-registry = Registry("registry")
-camera = registry.get_item("data_sources/camera/avt_dolphin_f145b")
-camera = camera.merge(description="Camera used in experiment 01")
-camera.save("camera_exp01.json")
-```
-
-Recommended import surface:
-
-```python
-from r3xa_api import R3XAFile, Registry, RegistryItem, new_item, unit, validate
-```
-
-Advanced compatibility helpers still exist, but they are no longer the recommended entry point
-and are intentionally excluded from `r3xa_api.__all__`:
-
-```python
-from r3xa_api import load_item_path, save_item_path, validate_item, merge_item
-```
-
-Registry naming rule:
-- prefer `load(...)` / `load_validated(...)` for file-backed registry access
-- keep `get(...)` / `get_validated(...)` as compatibility aliases
-
-Stability policy:
-- symbols shown in `docs/api.md` are the public SDK contract for the 2.x series
-- compatibility helpers remain importable where implemented, but do not restore pre-2.0 schema compatibility
-- guided helpers (`add_<kind>_setting/source/data_set`) are part of that public contract and are tested against the schema
-- details not documented in `docs/api.md` remain internal and may evolve more freely
-
-See `STABILITY.md` for the compact policy.
-
-## Documentation
-- `docs/overview.md`
-- `docs/api.md`
-- `docs/examples.md`
-- `docs/notebooks.md`
-- `docs/validation.md`
-- `docs/qi_case.md`
-- `docs/matlab.md`
-- `docs/engineering_contract.md`
-
-## IDE autocompletion
-The standard installation includes the schema-generated Pydantic object model.
-No additional extra is required:
-
-```python
-from r3xa_api import R3XAFile, models
-
-camera = models.CameraSource(
-    title="CCD Camera",
-    output_components=1,
-    output_dimension="surface",
-    output_units=[models.Unit(unit="gl")],
-    image_size=[models.Unit(unit="px")],
+document = R3XAFile(
+    title="Tensile test",
+    description="First specimen",
+    authors=[{"name": "A. Example"}],
+    date="2026-09-24",
 )
+light = document.add_generic_setting(
+    title="Laboratory lighting",
+    description="Diffuse LED illumination",
+)
+assert document.settings[0] is light
 
-r3xa = R3XAFile(title="...", description="...", authors=[{"name": "..."}], date="2026-02-19")
-r3xa.data_sources.append(camera)
-r3xa.validate()
+document.validate()
+document.save("experiment.json")
+document.plot("experiment.svg")
 ```
 
-Regenerate typed models after schema updates:
+The SDK uses schema-generated Pydantic objects. Item references retain object
+identity in Python and become IDs in the saved JSON. `validate()` returns
+`None` on success and raises on failure.
+
+For a progressive introduction, follow the
+[interactive tutorials](https://r3xa-api.readthedocs.io/en/latest/notebooks.html)
+in Python, Jupyter, or Marimo. A MATLAB introductory tutorial and larger
+torsion and Qi Hu cases are also maintained under `examples/tutorials/` and
+`examples/cases/`. Older recipes are archived under `examples/archive/`.
+
+## WebUI and notebooks
+
+Use the [public WebUI](https://photomechanics.gitlab.io/R3XA_API/) directly,
+or build the same static site from a source checkout:
 
 ```bash
-python scripts/dev.py generate-models
+python -m pip install -e ".[web,dev]"
+npm ci --prefix r3xa_web
+python scripts/dev.py build-static-web
+python scripts/dev.py serve-static-web --no-build --port 8080
 ```
 
-## Tutorials and notebooks
-The repository contains the same introductory progression as Python scripts,
-Jupyter notebooks, Marimo notebooks, and MATLAB scripts under
-`examples/tutorials/`. Larger torsion and Qi Hu demonstrations are under
-`examples/cases/`; their Python, Jupyter, Marimo, and MATLAB entry points share
-the same document structure and write generated files below `examples/artifacts/`.
-
-### Marimo notebook (base DIC example)
-Install Marimo support:
-```bash
-pip install -e ".[marimo]"
-# or
-pip install -r requirements-marimo.txt
-```
-
-Run the notebook:
-```bash
-python scripts/dev.py notebook-dic
-```
-
-Notebook graph output uses the bundled Graphviz WebAssembly SVG backend by default;
-the native `dot` executable is optional.
-
-Optional static export (no backend):
-```bash
-python scripts/dev.py notebook-dic-export
-```
-
-### Jupyter tutorials
-Install Jupyter and its Python kernel separately when you want to open the
-`.ipynb` versions:
-```bash
-pip install -e ".[jupyter]"
-# or
-pip install -r requirements-jupyter.txt
-```
-
-Then open a notebook, for example:
-```bash
-jupyter notebook examples/tutorials/jupyter/tutorial0_basic.ipynb
-```
-
-See `examples/tutorials/README.md` for the complete progression and
-`examples/cases/README.md` for the larger scientific cases.
-
-Run on MyBinder (no local install):
-- Launch URL: `https://mybinder.org/v2/gl/photomechanics%2FR3XA_API/v2.0.0rc5?urlpath=proxy/2718/`
-- Binder builds Python dependencies from `binder/requirements.txt`.
-- Binder installs system packages from `binder/apt.txt` (includes `graphviz` / `dot`).
-- Marimo starts automatically through `binder/start`.
-- First launch can take a few minutes (cold start).
-
-## Web UI (v0)
-The web UI is available from PyPI:
-```bash
-python -m pip install "r3xa-api[web]"
-python -m uvicorn r3xa_web.app.asgi:app --host 127.0.0.1 --port 8002
-```
-Then open `http://127.0.0.1:8002/`.
-
-For a source checkout, use `python -m pip install -e ".[web,dev]"` and
-`python scripts/dev.py run-web --port 8002` instead.
-
-Notes:
-- The native SVG backend requires the optional **Graphviz executable** (`dot`) installed on the system:
-  - Linux: `sudo apt-get install graphviz` (or your distro equivalent), then `dot -V`
-  - macOS: run `r3xa-ensure-graphviz` (uses Homebrew), then `dot -V`
-  - Windows: run `r3xa-ensure-graphviz` (uses WinGet or Chocolatey), then `dot -V`
-  - From a source checkout, the equivalent command is `python scripts/dev.py ensure-graphviz`.
-- The web viewer JS is vendored; **no `npm install` is required** for normal use.
-- The WebUI graph selector supports bundled Graphviz WebAssembly SVG by default, native Graphviz SVG when `dot` is installed, interactive PyVis HTML, and static NetworkX/Matplotlib SVG output. `wasmtime` is part of the standard installation, so the WebAssembly backend works without `dot`.
-
-## MATLAB (minimal binding)
-MATLAB helpers live in `matlab/` and focus on **JSON generation only**.
-Add the folder to the MATLAB path and use `r3xa.R3XAFile`.
-## Registry
-- Reusable items live in `registry/` (cameras, machines, software, datasets templates).
-- Discover items with `Registry.list(...)` / `Registry.iter_items(...)`.
-- Load an item as a `RegistryItem` with `Registry.get_item(...)`.
-- Reuse and override an existing item with `RegistryItem.merge(...)`.
-- Save it back with `RegistryItem.save(...)` or `RegistryItem.save_to(...)`.
-
-## Examples
-- From scratch pipeline: `examples/python/complex_dic_pipeline.py`
-- Registry pipeline: `examples/python/complex_dic_pipeline_registry.py`
-- Registry item creation: `examples/python/create_registry_camera.py`
-- Graph export tool: `examples/python/graph_r3xa.py`
-- Full file load/edit/save: `examples/python/load_edit_save.py`
-- Registry discovery and merge: `examples/python/registry_discovery.py`
-- Registry loading and override basics: `examples/python/registry_usage.py`
-- Object-first (Pydantic) pipeline: `examples/python/typed_dic_pipeline.py`
-- Validate all examples: `scripts/validate_all_examples.py`
-- Validate static example JSON: `scripts/validate_static_examples.py`
-- Progressive tutorials: `examples/tutorials/README.md`
-- Scientific case studies: `examples/cases/README.md`
-
-Historical recipes retained for comparison are in `examples/archive/`; new
-code should start from `examples/tutorials/` or `examples/cases/`.
-
-## Optional static graph backend (NetworkX + Matplotlib)
-Install:
-```bash
-pip install -e ".[graph_nx]"
-```
-
-Generate graph artifacts (Graphviz + PyVis + optional NetworkX image):
-```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/dic_pipeline.json \
-  --output examples/artifacts/graph_dic_pipeline \
-  --dot \
-  --networkx \
-  --networkx-format png
-```
-
-Hide long node descriptions and keep titles only:
-```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/dic_pipeline.json \
-  --output examples/artifacts/graph_dic_pipeline_titles_only \
-  --hide-description
-```
-
-## Developer workflow (local)
-- Bootstrap the full contributor environment: `python scripts/dev.py setup-dev`
-- Generate schema models after schema updates: `python scripts/dev.py generate-models`
-- Regenerate IDE/type-checker stubs for guided helpers: `python scripts/dev.py generate-stubs`
-- Regenerate schema spec markdown: `python scripts/dev.py generate-spec`
-- Regenerate Marimo sources from Jupyter: `python scripts/dev.py convert-tutorials`
-- Build the HTML docs: `python scripts/dev.py build-docs`
-- Clean generated artifacts before packaging: `python scripts/dev.py clean-artifacts`
-- Build clean source zip from git tracked files: `python scripts/dev.py source-archive`
-- Full test run: `python -m pytest -q`
-
-`python scripts/dev.py ...` is the canonical cross-platform workflow.
-
-`setup-dev` is the fastest way to provision a fresh contributor `.venv`. If you
-only want the dependencies without the regeneration steps, the equivalent install is:
+The static files in `dist/r3xa-webui/` can be copied to any HTTP static host.
+The FastAPI runtime remains available to contributors:
 
 ```bash
-pip install -e ".[dev,docs,web,marimo,jupyter,graph_nx]"
+python -m pip install -e ".[web]"
+python scripts/dev.py run-web --port 8002
 ```
 
-Test totals depend on installed extras:
-- `.[dev]` covers the core SDK suite
-- `.[docs]` adds the Sphinx documentation toolchain
-- Pydantic object-model tests run as part of the standard test suite
-- `.[web]` adds web/API tests
-- `.[graph_nx]` adds the NetworkX static graph backend tests
+To launch the tutorial browsers from the repository root, install the matching
+extra and start one server:
 
-## Artifacts
-- Demonstrators generated by examples: `examples/artifacts/dic_pipeline.json`, `examples/artifacts/dic_pipeline_registry.json`
+```bash
+python -m pip install -e ".[jupyter]"
+jupyter notebook --no-browser --ip=127.0.0.1 --port=8888 --notebook-dir=.
+```
 
-## Notes
-- The schema is embedded from the upstream R3XA project.
-- This package does not depend on any GUI libraries.
+```bash
+python -m pip install -e ".[marimo]"
+marimo edit --host 127.0.0.1 --port 2720
+```
+
+See the [WebUI guide](https://r3xa-api.readthedocs.io/en/latest/web.html) and
+[tutorial guide](https://r3xa-api.readthedocs.io/en/latest/notebooks.html)
+for details. The companion MATLAB binding creates JSON without requiring a
+Python runtime inside MATLAB.
+
+## Contribute and verify
+
+```bash
+python scripts/dev.py setup-dev
+python -m pytest -q
+python scripts/dev.py test-static-web
+python scripts/dev.py build-docs
+```
+
+Work on `develop`; schema changes belong first in R3XA_SPEC. The
+[developer workflow](https://r3xa-api.readthedocs.io/en/latest/dev_workflow.html)
+explains schema synchronisation, model generation, CI, and WebUI builds.

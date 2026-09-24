@@ -270,9 +270,9 @@ The generated `r3xa_api/core.pyi` and `r3xa_api/__init__.pyi` solve this:
 
 The file `r3xa_api/py.typed` additionally declares that the package officially ships typing information.
 
-### 3.5. Why guided helpers are not yet implemented as static Python methods
+### 3.5. Why guided helpers are generated dynamically
 
-Today, guided helpers are still generated dynamically.
+Guided helpers are generated dynamically from the current schema.
 
 This is not a bug.
 
@@ -288,7 +288,9 @@ The limitation is mostly on the maintenance side:
 - the architecture is less “normal” for Python developers,
 - implementation-level static analysis remains limited.
 
-This is a **known technical debt**, not an urgent defect.
+The generated stubs provide completion and signatures without maintaining a
+second hand-written helper list. Schema changes must regenerate both runtime
+helpers and stubs together.
 
 ### 3.6. Why the top-level API surface was reduced
 

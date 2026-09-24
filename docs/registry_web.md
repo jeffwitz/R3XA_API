@@ -1,6 +1,9 @@
-# Registry Web Editor
+# Edit a Registry item in the browser
 
-This page documents the dedicated web page for registry work in `R3XA_API`.
+Open the [public Registry editor](https://photomechanics.gitlab.io/R3XA_API/registry/)
+to create or validate a reusable item. This is a browser-local workspace, not
+a publishing interface for the canonical
+[R3XA_REGISTRY](https://gitlab.com/photomechanics/R3XA_REGISTRY) repository.
 
 ## Why a dedicated page
 
@@ -31,14 +34,14 @@ shows the affected JSON path when available.
 
 ## Local workflow
 
-1. Open `/registry`.
-2. Click **Load JSON** to import an existing registry item.
+1. Open `/registry/` on the public site.
+2. Either click **Load JSON** to import an item without filling in missing
+   values, or create a new illustrative item from an **Example profile**.
 3. Choose the item kind from the schema catalogue if necessary.
-4. Choose an **Example profile** to populate the fields with realistic values from a Guided workflow.
-5. Edit common fields in the generated form, or use the highlighted Expert JSON view.
-6. Click **Validate item** to run the lint and schema validation.
-7. Click **Add to local registry** to make a valid item available as a template in this browser.
-8. Click **Save JSON** to export the updated item.
+4. Edit fields in the generated form or in the Expert JSON view.
+5. Click **Validate item** to check the item against its own kind schema.
+6. Click **Add to local registry** to reuse a valid item in this browser.
+7. Click **Save JSON** to export it.
 
 The `id` field includes **Generate new ID**. It creates a unique identifier with
 the conventional section prefix (`stg-`, `src-`, or `set-`) and checks the
@@ -46,10 +49,10 @@ templates already stored in this browser. Saving a local item is also refused
 when its identifier or title would duplicate another local item. Updating the
 same item with the same identifier and title remains allowed.
 
-The generated example fills scalar, unit, file and nested-object fields with
+Creating an example fills scalar, unit, file and nested-object fields with
 domain-specific illustrative values (for example, a camera exposure is shown as
-`0.01 s`, a focal length as `25 mm`, and a load-cell capacity as `10 kN`). Older
-browser drafts containing generic placeholders are upgraded when the page opens.
+`0.01 s`, a focal length as `25 mm`, and a load-cell capacity as `10 kN`).
+Importing an existing item does not fill its missing fields automatically.
 Relationship lists remain empty unless the selected profile provides real
 relationships, because inventing identifiers for other objects would make the
 example misleading.
@@ -66,11 +69,10 @@ item to its validation endpoint when **Validate item** is clicked. Adding a
 template to an R3XA document creates a new local copy with a new identifier, so
 the registry item itself is never modified.
 
-When local storage contains an older identifier such as `ds_cam_legacy`, the
-Registry editor migrates it to the canonical kind-specific form such as
-`src-camera-...` and updates local references where necessary.
+New IDs use kind-specific prefixes such as `src-camera-...`. Legacy IDs and
+references should be reviewed when importing older items.
 
-## Relation to existing web docs
+## Share a reusable item
 
 The reusable Registry is maintained in the separate `R3XA_REGISTRY` repository,
 which is the canonical source for shareable items. The `registry/` directory in
@@ -78,10 +80,7 @@ this repository contains a small bundled example and test catalogue for the SDK
 and WebUI; it is not an independent Registry publication. The API CI validates
 the canonical Registry against the schema and SDK used by the current branch.
 
-The general web architecture and deployment details are still documented in:
-
-- `docs/web.md`
-- `docs/DEPLOY_RAILWAY.md`
-- The standalone offline export is available from `/schema` (button: `Export standalone HTML`).
-
-Use this page as an extension of the main web UI documentation.
+Use **Save JSON** to export the item, then contribute it separately to
+`R3XA_REGISTRY` if it should be shared. For full-document editing and
+graph export, see [Using the WebUI](web.md). For the static build and
+deployment, see [Static WebUI build and deployment](static_web.md).

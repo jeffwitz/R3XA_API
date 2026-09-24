@@ -4,9 +4,9 @@ This page documents the recommended contributor workflow for local development.
 
 ## Static WebUI initiative
 
-The static WebUI is being developed as a second runtime alongside the existing
-FastAPI application. The durable plan, phase status, architectural decisions,
-and acceptance criteria are maintained in
+The static WebUI runs alongside the FastAPI application and is published on
+[GitLab Pages](https://photomechanics.gitlab.io/R3XA_API/). The durable plan,
+phase status, architectural decisions, and acceptance criteria are maintained in
 [`static_web.md`](static_web.md). Read that document before changing the WebUI
 runtime or adding build and CI jobs for the static distribution.
 
@@ -15,11 +15,10 @@ The detailed Graphviz WebAssembly maintenance and ABI documentation is in
 replacing the bundled WASI binary or changing either the Python or browser
 adapter.
 
-Phases A through D are complete: page scripts use the shared server runtime
-adapter, static pages and schema-derived assets are generated, browser
-validation runs locally, and lazy Graphviz WebAssembly SVG rendering is
-available. Phase E qualifies the static workflows and Phase F adds the GitLab
-Pages publication jobs; the persistent status is maintained in
+The runtime abstraction, static build, browser validation and Graphviz
+WebAssembly rendering are implemented. Static browser and Python qualification
+run in CI; an explicit `develop` pipeline has published the site. The
+remaining hosted checks and default-branch promotion are tracked in
 [`static_web.md`](static_web.md).
 
 To build the static distribution, install the JavaScript build dependency once:
@@ -133,8 +132,8 @@ python scripts/dev.py generate-models
 
 The command regenerates the classes and stable public aliases. Tests in
 {glsrc}`tests/test_models.py` cover the ergonomic behavior and ensure that the
-generated classes remain usable.
-- builds the Sphinx HTML documentation
+generated classes remain usable. The contributor setup also builds the Sphinx
+HTML documentation.
 
 Use it when you want a ready-to-work contributor environment without running
 each regeneration command manually.

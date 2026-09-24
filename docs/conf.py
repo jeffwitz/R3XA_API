@@ -10,12 +10,11 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "internal/*", "figures/d
 html_theme = "sphinx_rtd_theme"
 html_title = "R3XA_API"
 html_theme_options = {
-    "collapse_navigation": False,
-    "navigation_depth": 4,
-    "titles_only": False,
+    "collapse_navigation": True,
+    "navigation_depth": 2,
+    "titles_only": True,
     "includehidden": True,
 }
-html_extra_path = ["figures", "archive/PM_IDICS_2024"]
 
 _rtd_version = os.environ.get("READTHEDOCS_VERSION", "develop")
 if _rtd_version == "latest":

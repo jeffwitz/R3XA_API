@@ -1,111 +1,47 @@
-# Tutorial — Qi Hu case study (IR Lagrangian thermography)
+# Case study: Qi Hu thermography
 
-This page is a **worked tutorial case study**.
-Use it after the interactive notebook if you want to study a larger real-world R3XA pipeline.
+The Qi Hu example describes a larger IR/visible imaging and thermography
+pipeline. It demonstrates how R3XA connects acquisition devices, raw data,
+processing steps, and derived fields without embedding the experimental
+files. The source is maintained under
+{glsrc}`examples/cases/qi_hu/`; earlier reconstructions are under
+{glsrc}`examples/archive/`.
 
-This page documents the **Qi Hu experimental case** and how it maps to R3XA concepts.
+The document separates three questions:
 
-Sources:
-- {glsrc}`examples/python/graph_r3xa.py`
-- {glsrc}`examples/cases/qi_hu/example.py`
-- {glsrc}`examples/cases/qi_hu/example.ipynb`
-- {glsrc}`examples/cases/qi_hu/marimo/example.py`
-- {glsrc}`examples/cases/qi_hu/example.m`
+1. **What was used?** Settings describe the specimen and experimental context.
+2. **What produced the data?** Cameras and processing operations are
+   `data_sources`.
+3. **Where are the outputs?** Raw images and derived fields are `data_sets`.
 
-## Context
-The Qi Hu dataset is a complex experimental pipeline (IR + visible imaging, post‑processing, DIC‑like steps).
-For more scientific context, see the Qi Hu thesis (LaMCube): `https://theses.hal.science/tel-04993338`.
+`parent_data_sources` links a dataset to its producer, while
+`input_data_sets` links a processing source to its inputs. Other schema
+references describe context; the graph displays these alongside data flow.
+For exact field definitions, see the
+[generated specification](specification.md).
 
-## Data flow (conceptual)
-**IR camera → raw images → Lagrangian thermography processing → derived fields**  
-This is represented as a **directed graph** using:
-- `data_sources` (sensors / processing steps)
-- `data_sets` (raw and derived data products)
-- `input_data_sets` (what a source consumes)
-- `data_sources` (what a dataset depends on)
+## Build the document and graph
 
-## Graph (Qi Hu example)
-Below is the generated SVG graph for the Qi Hu case:
+With R3XA_API installed in the active environment, run from the repository
+root:
 
-![Qi Hu data flow graph](figures/graph_qi_from_scratch.svg)
-
-Below is the **interactive HTML** version (PyVis backend):
-
-<iframe
-  src="graph_qi_from_scratch.html"
-  width="100%"
-  height="700"
-  style="border:1px solid #ddd;"
-  title="Qi Hu data flow graph (interactive)"
-></iframe>
-
-## How to generate the graph
-The canonical Qi Hu file is built **from scratch in Python** (no input JSON at
-runtime) by `examples/cases/qi_hu/example.py`. Older literal and compact
-recipes remain under `examples/archive/python/` for comparison only.
-The script uses **loops** for repetitive file lists (IR frames, calibration series, time grids)
-so the dataset is defined compactly and remains easy to edit.
-
-To generate the R3XA JSON from an activated `.venv`:
 ```bash
 python examples/cases/qi_hu/example.py
 ```
 
-This writes `examples/artifacts/qi_hu_tutorial.json` and the corresponding
-Graphviz SVG at `examples/artifacts/graph_qi_hu_tutorial.svg`. The Jupyter and
-Marimo versions display the same SVG inline after validation.
+The script validates the document and writes
+`examples/artifacts/qi_hu_tutorial.json` and
+`examples/artifacts/graph_qi_hu_tutorial.svg`. Open the SVG in a browser to
+inspect the complete graph. The referenced scientific file paths are
+metadata; the experimental image and field data are not bundled here.
 
-MATLAB users can also generate the same JSON with:
-```matlab
-addpath(genpath('path/to/R3XA_API/matlab'));
-run('path/to/R3XA_API/examples/cases/qi_hu/example.m');
-```
+To step through the same construction interactively, open
+{glsrc}`examples/cases/qi_hu/example.ipynb` in Jupyter or
+{glsrc}`examples/cases/qi_hu/marimo/example.py` in Marimo. Both display the
+graph inline; [Interactive tutorials](notebooks.md) explains how to start
+their servers. MATLAB users can run
+{glsrc}`examples/cases/qi_hu/example.m`.
 
-Then generate the graph:
-```bash
-python examples/python/graph_r3xa.py \
-  --input examples/artifacts/qi_hu_tutorial.json \
-  --output docs/figures/graph_qi_from_scratch
-```
-
-This creates:
-- `docs/figures/graph_qi_from_scratch.svg` (**Graphviz** backend)
-- `docs/figures/graph_qi_from_scratch.html` (**PyVis** backend)
-
-## Graph semantics (colors & shapes)
-The graph encodes **object types** and **data‑flow roles**:
-
-### Data sources (ellipses)
-- **Initial data sources** (no `input_data_sets`):  
-  - **Shape**: ellipse  
-  - **Fill**: white  
-  - **Border**: light green  
-  - **Pen width**: 4
-- **Intermediate data sources** (consume datasets via `input_data_sets`):  
-  - **Shape**: ellipse  
-  - **Fill**: light blue  
-  - **Border**: black  
-  - **Pen width**: 2
-
-### Data sets (rectangles)
-- **Intermediate datasets** (used as input to a later source):  
-  - **Shape**: box  
-  - **Fill**: light grey  
-  - **Border**: black  
-  - **Pen width**: 2
-- **Final datasets** (not used as input later):  
-  - **Shape**: box  
-  - **Fill**: salmon `#FFA07A`  
-  - **Border**: red  
-  - **Pen width**: 6
-
-### Edges
-- **Input flow** (`input_data_sets` → data_source): black
-- **Output flow** (data_source → data_set): black  
-
-These styles are defined in {glsrc}`examples/python/graph_r3xa.py` and shared across Graphviz and PyVis.
-
-## Files used
-- Build script: {glsrc}`examples/cases/qi_hu/example.py`
-- Graph tool: {glsrc}`examples/python/graph_r3xa.py`
-- Output SVG: `docs/figures/graph_qi_from_scratch.svg`
+The torsion case in {glsrc}`examples/cases/torsion/example.py` offers a
+second complete workflow with a testing machine, sensors, camera, and
+measurement datasets.

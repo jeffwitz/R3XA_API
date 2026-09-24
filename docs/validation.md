@@ -1,37 +1,40 @@
-# Validation — concepts and best practices
+# Validation
 
-This page is primarily **reference + explanation**.
-Use it to understand what validation checks and when to run it.
+The [R3XA_SPEC](https://gitlab.com/photomechanics/R3XA_SPEC) JSON Schema
+defines the allowed document structure, field types, and required fields for
+each kind. R3XA_API also checks document integrity, including duplicate IDs,
+references to missing items, and calendar dates. A structurally valid file
+does not certify that illustrative values from a profile describe your actual
+experiment.
 
-## Why validation matters
-R3XA is defined by a JSON Schema. Validation ensures:
-- **Completeness**: required fields are present.
-- **Consistency**: values and types match the schema.
-- **Reproducibility**: others can reuse your data without guessing missing metadata.
+## Complete documents
 
-## Two levels of validation
-### 1) Full file validation
-Use when you have a complete R3XA document:
 ```python
-r3xa.validate()
+from r3xa_api import R3XAFile
+
+document = R3XAFile.load("experiment.json")
+document.validate()  # returns None on success; raises on failure
 ```
 
-### 2) Item (registry) validation
-Use for reusable components stored in the registry:
-```python
-from r3xa_api import validate_item
-validate_item(camera_item)
-```
-This checks against the **specific kind** schema (e.g. `data_sources/camera`) rather than the full R3XA schema.
+The same validation is available from the static [WebUI](web.md), entirely in
+the browser. Validate before saving or sharing the file, and inspect the
+reported field paths when validation fails.
 
-## Best practices
-- **Validate early**: validate items as soon as you define them (especially registry items).
-- **Validate before publish**: run full validation before sharing or archiving.
-- **Use registry items**: avoid duplicating camera, machine, and software descriptions.
-- **Keep IDs stable**: change `id` only when the object is actually different.
-- **Document units**: use `unit(...)` consistently for anything with scale/units.
+## Standalone items
 
-## Common pitfalls
-- Missing required fields (e.g., `image_size` for `data_sources/camera`).
-- Wrong types (strings instead of numeric timestamps).
-- Stale registry items (schema evolves; re‑validate periodically).
+An individual Registry item is checked against the definition for its
+`kind` (for example `data_sources/camera`), without wrapping it in a fake
+document. This permits reusable items to be validated before insertion into
+an experiment. Use an item's `validate()` method in Python or the
+[Registry editor](registry_web.md) in the browser.
+
+## Common errors
+
+- A field is missing even though the selected kind requires it.
+- A number is written as a string, or a `kind` has the wrong constant value.
+- Two items have the same `id`.
+- A reference such as `parent_data_sources` names an absent item.
+- The date matches `YYYY-MM-DD` textually but is not a real calendar date.
+
+Check the [generated specification](specification.md) for exact current
+requirements. Do not infer them from an old tutorial or an archived example.
