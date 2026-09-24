@@ -1331,6 +1331,29 @@ def test_static_schema_viewer_renders_hostile_json_as_text(static_site: str) -> 
         browser.close()
 
 
+def test_static_schema_viewer_renders_multiline_strings(static_site: str) -> None:
+    payload = {
+        "title": "Multiline draft",
+        "description": "First line\nSecond line",
+        "nested": {"note": "A\nB"},
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.wait_for_selector("#schema-tree .jv-light-con")
+        page.wait_for_function(
+            "document.querySelector('#schema-tree')?.textContent.includes('Second line')"
+        )
+        values = page.locator("#schema-tree .jv-light-rightString").all_inner_texts()
+        assert any("First line\nSecond line" in value for value in values)
+        assert any("A\nB" in value for value in values)
+        assert "\\n" not in "\n".join(values)
+        browser.close()
+
+
 def test_static_graph_sanitizes_hostile_svg(static_site: str) -> None:
     payload = {
         "title": "Safe graph test",

@@ -761,7 +761,11 @@ body[data-editor-mode="expert"] .guided-panel {
   content: "▾";
 }
 
-.jv-light-rightString { color: #7a3e9d; }
+.jv-light-rightString {
+  color: #7a3e9d;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .jv-light-rightBoolean { color: #448c27; }
 .jv-light-rightNumber { color: #c04a1c; }
 .jv-light-rightNull { color: #9c5d27; }

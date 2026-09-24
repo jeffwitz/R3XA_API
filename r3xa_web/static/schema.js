@@ -397,6 +397,11 @@ const jsonValueClass = (value) => {
   return "jv-light-rightString";
 };
 
+const jsonScalarText = (value) => {
+  if (typeof value !== "string") return JSON.stringify(value);
+  return `"${value.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
+};
+
 const renderJsonViewer = (data, expand = false) => {
   treeEl.replaceChildren();
   const container = document.createElement("div");
@@ -443,7 +448,7 @@ const renderJsonViewer = (data, expand = false) => {
       left.textContent = `${String(key)}: `;
       const right = document.createElement("span");
       right.className = jsonValueClass(value);
-      right.textContent = JSON.stringify(value);
+      right.textContent = jsonScalarText(value);
       row.appendChild(left);
       row.appendChild(right);
     }
