@@ -449,7 +449,21 @@ def test_static_mobile_editor_has_no_horizontal_overflow_and_remembers_profile(s
             page.goto(f"{static_site}{route}")
             if route == "/schema/":
                 page.wait_for_selector("#schema-tree .jv-light-con")
-            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), route
+            dimensions = page.evaluate(
+                """() => ({
+                  viewport: window.innerWidth,
+                  document: document.documentElement.scrollWidth,
+                  overflowing: [...document.querySelectorAll('body *')]
+                    .map((element) => ({
+                      selector: element.id ? `#${element.id}` : element.tagName.toLowerCase(),
+                      right: Math.round(element.getBoundingClientRect().right),
+                      overflowX: getComputedStyle(element).overflowX,
+                    }))
+                    .filter((element) => element.right > window.innerWidth + 1)
+                    .slice(0, 8),
+                })"""
+            )
+            assert dimensions["document"] <= dimensions["viewport"], f"{route}: {dimensions}"
         page.locator(".nav a[href$='/edit/']").click()
         page.wait_for_selector("#profile-select")
         assert page.locator("#profile-select").input_value() == "dic_2d"

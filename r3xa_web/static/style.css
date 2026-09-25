@@ -764,7 +764,7 @@ body[data-editor-mode="expert"] .guided-panel {
   }
 
   #schema-tree {
-    overflow-x: auto;
+    overflow-x: clip;
   }
 
   .schema-toolbar input {
