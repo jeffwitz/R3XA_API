@@ -767,6 +767,10 @@ body[data-editor-mode="expert"] .guided-panel {
     overflow-x: clip;
   }
 
+  .schema-page {
+    overflow-x: clip;
+  }
+
   .schema-toolbar input {
     flex-basis: 100%;
   }

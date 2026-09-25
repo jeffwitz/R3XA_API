@@ -455,7 +455,9 @@ def test_static_mobile_editor_has_no_horizontal_overflow_and_remembers_profile(s
                   document: document.documentElement.scrollWidth,
                   overflowing: [...document.querySelectorAll('body *')]
                     .map((element) => ({
-                      selector: element.id ? `#${element.id}` : element.tagName.toLowerCase(),
+                      selector: element.id
+                        ? `#${element.id}`
+                        : `${element.tagName.toLowerCase()}${typeof element.className === 'string' && element.className ? `.${element.className.trim().replaceAll(' ', '.')}` : ''}`,
                       right: Math.round(element.getBoundingClientRect().right),
                       overflowX: getComputedStyle(element).overflowX,
                     }))
