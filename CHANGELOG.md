@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Prevent the expanded schema tree from widening the page on mobile; keep overflow inside the tree viewer.
 - Adopt the dated `R3XA_SPEC` schema `2026.9.24`, which removes the redundant `data_origin` field; provenance is inferred from parent data-source and input-data-set lineage.
 - Keep document bindings in Pydantic private state so editing a bound item cannot create a circular serialized document; add a regression test.
 - Correct and align Python, Jupyter, and Marimo tutorials, including runnable CSV examples, explicit validation failures, and stable identifiers for the torsion case.

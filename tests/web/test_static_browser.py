@@ -447,6 +447,8 @@ def test_static_mobile_editor_has_no_horizontal_overflow_and_remembers_profile(s
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), "advanced editor"
         for route in ("/", "/registry/", "/schema/"):
             page.goto(f"{static_site}{route}")
+            if route == "/schema/":
+                page.wait_for_selector("#schema-tree .jv-light-con")
             assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), route
         page.locator(".nav a[href$='/edit/']").click()
         page.wait_for_selector("#profile-select")

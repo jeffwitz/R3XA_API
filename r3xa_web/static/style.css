@@ -763,6 +763,10 @@ body[data-editor-mode="expert"] .guided-panel {
     min-width: 0;
   }
 
+  #schema-tree {
+    overflow-x: auto;
+  }
+
   .schema-toolbar input {
     flex-basis: 100%;
   }
