@@ -186,8 +186,15 @@ document.plot("graph-classic", palette="classic")       # the older outlined sch
 document.plot("graph-wasm", backend="graphviz-wasm")   # SVG without system dot
 document.plot("graph", backend="pyvis")                 # interactive HTML
 document.plot("graph", backend="matplotlib")            # SVG
+document.plot("graph.png", backend="matplotlib")        # PNG selected by the suffix
 document.plot("graph-dataflow", relations="dataflow")   # omit setting/context relations
 ```
+
+The filename extension selects the output format when the selected backend supports it.
+Graphviz and Graphviz WASM support `.svg`; Matplotlib supports `.svg`, `.png`, and `.pdf`;
+PyVis supports `.html`. An unsupported extension (or a conflict between the extension and
+Matplotlib's explicit `format=` option) raises `ValueError` and lists the formats available
+for that backend. Omitting an extension keeps each backend's default format.
 
 The default graph view, `relations="all"`, displays every schema-declared semantic
 reference that has a graph meaning. Dataflow relations use solid edges, while

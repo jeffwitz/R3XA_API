@@ -826,9 +826,37 @@ class R3XAItem(BaseModel):
                 f"Unknown graph backend {backend!r}. Available: {', '.join(sorted(renderers))}"
             )
         output = Path(path)
-        output.parent.mkdir(parents=True, exist_ok=True)
-        if backend in {"graphviz", "graphviz-wasm"} and output.suffix == ".svg":
+        available_formats = {
+            "graphviz": ("svg",),
+            "graphviz-wasm": ("svg",),
+            "pyvis": ("html",),
+            "matplotlib": ("svg", "png", "pdf"),
+        }[backend]
+        requested_format = kwargs.pop("format", None)
+        if requested_format is not None:
+            requested_format = str(requested_format).lower().removeprefix(".")
+        suffix_format = output.suffix.lower().removeprefix(".")
+        selected_format = suffix_format or requested_format
+        available_label = ", ".join(f".{format_name}" for format_name in available_formats)
+        if selected_format is not None and selected_format not in available_formats:
+            raise ValueError(
+                f"Backend {backend!r} does not support format {selected_format!r}. "
+                f"Available formats: {available_label}"
+            )
+        if (
+            suffix_format
+            and requested_format
+            and suffix_format != requested_format
+        ):
+            raise ValueError(
+                f"Path extension {output.suffix!r} conflicts with format={requested_format!r} "
+                f"for backend {backend!r}. Available formats: {available_label}"
+            )
+        if backend == "matplotlib":
+            kwargs["format"] = selected_format or "svg"
+        if suffix_format:
             output = output.with_suffix("")
+        output.parent.mkdir(parents=True, exist_ok=True)
         return renderers[backend](
             self.to_dict(),
             output,

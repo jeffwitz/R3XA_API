@@ -476,6 +476,33 @@ def test_plot_lets_the_backend_choose_the_extension(tmp_path) -> None:
     assert without_suffix.exists() and with_suffix.exists()
 
 
+@pytest.mark.parametrize("backend", ["graphviz", "graphviz-wasm"])
+def test_graphviz_backends_reject_unsupported_extensions(tmp_path, backend: str) -> None:
+    with pytest.raises(ValueError, match=r"Available formats: \.svg"):
+        _document_with_items().plot(tmp_path / "graph.png", backend=backend)
+
+
+def test_pyvis_rejects_image_extensions(tmp_path) -> None:
+    with pytest.raises(ValueError, match=r"Available formats: \.html"):
+        _document_with_items().plot(tmp_path / "graph.svg", backend="pyvis")
+
+
+def test_matplotlib_uses_the_requested_path_extension(tmp_path) -> None:
+    pytest.importorskip("matplotlib")
+
+    output = _document_with_items().plot(tmp_path / "graph.PNG", backend="matplotlib")
+
+    assert output == tmp_path / "graph.png"
+    assert output.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_plot_rejects_conflicting_path_extension_and_format(tmp_path) -> None:
+    with pytest.raises(ValueError, match="conflicts with format"):
+        _document_with_items().plot(
+            tmp_path / "graph.svg", backend="matplotlib", format="png"
+        )
+
+
 def test_plot_creates_missing_parent_directories(tmp_path) -> None:
     pytest.importorskip("graphviz")
 
