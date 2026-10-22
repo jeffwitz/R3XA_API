@@ -203,7 +203,7 @@ behaviour is shared:
 - import, validation, and JSON export;
 - Registry item validation;
 - schema viewer and graph export;
-- localStorage draft persistence;
+- browser-local draft persistence, including large documents stored in IndexedDB;
 - English/French switching.
 
 The static acceptance test must fail if the browser requests `/api/*`, sends a
@@ -417,10 +417,12 @@ directory on a PhotoMechanics-controlled static host instead.
 
 The static runtime has no account, database, upload endpoint, telemetry, CDN,
 or remote validation service. Once its local assets are loaded, the R3XA
-document is edited, validated, graphed, and exported in the browser. Drafts
-are stored in origin-scoped `localStorage`; experimental files selected for a
-list dataset contribute only their names or relative paths and are not
-uploaded.
+document is edited, validated, graphed, and exported in the browser. Small
+drafts use origin-scoped `localStorage`; larger drafts use IndexedDB so the
+browser does not need two copies of a multi-megabyte JSON document. Both are
+local to the browser and its origin. Browser storage still has a finite quota,
+so download the JSON for a durable copy. Experimental files selected for a
+list dataset contribute only their names or relative paths and are not uploaded.
 
 For a controlled static host, a restrictive starting policy is:
 

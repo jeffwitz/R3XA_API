@@ -19,8 +19,8 @@ upload your R3XA JSON or experimental files to an application server.
 
 All three modes edit one document. Switching mode does not discard fields.
 **Load JSON** imports an existing document; the current draft is also kept in
-this browser's local storage. Download a JSON file for a durable copy or to
-move it to another browser or computer.
+this browser's local storage (IndexedDB for large documents). Download a JSON
+file for a durable copy or to move it to another browser or computer.
 
 For `data_sets/list`, the folder picker can gather filenames, sort them
 naturally, and fill `values` without uploading the selected files. The

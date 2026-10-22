@@ -351,8 +351,8 @@ const validateGraphInspectorItem = async () => {
     if (!payload || index < 0) throw new Error("The selected item is no longer present in the draft.");
     sectionItems[index] = candidate;
     const serialized = JSON.stringify(payload);
-    localStorage.setItem("r3xaDraft", serialized);
-    localStorage.setItem("r3xaDraftLast", serialized);
+    await window.R3XADraftStorage.save(serialized);
+    storedDraftText = serialized;
     if (graphInspectorStatus) graphInspectorStatus.textContent = inspectorReportText(report);
     await renderGraph({section: selectedGraphSelection.section, id: candidate.id});
     await new Promise((resolve) => window.setTimeout(resolve, 0));
@@ -375,9 +375,13 @@ const ensureServerStart = () => {
   }
 };
 
-const getStoredDraftText = () => {
-  return localStorage.getItem("r3xaDraft") || localStorage.getItem("r3xaDraftLast");
-};
+let storedDraftText = localStorage.getItem("r3xaDraft") || localStorage.getItem("r3xaDraftLast");
+const draftReady = window.R3XADraftStorage.load().then((text) => {
+  storedDraftText = text;
+  return text;
+});
+
+const getStoredDraftText = () => localStorage.getItem("r3xaDraft") || storedDraftText || localStorage.getItem("r3xaDraftLast");
 
 const getStoredDraft = () => {
   const stored = getStoredDraftText();
@@ -531,6 +535,7 @@ const sanitizeSvg = (content) => {
 };
 
 const renderGraph = async (selectionToRestore = null) => {
+  await draftReady.catch(() => {});
   const stored = getStoredDraftText();
   if (!graphContainer) return false;
   currentGraph?.dispose?.();
@@ -585,7 +590,6 @@ const renderGraph = async (selectionToRestore = null) => {
       setGraphActionVisible(zoomOutGraphBtn, true);
       setGraphActionVisible(zoomInGraphBtn, true);
       setGraphActionVisible(exportStandaloneBtn, false);
-      localStorage.setItem("r3xaDraftLast", stored);
       if (selectionToRestore?.id) {
         const hitArea = Array.from(graphContainer.querySelectorAll("[data-node-id]")).find(
           (element) => element.dataset.nodeId === selectionToRestore.id,
@@ -635,7 +639,6 @@ const renderGraph = async (selectionToRestore = null) => {
     setGraphActionVisible(zoomOutGraphBtn, false);
     setGraphActionVisible(zoomInGraphBtn, false);
     setGraphActionVisible(exportStandaloneBtn, backend === "graphviz");
-    localStorage.setItem("r3xaDraftLast", stored);
     return !!currentGraph;
   } catch (err) {
     graphContainer.textContent = t("schema.failed_graph", "Failed to generate graph: {message}", {message: err.message || err});
@@ -937,8 +940,12 @@ window.showFullscreenGraph = showFullscreenGraph;
 ensureServerStart();
 configureGraphBackends();
 bindEvents();
-if (getStoredDraft() && viewSelect) {
-  viewSelect.value = "draft";
-}
-if (viewSelect?.value === "draft") renderDraft();
-else renderSummary();
+draftReady.then(() => {
+  if (getStoredDraft() && viewSelect) {
+    viewSelect.value = "draft";
+  }
+  if (viewSelect?.value === "draft") renderDraft();
+  else renderSummary();
+}).catch((error) => {
+  if (treeEl) treeEl.textContent = t("schema.failed_draft", "Failed to load draft: {message}", {message: error.message || error});
+});

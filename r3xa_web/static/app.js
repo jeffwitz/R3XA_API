@@ -70,15 +70,39 @@ const selectGuidedStepItem = (stepId, itemId) => {
   saveGuidedStepItems();
 };
 
-const loadDraft = () => {
-  const stored = localStorage.getItem("r3xaDraft");
-  if (stored) return stored;
+const loadDraft = async () => {
+  const stored = await window.R3XADraftStorage.load();
+  if (stored) {
+    try {
+      return JSON.stringify(JSON.parse(stored), null, 2);
+    } catch {
+      return stored;
+    }
+  }
   return JSON.stringify(defaultPayload, null, 2);
 };
 
 const saveDraft = () => {
-  localStorage.setItem("r3xaDraft", inputEl.value);
-  localStorage.setItem("r3xaDraftLast", inputEl.value);
+  const text = inputEl.value;
+  let stored = text;
+  if (text.length > 1_000_000) {
+    try {
+      stored = JSON.stringify(JSON.parse(text));
+    } catch {
+      stored = text;
+    }
+  }
+  return window.R3XADraftStorage.save(stored).then(
+    () => true,
+    (error) => {
+      outputEl.textContent = t(
+        "editor.draft_save_failed",
+        "The draft could not be saved in this browser: {message}. Save the JSON file before leaving this page.",
+        {message: error.message || error},
+      );
+      return false;
+    },
+  );
 };
 
 const clearDraftOrigin = () => {
@@ -2123,7 +2147,7 @@ const saveWithDialog = async () => {
 const loadJsonFile = (file) => {
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     let payload;
     try {
       payload = JSON.parse(reader.result);
@@ -2136,7 +2160,7 @@ const loadJsonFile = (file) => {
     guidedStepItems = {};
     clearDraftOrigin();
     saveGuidedStepItems();
-    saveDraft();
+    await saveDraft();
     syncFormFromJson();
     if (normalization.conflicts.length) {
       outputEl.textContent = t(
@@ -2221,29 +2245,57 @@ inputEl.addEventListener("input", () => {
   syncFormFromJson();
 });
 
-ensureServerStart();
-updateEditorMode();
-inputEl.value = loadDraft();
-const loadedPayload = readPayload();
-const loadedNormalization = loadedPayload
-  ? normalizeDocumentIds(loadedPayload)
-  : {replacements: new Map(), conflicts: []};
-if (loadedNormalization.changed && loadedPayload) {
-  inputEl.value = JSON.stringify(loadedPayload, null, 2);
-  saveDraft();
-}
-guidedStepItems = loadGuidedStepItems();
-if (loadedNormalization.replacements.size) {
-  guidedStepItems = Object.fromEntries(
-    Object.entries(guidedStepItems).map(([stepId, itemId]) => [stepId, loadedNormalization.replacements.get(itemId) || itemId]),
-  );
-  saveGuidedStepItems();
-}
-renderSummary();
-if (loadedNormalization.conflicts.length) {
+document.addEventListener("click", async (event) => {
+  const link = event.target.closest?.("a[href]");
+  if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.download || link.target) return;
+  const destination = new URL(link.href);
+  if (destination.origin !== window.location.origin) return;
+  event.preventDefault();
+  try {
+    await window.R3XADraftStorage.flush();
+    window.location.assign(destination.href);
+  } catch (error) {
+    outputEl.textContent = t(
+      "editor.draft_save_failed",
+      "The draft could not be saved in this browser: {message}. Save the JSON file before leaving this page.",
+      {message: error.message || error},
+    );
+  }
+}, true);
+
+const initializeEditor = async () => {
+  ensureServerStart();
+  updateEditorMode();
+  inputEl.value = await loadDraft();
+  const loadedPayload = readPayload();
+  const loadedNormalization = loadedPayload
+    ? normalizeDocumentIds(loadedPayload)
+    : {replacements: new Map(), conflicts: []};
+  if (loadedNormalization.changed && loadedPayload) {
+    inputEl.value = JSON.stringify(loadedPayload, null, 2);
+    await saveDraft();
+  }
+  guidedStepItems = loadGuidedStepItems();
+  if (loadedNormalization.replacements.size) {
+    guidedStepItems = Object.fromEntries(
+      Object.entries(guidedStepItems).map(([stepId, itemId]) => [stepId, loadedNormalization.replacements.get(itemId) || itemId]),
+    );
+    saveGuidedStepItems();
+  }
+  renderSummary();
+  if (loadedNormalization.conflicts.length) {
+    outputEl.textContent = t(
+      "validation.duplicate_ids_migration",
+      "ID migration was not applied because these IDs are duplicated: {ids}. Resolve the duplicates before continuing.",
+      {ids: loadedNormalization.conflicts.join(", ")},
+    );
+  }
+};
+
+initializeEditor().catch((error) => {
   outputEl.textContent = t(
-    "validation.duplicate_ids_migration",
-    "ID migration was not applied because these IDs are duplicated: {ids}. Resolve the duplicates before continuing.",
-    {ids: loadedNormalization.conflicts.join(", ")},
+    "editor.draft_load_failed",
+    "The saved draft could not be loaded: {message}.",
+    {message: error.message || error},
   );
-}
+});

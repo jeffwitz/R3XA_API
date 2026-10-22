@@ -1176,6 +1176,60 @@ def test_static_graph_renders_with_local_graphviz_wasm(static_site: str) -> None
         browser.close()
 
 
+def test_static_large_draft_graph_does_not_exceed_storage_quota(static_site: str) -> None:
+    payload = {
+        "title": "Large draft",
+        "description": "x" * 1_100_000,
+        "version": "2026.9.24",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [{"id": "stg-generic-large", "kind": "settings/generic", "title": "Large draft setting"}],
+        "data_sources": [],
+        "data_sets": [],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(locale="en-US")
+        page.add_init_script("""() => {
+          const original = Storage.prototype.setItem;
+          Storage.prototype.setItem = function(key, value) {
+            if (this === localStorage) {
+              let size = 0;
+              for (let index = 0; index < this.length; index += 1) {
+                const existingKey = this.key(index);
+                if (existingKey !== key) size += existingKey.length + this.getItem(existingKey).length;
+              }
+              if (size + key.length + String(value).length > 2_000_000) {
+                throw new DOMException("The quota has been exceeded.", "QuotaExceededError");
+              }
+            }
+            return original.call(this, key, value);
+          };
+        }""")
+        page.goto(f"{static_site}/edit/?profile=generic&new=1")
+        page.wait_for_selector("#schema-summary")
+        page.locator("#load-json-input").set_input_files({
+            "name": "large-draft.json",
+            "mimeType": "application/json",
+            "buffer": json.dumps(payload).encode("utf-8"),
+        })
+        page.wait_for_function("""async () => {
+          const text = await window.R3XADraftStorage.load();
+          return JSON.parse(text || '{}').title === 'Large draft';
+        }""")
+        assert page.evaluate("localStorage.getItem('r3xaDraft')") is None
+        page.reload()
+        page.wait_for_selector("#schema-summary")
+        assert page.evaluate("JSON.parse(document.querySelector('#json-input').value).title") == "Large draft"
+        page.goto(f"{static_site}/schema/")
+        page.locator("#graph-backend").select_option("graphviz")
+        page.locator("#graph-show-description").uncheck()
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container svg", state="attached", timeout=30_000)
+        assert "Large draft setting" in page.locator("#graph-container").inner_text()
+        browser.close()
+
+
 def test_static_cytoscape_graph_uses_graphviz_positions(static_site: str) -> None:
     payload = {
         "title": "Cytoscape graph",
@@ -1251,6 +1305,9 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         assert page.locator("#graph-inspector").is_visible()
         assert page.locator("#graph-inspector-kind").inner_text() == "settings/generic"
         assert page.locator("#graph-inspector-id").inner_text() == "ID: machine"
+        page.wait_for_function(
+            "document.querySelector('#graph-inspector').textContent.includes('Universal testing machine')"
+        )
         inspector_text = page.locator("#graph-inspector").inner_text()
         assert "Universal testing machine" in inspector_text
         assert "title" in inspector_text
