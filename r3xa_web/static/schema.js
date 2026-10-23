@@ -578,6 +578,8 @@ const renderGraph = async (selectionToRestore = null) => {
         fit: response.fit,
         zoomIn: response.zoomIn,
         zoomOut: response.zoomOut,
+        exportState: response.exportState,
+        payload,
       };
       graphContainer.replaceChildren(response.element);
       graphContainer.classList.add("graph-container-interactive");
@@ -589,7 +591,10 @@ const renderGraph = async (selectionToRestore = null) => {
       setGraphActionVisible(fitGraphBtn, true);
       setGraphActionVisible(zoomOutGraphBtn, true);
       setGraphActionVisible(zoomInGraphBtn, true);
-      setGraphActionVisible(exportStandaloneBtn, false);
+      setGraphActionVisible(
+        exportStandaloneBtn,
+        backend === "cytoscape" && typeof window.R3XARuntime.loadStandaloneGraphBundle === "function",
+      );
       if (selectionToRestore?.id) {
         const hitArea = Array.from(graphContainer.querySelectorAll("[data-node-id]")).find(
           (element) => element.dataset.nodeId === selectionToRestore.id,
@@ -811,6 +816,140 @@ const exportStandaloneHtml = async () => {
   const payload = getStoredDraft();
   if (!payload) {
     if (graphContainer) graphContainer.textContent = t("schema.no_draft", "No draft found. Create one in the editor first.");
+    return;
+  }
+
+  if (currentGraph?.backend === "cytoscape" && currentGraph.exportState) {
+    try {
+      cachedCatalog ||= await window.R3XARuntime.loadSchemaCatalog();
+      const bundle = await window.R3XARuntime.loadStandaloneGraphBundle();
+      const graphItems = {};
+      ["settings", "data_sources", "data_sets"].forEach((section) => {
+        (currentGraph.payload?.[section] || []).forEach((item) => {
+          if (!item?.id) return;
+          const kind = item.kind || "";
+          const properties = cachedCatalog?.sections?.[section]?.kinds?.[kind]?.properties || {};
+          graphItems[item.id] = {item, properties};
+        });
+      });
+      const standaloneState = {
+        ...currentGraph.exportState(),
+        items: graphItems,
+        labels: {
+          eyebrow: t("schema.graph_inspector", "Selected object"),
+          selectTitle: t("schema.graph_select_node", "Select an object"),
+          selectHelp: t("schema.graph_select_node_help", "Click a graph node to inspect its fields."),
+          id: t("common.id", "ID"),
+          generatedAt: t("schema.standalone_help", "Generated at {date}.", {date: new Date().toISOString()}),
+          navigationHelp: t("schema.cytoscape_navigation", "Double-click a data source or data set to frame all directly connected objects."),
+          fieldsTitle: t("schema.standalone_fields", "Object fields"),
+          jsonTitle: t("schema.standalone_json", "R3XA Draft JSON"),
+          title: t("schema.standalone_title", "R3XA Standalone Export"),
+          zoomIn: t("schema.zoom_in_graph", "Zoom in"),
+          zoomOut: t("schema.zoom_out_graph", "Zoom out"),
+          fitGraph: t("schema.fit_graph", "Recenter graph"),
+        },
+      };
+      const safeState = JSON.stringify(standaloneState).replace(/</g, "\\u003c");
+      const safePayload = escapeHtml(JSON.stringify(currentGraph.payload || payload, null, 2));
+      const safeTitle = escapeHtml(String((currentGraph.payload || payload).title || "R3XA"));
+      const safeBundle = bundle.replace(/<\/script/gi, "<\\/script");
+      const html = `<!doctype html>
+<html lang="${document.documentElement.lang || "en"}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${safeTitle} — R3XA</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f7fa; color: #17202a; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.25rem; }
+    header, .panel, .graph, .inspector { border: 1px solid #e1e7ee; border-radius: 10px; background: #fff; }
+    header { padding: 1.25rem; }
+    h1, h2, h3, p { margin-top: 0; }
+    .muted { color: #5b6673; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, .9fr); gap: 1rem; margin-top: 1rem; align-items: start; }
+    .graph-panel { position: relative; min-width: 0; }
+    .graph-controls { position: absolute; z-index: 2; top: .75rem; right: .75rem; display: flex; gap: .4rem; }
+    .graph-controls button { min-width: 2.5rem; min-height: 2.5rem; border: 1px solid #b8c4d1; border-radius: 6px; background: #fff; color: #17202a; font: inherit; font-weight: 700; cursor: pointer; box-shadow: 0 1px 4px #17202a22; }
+    .graph-controls button:hover { background: #eef5fb; }
+    .graph { min-width: 0; height: min(78vh, 960px); min-height: 520px; overflow: hidden; }
+    .inspector { min-width: 0; max-height: min(78vh, 960px); overflow: auto; }
+    .inspector-header { padding: 1rem; background: #eef5fb; border-bottom: 1px solid #e1e7ee; }
+    .eyebrow { display: block; margin-bottom: .35rem; color: #5b6673; font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .inspector-header h2 { margin-bottom: .25rem; }
+    .inspector-header p { margin-bottom: .4rem; }
+    .inspector-fields { padding: .5rem 1rem; }
+    .field { padding: .75rem 0; border-bottom: 1px solid #e1e7ee; }
+    .field:last-child { border-bottom: 0; }
+    .field h3 { margin: 0; font-size: .95rem; }
+    .field h3 code { color: #5b6673; font-size: .78rem; font-weight: 400; }
+    .field p { margin: .3rem 0; font-size: .85rem; }
+    pre { margin: .45rem 0 0; padding: .55rem; overflow: auto; border-radius: 5px; background: #f5f7fa; color: #17202a; font: .82rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    details { margin-top: 1rem; }
+    details pre { max-height: 55vh; background: #0b0b0b; color: #e8e8e8; }
+    .cytoscape-graph { width: 100%; height: 100%; background: #fff; touch-action: none; }
+    @media (max-width: 900px) { main { padding: .75rem; } .workspace { display: block; } .graph { height: 65vh; min-height: 420px; } .inspector { margin-top: 1rem; max-height: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>${safeTitle}</h1><p class="muted">${escapeHtml(standaloneState.labels.generatedAt)}</p><p class="muted">${escapeHtml(standaloneState.labels.navigationHelp)}</p></header>
+    <section class="workspace" aria-label="Interactive R3XA graph and selected object fields">
+      <div class="graph-panel">
+        <div class="graph-controls" role="group" aria-label="Graph navigation">
+          <button id="graph-zoom-in" type="button" title="${escapeHtml(standaloneState.labels.zoomIn)}" aria-label="${escapeHtml(standaloneState.labels.zoomIn)}">+</button>
+          <button id="graph-zoom-out" type="button" title="${escapeHtml(standaloneState.labels.zoomOut)}" aria-label="${escapeHtml(standaloneState.labels.zoomOut)}">−</button>
+          <button id="graph-fit" type="button" title="${escapeHtml(standaloneState.labels.fitGraph)}" aria-label="${escapeHtml(standaloneState.labels.fitGraph)}">↔</button>
+        </div>
+        <div id="graph" class="graph" aria-label="Interactive R3XA graph"></div>
+      </div>
+      <aside class="inspector" aria-live="polite">
+        <div class="inspector-header">
+          <span class="eyebrow">${escapeHtml(standaloneState.labels.eyebrow)}</span>
+          <h2 id="selected-title">${escapeHtml(standaloneState.labels.selectTitle)}</h2>
+          <p id="selected-kind" class="muted">${escapeHtml(standaloneState.labels.selectHelp)}</p>
+          <code id="selected-id"></code>
+        </div>
+        <div id="selected-fields" class="inspector-fields"></div>
+      </aside>
+    </section>
+    <details class="panel"><summary>${escapeHtml(standaloneState.labels.jsonTitle)}</summary><pre>${safePayload}</pre></details>
+  </main>
+  <script type="application/json" id="graph-state">${safeState}</script>
+  <script>${safeBundle}</script>
+  <script>
+    const graphState = JSON.parse(document.getElementById("graph-state").textContent);
+    window.R3XAStandaloneGraph.mount(
+      document.getElementById("graph"),
+      {
+        title: document.getElementById("selected-title"),
+        kind: document.getElementById("selected-kind"),
+        id: document.getElementById("selected-id"),
+        fields: document.getElementById("selected-fields"),
+      },
+      graphState,
+      {
+        zoomIn: document.getElementById("graph-zoom-in"),
+        zoomOut: document.getElementById("graph-zoom-out"),
+        fit: document.getElementById("graph-fit"),
+      },
+    );
+  </script>
+</body>
+</html>`;
+      const blob = new Blob([html], {type: "text/html"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "r3xa-standalone.html";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      graphContainer.textContent = t("schema.failed_graph", "Failed to generate graph: {message}", {message: error.message || error});
+    }
     return;
   }
 

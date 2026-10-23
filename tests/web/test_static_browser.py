@@ -743,6 +743,86 @@ def test_static_graph_exports_svg_and_standalone_html(static_site: str) -> None:
         browser.close()
 
 
+def test_static_standalone_cytoscape_double_click_fits_connected_neighborhood(
+    static_site: str,
+) -> None:
+    payload = {
+        "title": "Standalone connected-neighborhood zoom",
+        "description": "Double-click should keep related objects in view.",
+        "version": "2026.9.24",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [
+            {"id": "src-camera-1", "kind": "data_sources/generic", "title": "Camera 1"},
+            {"id": "src-camera-2", "kind": "data_sources/generic", "title": "Camera 2"},
+        ],
+        "data_sets": [
+            {
+                "id": "set-images-1",
+                "kind": "data_sets/generic",
+                "title": "Images 1",
+                "parent_data_sources": ["src-camera-1"],
+            },
+            {
+                "id": "set-images-2",
+                "kind": "data_sets/generic",
+                "title": "Images 2",
+                "parent_data_sources": ["src-camera-2"],
+            },
+        ],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        context = browser.new_context(viewport={"width": 1400, "height": 1000})
+        page = context.new_page()
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#graph-backend").select_option("cytoscape")
+        page.locator("#generate-graph-btn").click()
+        page.wait_for_selector("#graph-container .cytoscape-graph canvas", state="attached")
+        for _ in range(3):
+            page.locator("#fit-graph-btn").click()
+        page.evaluate(
+            """() => {
+              const createObjectUrl = URL.createObjectURL.bind(URL);
+              URL.createObjectURL = blob => {
+                window.__standaloneHtml = blob.text();
+                return createObjectUrl(blob);
+              };
+              document.querySelector('#export-standalone-btn').click();
+            }"""
+        )
+        page.wait_for_function("window.__standaloneHtml !== undefined")
+        standalone_html = page.evaluate("async () => await window.__standaloneHtml")
+        standalone = context.new_page()
+        standalone.set_content(standalone_html, wait_until="load")
+        hit_area = standalone.locator(
+            ".standalone-node-hit-area[data-node-id='src-camera-1']"
+        )
+        hit_area.wait_for(state="attached")
+        for _ in range(3):
+            standalone.locator("#graph-fit").click()
+        hit_area.dblclick()
+        standalone.wait_for_function(
+            "document.querySelector('#selected-title').textContent === 'Camera 1'"
+        )
+        standalone.wait_for_timeout(400)
+        graph = standalone.locator("#graph")
+        graph_bounds = graph.bounding_box()
+        for node_id in ("src-camera-1", "set-images-1"):
+            node_bounds = standalone.locator(
+                f".standalone-node-hit-area[data-node-id='{node_id}']"
+            ).bounding_box()
+            assert node_bounds is not None and graph_bounds is not None
+            assert node_bounds["x"] >= graph_bounds["x"]
+            assert node_bounds["y"] >= graph_bounds["y"]
+            assert node_bounds["x"] + node_bounds["width"] <= graph_bounds["x"] + graph_bounds["width"]
+            assert node_bounds["y"] + node_bounds["height"] <= graph_bounds["y"] + graph_bounds["height"]
+        browser.close()
+
+
 def test_static_language_switch_updates_home_page(static_site: str) -> None:
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
@@ -1335,6 +1415,61 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         page.wait_for_function(
             "() => !document.fullscreenElement && !document.querySelector('#graph-workspace').classList.contains('graph-workspace-fullscreen-fallback')"
         )
+        browser.close()
+
+
+def test_static_cytoscape_double_click_fits_connected_neighborhood(static_site: str) -> None:
+    payload = {
+        "title": "Cytoscape connected-neighborhood zoom",
+        "description": "Double-click should keep related objects in view.",
+        "version": "2026.9.24",
+        "authors": [{"name": "Tester"}],
+        "date": "2026-09-17",
+        "settings": [],
+        "data_sources": [
+            {"id": "src-camera-1", "kind": "data_sources/generic", "title": "Camera 1"},
+            {"id": "src-camera-2", "kind": "data_sources/generic", "title": "Camera 2"},
+        ],
+        "data_sets": [
+            {
+                "id": "set-images-1",
+                "kind": "data_sets/generic",
+                "title": "Images 1",
+                "parent_data_sources": ["src-camera-1"],
+            },
+            {
+                "id": "set-images-2",
+                "kind": "data_sets/generic",
+                "title": "Images 2",
+                "parent_data_sources": ["src-camera-2"],
+            },
+        ],
+    }
+    with sync_playwright() as runtime:
+        browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
+        page = browser.new_page(viewport={"width": 1400, "height": 1000})
+        page.goto(f"{static_site}/schema/")
+        page.evaluate("payload => localStorage.setItem('r3xaDraft', JSON.stringify(payload))", payload)
+        page.reload()
+        page.locator("#graph-backend").select_option("cytoscape")
+        page.locator("#generate-graph-btn").click()
+        for _ in range(3):
+            page.locator("#fit-graph-btn").click()
+        page.locator(".cytoscape-node-hit-area[data-node-id='src-camera-1']").dblclick()
+        page.wait_for_function(
+            "document.querySelector('.cytoscape-node-hit-area[data-node-id=\\\"src-camera-1\\\"]')?.clientWidth > 200"
+        )
+        graph = page.locator("#graph-container .cytoscape-graph")
+        graph_bounds = graph.bounding_box()
+        for node_id in ("src-camera-1", "set-images-1"):
+            node_bounds = page.locator(
+                f".cytoscape-node-hit-area[data-node-id='{node_id}']"
+            ).bounding_box()
+            assert node_bounds is not None and graph_bounds is not None
+            assert node_bounds["x"] >= graph_bounds["x"]
+            assert node_bounds["y"] >= graph_bounds["y"]
+            assert node_bounds["x"] + node_bounds["width"] <= graph_bounds["x"] + graph_bounds["width"]
+            assert node_bounds["y"] + node_bounds["height"] <= graph_bounds["y"] + graph_bounds["height"]
         browser.close()
 
 

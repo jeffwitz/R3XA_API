@@ -55,6 +55,12 @@
     return cytoscapePromise;
   };
 
+  const loadStandaloneGraphBundle = async () => {
+    const response = await fetch(assetUrl("standalone-cytoscape.generated.js"));
+    if (!response.ok) throw new Error(`Unable to load standalone graph runtime (${response.status})`);
+    return response.text();
+  };
+
   const integrityErrors = (document) => {
     const errors = [];
     const identifiers = new Map();
@@ -250,6 +256,7 @@
         return unavailable(`Graphviz WASM rendering failed: ${error.message || error}`);
       }
     },
+    loadStandaloneGraphBundle,
     integrityErrors,
   };
 })();

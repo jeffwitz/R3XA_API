@@ -35,7 +35,9 @@ current draft. Generate a graph with one of two browser backends:
 - **Cytoscape.js** (default): pan, zoom, click a node to inspect its fields,
   choose **Edit fields**, and validate changes. Relationship fields offer
   existing document items as choices. After a valid edit the graph is
-  regenerated.
+  regenerated. **Export standalone HTML** keeps the interactive graph on the
+  left and the selected item's fields on the right; the exported file works
+  offline without a server.
 - **Graphviz WebAssembly**: create a local SVG that can be saved or included
   in the standalone HTML export.
 

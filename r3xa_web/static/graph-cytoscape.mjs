@@ -274,7 +274,7 @@ export const renderCytoscapeGraph = async (
     layout: {name: "preset", positions: resolvedPositions, fit: true, padding: 40},
     minZoom: 0.1,
     maxZoom: 4,
-    wheelSensitivity: 0.12,
+    wheelSensitivity: 0.3,
     panningEnabled: true,
     userPanningEnabled: true,
     userZoomingEnabled: true,
@@ -293,6 +293,7 @@ export const renderCytoscapeGraph = async (
     hitArea.dataset.nodeId = nodeData.id;
     hitArea.setAttribute("aria-label", nodeData.label || nodeData.id);
     hitArea.addEventListener("click", () => selectNode({target: node}));
+    hitArea.addEventListener("dblclick", () => zoomToDataNode(node));
     nodeHitAreas.set(nodeData.id, hitArea);
     nodeHitLayer.appendChild(hitArea);
   });
@@ -314,6 +315,12 @@ export const renderCytoscapeGraph = async (
     cy.resize();
     cy.fit(cy.elements(), 40);
     syncNodeHitAreas();
+  };
+  const zoomToDataNode = (node) => {
+    if (cy.destroyed() || !node || node.empty()) return;
+    const section = node.data("section");
+    if (section !== "data_sources" && section !== "data_sets") return;
+    cy.animate({fit: {eles: node.closedNeighborhood(), padding: 56}}, {duration: 250});
   };
   const zoomAtCenter = (factor) => {
     if (cy.destroyed()) return;
@@ -363,8 +370,19 @@ export const renderCytoscapeGraph = async (
   return {
     element: container,
     fit,
-    zoomIn: () => zoomAtCenter(1.25),
-    zoomOut: () => zoomAtCenter(0.8),
+    zoomIn: () => zoomAtCenter(1.5),
+    zoomOut: () => zoomAtCenter(1 / 1.5),
+    exportState: () => ({
+      elements: cy.elements().map((element) => {
+        const record = element.json();
+        record.classes = String(record.classes || "")
+          .split(/\s+/)
+          .filter((className) => className && className !== "faded" && className !== "highlighted")
+          .join(" ");
+        return record;
+      }),
+      style: cytoscapeStyle,
+    }),
     dispose: () => {
       resizeObserver?.disconnect();
       nodeHitLayer.remove();

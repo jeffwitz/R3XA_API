@@ -325,6 +325,12 @@ def build_static_web(output_dir: Path) -> Path:
         "r3xa_web/static/graph-cytoscape.mjs",
         str(assets_dir / "cytoscape.generated.js"),
     )
+    _run(
+        node,
+        "r3xa_web/scripts/build-standalone-cytoscape.mjs",
+        "r3xa_web/static/standalone-cytoscape.mjs",
+        str(assets_dir / "standalone-cytoscape.generated.js"),
+    )
 
     environment = Environment(loader=FileSystemLoader(str(WEB_TEMPLATES)))
     pages = {
