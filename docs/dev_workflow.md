@@ -191,6 +191,20 @@ installing the package. In a source checkout,
 
 If two contributors report different totals, check the installed extras before comparing raw pytest counts.
 
+The Python `backend="cytoscape"` export embeds the same standalone viewer used
+by the static WebUI. Its prebuilt JavaScript bundle is shipped in the wheel so
+Python users do not need Node.js. After editing `graph-cytoscape-model.mjs` or
+`standalone-cytoscape.mjs`, regenerate the tracked bundle with:
+
+```bash
+node r3xa_web/scripts/build-standalone-cytoscape.mjs \
+  r3xa_web/static/standalone-cytoscape.mjs \
+  r3xa_web/static/standalone-cytoscape.generated.js
+```
+
+`tests/web/test_static_build.py` checks that the static build and packaged
+bundle remain byte-identical.
+
 GitLab CI runs the full test suite with the `dev`, `web`, and `graph_nx`
 extras on Python 3.9 through 3.13, and installs the Graphviz
 `dot` executable to keep the native reference backend covered as well.

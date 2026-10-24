@@ -156,8 +156,10 @@ plot(path: str | Path, *, backend: str = "graphviz-wasm", palette: str | None = 
 ```
 Render the item graph and return the file written. `backend` is `"graphviz-wasm"` (SVG,
 the default, without a system `dot` executable), `"graphviz"` (native SVG using `dot`),
-`"pyvis"` (interactive HTML) or `"matplotlib"` (SVG). The WebAssembly runtime is part
-of the standard installation; the other non-native backends require their corresponding extras.
+`"pyvis"` (interactive HTML), `"cytoscape"` (standalone interactive HTML with an
+object inspector), or `"matplotlib"` (SVG). The WebAssembly runtime is part
+of the standard installation, as is the bundled Cytoscape viewer. PyVis and
+Matplotlib require their corresponding extras.
 The extension comes from the backend, so pass a path without one.
 
 **Colour palettes.** `palette` selects the colour scheme and applies identically to all graph
@@ -185,6 +187,7 @@ document.plot("graph")                                  # graph.svg, document pa
 document.plot("graph-classic", palette="classic")       # the older outlined scheme
 document.plot("graph-wasm", backend="graphviz-wasm")   # SVG without system dot
 document.plot("graph", backend="pyvis")                 # interactive HTML
+document.plot("graph.html", backend="cytoscape")        # offline HTML, graph + item fields
 document.plot("graph", backend="matplotlib")            # SVG
 document.plot("graph.png", backend="matplotlib")        # PNG selected by the suffix
 document.plot("graph-dataflow", relations="dataflow")   # omit setting/context relations
@@ -192,7 +195,10 @@ document.plot("graph-dataflow", relations="dataflow")   # omit setting/context r
 
 The filename extension selects the output format when the selected backend supports it.
 Graphviz and Graphviz WASM support `.svg`; Matplotlib supports `.svg`, `.png`, and `.pdf`;
-PyVis supports `.html`. An unsupported extension (or a conflict between the extension and
+PyVis and Cytoscape support `.html`. The Cytoscape export embeds its JavaScript and
+R3XA data in one file: viewing it requires only a browser, not Node.js, Python,
+a server, or a network connection. It is read-only; editing remains in the WebUI.
+An unsupported extension (or a conflict between the extension and
 Matplotlib's explicit `format=` option) raises `ValueError` and lists the formats available
 for that backend. Omitting an extension keeps each backend's default format.
 
@@ -211,11 +217,13 @@ from r3xa_api.webcore.graph import (
     render_graphviz_file,
     render_graphviz_wasm_file,
     render_pyvis_html,
+    render_cytoscape_html,
     render_networkx_matplotlib_file,
 )
 
 render_graphviz_file(payload, Path("graph"), palette="classic")
 render_graphviz_wasm_file(payload, Path("graph-wasm"))
+render_cytoscape_html(payload, Path("graph-cytoscape"))
 ```
 
 and on the example script:

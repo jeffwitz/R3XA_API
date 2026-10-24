@@ -96,6 +96,9 @@ def test_tutorial_scripts_write_valid_artifacts() -> None:
             root / "artifacts" / "examples" / "graph_qi_hu_tutorial.svg",
         ]:
             assert graph.read_text(encoding="utf-8").lstrip().startswith("<?xml")
+        interactive_html = tutorial_artifacts / "torsion_cytoscape.html"
+        assert interactive_html.read_text(encoding="utf-8").lstrip().startswith("<!doctype html>")
+        assert "R3XAStandaloneGraph" in interactive_html.read_text(encoding="utf-8")
     finally:
         _restore(snapshot)
         for path in [*tutorial_artifacts.glob("*"), *case_artifacts]:
@@ -116,8 +119,8 @@ def test_jupyter_and_marimo_tutorial_sources_are_complete() -> None:
         root / "examples" / "cases" / "qi_hu" / "example.m",
     ]
 
-    assert len(notebooks) == 6
-    assert len(marimo_sources) == 9
+    assert len(notebooks) == 7
+    assert len(marimo_sources) == 10
     assert all(path.is_file() for path in matlab_sources)
     for notebook in notebooks:
         payload = json.loads(notebook.read_text(encoding="utf-8"))
@@ -202,3 +205,25 @@ def test_jupyter_and_marimo_tutorial_sources_are_complete() -> None:
         text = source.read_text(encoding="utf-8")
         assert "r3xa.R3XAFile" in text
         assert ".save(" in text
+
+
+def test_interactive_cytoscape_tutorial_sources() -> None:
+    root = Path(__file__).parents[1]
+    script = root / "examples" / "tutorials" / "python" / "tutorial6_interactive_cytoscape.py"
+    notebook = root / "examples" / "tutorials" / "jupyter" / "tutorial6_interactive_cytoscape.ipynb"
+    marimo = root / "examples" / "tutorials" / "marimo" / "tutorial6_interactive_cytoscape.py"
+    payload = json.loads(notebook.read_text(encoding="utf-8"))
+    notebook_source = "\n".join("".join(cell.get("source", [])) for cell in payload["cells"])
+    marimo_source = marimo.read_text(encoding="utf-8")
+    script_source = script.read_text(encoding="utf-8")
+
+    assert all(not cell.get("outputs") for cell in payload["cells"])
+    assert "R3XAFile.load(source)" in notebook_source
+    assert "backend='cytoscape'" in notebook_source
+    assert "IFrame(" in notebook_source
+    assert 'sandbox="allow-scripts"' in notebook_source
+    assert "R3XAFile.load(source)" in marimo_source
+    assert 'backend="cytoscape"' in marimo_source
+    assert 'sandbox="allow-scripts"' in marimo_source
+    assert "R3XAFile.load(source)" in script_source
+    assert 'backend="cytoscape"' in script_source

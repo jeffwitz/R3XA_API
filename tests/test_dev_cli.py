@@ -64,6 +64,26 @@ def test_dev_cli_exposes_cross_platform_commands():
     }.issubset(commands)
 
 
+def test_convert_tutorials_preserves_the_hand_maintained_cytoscape_notebook(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _load_dev_module()
+    notebook_dir = tmp_path / "examples" / "tutorials" / "jupyter"
+    notebook_dir.mkdir(parents=True)
+    (notebook_dir / "tutorial0_basic.ipynb").write_text("{}", encoding="utf-8")
+    (notebook_dir / "tutorial6_interactive_cytoscape.ipynb").write_text("{}", encoding="utf-8")
+    calls: list[tuple[str, ...]] = []
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "project_python", lambda: "python")
+    monkeypatch.setattr(module, "_run", lambda *args: calls.append(args))
+
+    module.cmd_convert_tutorials(None)
+
+    assert len(calls) == 1
+    assert "tutorial0_basic.ipynb" in " ".join(calls[0])
+    assert "tutorial6_interactive_cytoscape" not in " ".join(calls[0])
+
+
 def test_dev_cli_uses_a_real_python_interpreter(tmp_path: Path):
     module = _load_dev_module()
     original_root = module.ROOT

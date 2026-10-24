@@ -20,6 +20,7 @@ from ._graph_graphviz_wasm import (
     generate_svg_wasm,
     render_graphviz_wasm_file as _render_graphviz_wasm_file,
 )
+from ._graph_cytoscape import render_cytoscape_html as _render_cytoscape_html
 from ._graph_networkx import render_networkx_matplotlib_file as _render_networkx_matplotlib_file
 from ._graph_pyvis import render_pyvis_html as _render_pyvis_html
 
@@ -36,6 +37,7 @@ __all__ = [
     "render_graphviz_wasm_file",
     "render_networkx_matplotlib_file",
     "render_pyvis_html",
+    "render_cytoscape_html",
     "render_graph_content",
 ]
 
@@ -92,6 +94,24 @@ def render_pyvis_html(
     """Render an interactive PyVis HTML graph from an R3XA payload."""
 
     return _render_pyvis_html(
+        data,
+        output_path,
+        include_description=include_description,
+        palette=palette,
+        relations=relations,
+    )
+
+
+def render_cytoscape_html(
+    data: Dict[str, Any],
+    output_path: Path,
+    include_description: bool = True,
+    palette: str | None = None,
+    relations: str = "all",
+) -> Path:
+    """Render an autonomous Cytoscape HTML graph from an R3XA payload."""
+
+    return _render_cytoscape_html(
         data,
         output_path,
         include_description=include_description,

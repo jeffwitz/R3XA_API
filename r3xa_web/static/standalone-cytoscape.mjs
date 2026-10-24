@@ -1,4 +1,5 @@
 import cytoscape from "cytoscape";
+import {buildCytoscapeStateFromSvg} from "./graph-cytoscape-model.mjs";
 
 const displayValue = (value) => {
   if (value === undefined) return "—";
@@ -33,6 +34,23 @@ const renderFields = (fieldsElement, item, properties) => {
 };
 
 export const mount = (graphElement, inspector, state, controls = {}) => {
+  if (state.layoutSvg) {
+    const graphState = buildCytoscapeStateFromSvg(
+      state.payload,
+      state.layoutSvg,
+      state.options,
+      state.palettes,
+      state.relationCatalog,
+    );
+    state = {
+      ...state,
+      elements: graphState.elements.map((element) => ({
+        ...element,
+        position: graphState.positions[element.data.id],
+      })),
+      style: graphState.style,
+    };
+  }
   const style = [
     ...(state.style || []),
     {selector: ".standalone-selected", style: {"border-width": 4, "border-style": "dashed", "border-color": "#111111", "z-index": 10}},

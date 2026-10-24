@@ -487,6 +487,32 @@ def test_pyvis_rejects_image_extensions(tmp_path) -> None:
         _document_with_items().plot(tmp_path / "graph.svg", backend="pyvis")
 
 
+def test_cytoscape_export_is_a_self_contained_html_file(tmp_path) -> None:
+    document = _document_with_items()
+    output = document.plot(
+        tmp_path / "graph.html",
+        backend="cytoscape",
+        palette="classic",
+        include_description=False,
+    )
+
+    html = output.read_text(encoding="utf-8")
+    assert output == tmp_path / "graph.html"
+    assert 'id="graph-state"' in html
+    assert 'id="selected-fields"' in html
+    assert 'id="graph-zoom-in"' in html
+    assert 'id="graph-fit"' in html
+    assert '"palette": "classic"' in html
+    assert '"layoutSvg"' in html
+    assert "Cytoscape.js license" in html
+    assert "<script src=" not in html
+
+
+def test_cytoscape_rejects_image_extensions(tmp_path) -> None:
+    with pytest.raises(ValueError, match=r"Available formats: \.html"):
+        _document_with_items().plot(tmp_path / "graph.svg", backend="cytoscape")
+
+
 def test_matplotlib_uses_the_requested_path_extension(tmp_path) -> None:
     pytest.importorskip("matplotlib")
 

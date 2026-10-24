@@ -7,17 +7,20 @@ These tutorials form a progressive introduction to the Python object-first API:
 3. edit an existing document;
 4. save and reuse standalone items;
 5. compare list and file datasets;
-6. validate documents and items.
+6. validate documents and items;
+7. open an existing document and explore its graph interactively.
 
 ## Prerequisite
 
-Run the commands from the repository root and install R3XA_API with the extra
-corresponding to the interactive tool. This is important: installing only the
-notebook application does not install the R3XA package, its current schema, or
-the bundled Graphviz WebAssembly backend.
+Run the commands from the repository root. The plain Python tutorials need
+only R3XA_API; install the extra corresponding to an interactive notebook tool
+if you want to use Jupyter or Marimo. Installing only a notebook application
+does not install R3XA_API, its current schema, or the bundled Graphviz
+WebAssembly backend.
 
 ```bash
-# Choose one, or install both extras together.
+python -m pip install -e .
+# For notebooks, choose one extra or install both together.
 python -m pip install -e ".[jupyter]"
 python -m pip install -e ".[marimo]"
 ```
@@ -37,15 +40,18 @@ python examples/tutorials/python/tutorial2_edit_r3xafile.py
 python examples/tutorials/python/tutorial3_build_use_predefined_items.py
 python examples/tutorials/python/tutorial4_file_vs_list.py
 python examples/tutorials/python/tutorial5_validation.py
+python examples/tutorials/python/tutorial6_interactive_cytoscape.py
 ```
 
-The generated JSON and SVG files are written to
+The generated JSON, SVG, and interactive HTML files are written to
 `artifacts/examples/tutorials/`. They are deliberately kept outside the
 source tree.
 
 Interactive notebooks display generated SVG graphs inline: Jupyter uses
-`IPython.display.SVG`, while Marimo embeds the SVG markup with `mo.Html`. The terminal Python
-scripts only save the SVG because they do not have an inline display context.
+`IPython.display.SVG`, while Marimo embeds the SVG markup with `mo.Html`. The
+plain Python tutorial 6 loads the same existing torsion document as the two
+notebooks and saves `torsion_cytoscape.html`; open that file in a browser to
+inspect nodes interactively. It requires neither Jupyter nor Marimo.
 
 ## Jupyter notebooks
 
@@ -70,6 +76,11 @@ Open `examples/tutorials/jupyter/` for the tutorials, or
 The notebooks use the same artifact directory and follow the same progression
 as the Python scripts. The notebooks are teaching material; the Python scripts
 are the files exercised by the automated smoke tests.
+
+`tutorial6_interactive_cytoscape.ipynb` is independent of the earlier lessons:
+it loads `tests/fixtures/documents/essai-torsion.json`, validates it, and shows
+the standalone Cytoscape export in an iframe. Start Jupyter from the repository
+root as shown above so `/files/` can serve the generated HTML artifact.
 
 ## Marimo notebooks
 
@@ -105,15 +116,21 @@ filename remains useful when opening one application directly:
 marimo edit examples/tutorials/marimo/tutorial0_basic.py
 ```
 
+`tutorial6_interactive_cytoscape.py` loads the same existing document and
+embeds the self-contained HTML in a sandboxed iframe. No notebook server route
+or CDN is needed for this graph.
+
 The converted case notebooks are available at
 `examples/cases/torsion/marimo/example.py` and
 `examples/cases/qi_hu/marimo/example.py`. They are repository-local examples,
 so the editable R3XA API installation is intentionally the source of their
 dependencies rather than a generated standalone package.
 
-To regenerate all Marimo sources after editing a Jupyter notebook, use the
-repository command. It invokes Marimo's converter and then the generated cells
-should be reviewed before running them:
+To regenerate the converted Marimo sources (tutorials 0–5 and the cases) after
+editing a Jupyter notebook, use the repository command. Tutorial 6 is
+hand-maintained because Jupyter and Marimo embed the HTML differently; the
+converter deliberately leaves it untouched. Review generated cells before
+running them:
 
 ```bash
 python scripts/dev.py convert-tutorials

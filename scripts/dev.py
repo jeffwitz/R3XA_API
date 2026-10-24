@@ -159,12 +159,14 @@ def cmd_notebook_dic_export(_: argparse.Namespace) -> None:
 
 
 def cmd_convert_tutorials(_: argparse.Namespace) -> None:
-    """Regenerate repository-local Marimo examples from their Jupyter sources."""
+    """Regenerate converted Marimo examples without replacing the hand-maintained iframe tutorial."""
 
     python = project_python()
     notebooks = sorted((ROOT / "examples" / "tutorials" / "jupyter").glob("*.ipynb"))
     notebooks.extend(sorted((ROOT / "examples" / "cases").glob("*/example.ipynb")))
     for notebook in notebooks:
+        if notebook.stem == "tutorial6_interactive_cytoscape":
+            continue
         if notebook.parent.name == "jupyter":
             output = ROOT / "examples" / "tutorials" / "marimo" / f"{notebook.stem}.py"
         else:

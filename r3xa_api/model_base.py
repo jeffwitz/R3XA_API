@@ -819,6 +819,7 @@ class R3XAItem(BaseModel):
             "graphviz": _graph.render_graphviz_file,
             "graphviz-wasm": _graph.render_graphviz_wasm_file,
             "pyvis": _graph.render_pyvis_html,
+            "cytoscape": _graph.render_cytoscape_html,
             "matplotlib": _graph.render_networkx_matplotlib_file,
         }
         if backend not in renderers:
@@ -830,6 +831,7 @@ class R3XAItem(BaseModel):
             "graphviz": ("svg",),
             "graphviz-wasm": ("svg",),
             "pyvis": ("html",),
+            "cytoscape": ("html",),
             "matplotlib": ("svg", "png", "pdf"),
         }[backend]
         requested_format = kwargs.pop("format", None)

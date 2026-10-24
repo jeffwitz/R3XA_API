@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>$document_title — R3XA</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f7fa; color: #17202a; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 1500px; margin: 0 auto; padding: 1.25rem; }
+    header, .graph, .inspector, details { border: 1px solid #e1e7ee; border-radius: 10px; background: #fff; }
+    header { padding: 1.25rem; }
+    h1, h2, h3, p { margin-top: 0; }
+    .muted { color: #5b6673; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, .9fr); gap: 1rem; margin-top: 1rem; align-items: start; }
+    .graph-panel { position: relative; min-width: 0; }
+    .graph-controls { position: absolute; z-index: 2; top: .75rem; right: .75rem; display: flex; gap: .4rem; }
+    .graph-controls button { min-width: 2.5rem; min-height: 2.5rem; border: 1px solid #b8c4d1; border-radius: 6px; background: #fff; color: #17202a; font: inherit; font-weight: 700; cursor: pointer; }
+    .graph-controls button:hover { background: #eef5fb; }
+    .graph { min-width: 0; height: min(78vh, 960px); min-height: 520px; overflow: hidden; }
+    .inspector { min-width: 0; max-height: min(78vh, 960px); overflow: auto; }
+    .inspector-header { padding: 1rem; background: #eef5fb; border-bottom: 1px solid #e1e7ee; }
+    .inspector-header h2 { margin-bottom: .25rem; }
+    .inspector-header p { margin-bottom: .4rem; }
+    .inspector-fields { padding: .5rem 1rem; }
+    .field { padding: .75rem 0; border-bottom: 1px solid #e1e7ee; }
+    .field:last-child { border-bottom: 0; }
+    .field h3 { margin: 0; font-size: .95rem; }
+    .field h3 code { color: #5b6673; font-size: .78rem; font-weight: 400; }
+    .field p { margin: .3rem 0; font-size: .85rem; }
+    pre { margin: .45rem 0 0; padding: .55rem; overflow: auto; border-radius: 5px; background: #f5f7fa; color: #17202a; font: .82rem/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    details { margin-top: 1rem; padding: 1rem; }
+    details pre { max-height: 55vh; background: #0b0b0b; color: #e8e8e8; }
+    @media (max-width: 900px) { main { padding: .75rem; } .workspace { display: block; } .graph { height: 65vh; min-height: 420px; } .inspector { margin-top: 1rem; max-height: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>$document_title</h1><p class="muted">Double-click a data source or data set to frame its connected objects.</p></header>
+    <section class="workspace" aria-label="Interactive R3XA graph and selected object fields">
+      <div class="graph-panel">
+        <div class="graph-controls" role="group" aria-label="Graph navigation">
+          <button id="graph-zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+          <button id="graph-zoom-out" type="button" title="Zoom out" aria-label="Zoom out">−</button>
+          <button id="graph-fit" type="button" title="Recenter graph" aria-label="Recenter graph">↔</button>
+        </div>
+        <div id="graph" class="graph" aria-label="Interactive R3XA graph"></div>
+      </div>
+      <aside class="inspector" aria-live="polite">
+        <div class="inspector-header">
+          <h2 id="selected-title">Select an object</h2>
+          <p id="selected-kind" class="muted">Click a graph node to inspect its fields.</p>
+          <code id="selected-id"></code>
+        </div>
+        <div id="selected-fields" class="inspector-fields"></div>
+      </aside>
+    </section>
+    <details><summary>R3XA document JSON</summary><pre>$payload_json</pre></details>
+  </main>
+  <script type="application/json" id="graph-state">$state_json</script>
+  <script>$bundle</script>
+  <script>
+    const graphState = JSON.parse(document.getElementById("graph-state").textContent);
+    window.R3XAStandaloneGraph.mount(
+      document.getElementById("graph"),
+      {
+        title: document.getElementById("selected-title"),
+        kind: document.getElementById("selected-kind"),
+        id: document.getElementById("selected-id"),
+        fields: document.getElementById("selected-fields"),
+      },
+      graphState,
+      {
+        zoomIn: document.getElementById("graph-zoom-in"),
+        zoomOut: document.getElementById("graph-zoom-out"),
+        fit: document.getElementById("graph-fit"),
+      },
+    );
+  </script>
+</body>
+</html>

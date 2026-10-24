@@ -43,6 +43,7 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
         "registry-storage.js",
         "graph.generated.js",
         "cytoscape.generated.js",
+        "standalone-cytoscape.generated.js",
         "validator.generated.js",
     ):
         assert (assets / name).is_file(), name
@@ -62,6 +63,13 @@ def test_static_web_build_contains_local_pages_and_catalogues(tmp_path: Path) ->
     notices = (assets / "THIRD_PARTY_NOTICES.txt").read_text(encoding="utf-8")
     assert "Ajv 8.17.1" in notices
     assert "Cytoscape.js 3.34.3" in notices
+    packaged_bundle = (
+        Path(__file__).resolve().parents[2]
+        / "r3xa_web"
+        / "static"
+        / "standalone-cytoscape.generated.js"
+    )
+    assert (assets / "standalone-cytoscape.generated.js").read_bytes() == packaged_bundle.read_bytes()
     assert "Graphviz 12.2.1 WASI artifact" in notices
     source_wasm = (
         Path(__file__).resolve().parents[2]
