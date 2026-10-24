@@ -2,6 +2,7 @@
   const storageKey = "r3xaLanguage";
   let messages = {default_language: "en", languages: {en: {}}};
   let language = localStorage.getItem(storageKey) || (navigator.language || "en").slice(0, 2);
+  let catalogInstalled = false;
 
   const activeMessages = () => messages.languages?.[language] || messages.languages?.[messages.default_language] || {};
 
@@ -11,6 +12,19 @@
       (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
       template,
     );
+  };
+
+  const bindLanguageSelects = (root = document) => {
+    root.querySelectorAll("[data-language-select]").forEach((select) => {
+      select.value = language;
+      select.onchange = () => {
+        language = select.value;
+        localStorage.setItem(storageKey, language);
+        if (catalogInstalled) apply();
+        document.dispatchEvent(new CustomEvent("r3xa-language-changed"));
+      };
+    });
+    document.documentElement.lang = language;
   };
 
   const apply = (root = document) => {
@@ -29,25 +43,18 @@
     root.querySelectorAll("[data-i18n-title]").forEach((element) => {
       element.title = translate(element.dataset.i18nTitle, element.title || "");
     });
-    root.querySelectorAll("[data-language-select]").forEach((select) => {
-      select.value = language;
-      select.onchange = () => {
-        language = select.value;
-        localStorage.setItem(storageKey, language);
-        apply();
-        document.dispatchEvent(new CustomEvent("r3xa-language-changed"));
-      };
-    });
-    document.documentElement.lang = language;
+    bindLanguageSelects(root);
   };
 
   const installCatalog = (catalog) => {
     if (catalog?.messages?.languages) messages = catalog.messages;
     if (!messages.languages?.[language]) language = messages.default_language || "en";
+    catalogInstalled = true;
     apply();
   };
 
   window.R3XAI18N = {apply, installCatalog, language: () => language, t: translate};
+  bindLanguageSelects();
   window.R3XARuntime.loadUiCatalog()
     .catch(() => null)
     .then((catalog) => installCatalog(catalog))

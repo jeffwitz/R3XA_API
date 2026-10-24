@@ -182,9 +182,30 @@ def test_static_i18n_updates_registry_and_schema_controls(static_site: str) -> N
     with sync_playwright() as runtime:
         browser: Browser = runtime.chromium.launch(headless=True, executable_path=_chromium_path())
         page = browser.new_page(locale="en-US")
+        page.add_init_script("""
+            (() => {
+              if (!window.location.pathname.endsWith('/registry/')) return;
+              const fetchAsset = window.fetch.bind(window);
+              const pending = [];
+              window.fetch = (...args) => {
+                if (!String(args[0]).includes('ui-catalog.json')) return fetchAsset(...args);
+                return new Promise((resolve, reject) => {
+                  pending.push(() => fetchAsset(...args).then(resolve, reject));
+                });
+              };
+              window.pendingUiCatalogCount = () => pending.length;
+              window.releaseUiCatalog = () => {
+                window.fetch = fetchAsset;
+                pending.splice(0).forEach((resume) => resume());
+              };
+            })();
+        """)
         page.goto(f"{static_site}/registry/")
         page.wait_for_function("document.querySelector('[data-i18n=\\\"registry.validation_target\\\"]').textContent.includes('Validation')")
+        page.wait_for_function("window.pendingUiCatalogCount() > 0")
         page.select_option("[data-language-select]", "fr")
+        assert page.evaluate("localStorage.getItem('r3xaLanguage')") == "fr"
+        page.evaluate("window.releaseUiCatalog()")
         page.wait_for_function("document.querySelector('[data-i18n=\\\"registry.validation_target\\\"]').textContent.includes('validation')")
         assert "Valider l’item" in page.locator("#registry-validate-btn").inner_text()
         page.goto(f"{static_site}/schema/")
@@ -1061,7 +1082,7 @@ def test_static_registry_migrates_legacy_local_ids(static_site: str) -> None:
         )
         page.reload()
         page.wait_for_function(
-            "JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '{\"items\":[]}').items[0]?.id.startsWith('src-camera-')"
+            "JSON.parse(localStorage.getItem('r3xaLocalRegistryItems') || '{\"items\":[]}').items?.[0]?.id?.startsWith('src-camera-')"
         )
         migrated = page.evaluate("JSON.parse(localStorage.getItem('r3xaLocalRegistryItems')).items[0]")
         assert migrated["id"].startswith("src-camera-")
@@ -1399,7 +1420,9 @@ def test_static_cytoscape_inspector_shows_selected_node_fields(static_site: str)
         page.wait_for_function(
             "JSON.parse(localStorage.getItem('r3xaDraft') || '{\"settings\":[]}').settings[0]?.title === 'Updated testing machine'"
         )
-        assert page.locator("#graph-inspector-title").inner_text() == "Updated testing machine"
+        page.wait_for_function(
+            "document.querySelector('#graph-inspector-title').textContent === 'Updated testing machine'"
+        )
         assert "Valid item" in page.locator("#graph-inspector-status").inner_text()
         assert page.locator("#graph-inspector input, #graph-inspector select, #graph-inspector textarea").count() == 0
         page.locator("#fullscreen-graph-btn").click()
