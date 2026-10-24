@@ -7,8 +7,7 @@ import pytest
 
 from r3xa_api import R3XAFile, unit
 
-playwright = pytest.importorskip("playwright.sync_api")
-from playwright.sync_api import sync_playwright
+sync_playwright = pytest.importorskip("playwright.sync_api").sync_playwright
 
 
 def _chromium_path() -> str:
