@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shlex
 import shutil
@@ -205,6 +206,9 @@ def cmd_run_web(args: argparse.Namespace) -> None:
 
 
 def _git_revision() -> str:
+    ci_revision = os.environ.get("CI_COMMIT_SHA", "")
+    if re.fullmatch(r"[0-9a-f]{40}", ci_revision):
+        return ci_revision
     try:
         return subprocess.check_output(
             ("git", "rev-parse", "HEAD"),

@@ -19,6 +19,15 @@ def _load_dev_module():
     return module
 
 
+def test_git_revision_uses_gitlab_commit_without_git(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = _load_dev_module()
+    revision = "a" * 40
+    monkeypatch.setenv("CI_COMMIT_SHA", revision)
+    monkeypatch.setattr(module.subprocess, "check_output", lambda *args, **kwargs: pytest.fail("git was invoked"))
+
+    assert module._git_revision() == revision
+
+
 def _fake_project_root(tmp_path: Path, *, windows: bool = False) -> tuple[Path, Path]:
     root = tmp_path / "project"
     script_dir = root / "scripts"
