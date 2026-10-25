@@ -166,6 +166,9 @@ def test_duplicate_ids_are_not_migrated_ambiguously(page: Page, web_server: str)
     loaded = _payload(page)
     assert loaded["settings"][0]["id"] == duplicate_id
     assert loaded["data_sources"][0]["id"] == duplicate_id
+    page.wait_for_function(
+        "document.querySelector('#validation-output')?.textContent?.includes('duplicated')"
+    )
     assert "duplicated" in page.locator("#validation-output").inner_text()
 
 

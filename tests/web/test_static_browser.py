@@ -380,6 +380,9 @@ def test_static_duplicate_ids_are_not_migrated_ambiguously(static_site: str) -> 
         loaded = page.evaluate("JSON.parse(document.querySelector('#json-input').value)")
         assert loaded["settings"][0]["id"] == duplicate_id
         assert loaded["data_sources"][0]["id"] == duplicate_id
+        page.wait_for_function(
+            "document.querySelector('#validation-output')?.textContent?.includes('duplicated')"
+        )
         assert "duplicated" in page.locator("#validation-output").inner_text()
         browser.close()
 
