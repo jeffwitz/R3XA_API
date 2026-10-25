@@ -175,6 +175,7 @@ package:
   stage: package
   rules: *full_pipeline_rules
   image: python:3.12-slim
+  dependencies: []
   before_script:
     - python -m pip install --upgrade pip build
   script:
@@ -382,9 +383,36 @@ publish-pypi:
       aud: pypi
   script:
     - python -m pip install --upgrade twine
-    - python -m twine check dist/*
-    - python -m twine upload dist/*
+    - python -m twine check dist/*.whl dist/*.tar.gz
+    - python -m twine upload dist/*.whl dist/*.tar.gz
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: manual
+      allow_failure: false
+
+publish-pypi-v2-recovery:
+  stage: deploy
+  image: python:3.12-slim
+  needs: []
+  dependencies: []
+  environment:
+    name: pypi
+    url: https://pypi.org/project/r3xa-api/
+  id_tokens:
+    PYPI_ID_TOKEN:
+      aud: pypi
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends curl unzip
+    - python -m pip install --upgrade twine
+  script:
+    - curl --fail --show-error --location "$CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/17443479753/artifacts" --output /tmp/r3xa-v2-tag-package.zip
+    - unzip -q /tmp/r3xa-v2-tag-package.zip 'dist/r3xa_api-2.0.0-py3-none-any.whl' 'dist/r3xa_api-2.0.0.tar.gz'
+    - echo '365bee1051526b00178d342435bd43b022e78cb791112e857a1c5017d1665ffd  dist/r3xa_api-2.0.0-py3-none-any.whl' | sha256sum --check
+    - echo 'c7a468c77d7c7cc4becd50289c9d0864ab895b62772e2726bb42da030f6aeffe  dist/r3xa_api-2.0.0.tar.gz' | sha256sum --check
+    - python -m twine check dist/*.whl dist/*.tar.gz
+    - python -m twine upload dist/*.whl dist/*.tar.gz
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "web"'
       when: manual
       allow_failure: false
