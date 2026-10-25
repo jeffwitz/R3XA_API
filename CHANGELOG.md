@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ## [2.0.0] - 2026-10-25
 
 - Add standalone, interactive Cytoscape HTML export to the Python graph API, with Python, Jupyter, and Marimo tutorials.
-- Keep large browser drafts in IndexedDB, stabilize interactive graph navigation and static browser initialization, and reject unsupported graph output extensions.
+- Keep large browser drafts in IndexedDB, stabilize editor imports and interactive graph navigation, preserve inspector validation feedback during graph regeneration, and reject unsupported graph output extensions.
 - Prevent the expanded schema tree from widening the page on mobile; keep overflow inside the tree viewer.
 - Adopt the dated `R3XA_SPEC` schema `2026.9.24`, which removes the redundant `data_origin` field; provenance is inferred from parent data-source and input-data-set lineage.
 - Keep document bindings in Pydantic private state so editing a bound item cannot create a circular serialized document; add a regression test.

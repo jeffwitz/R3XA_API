@@ -1307,6 +1307,16 @@ def test_static_large_draft_graph_does_not_exceed_storage_quota(static_site: str
             return original.call(this, key, value);
           };
         }""")
+        page.add_init_script("""() => {
+          const fetchResource = window.fetch.bind(window);
+          window.fetch = (...args) => {
+            const response = fetchResource(...args);
+            if (!String(args[0]).includes('schema-catalog.json')) return response;
+            return response.then((result) => new Promise((resolve) => {
+              window.setTimeout(() => resolve(result), 500);
+            }));
+          };
+        }""")
         page.goto(f"{static_site}/edit/?profile=generic&new=1")
         page.wait_for_selector("#schema-summary")
         page.locator("#load-json-input").set_input_files({
@@ -1548,6 +1558,9 @@ def test_static_cytoscape_inspector_selects_existing_references(static_site: str
         page.locator("#graph-inspector-validate-btn").click()
         page.wait_for_function(
             "JSON.parse(localStorage.getItem('r3xaDraft') || '{}').data_sets[0]?.parent_data_sources?.length === 0"
+        )
+        page.wait_for_function(
+            "document.querySelector('#graph-inspector-status')?.textContent?.includes('Valid item')"
         )
         assert "Valid item" in page.locator("#graph-inspector-status").inner_text()
         page.wait_for_function(

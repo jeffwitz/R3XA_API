@@ -353,7 +353,6 @@ const validateGraphInspectorItem = async () => {
     const serialized = JSON.stringify(payload);
     await window.R3XADraftStorage.save(serialized);
     storedDraftText = serialized;
-    if (graphInspectorStatus) graphInspectorStatus.textContent = inspectorReportText(report);
     await renderGraph({section: selectedGraphSelection.section, id: candidate.id});
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     if (graphInspectorStatus) graphInspectorStatus.textContent = inspectorReportText(report);

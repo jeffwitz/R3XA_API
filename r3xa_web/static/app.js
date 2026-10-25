@@ -46,6 +46,7 @@ let guidedStepItems = {};
 let syncing = false;
 let prefillRequested = launchParams.get("prefill") === "1";
 let newDocumentRequested = launchParams.get("new") === "1";
+let editorReadyPromise = Promise.resolve();
 const draftOriginStorageKey = "r3xaDraftOrigin";
 let draftOriginProfile = localStorage.getItem(draftOriginStorageKey) || "";
 
@@ -2148,6 +2149,7 @@ const loadJsonFile = (file) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = async () => {
+    await editorReadyPromise;
     let payload;
     try {
       payload = JSON.parse(reader.result);
@@ -2282,7 +2284,7 @@ const initializeEditor = async () => {
     );
     saveGuidedStepItems();
   }
-  renderSummary();
+  await renderSummary();
   if (loadedNormalization.conflicts.length) {
     outputEl.textContent = t(
       "validation.duplicate_ids_migration",
@@ -2290,9 +2292,10 @@ const initializeEditor = async () => {
       {ids: loadedNormalization.conflicts.join(", ")},
     );
   }
+  await window.R3XADraftStorage.flush();
 };
 
-initializeEditor().catch((error) => {
+editorReadyPromise = initializeEditor().catch((error) => {
   outputEl.textContent = t(
     "editor.draft_load_failed",
     "The saved draft could not be loaded: {message}.",
