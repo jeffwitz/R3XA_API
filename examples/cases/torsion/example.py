@@ -2,13 +2,8 @@
 ## R3XA Example 0 - Real Torsion Experiment
 Real example of a torsion test
 """
-
-from pathlib import Path
-
+# %%
 import r3xa_api as r3xa
-
-ARTIFACTS = Path(__file__).resolve().parents[3] / "artifacts" / "examples"
-ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 """
 ### 0. HEADER
@@ -16,7 +11,7 @@ Starting with authors
 """
 
 pauline = r3xa.author(
-    'P. Avetisian',
+    'P. Avetisyan',
     'Sorbonne Université',
     None
 )
@@ -39,9 +34,11 @@ Construction of the R3XA `file` and filling the header info
 
 file = r3xa.R3XAFile(
    title="Large-Rotation Torsion Test on HMA Sample",
-   description="Experimental dataset of torsion testing under large rotations (up to 350°) on a hot-melt adhesive (HMA) cylindrical " \
+   description="Experimental dataset of torsion testing under large rotations (up to 400°) on a hot-melt adhesive (HMA) cylindrical " \
       "specimen including an a priori full 360° scan, used to benchmark mono-cam PhDIC",
    authors=[pauline, jeancharles, jeannoel],
+   documentation = 'documentation.pdf',
+   repository = 'https://doi.org/10.5281/zenodo.23420337',
    date="2025-07-02"
 )
 
@@ -51,35 +48,31 @@ two spotlights + the testing machine + the sample + a calibration board
 """
 
 lights = r3xa.new_generic_setting(
-    id="stg-generic-torsion-lights",
     title='Spotlights',
     description='2 Spotlights MultiLed QX 100% indirect\nGS Vitec SN : GS01224 and GS01225',
     documentation='https://www.blinktech.com.au/wp-content/uploads/2023/10/MULTILED_QX.pdf',
 )
 
 machine = r3xa.new_testing_machine_setting(
-    id="stg-testing-machine-torsion-apparatus",
     title='Torsion apparatus',
     description='Andilog Twist torsion test stand, precision : 0,1 deg ',
     manufacturer = 'Andilog',
     model = 'Drivetwist',
-    type = 'electromechanical',
+    type = 'electromechanical', 
     capacity = r3xa.unit(value=40, unit='Nm')
 )
 
 sample = r3xa.new_specimen_setting(
-    id="stg-specimen-torsion-sample",
     title='Sample',
     description = 'hot-melt adhesive (HMA) cylindrical specimen',
     patterning_technique = "matte black and white spray paint",
     sizes = [
-        r3xa.unit(title='diameter', value=7, unit='mm'),
+        r3xa.unit(title='diameter', value=11.7, unit='mm'),
         r3xa.unit(title='length', value=150, unit='mm'),
     ]
 )
 
 calib_board = r3xa.new_generic_setting(
-    id="stg-generic-torsion-calibration-board",
     title = 'calibration board',
     description = 'Circles grid of 12 x 9, spacing = 5 mm',
     grid = [12, 9],
@@ -91,8 +84,7 @@ calib_board = r3xa.new_generic_setting(
 """
 
 torque_sensor = r3xa.new_generic_source(
-    id="src-generic-torsion-torque-sensor",
-    title = 'Dynamic Torque sensor',
+    title = 'Dynamic Torque sensor', 
     description = "Andilog Dynamic Torque sensor, capacity 6Nm, resolution 0.6mNm",
     output_components = 1,
     output_dimension = "point",
@@ -105,8 +97,7 @@ torque_sensor = r3xa.new_generic_source(
 )
 
 angle_sensor = r3xa.new_generic_source(
-    id="src-generic-torsion-angle-sensor",
-    title = 'Dynamic Angle sensor',
+    title = 'Dynamic Angle sensor', 
     description = "Andilog Dynamic angle sensor",
     output_components = 1,
     output_dimension = "point",
@@ -117,7 +108,6 @@ angle_sensor = r3xa.new_generic_source(
 )
 
 camera = r3xa.new_camera_source(
-    id="src-camera-torsion-camera",
     title="CCD Camera",
     output_components=1,
     output_dimension="surface",
@@ -154,7 +144,6 @@ image_files = ['img1-%2d.png' % i for i in range(72, 97)]
 timestamps = [float(i) for i in range(72, 97)]
 
 ds_calib_img = r3xa.new_list_data_set(
-    id="set-list-torsion-calibration-images",
     title='Calibration images',
     description='grid image for intrinsic calibration',
     data_type='image/png',
@@ -186,7 +175,6 @@ angles = r3xa.data_set_file(
     )
 
 ds_rbm_angles = r3xa.new_file_data_set(
-    id="set-file-torsion-scan-angles",
     title='Scanning Angles',
     description='Angles during the scan (rigid body rotation)',
     parent_data_sources=[angle_sensor],
@@ -203,7 +191,6 @@ image_files = ['img0-%02d.png' % i for i in range(0, 62)]
 timestamps = [float(i) for i in range(0, 62)]
 
 ds_scan_img = r3xa.new_list_data_set(
-    id="set-list-torsion-scanning-images",
     title='Scanning images',
     description='Images taken during the scan (rigid body rotation)',
     data_type='image/png',
@@ -243,7 +230,6 @@ torques = r3xa.data_set_file(
     )
 
 ds_torsion_torques = r3xa.new_file_data_set(
-    id="set-file-torsion-torque-series",
     title='Torsion Torques',
     description='Torques during the Torsion test',
     parent_data_sources=[torque_sensor],
@@ -253,7 +239,6 @@ ds_torsion_torques = r3xa.new_file_data_set(
     )
 
 ds_torsion_angles = r3xa.new_file_data_set(
-    id="set-file-torsion-angle-series",
     title='Torsion Angles',
     description='Angles during the Torsion test',
     parent_data_sources=[angle_sensor],
@@ -270,7 +255,6 @@ image_files = ['img0-%02d.png' % i for i in range(0, 72)]
 timestamps = [float(i) for i in range(0, 72)]
 
 ds_torsion_img = r3xa.new_list_data_set(
-    id="set-list-torsion-images",
     title='Torsion images',
     description='Images taken during the torsion test',
     data_type='image/png',
@@ -286,12 +270,11 @@ ds_torsion_img = r3xa.new_list_data_set(
 """
 
 calib_engine = r3xa.new_generic_source(
-    id="src-generic-torsion-camera-calibration",
     title='Camera Calibration',
     description='using Calibration_tool based on OpenCV',
     input_data_sets=[ds_calib_img],
-    output_components=9,
-    output_dimension='point',
+    output_components=9, 
+    output_dimension='point', 
     output_units=[
         r3xa.unit(title='center x', unit='px'),
         r3xa.unit(title='center y', unit='px'),
@@ -308,13 +291,13 @@ calib_engine = r3xa.new_generic_source(
     )
 
 ds_intrinsics = r3xa.new_generic_data_set(
-    id="set-generic-torsion-camera-intrinsics",
-    title='Calibration parameters',
-    description='Intrisic parameters Cx, Cy, Fx, Fy and 5 distortion params',
-    parent_data_sources=[calib_engine],
+    title='Calibration parameters', 
+    description='Intrisic parameters Cx, Cy, Fx, Fy and 5 distortion params', 
+    parent_data_sources=[calib_engine], 
     file_type='text/txt',
     path='camera_intrinsics.txt'
     )
+
 
 """
 Filling the File
@@ -324,8 +307,12 @@ file.settings = [machine, sample, calib_board, lights]
 file.data_sources = [torque_sensor, angle_sensor, camera, calib_engine]
 file.data_sets = [ds_rbm_angles, ds_scan_img, ds_torsion_torques, ds_torsion_angles, ds_torsion_img, ds_calib_img, ds_intrinsics]
 
-file.validate()
-file.save(ARTIFACTS / 'torsion_experiment.json')
-file.plot(ARTIFACTS / 'graph_torsion_experiment.svg')
+file.plot('outputs/example0_torsion')
 
 print(file)
+
+"""
+Saving the File
+"""
+
+file.save('outputs/torsion_experiment.json')

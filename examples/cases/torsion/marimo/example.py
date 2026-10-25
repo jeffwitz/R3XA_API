@@ -41,7 +41,7 @@ def _(mo):
 @app.cell
 def _(r3xa):
     pauline = r3xa.author(
-        'P. Avetisian',
+        'P. Avetisyan',
         'Sorbonne Université',
         None
     )
@@ -75,6 +75,7 @@ def _(jeancharles, jeannoel, pauline, r3xa):
        description="Experimental dataset of torsion testing under large rotations (up to 350°) on a hot-melt adhesive (HMA) cylindrical " \
           "specimen including an a priori full 360° scan, used to benchmark mono-cam PhDIC",
        authors=[pauline, jeancharles, jeannoel],
+       repository="https://doi.org/10.5281/zenodo.23420337",
        date="2025-07-02"
     )
     return (file,)
