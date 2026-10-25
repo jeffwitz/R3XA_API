@@ -26,19 +26,15 @@ items stored locally in a user's browser.
 
 ## Install the Python SDK
 
-The published release candidate **`2.0.0rc5`** targets schema `2026.9.18`.
-The current `develop` branch advances the schema to `2026.9.24`; it is not
-source compatible with the stable 1.x series. To install the published
-candidate:
+The stable **`2.0.0`** release targets schema `2026.9.24` and is not source
+compatible with the 1.x series. Install it from PyPI:
 
 ```bash
-python -m pip install "r3xa-api @ git+https://gitlab.com/photomechanics/R3XA_API.git@v2.0.0rc5"
+python -m pip install --upgrade r3xa-api==2.0.0
 ```
 
-`python -m pip install r3xa-api` installs the latest stable PyPI release,
-which may use a different schema and API from the current development
-documentation. To work on `develop`, clone the repository and install it in
-an activated virtual environment:
+To work on `develop` instead, clone the repository and install it in an
+activated virtual environment:
 
 ```bash
 git clone --branch develop https://gitlab.com/photomechanics/R3XA_API.git

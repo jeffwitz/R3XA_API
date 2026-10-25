@@ -216,10 +216,27 @@ imported.
 ### GitLab CI execution policy
 
 To avoid consuming CI minutes on every push, GitLab CI is created automatically
-only for release-candidate tags such as `v2.0.0rc5` or for commits whose
+only for final or release-candidate tags such as `v2.0.0` and `v2.0.0rc5`, or for commits whose
 message contains `[ci run]`. A complete pipeline can also be started explicitly
 from GitLab with **Run pipeline**, or with `glab pipeline run --branch main`.
 Ordinary pushes do not create a pipeline.
+
+### Publish a stable release
+
+1. Change the version and release notes on `develop`, then run its complete CI.
+2. Fast-forward `main` to the qualified commit and wait for its complete CI and
+   GitLab Pages deployment.
+3. Create a matching final tag (for example `v2.0.0`) on that exact commit.
+   The tag runs the full CI matrix and verifies the tag against `pyproject.toml`.
+4. After all tests and installed-wheel smoke jobs pass, start the manual
+   `publish-pypi` job in the tag pipeline. It uploads the package artefacts
+   built by that pipeline, not a second local build.
+5. Check the published version on PyPI and install it in a clean environment.
+
+The PyPI project needs a one-time [GitLab Trusted Publisher](https://docs.pypi.org/trusted-publishers/adding-a-publisher/)
+with namespace `photomechanics`, project `R3XA_API`, pipeline file
+`.gitlab-ci.yml`, and environment `pypi`. The job requests a short-lived OIDC
+token and does not use a stored PyPI password or API token.
 
 ## Common developer commands
 

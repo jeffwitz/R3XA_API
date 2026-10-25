@@ -42,12 +42,11 @@ Main benefit:
 ## Install
 
 Use the same SDK version as the schema described by this documentation. For
-the current development pages, follow [Start with R3XA](getting_started.md)
-to install the `develop` checkout. The latest stable PyPI version may target
-a different schema.
+schema `2026.9.24`, install the stable release; follow
+[Start with R3XA](getting_started.md) for the development checkout.
 
 ```bash
-python -m pip install -e .
+python -m pip install r3xa-api==2.0.0
 ```
 
 Contributors regenerate typed models after a published schema update:

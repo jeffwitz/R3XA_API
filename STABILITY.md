@@ -43,11 +43,9 @@ For new code:
 - prefer `Registry.load(...)` / `Registry.load_validated(...)` for file-backed registry access
 - use `Registry.get_item(...)` when you want a `RegistryItem` wrapper
 
-Compatibility aliases:
-- `Registry.get(...)`
-- `Registry.get_validated(...)`
-
-remain available during `2.x` where implemented.
+The obsolete `Registry.get(...)` and `Registry.get_validated(...)` aliases are
+not part of 2.0. Use `load(...)` to obtain an item or `get_item(...)` to obtain
+a registry-bound wrapper.
 
 ## Guided helpers
 

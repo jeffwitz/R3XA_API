@@ -21,9 +21,13 @@ controls, and the distinction between the static and FastAPI versions.
 
 ## Use the Python SDK
 
-Use a Python environment containing the version of R3XA_API documented here.
-For the current development documentation, work from a checkout of
-`R3XA_API/develop`:
+Install the stable 2.0 SDK, which targets schema `2026.9.24`:
+
+```bash
+python -m pip install --upgrade r3xa-api==2.0.0
+```
+
+To work with the current `develop` branch instead, install that checkout:
 
 ```bash
 git clone --branch develop https://gitlab.com/photomechanics/R3XA_API.git
@@ -33,11 +37,9 @@ source .venv/bin/activate
 python -m pip install -e .
 ```
 
-On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. A tagged
-release candidate can also be installed from its matching GitLab tag; check
-the [repository README](https://gitlab.com/photomechanics/R3XA_API) for the
-current command. Installing the latest stable PyPI release may give a different
-schema and API from these `develop` pages.
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1`. Development
+may move to a newer schema than the stable release; use the package version
+matching the documentation and documents you are working with.
 
 Create a small document:
 
